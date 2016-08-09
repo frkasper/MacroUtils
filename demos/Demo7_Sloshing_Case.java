@@ -1,67 +1,66 @@
-package macroutils;
-
-import star.common.*;
+import macroutils.*;
 import star.vis.*;
 
+/**
+ * Simple pseudo 2D Demo of a sloshing case in a tank.
+ * 
+ * Geometry in XY plane:
+ *                  L  
+ *      +-----------------------+
+ *      |                       |
+ *      |                       |
+ *      |                       |
+ *      |                       |
+ *    H |                       |
+ *      |                       |
+ *      |                       |
+ *      |                       |
+ *      |                       |
+ *      *-----------------------+
+ *      O(0,0,0)
+ * 
+ * @since Macro Utils v2c.
+ * @author Fabio Kasper
+ */
 public class Demo7_Sloshing_Case extends MacroUtils {
           
   public void execute() {
     _initUtils();
     simTitle = "Demo7_Sloshing";
-    saveIntermediates = false;
     _updateSimulationVars();
     prep1_createRegion();
     prep2_PhysicsAndMesh();
     prep3_MotionAndPost();
+    saveSim(simTitle + "_preRun", false);
+    runCase(true);
     _finalize();
-    runCase();
   }
 
   void _updateSimulationVars() {
     //-- Physics/Solver/Mesh settings
-    mshBaseSize = W / 2;
+    mshBaseSize = 2.;
+    W = mshBaseSize;
     mshTrimmerMaxCelSize = 100;
     urfVel = 0.9;
     urfVOF = 0.9;
-    urfP = 0.3;
-    vofCFL_l = 1.5;
-    vofCFL_u = 3.0;
-    vofSharpFact = 0.25;
-    trnTimestep = 0.001;
-    trnInnerIter = 7;
+    urfP = 0.6;
+    vofSharpFact = 0.10;
+    trnInnerIter = 5;
     trnMaxTime = 8.;
   }
   
   void prep1_createRegion() {
-    if (!sim.getRegionManager().isEmpty()) { 
-        defCamView = getCameraView("myView");
-        sayLoud("Region already created. Skipping prep1...");
-        return;
-    }
-    String cam = "myView|5.322452e-02,4.655490e-02,-1.054080e-03|5.322452e-02,4.655490e-02,2.732051e-01|0.000000e+00,1.000000e+00,0.000000e+00|6.705117e-02";
-    defCamView = readCameraView(cam);
-    coord1 = new double[] {L, H, W};
-    simpleBlkPrt = createShapePartBlock(coord0, coord1, unit_mm, "Block");
-    partSrf = getPartSurface(simpleBlkPrt, ".*");
-    partSrf.setPresentationName(bcWall);
-    splitByAngle(partSrf, 80);
-    partSrf = getPartSurface(simpleBlkPrt, "Min", "Z", 1.0, bcWall + ".*");
-    partSrf.setPresentationName(bcSym1);
-    partSrf = getPartSurface(simpleBlkPrt, "Max", "Z", 1.0, bcWall + ".*");
-    partSrf.setPresentationName(bcSym2);
-    combinePartSurfaces(getPartSurfaces(simpleBlkPrt, bcWall + ".*"), bcWall);
+    defCamView = readCameraView("myView|4.478788e-02,4.233814e-02,1.889347e-03|4.478788e-02,4.233814e-02,2.732051e-01|0.000000e+00,1.000000e+00,0.000000e+00|5.817755e-02|1");
+    cadBody = create3DCad_Block(coord0, new double[] {L, H, W}, unit_mm);
+    combinePartSurfaces(getPartSurfaces("z.*")).setPresentationName(bcSym);
+    partSurfaces.addAll(getPartSurfaces("x.*"));
+    partSurfaces.addAll(getPartSurfaces("y.*"));
+    combinePartSurfaces(partSurfaces).setPresentationName(bcWalls);
     region = assignAllPartsToRegion();
-    setBC_Symmetry(getBoundary(bcSym1));
-    setBC_Symmetry(getBoundary(bcSym2));
-    saveSimWithSuffix("a_regionOK");
+    setBC_Symmetry(getBoundary(bcSym));
   }
     
   void prep2_PhysicsAndMesh() {
-    region = getRegion(".*");
-    if (queryVolumeMesh() != null) {
-        sayLoud("Volume Mesh already exists. Skipping prep2...");
-        return;
-    }
     mshCont = createMeshContinua_Trimmer();
     disablePrismLayers(mshCont);
     disableSurfaceProximityRefinement(mshCont);
@@ -74,46 +73,36 @@ public class Demo7_Sloshing_Case extends MacroUtils {
     //-- 
     genVolumeMesh();
     createScene_Mesh();
-    saveSimWithSuffix("b_meshed");
   }
   
   void prep3_MotionAndPost() {
-    String sceneName = "VOF";
-    scene = getScene(sceneName);
-    if (scene != null) {
-        sayLoud("Motion and Postprocessing exists. Skipping prep3...");
-        return;
-    }
     createFieldFunction("Amplitude", "($Time <= 4) ? 0.01 : 0");
+    createFieldFunction("dt", "($Time <= 5) ? 0.00125 : 0.0025");
+    setSolverPhysicalTimestep("$dt");
     createFieldFunction("Period", "0.5");   
     createFieldFunction("Omega", 2 * Math.PI + " / $Period");
     ff = createFieldFunction("MotionVel", "-$Amplitude * $Omega * sin($Omega * ($Time - 0.25 * $Period))");
     ff2 = createFieldFunction("MotionDispl", "$Amplitude * cos($Omega * ($Time - 0.25 * $Period))");
     createMotion_Translation("[$MotionVel, 0, 0]", region);
-    //-- 
     //-- Some cool Reports/Plots
-    createReportMaximum(region, "CFL_max", getFieldFunction("Convective.*Number"), unit_Dimensionless);
-    createReportMassAverage(region, "CFL_avg", getFieldFunction("Convective.*Number"), unit_Dimensionless);
-    createReportMaximum(region, "Vel_max", getFieldFunction(varVel), defUnitVel);
+    createReports_Unsteady();
     createReportMaximum(region, "MotionVel", ff, defUnitVel);
     createReportMaximum(region, "MotionDispl", ff2, defUnitLength);
-    //-- 
     //-- Scene setup
-    vecObj.add(getBoundary(bcSym1));
+    namedObjects.add(getBoundary(bcSym));
     ff = getFieldFunction("Volume Frac.*Air");
-    scene = createScene_Scalar(vecObj, ff, unit_Dimensionless, false);
-    scene.setPresentationName(sceneName);
-    setSceneCameraView(scene, defCamView);
-    createAnnotation_Time(scene, new double[] {0.4, 0.9});
+    defColormap = getColormap("flames1");
+    scene = createScene_Scalar(namedObjects, ff, unit_Dimensionless, false);
+    scene.setPresentationName("VOF");
+    createAnnotation_Time(scene, "Time", unit_s, "%3.1f", new double[] {0.01, 0.5});
     ScalarDisplayer scalDisp = (ScalarDisplayer) getDisplayer(scene, ".*");
-    scalDisp.getLegend().setHeight(0.1);
     scalDisp.setDisplayMeshBoolean(true);
     //-- Change Update Frequency / Save Pictures
-    setUpdateFrequency(scene, 5);
+    updEvent = createUpdateEvent_DeltaTime(0.005, unit_s, false);
+    setUpdateEvent(scene, updEvent);
     setSceneSaveToFile(scene, 1280, 720, 0);
-    saveSimWithSuffix("c_ready");
   }
   
-  double L = 100, H = L, W = 0.03 * L;     //- Length x Height x Width (mm)
+  double L = 100, H = L, W = 0.;     //- Length x Height x Width (mm)
   
 }

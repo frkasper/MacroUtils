@@ -1,4 +1,4 @@
-package macroutils;
+import macroutils.*;
 
 public class Demo6b_Write_Camera_Views extends MacroUtils {
 

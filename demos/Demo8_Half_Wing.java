@@ -1,8 +1,13 @@
-package macroutils;
-
+import macroutils.*;
 import java.util.*;
 import star.common.*;
 
+/**
+ * Another complete workflow automated with Macro Utils. 3D flow over a wing.
+ * 
+ * @since Macro Utils v2c.
+ * @author Fabio Kasper
+ */
 public class Demo8_Half_Wing extends MacroUtils {
 
   public void execute() {
@@ -13,22 +18,26 @@ public class Demo8_Half_Wing extends MacroUtils {
     prep2_createRegionBCsAndMesh();
     prep3_setPost();
     openAllPlotsAndScenes();
-    runCase();
+    setMonitorsNormalizationOFF();
+    runCase(true);
     _finalize();
   }
   
   void prep1_importGeometryAndSplit() {
+    vv1 = readCameraView("cam1|2.627790e-01,1.688267e-01,-8.768673e-02|3.042959e+00,2.949006e+00,2.692493e+00|0.000000e+00,1.000000e+00,0.000000e+00|1.257075e+00");
+    vv2 = readCameraView("cam2|9.022700e-02,-5.806686e-03,-2.014223e-01|7.395474e-01,6.435137e-01,4.478981e-01|0.000000e+00,1.000000e+00,0.000000e+00|2.935941e-01");
+    defCamView = vv1;
     if (!sim.getGeometryPartManager().isEmpty()) { 
         sayLoud("Geometry already created. Skipping prep1...");
         geomPrt = getGeometryPart(".*");
         return;
     }
-    importCADPart("WING.x_b", 5);
-    readCameraViews("wingCams.txt");
+    defTessOpt = TESSELATION_VERY_FINE;
+    importCADPart("WING.x_b");
     //-- Split the single Part Surface by its Part Curve
     geomPrt = getGeometryPart(".*");
     geomPrt.setPresentationName("WING");
-    splitByPartCurves(geomPrt.getPartSurfaces(), geomPrt.getPartCurves());
+    splitByPartCurves(geomPrt);
     //-- Get Airfoils and other Wing BCs
     partSrf = getPartSurface(geomPrt, "Max", "X", 50);      // 50mm of tolerance should be good.
     partSrf.setPresentationName(bcAirfoil);
@@ -39,27 +48,23 @@ public class Demo8_Half_Wing extends MacroUtils {
     //-- Leftover is the trail.
     getPartSurface(geomPrt, "Faces.*").setPresentationName(bcTrail);
     //-- 
-    createScene_Geometry().openScene();
     saveSimWithSuffix("a_import");
   }
 
   void prep2_createRegionBCsAndMesh() {
-    defCamView = sim.getViewManager().getObject(camName + "1");
-    camView2 = sim.getViewManager().getObject(camName + "2");
     if (!sim.getRegionManager().isEmpty()) { 
         sayLoud("Region already created. Skipping prep2...");
         return;
     }
     //--
     //-- Mesh settings
-    mshBaseSize = 40;
-    mshSrfSizeMin = 6.25;
-    mshSrfSizeTgt = 100. * Math.pow(2, 7);  // Geometric progression of ratio 2, ie., how Trimmer grows.
-    mshSrfCurvNumPoints = 48;
+    mshBaseSize = 30;
+    mshSrfSizeMin = 1. / 16. * 100.;
+    mshSrfSizeTgt = 64 * 100.;  // Geometric progression in a ratio of 2. This is how Trimmer grows.
+    mshSrfCurvNumPoints = 60;
     mshSrfGrowthRate = 1.15;
     prismsLayers = 3;
-    prismsRelSizeHeight = 40;
-    prismsNearCoreAspRat = 0.7;
+    prismsRelSizeHeight = 30;
     mshTrimmerMaxCelSize = mshSrfSizeTgt;
     mshCont = createMeshContinua_Trimmer();
     //--
@@ -67,12 +72,12 @@ public class Demo8_Half_Wing extends MacroUtils {
     double farFieldRelSize = 10; 
     //--
     //-- Sphere is created relative to the biggest length scale (dx, dy or dz)
-    simpleSphPrt = createShapePartSphere(geomPrt.getPartSurfaces(), farFieldRelSize, regionName);
+    simpleSphPrt = createShapePartSphere(getPartSurfaces(geomPrt), farFieldRelSize, regionName);
     //--
     //-- Block is created relative to each length scale (dx, dy and dz)
     double[] blkCorner1 = {-2 * farFieldRelSize, -50 * farFieldRelSize, -50 * farFieldRelSize};
     double[] blkCorner2 = {-0.5, 50 * farFieldRelSize, 50 * farFieldRelSize};
-    simpleBlkPrt = createShapePartBlock(geomPrt.getPartSurfaces(), blkCorner1, blkCorner2, bcSym);
+    simpleBlkPrt = createShapePartBlock(getPartSurfaces(geomPrt), blkCorner1, blkCorner2, bcSym);
     mshOpPrt = meshOperationSubtractParts(getAllGeometryParts(), simpleSphPrt);
     region = assignPartToRegion(mshOpPrt);
     region.setPresentationName(regionName);
@@ -80,17 +85,17 @@ public class Demo8_Half_Wing extends MacroUtils {
     //-- Volumetric Controls
     blkCorner1 = new double[] {-.1, -30, -100};
     blkCorner2 = new double[] {4, 30, 100};
-    simpleBlkPrt = createShapePartBlock(geomPrt.getPartSurfaces(), blkCorner1, blkCorner2, "VC1");
+    simpleBlkPrt = createShapePartBlock(getPartSurfaces(geomPrt), blkCorner1, blkCorner2, "VC1");
     blkCorner1 = new double[] {-.1, -5, -100};
     blkCorner2 = new double[] {1, 5, 15};
-    simpleBlkPrt1 = createShapePartBlock(geomPrt.getPartSurfaces(), blkCorner1, blkCorner2, "VC2");
+    simpleBlkPrt1 = createShapePartBlock(getPartSurfaces(geomPrt), blkCorner1, blkCorner2, "VC2");
     blkCorner1 = new double[] {-.1, -1, -10};
     blkCorner2 = new double[] {0.25, 1, 0.75};
-    simpleBlkPrt2 = createShapePartBlock(geomPrt.getPartSurfaces(), blkCorner1, blkCorner2, "VC3");
+    simpleBlkPrt2 = createShapePartBlock(getPartSurfaces(geomPrt), blkCorner1, blkCorner2, "VC3");
     blkCorner1 = new double[] {-.1, -.25, -3};
     blkCorner2 = new double[] {0.0625, .5, 0.125};
-    simpleBlkPrt3 = createShapePartBlock(geomPrt.getPartSurfaces(), blkCorner1, blkCorner2, "VC4");
-    createMeshVolumetricControl(mshCont, simpleBlkPrt, "VC1", mshSrfSizeTgt / 4);
+    simpleBlkPrt3 = createShapePartBlock(getPartSurfaces(geomPrt), blkCorner1, blkCorner2, "VC4");
+    createMeshVolumetricControl(mshCont, simpleBlkPrt, "VC1", 16 * 100.);
     createMeshVolumetricControl(mshCont, simpleBlkPrt1, "VC2", new double[] {800, 400, 1600});
     createMeshVolumetricControl(mshCont, simpleBlkPrt2, "VC3", new double[] {400, 100, 400});
     createMeshVolumetricControl(mshCont, simpleBlkPrt3, "VC4", new double[] {200, 25, 200});
@@ -98,13 +103,11 @@ public class Demo8_Half_Wing extends MacroUtils {
     //-- Create Physics Continua and convert to Coupled Solver
     refT = 22.;
     physCont = createPhysics_AirSteadySegregatedIdealGasSA_AllWall();
-    CFL = 25;
-    rampCFL = true;
-    cflRampBeg = 10;
-    cflRampEnd = 75;
+    CFL = 150;
+    cflRampEnd = 50;
     cflRampBegVal = 5;
-    enableCoupledSolver(physCont);
-    setInitialCondition_Velocity(physCont, 0, 0, -10);
+    enableCoupledSolver(physCont, true, true);
+    setInitialCondition_Velocity(physCont, 0, 0, -wingVel);
     //**************************************** 
     //-- BOUNDARY CONDITIONS
     //**************************************** 
@@ -138,42 +141,46 @@ public class Demo8_Half_Wing extends MacroUtils {
         return;
     }
     //--
-    vecObj.addAll(getWingBoundaries());
-    vecObj.add(getBoundary(".*" + bcSym + ".*"));
+    namedObjects.addAll(getWingBoundaries());
+    namedObjects.add(getBoundary(".*" + bcSym + ".*"));
     //--
     //-- Mesh Scene
     coord1 = new double[] {0, 0, -300};
     plane = createSectionPlaneZ(coord1, "Plane Z");
-    vecObj2.add(plane);
-    cellSet = createCellSet(vecObj2, "Cells on Plane Z");
-    vecObj.add(cellSet);
-    scene = createScene_Mesh(vecObj);
+    namedObjects2.add(plane);
+    cellSet = createCellSet(namedObjects2, "Cells on Plane Z");
+    namedObjects.add(cellSet);
+    scene = createScene_Mesh(namedObjects);
     scene.setPresentationName("Volume Mesh");
-    setSceneCameraView(scene, defCamView);
-    scene.openScene();
+    //-- Update Events
+    updEvent1 = createUpdateEvent_Iteration(10, 0);
+    updEvent2 = createUpdateEvent_Iteration(1, 20);
     //--
     //-- Contour & Vector Plots
-    vecObj.remove(cellSet);
-    scene = createScene_Scalar(vecObj, getFieldFunction(varP), unit_Pa, true);
-    scene.setPresentationName("Pressure Wing");
-    setSceneCameraView(scene, defCamView);
-    scene2 = createScene_Vector(vecObj, true);
+    namedObjects.remove(cellSet);
+    scene = createScene_Scalar(namedObjects, getFieldFunction(varPC), unit_Dimensionless, true);
+    scene.setPresentationName("Pressure Coefficient Wing");
+    setUpdateEvent(scene, updEvent1);
+    scene2 = createScene_Vector(namedObjects, true);
     scene2.setPresentationName("Vector Wing");
-    setSceneCameraView(scene2, defCamView);
+    setUpdateEvent(scene, updEvent1);
     //--
     //-- Stopping Criteria
     int stopIter = 50;
-    createReportMaximum(region, "Max_Vel", getFieldFunction(varVel), defUnitVel);
-    createStoppingCriteria(repMon, "Asymptotic", 0.05, stopIter);
-    createReportForce(getWingBoundaries(), "F_y Wing", new double[] {0, 1, 0});
-    createStoppingCriteria(repMon, "Asymptotic", 0.01, stopIter);
-    createReportForce(getWingBoundaries(), "F_z Wing", flowDirection);
-    createStoppingCriteria(repMon, "Asymptotic", 0.01, stopIter);
+    boundaries.addAll(getWingBoundaries());
+    rep = createReportFrontalArea(boundaries, "Frontal Area", new double[] {0, 1, 0}, new double[] {0, 0, -1});
+    rep2 = createReportFrontalArea(boundaries, "Upper Area", new double[] {0, 0, 1}, new double[] {0, -1, 0});
+    createReportForceCoefficient(boundaries, "C_d", wingVel, rep.getReportMonitorValue(), new double[] {0, 0, -1});
+    setUpdateEvent(repMon, updEvent2);
+    createStoppingCriteria(repMon, "Asymptotic", 0.001, stopIter);
+    createReportForceCoefficient(boundaries, "C_l", wingVel, rep2.getReportMonitorValue(), new double[] {0, 1, 0});
+    setUpdateEvent(repMon, updEvent2);
+    createStoppingCriteria(repMon, "Asymptotic", 0.001, stopIter);
     saveSimWithSuffix("e_Ready");
   }
 
-  private Vector<Boundary> getWingBoundaries() {
-    return (Vector) getBoundaries(".*wing.*", false);
+  private ArrayList<Boundary> getWingBoundaries() {
+    return getBoundaries(".*wing.*", false);
   }
   
   //-- 
@@ -183,8 +190,8 @@ public class Demo8_Half_Wing extends MacroUtils {
   private String bcAirfoil = "wing airfoil";
   private String bcAirfoil2 = "wing airfoil NotUsed";
   private String bcTrail = "wing trail";
-  private String camName = "wingCam";
   private String regionName = "FarField";
+  double wingVel = 10.;
   private double[] flowDirection = {0, 0, -1};
  
 }

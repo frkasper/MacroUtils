@@ -1,7 +1,13 @@
-package macroutils;
+import macroutils.*;
+import java.awt.*;
+import star.vis.*;
 
-import java.awt.Color;
-
+/**
+ * This method is for creating custom Colormaps. 
+ * 
+ * @since Macro Utils v2d.
+ * @author Fabio Kasper
+ */
 public class Demo10_Colormaps extends MacroUtils {
 
   public void execute() {
@@ -9,25 +15,16 @@ public class Demo10_Colormaps extends MacroUtils {
     _initUtils();
     
     simTitle = "Demo10_Colormaps";
+    defCamView = readCameraView("cam|7.698946e-03,-2.109472e-02,7.961378e-02|7.698946e-03,-2.109472e-02,6.679604e-01|0.000000e+00,1.000000e+00,0.000000e+00|1.288606e-01|1");
     
-    vecColor.add(Color.YELLOW);
-    vecColor.add(Color.black);
-    vecColor.add(Color.blue);
-    addColormap("myColormap", vecColor);
-    vecColor.add(Color.blue);
-    vecColor.add(Color.black);
-    vecColor.add(Color.YELLOW);
-    addColormap("myColormap2", vecColor);
-    vecColor.clear();
-    vecColor.add(Color.black);
-    vecColor.add(Color.white);
-    vecColor.add(Color.black);
-    vecColor.add(Color.white);
-    vecColor.add(Color.black);
-    vecColor.add(Color.white);
-    vecColor.add(Color.black);
-    vecColor.add(Color.white);
-    addColormap("myZebra", vecColor);
+    colors.add(Color.YELLOW);
+    colors.add(Color.black);
+    colors.add(Color.blue);
+    addColormap("myColormap", colors);
+    colors.add(Color.blue);
+    colors.add(Color.black);
+    colors.add(Color.YELLOW);
+    defColormap = addColormap("myColormap2", new Color[] {Color.GREEN, Color.YELLOW, Color.BLACK});
     
     simpleSphPrt = createShapePartSphere(coord0, 100, unit_mm, "Sphere");
     region = assignAllPartsToRegion();
@@ -37,10 +34,12 @@ public class Demo10_Colormaps extends MacroUtils {
     createMeshContinua_PolyOnly();
     genVolumeMesh();
     
-    vecObj.addAll(getAllBoundaries());
-    createScene_Scalar(vecObj, getFieldFunction("Centroid"), unit_mm, true).openScene();
+    namedObjects.addAll(getAllBoundaries());
+    scene = createScene_Scalar(namedObjects, getFieldFunction("Centroid"), unit_mm, true);
+    ((ScalarDisplayer) getDisplayer(scene, ".*")).setDisplayMeshBoolean(true);
+    scene.open(true);
     
-    saveSim(simTitle);
+    _finalize();
     
   }
   
