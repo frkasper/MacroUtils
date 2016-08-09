@@ -1,7 +1,7 @@
 /*
- * MACRO Utils v1b
+ * MACRO Utils v1c
  * Programmer: Fabio Kasper
- * Revision: May 22, 2012.
+ * Revision: Jul 19, 2012.
  *
  * Macro Utils is a set of useful methods to assist the process of writing macros in STAR-CCM+.
  *
@@ -50,10 +50,17 @@ import star.common.*;
 import star.dualmesher.*;
 import star.energy.*;
 import star.flow.*;
+import star.keturb.*;
+import star.material.*;
 import star.meshing.*;
+import star.metrics.*;
+import star.motion.*;
 import star.prismmesher.*;
 import star.resurfacer.*;
+import star.segregatedenergy.*;
+import star.segregatedflow.*;
 import star.solidmesher.*;
+import star.surfacewrapper.*;
 import star.trimmer.*;
 import star.turbulence.*;
 import star.vis.*;
@@ -63,20 +70,34 @@ public class MacroUtils extends StarMacro {
    * Global definitions
    ***************************************************/
   boolean colorByRegion = true;
+  boolean fineTesselationOnImport = false;
   boolean saveIntermediates = true;
   boolean verbose = true;
   Boundary bdry = null;
+  Boundary bdry1 = null;
+  Boundary bdry2 = null;
+  Boundary bdry3 = null;
   CadPart cadPrt = null;
   CellSurfacePart cellSet = null;
   CompositePart compPart = null;
+  CompositePart compPart1 = null;
+  CompositePart compPart2 = null;
+  CompositePart compPart3 = null;
   DirectBoundaryInterface intrfPair = null;
   double mshSharpEdgeAngle = 30;
   double[] camFocalPoint = {0., 0., 0.};
   double[] camPosition = {0., 0., 0.};
   double[] camViewUp = {0., 0., 0.};
+  double[] coord1 = {0., 0., 0.};
+  double[] coord2 = {0., 0., 0.};
+  double[] point = {0., 0., 0.};
+  File cadPath = null;
+  File dbsPath = null;
   File myFile = null;
   File simFile = null;
   GeometryPart geomPrt = null;
+  int autoSaveMaxFiles = 2;
+  int autoSaveFrequencyIter = 1000;
   int colourByPart = 4;
   int colourByRegion = 2;
   int partColouring = colourByPart;
@@ -84,29 +105,115 @@ public class MacroUtils extends StarMacro {
   int picResY = 600;
   int savedWithSuffix = 0;
   Interface intrf = null;
+  LeafMeshPart leafMshPrt = null;
+  LeafMeshPart leafMshPrt1 = null;
+  LeafMeshPart leafMshPrt2 = null;
+  LeafMeshPart leafMshPrt3 = null;
   MeshContinuum mshCont = null;
+  MeshContinuum mshCont1 = null;
+  MeshContinuum mshCont2 = null;
   PartSurface partSrf = null;
   PlaneSection plane = null;
+  PlaneSection plane1 = null;
+  PlaneSection plane2 = null;
   PhysicsContinuum physCont = null;
+  PhysicsContinuum physCont1 = null;
+  PhysicsContinuum physCont2 = null;
+  PhysicsContinuum physCont3 = null;
   Region region = null;
+  Region region1 = null;
+  Region region2 = null;
+  Region region3 = null;
   ReportMonitor repMon = null;
+  ReportMonitor repMon1 = null;
+  ReportMonitor repMon2 = null;
+  ReportMonitor repMon3 = null;
   Scene scene = null;
+  Scene scene1 = null;
   Scene scene2 = null;
+  SimpleCylinderPart simpleCylPrt = null;
+  SimpleCylinderPart simpleCylPrt1 = null;
+  SimpleCylinderPart simpleCylPrt2 = null;
+  SimpleCylinderPart simpleCylPrt3 = null;
+  String autoSaveSeparator = "_backupIter";
+  String contNameAir = "Air";
+  String contNameAirBoussinesq = "Air Boussinesq";
+  String contNameAluminum = "Aluminum";
+  String contNameSteel = "Steel";
+  String contNamePoly = "Poly Mesh";
+  String contNameTrimmer = "Trimmer Mesh";
+  String contNameThinMesher = "Thin Mesher";
+  String contNameWater = "Water";
+  String dbsSubDir = "parts";
   String noneString = "none";
   String sayPreffixString = "[*]";
   String simName = null;
   String simTitle = null;
   String simPath = null;
   String string = "";
+  String string1 = "";
   String string2 = "";
+  String string3 = "";
   String text = "";
+  String wall = "wall";
+  String walls = "walls";
   Simulation sim = null;
   Units unit_C = null;
+  Units unit_cmH2O = null;
+  Units unit_mmH2O = null;
+  Units unit_g = null;
+  Units unit_gpmin = null;                          // See definitions on initialize()
+  Units unit_gps = null;
+  Units unit_kgph = null;
+  Units unit_kph = null;
+  Units unit_kgpmin = null;
+  Units unit_lph = null;
+  Units unit_lpmin = null;
+  Units unit_lps = null;
   Units unit_m = null;
   Units unit_mm = null;
+  Units unit_mps = null;
   Units unit_Pa = null;
-  Vector objVec = new Vector();
-  Vector<Boundary> vecBdry = new Vector<Boundary>();
+  Units unit_rpm = null;
+  /***************************************************
+   * Physics
+   ***************************************************/
+  double[] gravity = {0., -9.81, 0.};           // m/s^2
+  double p0 = 0.0;                              // Pa
+  double ti0 = 0.05;                            // turbulent intensity
+  double tvr0 = 1.0;                            // turbulent viscosity ratio
+  double tvs0 = 0.5;                            // m/s turbulent velocity scale
+  double[] v0 = {0., 0., 0.};                   // m/s
+  double clipMinT = -50;                        // deg C
+  double clipMaxT = 3000;                       // deg C
+  double fluidT0 = 22.;                         // deg C
+  double solidsT0 = 60.;                        // deg C
+  /***************************************************
+   * Preprocessing and Meshing
+   ***************************************************/
+  boolean thinMeshIsPolyType = true;
+  double featCurveMeshMin = 10;
+  double featCurveMeshTgt = 50;
+  double mshBaseSize = 3.0;                     // mm
+  double mshGrowthFactor = 1.25;
+  double mshOpsTol = 1e-4;                      // m
+  double mshProximityPointsInGap = 2.0;
+  double mshProximitySearchFloor = 0.0;         // mm
+  double mshSrfSizeMin = 25;                    // (%)
+  double mshSrfSizeTgt = 100;                   // (%)
+  double mshTrimmerMaxCelSize = 10000;          // (%)
+  double mshWrapperFeatureAngle = 30.;          // degrees
+  double mshWrapperScaleFactor = 100.;          // (%)
+  double prismsLyrChoppPerc = 25.0;             // (%)
+  double prismsMinThickn = 5.0;                 // (%)
+  double prismsNearCoreAspRat = 0.5;
+  double prismsRelSizeHeight = 30.;             // (%)
+  double prismsStretching = 1.2;
+  int intrfInt = 3;
+  int maxInterfaces = 10000;
+  int prismsLayers = 1;
+  int thinMeshLayers = 2;
+  String mshTrimmerGrowthRate = "medium";
   /***************************************************
    * Remove Invalid Cells Settings
    ***************************************************/
@@ -117,8 +224,39 @@ public class MacroUtils extends StarMacro {
   int minContigCells = 1;
   double minConFaceAreas = 0.;
   double minCellVolume = 0.;
-
-
+  /***************************************************
+   * Solver Settings
+   ***************************************************/
+  boolean rampURF = true;
+  int maxIter = 10000;
+  double urfVel = 0.7;                  // default = 0.7
+  double urfP = 0.3;                    // default = 0.3
+  double urfFluidEnrgy = 0.8;           // default = 0.9
+  double urfSolidEnrgy = 0.9;           // default = 0.99
+  double urfKEps = 0.7;                 // default = 0.8
+  double urfRampFlBeg = 0.6;
+  double urfRampSldBeg = 0.7;
+  int urfRampFlIterBeg = 100;
+  int urfRampFlIterEnd = 1000;
+  int urfRampSldIterBeg = 100;
+  int urfRampSldIterEnd = 1000;
+  /***************************************************
+   * Miscellaneous definitions
+   ***************************************************/
+  Vector<Boundary> vecBdry = new Vector<Boundary>();
+  Vector<GeometryPart> vecGeomPrt = new Vector<GeometryPart>();
+  Vector<MeshContinuum> vecMeshContinua = new Vector<MeshContinuum>();
+  Vector<PhysicsContinuum> vecPhysicsContinua = new Vector<PhysicsContinuum>();
+  Vector vecObj = new Vector();
+  Vector objVec = new Vector();
+  MeshContinuum mshContPoly = null;
+  MeshContinuum mshContTrimmer = null;
+  FilenameFilter dbsFilter = new FilenameFilter() {
+    public boolean accept(File dir, String name) {
+        // Return files ending with dbs
+        return name.matches(".*dbs");
+    }
+  };
 
   public void execute() {
     for(Region region : getAllRegions()){
@@ -141,16 +279,45 @@ public class MacroUtils extends StarMacro {
         simTitle = simName;
     }
     simPath = simFile.getParent();
-    unit_C = ((Units) sim.getUnitsManager().getObject("C"));
-    unit_m = ((Units) sim.getUnitsManager().getObject("m"));
-    unit_mm = ((Units) sim.getUnitsManager().getObject("mm"));
-    unit_Pa = ((Units) sim.getUnitsManager().getObject("Pa"));
+    cadPath = new File(simPath, "CAD");
+    dbsPath = new File(simPath, "DBS");
     say("Simulation File: " + simFile.toString());
     say("Simulation Name: " + simTitle);
     say("Simulation Path: " + simPath);
     if (colorByRegion){
         partColouring = colourByRegion;
     }
+    updateMeshContinuaVector();
+    /*
+     * Units section
+     */
+    unit_C = ((Units) sim.getUnitsManager().getObject("C"));
+    unit_m = ((Units) sim.getUnitsManager().getObject("m"));
+    unit_mm = ((Units) sim.getUnitsManager().getObject("mm"));
+    unit_kph = ((Units) sim.getUnitsManager().getObject("kph"));    // km/h
+    unit_mps = ((Units) sim.getUnitsManager().getObject("m/s"));
+    unit_rpm = ((Units) sim.getUnitsManager().getObject("rpm"));
+    unit_Pa = ((Units) sim.getUnitsManager().getObject("rpm"));
+    /*    CUSTOM UNITS      */
+    int[] massList = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int[] massFlowList = {1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int[] pressureList = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int[] volFlowList = {0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0};
+    /*    MASS UNITS [M]    */
+    unit_g = addUnit("g", "gram", 0.001, massList);
+    /*    MASS FLOW UNITS [M/T]    */
+    unit_kgph = addUnit("kg/h", "kilogram per hour", 1/3600, massFlowList);
+    unit_kgpmin = addUnit("kg/min", "kilogram per minute", 1/60, massFlowList);
+    unit_gpmin = addUnit("g/min", "gram per minute", 1E-3/60, massFlowList);
+    unit_gps = addUnit("g/s", "gram per second", 1E-3, massFlowList);
+    /*    VOLUMETRIC FLOW UNITS [V/T]    */
+    unit_lph = addUnit("l/h", "liter per hour", 1E-3/3600, volFlowList);
+    unit_lpmin = addUnit("l/min", "liter per minute", 1E-3/60, volFlowList);
+    unit_lps = addUnit("l/s", "liter per second", 1E-3, volFlowList);
+    /*    PRESSURE UNITS [P]    */
+    //--- http://www.sensorsone.co.uk/pressure-units-conversion.html
+    addUnit("cmH2O", "cm of water", 98.0665, pressureList);
+    addUnit("mmH2O", "mm of water", 9.80665, pressureList);
   }
 
   public void finalize(){
@@ -166,24 +333,185 @@ public class MacroUtils extends StarMacro {
    *
    ****************************************************/
 
-  public void assignAllGeometryPartsToRegions(){
-    printAction("Assigning all the Geometry Parts to Regions");
-    Collection<GeometryPart> allParts = getAllGeometryParts();
-    sim.getRegionManager().newRegionsFromParts(allParts, "OneRegionPerPart",
-            null, "OneBoundaryPerPartSurface", null, "OneFeatureCurve", null, true);
+  public PhysicsContinuum _chPhys_SegrFlTemp(PhysicsContinuum physCont) {
+    physCont.enable(SegregatedFluidTemperatureModel.class);
+    physCont.getReferenceValues().get(MinimumAllowableTemperature.class).setUnits(unit_C);
+    physCont.getReferenceValues().get(MinimumAllowableTemperature.class).setValue(clipMinT);
+    physCont.getReferenceValues().get(MaximumAllowableTemperature.class).setUnits(unit_C);
+    physCont.getReferenceValues().get(MaximumAllowableTemperature.class).setValue(clipMaxT);
+    StaticTemperatureProfile stp = physCont.getInitialConditions().get(StaticTemperatureProfile.class);
+    stp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setUnits(unit_C);
+    stp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(fluidT0);
+    return physCont;
   }
 
-  public void assignAllCadPartsToRegions(){
-    printAction("Assigning all Cad Parts to Regions");
-    NeoObjectVector neoObjVec = new NeoObjectVector(getAllLeafPartsAsCadParts().toArray());
-    sim.getRegionManager().newRegionsFromParts(neoObjVec, "OneRegionPerPart",
-            null, "OneBoundaryPerPartSurface", null, "OneFeatureCurve", null, true);
+  public PhysicsContinuum _chPhys_SegrFlBoussinesq(PhysicsContinuum physCont, double thermalExpansion) {
+    physCont.enable(GravityModel.class);
+    physCont.enable(BoussinesqModel.class);
+    SingleComponentGasModel sgm = physCont.getModelManager().getModel(SingleComponentGasModel.class);
+    Gas gas = ((Gas) sgm.getMaterial());
+    ConstantMaterialPropertyMethod cmpm = ((ConstantMaterialPropertyMethod) gas.getMaterialProperties().getMaterialProperty(ThermalExpansionProperty.class).getMethod());
+    cmpm.getQuantity().setValue(thermalExpansion);
+    physCont.getReferenceValues().get(Gravity.class).setComponents(gravity[0], gravity[1], gravity[2]);
+    physCont.getReferenceValues().get(ReferenceTemperature.class).setUnits(unit_C);
+    physCont.getReferenceValues().get(ReferenceTemperature.class).setValue(fluidT0);
+    return physCont;
   }
+
+  public PhysicsContinuum _chPhys_TurbKEps2Lyr(PhysicsContinuum physCont) {
+    try{
+        physCont.disableModel(physCont.getModelManager().getModel(LaminarModel.class));
+    } catch (Exception e) {}
+    physCont.enable(TurbulentModel.class);
+    physCont.enable(RansTurbulenceModel.class);
+    physCont.enable(KEpsilonTurbulence.class);
+    physCont.enable(RkeTwoLayerTurbModel.class);
+    physCont.enable(KeTwoLayerAllYplusWallTreatment.class);
+    TurbulentVelocityScaleProfile tvs = physCont.getInitialConditions().get(TurbulentVelocityScaleProfile.class);
+    tvs.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(tvs0);
+    TurbulenceIntensityProfile tip = physCont.getInitialConditions().get(TurbulenceIntensityProfile.class);
+    tip.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(ti0);
+    TurbulentViscosityRatioProfile tvrp = physCont.getInitialConditions().get(TurbulentViscosityRatioProfile.class);
+    tvrp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(tvr0);
+    return physCont;
+  }
+
+  public MeshContinuum _crMsh_Poly(){
+    printAction("Creating Mesh Continua");
+    mshCont = sim.getContinuumManager().createContinuum(MeshContinuum.class);
+    mshCont.setPresentationName(contNamePoly);
+    mshCont.enable(ResurfacerMeshingModel.class);
+    mshCont.enable(DualMesherModel.class);
+    mshCont.getModelManager().getModel(ResurfacerMeshingModel.class).setDoProximityRefinement(false);
+    mshCont.getReferenceValues().get(BaseSize.class).setUnits(unit_mm);
+    mshCont.getReferenceValues().get(BaseSize.class).setValue(mshBaseSize);
+    setMeshSurfaceSizes(mshCont, mshSrfSizeMin, mshSrfSizeTgt);
+    mshCont.getReferenceValues().get(VolumeMeshDensity.class).setGrowthFactor(mshGrowthFactor);
+
+    printMeshParameters();
+    vecMeshContinua.add(mshCont);
+    mshContPoly = mshCont;
+    return mshCont;
+  }
+
+  public MeshContinuum _crMsh_ThinMesher() {
+    printAction("Creating Mesh Continua");
+    mshCont = sim.getContinuumManager().createContinuum(MeshContinuum.class);
+    mshCont.setPresentationName(contNameThinMesher);
+    mshCont.enable(ResurfacerMeshingModel.class);
+    mshCont.enable(SolidMesherModel.class);
+    mshCont.getModelManager().getModel(ResurfacerMeshingModel.class).setDoProximityRefinement(false);
+    mshCont.getModelManager().getModel(SolidMesherModel.class).setOptimize(true);
+    mshCont.getReferenceValues().get(BaseSize.class).setUnits(unit_mm);
+    mshCont.getReferenceValues().get(BaseSize.class).setValue(mshBaseSize);
+    setMeshSurfaceSizes(mshCont, mshSrfSizeMin, mshSrfSizeTgt);
+    mshCont.getReferenceValues().get(ThinSolidLayers.class).setLayers(thinMeshLayers);
+
+    printMeshParameters();
+    vecMeshContinua.add(mshCont);
+    mshContPoly = mshCont;
+    return mshCont;
+  }
+
+  public MeshContinuum _crMsh_Trimmer() {
+    printAction("Creating Mesh Continua");
+    mshCont = sim.getContinuumManager().createContinuum(MeshContinuum.class);
+    mshCont.setPresentationName(contNameTrimmer);
+    mshCont.enable(ResurfacerMeshingModel.class);
+    mshCont.enable(TrimmerMeshingModel.class);
+    mshCont.getReferenceValues().get(BaseSize.class).setUnits(unit_mm);
+    mshCont.getReferenceValues().get(BaseSize.class).setValue(mshBaseSize);
+    mshCont.getReferenceValues().get(MaximumCellSize.class).getRelativeSize().setPercentage(mshTrimmerMaxCelSize);
+    setMeshSurfaceSizes(mshCont, mshSrfSizeMin, mshSrfSizeTgt);
+    int i = getTrimmerGrowthRate(mshTrimmerGrowthRate);
+    mshCont.getReferenceValues().get(SimpleTemplateGrowthRate.class).getGrowthRateOption().setSelected(i);
+
+    printMeshParameters();
+    vecMeshContinua.add(mshCont);
+    mshContTrimmer = mshCont;
+    setMeshPerRegionFlag(mshCont);
+    return mshCont;
+  }
+
+  public PhysicsContinuum _crPhys_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(Class singleComponentClass, String text) {
+    printAction("Creating Physics Continua");
+    say(text);
+    PhysicsContinuum physCont = sim.getContinuumManager().createContinuum(PhysicsContinuum.class);
+    physCont.enable(ThreeDimensionalModel.class);
+    physCont.enable(SteadyModel.class);
+    physCont.enable(singleComponentClass);
+    physCont.enable(SegregatedFlowModel.class);
+    physCont.enable(ConstantDensityModel.class);
+    physCont.enable(LaminarModel.class);
+    physCont.enable(CellQualityRemediationModel.class);
+    InitialPressureProfile ipp = physCont.getInitialConditions().get(InitialPressureProfile.class);
+    ipp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(p0);
+    VelocityProfile vp = physCont.getInitialConditions().get(VelocityProfile.class);
+    vp.getMethod(ConstantVectorProfileMethod.class).getQuantity().setComponents(v0[0], v0[1], v0[2]);
+    return physCont;
+  }
+
+  public PhysicsContinuum _crPhys_3D_SS_SegrSLD(String solidMaterial, String text) {
+    printAction("Creating Physics Continua");
+    say(text);
+    PhysicsContinuum sldCont = sim.getContinuumManager().createContinuum(PhysicsContinuum.class);
+    sldCont.enable(ThreeDimensionalModel.class);
+    sldCont.enable(SteadyModel.class);
+    sldCont.enable(SolidModel.class);
+    sldCont.enable(SegregatedSolidEnergyModel.class);
+    sldCont.enable(ConstantDensityModel.class);
+    sldCont.enable(CellQualityRemediationModel.class);
+    sldCont.getReferenceValues().get(MinimumAllowableTemperature.class).setUnits(unit_C);
+    sldCont.getReferenceValues().get(MinimumAllowableTemperature.class).setValue(clipMinT);
+    sldCont.getReferenceValues().get(MaximumAllowableTemperature.class).setUnits(unit_C);
+    sldCont.getReferenceValues().get(MaximumAllowableTemperature.class).setValue(clipMaxT);
+    StaticTemperatureProfile stp = sldCont.getInitialConditions().get(StaticTemperatureProfile.class);
+    stp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setUnits(unit_C);
+    stp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(solidsT0);
+    if(solidMaterial.matches(noneString)){ return sldCont; }
+    SolidModel sm = sldCont.getModelManager().getModel(SolidModel.class);
+    Solid solid = ((Solid) sm.getMaterial());
+    MaterialDataBase matDB = sim.get(MaterialDataBaseManager.class).getMaterialDataBase("props");
+    DataBaseMaterialManager dbMatMngr = matDB.getFolder("Solids");
+    DataBaseSolid dbSld = ((DataBaseSolid) dbMatMngr.getMaterial(solidMaterial));
+    Solid newSolid = (Solid) sm.replaceMaterial(solid, dbSld);
+    return sldCont;
+  }
+
+  public Units addUnit(String name, String desc, double conversion, int[] dimensionList) {
+    UserUnits newUnit = getActiveSimulation().getUnitsManager().createUnits("Units");
+    newUnit.setPresentationName(name);
+    newUnit.setDescription(desc);
+    newUnit.setConversion(conversion);
+    newUnit.setDimensionsVector(new IntVector(dimensionList));
+    return newUnit;
+  }
+
+//  public void assignAllGeometryPartsToRegions(){
+//    printAction("Assigning all the Geometry Parts to Regions");
+//    Collection<GeometryPart> allParts = getAllGeometryParts();
+//    sim.getRegionManager().newRegionsFromParts(allParts, "OneRegionPerPart",
+//            null, "OneBoundaryPerPartSurface", null, "OneFeatureCurve", null, true);
+//  }
+//
+//  public void assignAllCadPartsToRegions(){
+//    printAction("Assigning all Cad Parts to Regions");
+//    NeoObjectVector neoObjVec = new NeoObjectVector(getAllLeafPartsAsCadParts().toArray());
+//    sim.getRegionManager().newRegionsFromParts(neoObjVec, "OneRegionPerPart",
+//            null, "OneBoundaryPerPartSurface", null, "OneFeatureCurve", null, true);
+//  }
 
   public void assignAllLeafPartsToRegions(){
     printAction("Assigning all Leaf Parts to Regions");
     sim.getRegionManager().newRegionsFromParts(getAllLeafParts(), "OneRegionPerPart",
             null, "OneBoundaryPerPartSurface", null, "OneFeatureCurve", null, true);
+  }
+
+  public void assignAllLeafPartsToOneSingleRegion(){
+    printAction("Assigning all Leaf Parts to a Single Region");
+    sim.getRegionManager().newRegionsFromParts(getAllLeafParts(), "OneRegion",
+            null, "OneBoundaryPerPartSurface", null, "OneFeatureCurve", null, true);
+    region = getRegion("Region 1");
   }
 
   public void assignLeafMeshPartToRegion(LeafMeshPart lmp){
@@ -303,11 +631,22 @@ public class MacroUtils extends StarMacro {
     printAction("Checking For Free Edges and Non-Manifold Edges & Vertices");
     say("Checking Surface Mesh in All regions");
 
+    setVerboseOff();
+    Vector<Region> vecReg = new Vector<Region>();
+    for(Region region : getAllRegions()){
+        if(isRemesh(region.getMeshContinuum())){
+            vecReg.add(region);
+        }
+    }
+    if(vecReg.size() == 0){
+        say("No Remeshing Regions to be checked.");
+        return;
+    }
+
     Scene scene_1 = sim.getSceneManager().createScene("Repair Surface");
     scene_1.initializeAndWait();
 
     SurfaceMeshWidget srfMshWidget = queryRemeshedSurface().startSurfaceMeshWidget(scene_1);
-    setVerboseOff();
     srfMshWidget.setActiveRegions((Vector) getAllRegions());
     setVerboseOn();
 
@@ -350,9 +689,9 @@ public class MacroUtils extends StarMacro {
     clearMeshes();
   }
 
-  public void clearMeshRegionsAndParts() {
-    printAction("Erasing Meshes, Regions and Parts");
+  public void clearAllMeshesRegionsAndParts() {
     setVerboseOff();
+    clearScenes();
     clearMeshes();
     clearInterfaces();
     clearRegions();
@@ -361,29 +700,56 @@ public class MacroUtils extends StarMacro {
   }
 
   public void clearInterfaces() {
+    printAction("Removing all Interfaces");
     Collection<Interface> colIntrf = sim.getInterfaceManager().getObjects();
-    if(colIntrf.isEmpty()) { return; }
+    if(colIntrf.isEmpty()) {
+        say("No Interfaces found.");
+        return;
+    }
+    say("Removing " + colIntrf.size() + " Interface(s)");
     sim.getInterfaceManager().deleteInterfaces((Vector) colIntrf);
+    sayOK();
   }
 
   public void clearMeshes() {
-    sim.getRepresentationManager().removeObjects(queryRemeshedSurface());
-    sim.getRepresentationManager().removeObjects(queryInitialSurface());
+    printAction("Removing all Mesh Representations");
+    try{
+        sim.getRepresentationManager().removeObjects(queryRemeshedSurface());
+    } catch (Exception e1) {
+        say("Remeshed Surface Representation not found.");
+    }
+    try{
+        sim.getRepresentationManager().removeObjects(queryWrappedSurface());
+    } catch (Exception e1) {
+        say("Wrapped Surface Representation not found.");
+    }
+    try{
+        sim.getRepresentationManager().removeObjects(queryInitialSurface());
+    } catch (Exception e1) {
+        say("ERROR removing Initial Surface Representation.");
+    }
   }
 
   public void clearRegions() {
+    printAction("Removing all Regions");
     Collection<Region> colReg = getAllRegions();
-    if(colReg.isEmpty()) { return; }
+    if(colReg.isEmpty()) {
+        say("No Regions found.");
+        return;
+    }
+    say("Removing " + colReg.size() + " Region(s)");
     sim.getRegionManager().removeRegions((Vector) colReg);
+    sayOK();
   }
 
   public void clearParts() {
+    printAction("Removing all Parts");
     Collection<GeometryPart> gParts = getAllGeometryParts();
     if (!gParts.isEmpty()) {
         try {
             say("Removing Geometry Parts...");
             sim.get(SimulationPartManager.class).removeParts(gParts);
-            say("OK!");
+            sayOK();
         } catch (Exception e0) {
             say("Error removing Leaf Parts. Moving on.");
         }
@@ -393,7 +759,7 @@ public class MacroUtils extends StarMacro {
         try {
             say("Removing Leaf Parts...");
             sim.get(SimulationPartManager.class).removeParts(leafParts);
-            say("OK!");
+            sayOK();
         } catch (Exception e1) {
             say("Error removing Leaf Parts. Moving on.");
         }
@@ -403,11 +769,58 @@ public class MacroUtils extends StarMacro {
         try {
             say("Removing Composite Parts...");
             sim.get(SimulationPartManager.class).removeParts(compParts);
-            say("OK!");
+            sayOK();
         } catch (Exception e2) {
             say("Error removing Composite Parts. Moving on.");
         }
     }
+  }
+
+  public void clearScenes(){
+    printAction("Removing all Scenes");
+    try{
+        Collection<Scene> colSc = sim.getSceneManager().getScenes();
+        say("Removing " + colSc.size() + " Scene(s)");
+        sim.getSceneManager().removeObjects(colSc);
+        sayOK();
+    } catch (Exception e){
+        say("No Scenes found.");
+    }
+  }
+
+  public void combineCompositePartsByName(String regexPatt, boolean combinePartSurfaces){
+    printAction(String.format("Combining Composite Parts by REGEX pattern: \"%s\"", regexPatt));
+    Vector<MeshPart> vecMP = new Vector<MeshPart>();
+    Vector<GeometryPart> vecLP = (Vector) getAllLeafPartsByName(regexPatt);
+    for(int i = 0; i < vecLP.size(); i++){
+        if(i==0) { continue; }
+        vecMP.add((MeshPart) vecLP.get(i));
+    }
+    MeshPartFactory meshPartFactory = sim.get(MeshPartFactory.class);
+    meshPartFactory.combineMeshParts((MeshPart) vecLP.firstElement(), vecMP);
+    say("Combined into: " + vecLP.firstElement().getPathInHierarchy());
+    if(combinePartSurfaces){
+        say("\nCombining Part Surfaces");
+        cadPrt = (CadPart) vecLP.firstElement();
+        Collection<PartSurface> colPS = cadPrt.getPartSurfaces();
+        cadPrt.combinePartSurfaces(colPS);
+        say("Combined " + colPS.size() + " Part Surfaces into 1.");
+    }
+    sayOK();
+  }
+
+  public void combineLeafMeshPartsByName(String regexPatt){
+    printAction(String.format("Combining Leaf Mesh Parts by REGEX pattern: \"%s\"", regexPatt));
+    Vector<MeshPart> vecMP = new Vector<MeshPart>();
+    Vector<LeafMeshPart> vecLMP = (Vector) getAllLeafMeshPartsByName(regexPatt);
+    for(int i = 0; i < vecLMP.size(); i++){
+        if(i==0) { continue; }
+        vecMP.add((MeshPart) vecLMP.get(i));
+    }
+    MeshPartFactory meshPartFactory = sim.get(MeshPartFactory.class);
+    meshPartFactory.combineMeshParts(vecLMP.firstElement(), vecMP);
+    say("Combined into: " + vecLMP.firstElement().getPresentationName());
+    sayOK();
   }
 
   public void convertAllInterfacesToIndirect(){
@@ -454,6 +867,110 @@ public class MacroUtils extends StarMacro {
     cellSet.setPresentationName(name);
     sayOK();
     return cellSet;
+  }
+
+  public void createContactPreventionBetweenAllBoundaries(Region region, double value, Units unit){
+    printAction("Creating a Contact Prevention between All Boundaries");
+    OneGroupContactPreventionSet cps = region.get(MeshValueManager.class).get(ContactPreventionSetManager.class).createOneGroupContactPreventionSet();
+    cps.getBoundaryGroup().setObjects(getAllBoundariesFromRegion(region));
+    cps.getFloor().setUnits(unit);
+    cps.getFloor().setValue(value);
+    say("Search Floor: " + value + unit.toString());
+    sayOK();
+  }
+
+  public void createContactPreventionBetweenAllParts(Region region, double value, Units unit){
+    /*
+     * Use this with care. It can swaps the machine memory easily.
+     */
+    printAction("Creating a Contact Prevention between All Parts Belonging to a Region");
+    say("Region: " + region.getPresentationName());
+    Vector<GeometryPart> vecGP = new Vector<GeometryPart>();
+    OneGroupContactPreventionSet cps = region.get(MeshValueManager.class).get(ContactPreventionSetManager.class).createOneGroupContactPreventionSet();
+    for(GeometryPart gp : getAllLeafParts()){
+        say(gp.getPresentationName());
+        if(gp.hasRegion() == region){
+            vecGP.add(gp);
+        }
+    }
+    cps.getPartGroup().setObjects(vecGP);
+    /*
+     * The code is not accepting only Parts Contacts, so All Boundaries will be made contacts too.
+     */
+    cps.getBoundaryGroup().setObjects(getAllBoundariesFromRegion(region));
+    /*
+     */
+    cps.getFloor().setUnits(unit);
+    cps.getFloor().setValue(value);
+    say("Search Floor: " + value + unit.toString());
+    sayOK();
+  }
+
+  public void createContactPreventionBetweenBoundariesByName(Region region, String[] regexPattArray, double value, Units unit){
+    printAction("Creating a Contact Prevention between boundaries");
+    say("Looking for boundaries matching: ");
+    Vector<Boundary> vecB = new Vector<Boundary>();
+    for (int i = 0; i < regexPattArray.length; i++) {
+        String srchFor = regexPattArray[i];
+        say("  " + srchFor);
+        vecB.addAll(getAllBoundariesByName(srchFor));
+        say("");
+    }
+    OneGroupContactPreventionSet cps = region.get(MeshValueManager.class).get(ContactPreventionSetManager.class).createOneGroupContactPreventionSet();
+    cps.getBoundaryGroup().setObjects(vecB);
+    cps.getFloor().setUnits(unit);
+    cps.getFloor().setValue(value);
+    say("Search Floor: " + value + unit.toString());
+    sayOK();
+  }
+
+  public DirectBoundaryInterface createDirectInterfacePairByName(String regexPatt){
+    printAction("Creating Direct Interface Pair by matching names in any regions");
+    DirectBoundaryInterface intrf = null;
+    Vector<Boundary> vecBdry = (Vector) getAllBoundariesByName(regexPatt);
+    Boundary bdry1 = null;
+    Boundary bdry2 = null;
+    Region region = null;
+    if(vecBdry.size() == 2){
+        say("Found 2 candidates. Interfacing:");
+    } else if(vecBdry.size() > 2){
+        say("Found more than 2 candidates. Interfacing the first two:");
+    } else if(vecBdry.size() < 1) {
+        say("Could not find 2 candidates. Giving up...");
+        return null;
+    }
+    bdry1 = vecBdry.get(0);
+    bdry2 = vecBdry.get(1);
+    say("  Side 1: " + getStringBoundaryAndRegion(bdry1));
+    say("  Side 2: " + getStringBoundaryAndRegion(bdry2));
+    intrf = sim.getInterfaceManager().createDirectInterface(bdry1, bdry2, "In-place");
+    sayOK();
+    return intrf;
+  }
+
+  public void createMeshContinua_EmbeddedThinMesher(){
+    mshCont = _crMsh_Poly();
+    enableEmbeddedThinMesher(mshCont);
+    sayOK();
+  }
+
+  public void createMeshContinua_PolyOnly(){
+    mshCont = _crMsh_Poly();
+    enableSurfaceProximityRefinement(mshCont);
+    enablePrismLayers(mshCont);
+    sayOK();
+  }
+
+  public void createMeshContinua_ThinMesher() {
+    mshCont = _crMsh_ThinMesher();
+    sayOK();
+  }
+
+  public void createMeshContinua_Trimmer() {
+    mshCont = _crMsh_Trimmer();
+    enableSurfaceProximityRefinement(mshCont);
+    enablePrismLayers(mshCont);
+    sayOK();
   }
 
   public Scene createMeshScene(){
@@ -546,6 +1063,117 @@ public class MacroUtils extends StarMacro {
     return repMon;
   }
 
+  public void createPhysics_AirSteadySegregatedBoussinesqKEps2Lyr() {
+    text = "Air / Steady State / Segregated Solver / Boussinesq / k-eps 2 Layer";
+    physCont = _crPhys_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(SingleComponentGasModel.class, text);
+    _chPhys_SegrFlTemp(physCont);
+    _chPhys_SegrFlBoussinesq(physCont, 0.00335);
+    _chPhys_TurbKEps2Lyr(physCont);
+    vecPhysicsContinua.add(physCont);
+    sayOK();
+  }
+
+  public void createPhysics_AirSteadySegregatedIncompressibleLaminarIsothermal() {
+    text = "Air / Steady State / Segregated Solver / Constant Density / Laminar / Isothermal";
+    physCont = _crPhys_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(SingleComponentGasModel.class, text);
+    vecPhysicsContinua.add(physCont);
+    sayOK();
+  }
+
+  public void createPhysics_AirSteadySegregatedIncompressibleLaminarThermal() {
+    text = "Air / Steady State / Segregated Solver / Constant Density / Laminar / Thermal";
+    physCont = _crPhys_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(SingleComponentGasModel.class, text);
+    _chPhys_SegrFlTemp(physCont);
+    vecPhysicsContinua.add(physCont);
+    sayOK();
+  }
+
+  public void createPhysics_AluminumSteadySegregated() {
+    text = "Aluminum / Steady State / Segregated Solver";
+    physCont = _crPhys_3D_SS_SegrSLD(noneString, text);
+    vecPhysicsContinua.add(physCont);
+  }
+
+  public void createPhysics_SteelSteadySegregated() {
+    text = "Steel / Steady State / Segregated Solver";
+    physCont = _crPhys_3D_SS_SegrSLD("UNSG101000_Solid", text);
+    vecPhysicsContinua.add(physCont);
+  }
+
+  public void createPhysics_WaterSteadySegregatedIncompressibleKEps2LyrIsothermal() {
+    text = "Water / Steady State / Segregated Solver / Constant Density / k-eps 2 Layer / Isothermal";
+    physCont = _crPhys_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(SingleComponentLiquidModel.class, text);
+    _chPhys_TurbKEps2Lyr(physCont);
+    vecPhysicsContinua.add(physCont);
+    sayOK();
+  }
+
+  public void createPhysics_WaterSteadySegregatedIncompressibleKEps2LyrThermal() {
+    text = "Water / Steady State / Segregated Solver / Constant Density / k-eps 2 Layer / Thermal";
+    physCont = _crPhys_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(SingleComponentLiquidModel.class, text);
+    _chPhys_TurbKEps2Lyr(physCont);
+    _chPhys_SegrFlTemp(physCont);
+    vecPhysicsContinua.add(physCont);
+    sayOK();
+  }
+
+  public void createPhysics_WaterSteadySegregatedIncompressibleLaminarIsothermal() {
+    text = "Water / Steady State / Segregated Solver / Constant Density / Laminar / Isothermal";
+    physCont = _crPhys_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(SingleComponentLiquidModel.class, text);
+    vecPhysicsContinua.add(physCont);
+    sayOK();
+  }
+
+  public void createPhysics_WaterSteadySegregatedIncompressibleLaminarThermal() {
+    text = "Water / Steady State / Segregated Solver / Constant Density / Laminar / Thermal";
+    physCont = _crPhys_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(SingleComponentLiquidModel.class, text);
+    _chPhys_SegrFlTemp(physCont);
+    vecPhysicsContinua.add(physCont);
+    sayOK();
+  }
+
+  public void createPhysics_AirSteadySegregatedBoussinesqKEps2Lyr_BAK() {
+    printAction("Creating Physics Continua");
+    say("Air / Steady State / Segregated Solver / Boussinesq Thermal / k-epsilon 2 Layers");
+    PhysicsContinuum physCont = sim.getContinuumManager().createContinuum(PhysicsContinuum.class);
+    physCont.setPresentationName(contNameAirBoussinesq);
+    physCont.enable(ThreeDimensionalModel.class);
+    physCont.enable(SteadyModel.class);
+    physCont.enable(SingleComponentGasModel.class);
+    physCont.enable(SegregatedFlowModel.class);
+    physCont.enable(ConstantDensityModel.class);
+    physCont.enable(TurbulentModel.class);
+    physCont.enable(RansTurbulenceModel.class);
+    physCont.enable(KEpsilonTurbulence.class);
+    physCont.enable(RkeTwoLayerTurbModel.class);
+    physCont.enable(KeTwoLayerAllYplusWallTreatment.class);
+    physCont.enable(GravityModel.class);
+    physCont.enable(SegregatedFluidTemperatureModel.class);
+    physCont.enable(BoussinesqModel.class);
+    physCont.enable(CellQualityRemediationModel.class);
+    SingleComponentGasModel sgm = physCont.getModelManager().getModel(SingleComponentGasModel.class);
+    Gas gas = ((Gas) sgm.getMaterial());
+    ConstantMaterialPropertyMethod cmpm = ((ConstantMaterialPropertyMethod) gas.getMaterialProperties().getMaterialProperty(ThermalExpansionProperty.class).getMethod());
+    cmpm.getQuantity().setValue(0.00335);
+    physCont.getReferenceValues().get(Gravity.class).setComponents(gravity[0], gravity[1], gravity[2]);
+    physCont.getReferenceValues().get(MinimumAllowableTemperature.class).setUnits(unit_C);
+    physCont.getReferenceValues().get(MinimumAllowableTemperature.class).setValue(clipMinT);
+    physCont.getReferenceValues().get(MaximumAllowableTemperature.class).setUnits(unit_C);
+    physCont.getReferenceValues().get(MaximumAllowableTemperature.class).setValue(clipMaxT);
+    physCont.getReferenceValues().get(ReferenceTemperature.class).setUnits(unit_C);
+    physCont.getReferenceValues().get(ReferenceTemperature.class).setValue(fluidT0);
+    StaticTemperatureProfile stp = physCont.getInitialConditions().get(StaticTemperatureProfile.class);
+    stp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setUnits(unit_C);
+    stp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(fluidT0);
+    TurbulenceIntensityProfile tip = physCont.getInitialConditions().get(TurbulenceIntensityProfile.class);
+    TurbulentViscosityRatioProfile tvrp = physCont.getInitialConditions().get(TurbulentViscosityRatioProfile.class);
+    tip.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(ti0);
+    tvrp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(tvr0);
+    VelocityProfile vp = physCont.getInitialConditions().get(VelocityProfile.class);
+    vp.getMethod(ConstantVectorProfileMethod.class).getQuantity().setComponents(v0[0], v0[1], v0[2]);
+    sayOK();
+  }
+
   public void createRepMaxOnAllRegions(String reportNickname, String var, Units unit){
     printAction("Creating a Maximum report of " + var + " on all Regions");
     MaxReport maxRep = sim.getReportManager().createReport(MaxReport.class);
@@ -611,6 +1239,20 @@ public class MacroUtils extends StarMacro {
     createStoppingCriteriaFromReportMonitor_StdDev(repMon, stdDev, samples);
   }
 
+  public void createRotatingReferenceFrameForRegion(Region region, double[] axis, double[] origin, Units origUnit,
+                                    double rotValue, Units rotUnit){
+    RotatingMotion rm = sim.get(MotionManager.class).createMotion(RotatingMotion.class, "Rotation");
+    rm.getAxisDirection().setComponents(axis[0], axis[1], axis[2]);
+    rm.getAxisOrigin().setUnits(origUnit);
+    rm.getAxisOrigin().setComponents(origin[0], origin[1], origin[2]);
+    rm.getRotationRate().setUnits(rotUnit);
+    rm.getRotationRate().setValue(rotValue);
+    MotionSpecification ms = region.getValues().get(MotionSpecification.class);
+    RotatingReferenceFrame rrf =
+      ((RotatingReferenceFrame) sim.get(ReferenceFrameManager.class).getObject("ReferenceFrame for Rotation"));
+    ms.setReferenceFrame(rrf);
+  }
+
   public Scene createScalarSceneWithObjects(Collection<NamedObject> objects, String var, Units unit,
                                             String sceneName, boolean smoothFilled){
     printAction("Creating a Scalar Scene with Objects");
@@ -627,7 +1269,18 @@ public class MacroUtils extends StarMacro {
     if(smoothFilled){
         scalDisp.setFillMode(1);
     }
-    scalDisp.getScalarDisplayQuantity().setFieldFunction(getPrimitiveFieldFunction(var));
+    PrimitiveFieldFunction ff = getPrimitiveFieldFunction(var);
+    if(var.equalsIgnoreCase("VelMag") || var.equalsIgnoreCase("Vel Mag")){
+        scalDisp.getScalarDisplayQuantity().setFieldFunction(getFieldFuncionMagnitude(ff));
+    } else if(var.equalsIgnoreCase("VelX") || var.equalsIgnoreCase("Vel X")){
+        scalDisp.getScalarDisplayQuantity().setFieldFunction(getFieldFuncionComponent(ff, 0));
+    } else if(var.equalsIgnoreCase("VelY") || var.equalsIgnoreCase("Vel Y")){
+        scalDisp.getScalarDisplayQuantity().setFieldFunction(getFieldFuncionComponent(ff, 1));
+    } else if(var.equalsIgnoreCase("VelZ") || var.equalsIgnoreCase("Vel Z")){
+        scalDisp.getScalarDisplayQuantity().setFieldFunction(getFieldFuncionComponent(ff, 2));
+    } else {
+        scalDisp.getScalarDisplayQuantity().setFieldFunction(ff);
+    }
     scalDisp.getScalarDisplayQuantity().setUnits(unit);
     sayOK();
     return scene;
@@ -664,6 +1317,24 @@ public class MacroUtils extends StarMacro {
     plane.setPresentationName(name);
     sayOK();
     return plane;
+  }
+
+  public SimpleCylinderPart createShapePartCylinder(double[] coord1, double[] coord2, double r1, double r2, Units unit, String name){
+    MeshPartFactory mpf = sim.get(MeshPartFactory.class);
+    SimpleCylinderPart scp = mpf.createNewCylinderPart(sim.get(SimulationPartManager.class));
+    LabCoordinateSystem labCSYS = sim.getCoordinateSystemManager().getLabCoordinateSystem();
+    scp.setCoordinateSystem(labCSYS);
+    scp.getRadius().setUnits(unit);
+    scp.getEndRadius().setUnits(unit);
+    Coordinate coordinate_0 = scp.getStartCoordinate();
+    Coordinate coordinate_1 = scp.getEndCoordinate();
+    coordinate_0.setCoordinate(unit, unit, unit, new DoubleVector(coord1));
+    coordinate_1.setCoordinate(unit, unit, unit, new DoubleVector(coord2));
+    scp.getRadius().setValue(r1);
+    scp.getEndRadius().setValue(r2);
+    scp.getTessellationDensityOption().setSelected(TessellationDensityOption.MEDIUM);
+    scp.setPresentationName(name);
+    return scp;
   }
 
   public void createStoppingCriteriaFromReportMonitor_StdDev(ReportMonitor repMon, double stdDev, int samples){
@@ -774,6 +1445,16 @@ public class MacroUtils extends StarMacro {
     }
   }
 
+  public void disablePrismsOnBoundary(Boundary bdry){
+    say("Disable Prism Layers on Boundary: " + getStringBoundaryAndRegion(bdry));
+    try {
+        bdry.get(MeshConditionManager.class).get(CustomizeBoundaryPrismsOption.class).setSelected(CustomizeBoundaryPrismsOption.DISABLE);
+        sayOK();
+    } catch (Exception e1) {
+        say("Warning! Could not disable Prism in Boundary.");
+    }
+  }
+
   public void disableSurfaceSizeOnBoundary(Boundary bdry){
     say("Disable Surface Mesh Size on Boundary: " + bdry.getPresentationName());
     try {
@@ -791,6 +1472,181 @@ public class MacroUtils extends StarMacro {
             say("ERROR! Please review settings. Skipping this Boundary.");
             say(e2.getMessage() + "\n");
         }
+    }
+  }
+
+  public void disableSurfaceRemesher(MeshContinuum mshCont){
+    printAction("Disabling Surface Remesher");
+    say("Mesh Continua: " + mshCont.getPresentationName());
+    mshCont.disableModel(mshCont.getModelManager().getModel(ResurfacerMeshingModel.class));
+    sayOK();
+  }
+
+  public void disableSurfaceWrapper(MeshContinuum mshCont){
+    printAction("Disabling Surface Wrapper");
+    say("Mesh Continua: " + mshCont.getPresentationName());
+    mshCont.disableModel(mshCont.getModelManager().getModel(SurfaceWrapperMeshingModel.class));
+    sayOK();
+  }
+
+  public void disableThinMesherOnRegion(Region region){
+    printAction("Disabling Thin Mesher on Region");
+    int opt = SolidMesherRegionOption.DISABLE;
+    say("Region: " + region.getPresentationName());
+    try{
+        region.get(MeshConditionManager.class).get(SolidMesherRegionOption.class).setSelected(opt);
+        sayOK();
+    } catch (Exception e){
+        say("ERROR! Moving on.\n");
+    }
+  }
+
+  public void enableEmbeddedThinMesher(MeshContinuum mshCont){
+    printAction("Enabling Embedded Thin Mesher");
+    say("Mesh Continua: " + mshCont.getPresentationName());
+    say("Embedded Thin Mesher overview:");
+    mshCont.enable(SolidMesherSubModel.class);
+    //mshCont.getModelManager().getModel(ResurfacerMeshingModel.class).setDoAutomaticSurfaceRepair(false);
+    mshCont.getModelManager().getModel(ResurfacerMeshingModel.class).setDoProximityRefinement(false);
+    SolidMesherSubModel sldSubMdl = mshCont.getModelManager().getModel(SolidMesherSubModel.class);
+    sldSubMdl.setOptimize(true);
+    say("  Optimizer ON");
+    if(thinMeshIsPolyType){
+        sldSubMdl.getPrismType().setSelected(PrismTypeValue.POLYGONAL);
+        say("  Prisms Type: POLYGONAL");
+    } else {
+        sldSubMdl.getPrismType().setSelected(PrismTypeValue.TRIANGULAR);
+        say("  Prisms Type: TRIANGULAR");
+    }
+    mshCont.getReferenceValues().get(ThinSolidLayers.class).setLayers(thinMeshLayers);
+    say("  Thin Layers: " + thinMeshLayers);
+  }
+
+  public void enablePrismLayers(MeshContinuum mshCont){
+    /*
+     * This method will assume Prism Layers only on Fluid Regions
+     */
+    printAction("Enabling Prism Layers");
+    say("Mesh Continua: " + mshCont.getPresentationName());
+    printPrismsParameters();
+    Collection<Interface> intrfcs = sim.getInterfaceManager().getObjects();
+
+    mshCont.enable(PrismMesherModel.class);
+    PrismMesherModel pmm = mshCont.getModelManager().getModel(PrismMesherModel.class);
+    NumPrismLayers npl = mshCont.getReferenceValues().get(NumPrismLayers.class);
+    PrismLayerStretching pls = mshCont.getReferenceValues().get(PrismLayerStretching.class);
+    PrismThickness pt = mshCont.getReferenceValues().get(PrismThickness.class);
+    GenericRelativeSize pgrs = ((GenericRelativeSize) pt.getRelativeSize());
+    npl.setNumLayers(prismsLayers);
+    pls.setStretching(prismsStretching);
+    pgrs.setPercentage(prismsRelSizeHeight);
+    pmm.setMinimumThickness(prismsMinThickn);
+    pmm.setLayerChoppingPercentage(prismsLyrChoppPerc);
+    pmm.setNearCoreLayerAspectRatio(prismsNearCoreAspRat);
+
+    say("Disabling Prisms on Solid Regions");
+    for(Region region : getAllRegions()){
+        MeshContinuum mshC = region.getMeshContinuum();
+        //if(region.getMeshContinuum() == null){
+        if(!region.isMeshing()){
+            say("  Skipping: " + region.getPresentationName());
+            continue;
+        }
+        if(isFluid(region)){
+            say("  Region ON: " + region.getPresentationName());
+            region.get(MeshConditionManager.class).get(CustomizeBoundaryPrismsOption.class).setSelected(CustomizeBoundaryPrismsOption.DEFAULT);
+        } else if(isSolid(region)) {
+            region.get(MeshConditionManager.class).get(CustomizeBoundaryPrismsOption.class).setSelected(CustomizeBoundaryPrismsOption.DISABLE);
+            say("  Region OFF: " + region.getPresentationName());
+        }
+    }
+    say("Enabling Prisms on Fluid-Solid interfaces with same Mesh Continua");
+    int n = 0;
+    int k = 0;
+    InterfacePrismsOption ipo = null;
+    for(Interface intrf : intrfcs){
+        String name = intrf.getPresentationName();
+        if(isFluid(intrf.getRegion0()) && isFluid(intrf.getRegion1())){
+            say("  Prism OFF: " + name + " (Fluid-Fluid Interface)");
+            k++;
+            continue;
+        }
+        if(isFluid(intrf.getRegion0()) || isFluid(intrf.getRegion1())){
+            try{
+                ipo = intrf.get(MeshConditionManager.class).get(InterfacePrismsOption.class);
+                ipo.setPrismsEnabled(true);
+                say("  Prism ON: " + name);
+                n++;
+            } catch (Exception e){ continue; }
+        }
+    }
+    say("Fluid-Solid interfaces with Prisms enabled: " + n);
+    say("Fluid-Fluid interfaces skipped: " + k);
+    say("\n");
+  }
+
+  public void enableSurfaceProximityRefinement(MeshContinuum mshCont){
+    printAction("Enabling Surface Proximity Refinement");
+    say("Mesh Continua: " + mshCont.getPresentationName());
+    say("Proximity settings overview: ");
+    say("  Proximity Number of Points in Gap: " + mshProximityPointsInGap);
+    say("  Proximity Search Floor (mm): " + mshProximitySearchFloor);
+    mshCont.getModelManager().getModel(ResurfacerMeshingModel.class).setDoProximityRefinement(true);
+    SurfaceProximity sp = mshCont.getReferenceValues().get(SurfaceProximity.class);
+    sp.setNumPointsInGap(mshProximityPointsInGap);
+    sp.getFloor().setUnits(unit_mm);
+    sp.getFloor().setValue(mshProximitySearchFloor);
+    sayOK();
+  }
+
+  public void enableSurfaceRemesher(MeshContinuum mshCont){
+    printAction("Enabling Surface Remesher");
+    say("Mesh Continua: " + mshCont.getPresentationName());
+    mshCont.enable(ResurfacerMeshingModel.class);
+    sayOK();
+  }
+
+  public void enableSurfaceWrapper(MeshContinuum mshCont){
+    printAction("Enabling Surface Wrapper");
+    say("Mesh Continua: " + mshCont.getPresentationName());
+    say("Surface Wrapper settings overview: ");
+    say("  Geometric Feature Angle (deg): " + mshWrapperFeatureAngle);
+    say("  Wrapper Scale Factor (%): " + mshWrapperScaleFactor);
+    mshCont.enable(SurfaceWrapperMeshingModel.class);
+    mshCont.getReferenceValues().get(GeometricFeatureAngle.class).setGeometricFeatureAngle(mshWrapperFeatureAngle);
+    mshCont.getReferenceValues().get(SurfaceWrapperScaleFactor.class).setScaleFactor(mshWrapperScaleFactor);
+    sayOK();
+  }
+
+  public void exportRemeshedRegionsToDBS(String subDirName) {
+    printAction("Exporting All Remeshed Regions to DBS files");
+    File dbsSubPath = new File(dbsPath, subDirName);
+    say("To Path: " + dbsSubPath.toString());
+    if (!dbsPath.exists()) { dbsPath.mkdirs(); }
+    if (!dbsSubPath.exists()) { dbsSubPath.mkdirs(); }
+    for(SurfaceRepRegion srfPart : getAllRemeshedRegions()) {
+        String name = srfPart.getPresentationName();
+        name = name.replace(" ", "_");
+        name = name.replace(".", "+");
+        File fPath = new File(dbsSubPath, name + ".dbs");
+        sim.println("Writing: " + fPath);
+        srfPart.exportDbsRegion(fPath.toString(), 1, "");
+    }
+  }
+
+  public void exportWrappedRegionsToDBS(String subDirName) {
+    printAction("Exporting All Wrapped Regions to DBS files");
+    File dbsSubPath = new File(dbsPath, subDirName);
+    say("To Path: " + dbsSubPath.toString());
+    if (!dbsPath.exists()) { dbsPath.mkdirs(); }
+    if (!dbsSubPath.exists()) { dbsSubPath.mkdirs(); }
+    for(SurfaceRepRegion srfPart : getAllWrappedRegions()) {
+        String name = srfPart.getPresentationName();
+        name = name.replace(" ", "_");
+        name = name.replace(".", "+");
+        File fPath = new File(dbsSubPath, name + ".dbs");
+        sim.println("Writing: " + fPath);
+        srfPart.exportDbsRegion(fPath.toString(), 1, "");
     }
   }
 
@@ -943,7 +1799,9 @@ public class MacroUtils extends StarMacro {
     Vector<LeafMeshPart> lmpVec = new Vector<LeafMeshPart>();
     Collection<GeometryPart> colLP = sim.get(SimulationPartManager.class).getLeafParts();
     for(GeometryPart gp : colLP){
-        lmpVec.add((LeafMeshPart) gp);
+        try{
+            lmpVec.add((LeafMeshPart) gp);
+        } catch(Exception e){ continue; }
     }
     sayA("Leaf Mesh Parts found: " + lmpVec.size());
     return lmpVec;
@@ -1053,6 +1911,14 @@ public class MacroUtils extends StarMacro {
     return colRemshReg;
   }
 
+  public Collection<SurfaceRepRegion> getAllWrappedRegions(){
+    sayA("Getting all Wrapped Regions...");
+    SurfaceRep srfRep = queryWrappedSurface();
+    Collection<SurfaceRepRegion> colWrappedReg = srfRep.getSurfaceRepRegionManager().getObjects();
+    sayA("All Wrapped Regions: " + colWrappedReg.size());
+    return colWrappedReg;
+  }
+
   public Boundary getBoundaryByName(String regexPatt){
     /*
      * Loop in all Boundaries and returns the first match, given the name pattern
@@ -1106,6 +1972,18 @@ public class MacroUtils extends StarMacro {
     }
   }
 
+  public CadPart getCadPart(String name){
+    sayA("Getting CadPart by name match: " + name);
+    for(GeometryPart gp : getAllLeafParts()){
+        if (gp.getPresentationName().equals(name)) {
+            sayA("Got " + name);
+            return (CadPart) gp;
+        }
+    }
+    sayA("Got NULL!");
+    return null;
+  }
+
   public Vector<CompositePart> getCompositeChildren(CompositePart compPrt, Vector<CompositePart> vecCP){
     CompositePart childPrt = null;
     Collection<GeometryPart> childPrts = compPrt.getChildParts().getParts();
@@ -1130,6 +2008,10 @@ public class MacroUtils extends StarMacro {
     return level;
   }
 
+  public CompositePart getCompositeParentPart(String name){
+    return (CompositePart) sim.get(SimulationPartManager.class).getPart(name);
+  }
+
   public CompositePart getCompositePartByName(String regexPatt){
     /*
      * Loop in all Composite Parts and returns the first match, given the name pattern
@@ -1138,6 +2020,7 @@ public class MacroUtils extends StarMacro {
     setVerboseOff();
     CompositePart foundCP = null;
     for(CompositePart cp : getAllCompositeParts()){
+        //say(cp.getPresentationName());
         if(cp.getPresentationName().matches(regexPatt)){
             foundCP = cp;
             break;
@@ -1194,17 +2077,12 @@ public class MacroUtils extends StarMacro {
     return region.getFeatureCurveManager().getFeatureCurves();
   }
 
-  public PartSurface getPartSurfaceFromGeometryPart(GeometryPart gp, String name){
-    for(PartSurface ps : gp.getPartSurfaces()){
-        if(ps.getPresentationName().equals(name)){
-            return ps;
-        }
-    }
-    return null;
+  public VectorMagnitudeFieldFunction getFieldFuncionComponent(PrimitiveFieldFunction ff, int i){
+    return (VectorMagnitudeFieldFunction) ff.getComponentFunction(i);
   }
 
-  public PrimitiveFieldFunction getPrimitiveFieldFunction(String var){
-      return ((PrimitiveFieldFunction) sim.getFieldFunctionManager().getFunction(var));
+  public VectorMagnitudeFieldFunction getFieldFuncionMagnitude(PrimitiveFieldFunction ff){
+    return (VectorMagnitudeFieldFunction) ff.getMagnitudeFunction();
   }
 
   public Collection<String> getInterfacesBetweenLeafMeshParts(LeafMeshPart lmp1, LeafMeshPart lmp2,
@@ -1342,6 +2220,19 @@ public class MacroUtils extends StarMacro {
     return "Min/Target = " + minS + "/" + tgtS;
   }
 
+  public PartSurface getPartSurfaceFromGeometryPart(GeometryPart gp, String name){
+    for(PartSurface ps : gp.getPartSurfaces()){
+        if(ps.getPresentationName().equals(name)){
+            return ps;
+        }
+    }
+    return null;
+  }
+
+  public PrimitiveFieldFunction getPrimitiveFieldFunction(String var){
+      return ((PrimitiveFieldFunction) sim.getFieldFunctionManager().getFunction(var));
+  }
+
   public PhysicsContinuum getPhysicsContinuaByName(String name){
       return ((PhysicsContinuum) sim.getContinuumManager().getContinuum(name));
   }
@@ -1388,10 +2279,35 @@ public class MacroUtils extends StarMacro {
     return noneString;
   }
 
+  public String getStringBoundaryAndRegion(Boundary bdry){
+    Region region = bdry.getRegion();
+    return region.getPresentationName() + "\\" + bdry.getPresentationName();
+  }
+
   public String getTime() {
     DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     Date date = new Date();
     return dateFormat.format(date);
+  }
+
+  public int getTrimmerGrowthRate(String growthRate){
+    int VERYSLOW = 0;
+    int SLOW = 1;
+    int MEDIUM = 2;
+    int FAST = 3;
+    if(growthRate.equalsIgnoreCase("veryslow")){
+        return VERYSLOW;
+    }
+    if(growthRate.equalsIgnoreCase("slow")){
+        return SLOW;
+    }
+    if(growthRate.equalsIgnoreCase("medium")){
+        return MEDIUM;
+    }
+    if(growthRate.equalsIgnoreCase("fast")){
+        return FAST;
+    }
+    return MEDIUM;
   }
 
   public void groupRegionsByMedia(){
@@ -1462,9 +2378,44 @@ public class MacroUtils extends StarMacro {
     return true;
   }
 
+  public void importAllDBSFromSubDirName(String subDirName) {
+    printAction("Importing the DBS files.");
+    File dbsSubPath = new File(dbsPath, subDirName);
+    say("From Path: " + dbsSubPath.toString());
+    String[] fileNames = dbsSubPath.list(dbsFilter);
+    Vector<String> filesVect = new Vector<String>();
+    File dbsFile = null;
+    for(String fileName : fileNames){
+        dbsFile = new File(dbsSubPath, fileName);
+        filesVect.add(dbsFile.toString());
+    }
+    PartImportManager prtImpMngr = sim.get(PartImportManager.class);
+    prtImpMngr.importDbsParts(filesVect, "OneSurfacePerPatch", true, "OnePartPerFile", false, unit_m, 1);
+    /*
+     * Auto check the imported Parts.
+     */
+    checkFreeEdgesAndNonManifoldsOnParts();
+  }
+
+  public void importCADPart(String part){
+    printAction("Importing CAD Part");
+    String fName = resolvePath((new File(cadPath, part)).toString());
+    say("File: " + fName);
+    PartImportManager prtImpMngr = sim.get(PartImportManager.class);
+    int type = TessellationDensityOption.MEDIUM;
+    if(fineTesselationOnImport){
+        type = TessellationDensityOption.FINE;
+    }
+    prtImpMngr.importCadPart(fName, "SharpEdges", mshSharpEdgeAngle, type, false, false);
+  }
+
   public void imprintAllPartsByCADMethod(){
     printAction("Imprinting All Parts by CAD Method");
+//    NeoObjectVector vec = (NeoObjectVector) getAllLeafPartsAsMeshParts();
+//    NeoObjectVector vec = new NeoObjectVector(getAllLeafPartsAsMeshParts().toArray());
+//    sim.get(MeshActionManager.class).imprintCadParts(vec, "CAD");
     sim.get(MeshActionManager.class).imprintCadParts(getAllLeafPartsAsMeshParts(), "CAD");
+//    sim.get(MeshActionManager.class).imprintDiscreteParts(getAllLeafPartsAsCadParts(), "CAD", 1.0E-4);
     sayOK();
   }
 
@@ -1499,6 +2450,17 @@ public class MacroUtils extends StarMacro {
       return String.valueOf(number);
   }
 
+  public LeafMeshPart intersect2PartsByDiscrete(Object obj1, Object obj2, String renameTo){
+    printAction("Intersecting 2 Parts (obj1 'intersection' obj2)");
+    say("Object 1: " + obj1.toString());
+    say("Object 2: " + obj2.toString());
+    MeshActionManager mshActMngr = sim.get(MeshActionManager.class);
+    MeshPart mp = mshActMngr.intersectParts(new NeoObjectVector(new Object[] {obj1, obj2}), "Discrete");
+    mp.setPresentationName(renameTo);
+    say("Returning: " + mp.getPathInHierarchy());
+    return (LeafMeshPart) mp;
+  }
+
   public boolean isFluid(Region region){
     if(region.getRegionType().toString().equals("Fluid Region")){
         return true;
@@ -1529,6 +2491,13 @@ public class MacroUtils extends StarMacro {
     return false;
   }
 
+  public boolean isRemesh(MeshContinuum mshCont){
+    if(mshCont.getEnabledModels().containsKey("star.resurfacer.ResurfacerMeshingModel")){
+        return true;
+    }
+    return false;
+  }
+
   public boolean isSolid(Region region){
     if(region.getRegionType().toString().equals("Solid Region")){
         return true;
@@ -1538,6 +2507,13 @@ public class MacroUtils extends StarMacro {
 
   public boolean isTrimmer(MeshContinuum mshCont){
     if(mshCont.getEnabledModels().containsKey("star.trimmer.TrimmerMeshingModel")){
+        return true;
+    }
+    return false;
+  }
+
+  public boolean isWrapper(MeshContinuum mshCont){
+    if(mshCont.getEnabledModels().containsKey("star.surfacewrapper.SurfaceWrapperMeshingModel")){
         return true;
     }
     return false;
@@ -1572,9 +2548,27 @@ public class MacroUtils extends StarMacro {
     }
   }
 
+//  public Collection<MeshContinuum> queryMeshContinuas(){
+//    Vector<MeshContinuum> vecMC = new Vector<MeshContinuum>();
+//    for(Continuum cont : sim.getContinuumManager().getObjects()){
+//        say(cont.getAsStringArg());
+//        say(cont.getBeanDisplayName());
+//        say(cont.getEnabledModels().toString());
+//    }
+//    return null;
+//  }
+
   public SurfaceRep queryRemeshedSurface(){
     try{
         return ((SurfaceRep) sim.getRepresentationManager().getObject("Remeshed Surface"));
+    } catch (Exception e){
+        return null;
+    }
+  }
+
+  public SurfaceRep queryWrappedSurface(){
+    try{
+        return ((SurfaceRep) sim.getRepresentationManager().getObject("Wrapped Surface"));
     } catch (Exception e){
         return null;
     }
@@ -1603,6 +2597,89 @@ public class MacroUtils extends StarMacro {
     sim.println("+-----------------------------------------------------------------------------");
   }
 
+  public void printMeshParameters(){
+    say("");
+    say("*******************************************************************");
+    say("**                                                               **");
+    say("**       M E S H   P A R A M E T E R S   O V E R V I E W         **");
+    say("**                                                               **");
+    say("*******************************************************************");
+    say("**");
+    say("** Mesh Continua: " + mshCont.getPresentationName());
+    say("**");
+    say("*******************************************************************");
+    say("**");
+    say("** Base Size (mm): " + mshBaseSize);
+    say("**");
+    say("** Surface Size Relative Min (%): " + mshSrfSizeMin);
+    say("** Surface Size Relative Tgt (%): " + mshSrfSizeTgt);
+    say("**");
+    say("** Feature Curve Relative Min (%): " + featCurveMeshMin);
+    say("** Feature Curve Relative Tgt (%): " + featCurveMeshTgt);
+    say("**");
+    if(isPoly(mshCont)){
+        say("** Mesh Growth Factor: " + mshGrowthFactor);
+        say("**");
+    }
+    if(isTrimmer(mshCont)){
+        say("** Maximum Cell Size: " + mshTrimmerMaxCelSize);
+        say("** Mesh Growth Rate: " + mshTrimmerGrowthRate.toUpperCase());
+        say("**");
+    }
+    say("*******************************************************************");
+    say("");
+  }
+
+  public void printPrismsParameters(){
+    say("");
+    say("*******************************************************************");
+    say("**                                                               **");
+    say("**     P R I S M S   P A R A M E T E R S   O V E R V I E W       **");
+    say("**                                                               **");
+    say("*******************************************************************");
+    say("**");
+    say("** Number of Layers: " + prismsLayers);
+    say("** Relative Height (%): " + prismsRelSizeHeight);
+    say("**");
+    say("** Minimum Thickness (%): " + prismsMinThickn);
+    say("** Stretching Ratio: " + prismsStretching);
+    say("** Layer Chopping (%): " + prismsLyrChoppPerc);
+    say("** Near Core Layer Aspect Ratio: " + prismsNearCoreAspRat);
+    say("**");
+    say("*******************************************************************");
+    say("");
+  }
+
+  public void printSolverSettings(){
+    say("");
+    say("*******************************************************************");
+    say("**                                                               **");
+    say("**       S O L V E R   S E T T I N G S   O V E R V I E W         **");
+    say("**                                                               **");
+    say("*******************************************************************");
+    say("**");
+    say("** Maximum Number of Iterations: " + maxIter);
+    say("**");
+    say("** URF Velocity: " + urfVel);
+    say("** URF Pressure: " + urfP);
+    say("** URF Fluid Energy: " + urfFluidEnrgy);
+    say("** URF Solid Energy: " + urfSolidEnrgy);
+    say("** URF K-Epsilon: " + urfKEps);
+    say("**");
+    if(rampURF){
+        say("** Linear Ramp Fluid Energy:");
+        say("**   Start/End Iteration: " + urfRampFlIterBeg + "/" + urfRampFlIterEnd);
+        say("**   Initial URF: " + urfRampFlBeg);
+        say("**");
+        say("** Linear Ramp Solid Energy:");
+        say("**   Start/End Iteration: " + urfRampSldIterBeg + "/" + urfRampSldIterEnd);
+        say("**   Initial URF: " + urfRampSldBeg);
+        say("**");
+    }
+    say("*******************************************************************");
+    say("");
+  }
+
   public void removeAllPartsContacts(){
     printAction("Removing All Parts Contacts");
     for(GeometryPart gp : getAllLeafParts()){
@@ -1615,8 +2692,23 @@ public class MacroUtils extends StarMacro {
     sayOK();
   }
 
+  public void removeCadPart(String name){
+    /*
+     * Attention, CadPart must belong to a Composite
+     */
+    printAction("Removing Cad Part: " + name);
+    cadPrt = getCadPart(name);
+    compPart = (CompositePart) cadPrt.getParentPart();
+    compPart.getChildParts().removePart(cadPrt);
+    say("Removed: " + cadPrt.getPathInHierarchy());
+    if(cadPrt == null){
+        say("CadPart not found: " + name);
+    }
+    sayOK();
+  }
+
   public void removeCompositePartsByName(String regexPatt){
-    printAction(String.format("Removing Composite Parts on REGEX criteria: \"%s\"", regexPatt ));
+    printAction(String.format("Removing Composite Parts based on REGEX criteria: \"%s\"", regexPatt ));
     setVerboseOff();
     Vector<CompositePart> remPrtVec = new Vector<CompositePart>();
     for(CompositePart cP : getAllCompositeParts()){
@@ -1689,10 +2781,20 @@ public class MacroUtils extends StarMacro {
   }
 
   public void removeLeafMeshPartsByName(String regexPatt){
-    printAction(String.format("Remove Leaf Mesh Part by REGEX pattern: \"%s\"", regexPatt));
+    printAction(String.format("Remove Leaf Meshs Part by REGEX pattern: \"%s\"", regexPatt));
     Collection<LeafMeshPart> colLMP = getAllLeafMeshPartsByName(regexPatt);
     say("Leaf Mesh Parts to be removed: " + colLMP.size());
     sim.get(SimulationPartManager.class).removeParts(colLMP);
+    say("Removed");
+    say("");
+  }
+
+  public void removeLeafPartsByName(String regexPatt){
+    printAction(String.format("Remove Leaf Parts by REGEX pattern: \"%s\"", regexPatt));
+    Collection<GeometryPart> colLP = getAllLeafPartsByName(regexPatt);
+    say("Leaf Parts to be removed: " + colLP.size());
+    sim.get(SimulationPartManager.class).removeObjects(colLP);
+    //sim.get(SimulationPartManager.class).removeParts(colLP);
     say("Removed");
     say("");
   }
@@ -1806,6 +2908,19 @@ public class MacroUtils extends StarMacro {
     savedWithSuffix++;
   }
 
+  public void setAutoSave(){
+    printAction("Setting Auto Save Options");
+    AutoSave as = sim.getSimulationIterator().getAutoSave();
+    as.getTriggerOption().setSelected(AutoSaveTriggerOption.ITERATION);
+    as.setEnabled(true);
+    as.setAutoSaveBatch(true);
+    as.setAutoSaveMesh(false);
+    as.setMaxAutosavedFiles(autoSaveMaxFiles);
+    as.setTriggerFrequency(autoSaveFrequencyIter);
+    as.setSeparator(autoSaveSeparator);
+    as.setFormatWidth(6);
+  }
+
   public void setBC_StagnationInlet(Boundary bdry, double T, double ti, double tvr){
     String name = bdry.getPresentationName();
     printAction("Setting BC as Stagnation Inlet: " + name);
@@ -1826,6 +2941,13 @@ public class MacroUtils extends StarMacro {
     atp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(T);
     HeatTransferCoefficientProfile htcp = bdry.getValues().get(HeatTransferCoefficientProfile.class);
     htcp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(htc);
+    sayOK();
+  }
+
+  public void setBC_FreeSlipWall(Boundary bdry){
+    String name = bdry.getPresentationName();
+    printAction("Setting BC as a Free Slip Wall: " + name);
+    bdry.getConditions().get(WallShearStressOption.class).setSelected(WallShearStressOption.SLIP);
     sayOK();
   }
 
@@ -1860,6 +2982,25 @@ public class MacroUtils extends StarMacro {
     StaticTemperatureProfile stp = bdry.getValues().get(StaticTemperatureProfile.class);
     stp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setUnits(unit_C);
     stp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(T);
+  }
+
+  public void setGlobalBoundaryMeshRefinement(double min, double tgt){
+    printAction("Setting global mesh refinement on all Boundaries");
+    for(Boundary bdry : getAllBoundaries()){
+        if(isInterface(bdry)) { continue; }
+        setMeshBoundarySurfaceSizes(bdry, min, tgt);
+    }
+  }
+
+  public void setGlobalFeatureCurveMeshRefinement(double min, double tgt) {
+    printAction("Setting global mesh refinement on all Feature Curves");
+    for(Region region : getAllRegions()){
+        say("Region: " + region.getPresentationName());
+        Collection<FeatureCurve> colFC = region.getFeatureCurveManager().getFeatureCurves();
+        for(FeatureCurve featCurve : colFC) {
+            setMeshFeatureCurveSizes(featCurve, min, tgt);
+        }
+    }
   }
 
   public void setMeshBoundaryPrismSizes(Boundary bdry, int numLayers, double stretch, double relSize) {
@@ -1954,10 +3095,6 @@ public class MacroUtils extends StarMacro {
     sayOK();
   }
 
-  public void setMeshProximityRefinement(MeshContinuum mshCont){
-    mshCont.getModelManager().getModel(ResurfacerMeshingModel.class).setDoProximityRefinement(true);
-  }
-
   public void setMeshSurfaceGrowthRate(Boundary bdry, int growthRate){
     /*
      * This method only works with Trimmer. Options:
@@ -1983,6 +3120,41 @@ public class MacroUtils extends StarMacro {
     sayOK();
   }
 
+  public void setSolverSettings(){
+    printAction("Setting Solver Settings");
+    printSolverSettings();
+
+    ((StepStoppingCriterion)
+        sim.getSolverStoppingCriterionManager().getSolverStoppingCriterion("Maximum Steps")).setMaximumNumberSteps(maxIter);
+
+    SegregatedFlowSolver flowSolv = ((SegregatedFlowSolver) sim.getSolverManager().getSolver(SegregatedFlowSolver.class));
+    PressureSolver pSolv = flowSolv.getPressureSolver();
+    SegregatedEnergySolver enrgySolv = ((SegregatedEnergySolver) sim.getSolverManager().getSolver(SegregatedEnergySolver.class));
+    KeTurbSolver keSolv = ((KeTurbSolver) sim.getSolverManager().getSolver(KeTurbSolver.class));
+
+    flowSolv.getVelocitySolver().setUrf(urfVel);
+    pSolv.setUrf(urfP);
+    enrgySolv.setFluidUrf(urfFluidEnrgy);
+    enrgySolv.setSolidUrf(urfSolidEnrgy);
+    keSolv.setUrf(urfKEps);
+
+    if(!rampURF) { return; }
+    enrgySolv.getFluidRampCalculatorManager().getRampCalculatorOption().setSelected(RampCalculatorOption.LINEAR_RAMP);
+    LinearRampCalculator rampFl = ((LinearRampCalculator) enrgySolv.getFluidRampCalculatorManager().getCalculator());
+
+    rampFl.setStartIteration(urfRampFlIterBeg);
+    rampFl.setEndIteration(urfRampFlIterEnd);
+    rampFl.setInitialRampValue(urfRampFlBeg);
+
+    enrgySolv.getSolidRampCalculatorManager().getRampCalculatorOption().setSelected(RampCalculatorOption.LINEAR_RAMP);
+    LinearRampCalculator rampSld = ((LinearRampCalculator) enrgySolv.getSolidRampCalculatorManager().getCalculator());
+
+    rampSld.setStartIteration(urfRampSldIterBeg);
+    rampSld.setEndIteration(urfRampSldIterEnd);
+    rampSld.setInitialRampValue(urfRampSldBeg);
+
+  }
+
   public void setVerboseOff(){
     verbose = false;
   }
@@ -1993,6 +3165,7 @@ public class MacroUtils extends StarMacro {
 
   public void splitNonContiguousPartSurfacesByName(String regexPatt){
     printAction("Splitting Non Contiguous Part Surfaces");
+//    sim.get(PartSurfaceManager.class).splitNonContiguousPartSurfaces((Vector) getAllPartSurfacesByName(regexPatt));
     Vector<PartSurface> vecPS = new Vector<PartSurface>();
     for(PartSurface ps : getAllPartSurfacesByName(regexPatt)){
         vecPS.clear();
@@ -2003,8 +3176,52 @@ public class MacroUtils extends StarMacro {
     sayOK();
   }
 
+  public LeafMeshPart subtract2PartsByDiscrete(Object srcObj, GeometryPart tgtPart, boolean combinePartSurfaces){
+    printAction("Subtracting 2 Parts (target = target - source)");
+    say("Source Part: " + ((GeometryPart) srcObj).getPathInHierarchy());
+    say("Target Part: " + tgtPart.getPathInHierarchy());
+    MeshActionManager mshActMngr = sim.get(MeshActionManager.class);
+    MeshPart mp = mshActMngr.subtractParts(new NeoObjectVector(new Object[] {srcObj, tgtPart}), (MeshPart) tgtPart, "Discrete");
+    if(combinePartSurfaces){
+        Collection<PartSurface> colPS = mp.getPartSurfaceManager().getPartSurfaces();
+        mp.combinePartSurfaces(colPS);
+        colPS = mp.getPartSurfaceManager().getPartSurfaces();
+        for(PartSurface ps : colPS){
+            ps.setPresentationName("Faces");
+        }
+        say("Part Surfaces combined");
+    }
+    say("Returning: " + mp.getPathInHierarchy());
+    return (LeafMeshPart) mp;
+  }
+
   public String str2regex(String text){
     return ".*" + text + ".*";
+  }
+
+  public void turnOffRegion(Region region){
+    printAction("Turning OFF Mesh and Physic Continuas");
+    say("Changing Region: " + region.getPresentationName());
+    region.getMeshContinuum().erase(region);
+    region.getPhysicsContinuum().erase(region);
+  }
+
+  public void unsetMeshPerRegionFlag(MeshContinuum mshCont){
+    printAction("Unsetting Mesh Continua as \"Per-Region Meshing\"");
+    say("Mesh Continua: " + mshCont.getPresentationName());
+    mshCont.setMeshRegionByRegion(false);
+    sayOK();
+  }
+
+  public void updateMeshContinuaVector(){
+    printAction("Querying number of Mesh Continuas");
+    vecMeshContinua = sim.getContinuumManager().getObjectsOf(MeshContinuum.class);
+    say("Found: " + vecMeshContinua.size());
+    if(vecMeshContinua.size() > 0){
+        for(int i = 0; i < vecMeshContinua.size(); i++){
+            say("  " + vecMeshContinua.get(i).getPresentationName());
+        }
+    }
   }
 
 }
