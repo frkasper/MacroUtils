@@ -1,11 +1,5 @@
 package macroutils;
 
-import star.base.neo.*;
-import star.common.*;
-import star.flow.*;
-import star.meshing.*;
-import star.vis.*;
-
 public class Demo1_Flow_In_a_Pipe extends MacroUtils {
 
   private final double length = 500;
@@ -32,7 +26,7 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
     coord2 = new double[] {length, 0, 0};
     simpleCylPrt = createShapePartCylinder(coord1, coord2, radius, radius, unit_mm, "Cyl");
     simpleCylPrt.getPartSurfaces().iterator().next().setPresentationName(bcWall);
-    splitPartSurfaceByAngle(simpleCylPrt, 80);
+    splitByAngle(simpleCylPrt.getPartSurfaces(), 80);
     saveSimWithSuffix("a_created");
   }
   
@@ -43,9 +37,9 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
     }
     String regexSearch = bcWall + ".*";
     geomPrt = getAllGeometryParts().iterator().next();
-    partSrf = getPartSurface(geomPrt, "Min", "X", 0.01, regexSearch);
+    partSrf = getPartSurface(geomPrt, "Min", "X", 1.0, regexSearch);
     partSrf.setPresentationName(bcInlet);
-    partSrf = getPartSurface(geomPrt, "Max", "X", 0.01, regexSearch);
+    partSrf = getPartSurface(geomPrt, "Max", "X", 1.0, regexSearch);
     partSrf.setPresentationName(bcOutlet);
     combinePartSurfaces(getAllPartSurfaces(geomPrt, regexSearch), bcWall);
     region = assignAllPartsToRegion();
@@ -66,13 +60,13 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
     //-- 
     createMeshContinua_Trimmer();
     createPhysics_WaterSteadySegregatedIncompressibleLaminarIsothermal();
-    
+    //-- 
     bdry = getBoundary(bcInlet);
     setBC_VelocityMagnitudeInlet(bdry, 0.1, 0., 0., 0.);
-    
+    //-- 
     bdry = getBoundary(bcOutlet);
     setBC_PressureOutlet(bdry, 0., 0., 0., 0.);
-    
+    //-- 
     genVolumeMesh();
     createScene_Mesh().openScene();
     saveSimWithSuffix("c_meshed");
