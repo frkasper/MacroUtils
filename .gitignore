@@ -6,3 +6,4 @@ build.xml
 manifest.mf
 *.sim
 *.sim~
+*.jar
