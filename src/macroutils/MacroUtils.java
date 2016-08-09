@@ -291,12 +291,7 @@ public class MacroUtils extends StarMacro {
     }
   };
 
-  public void execute() {
-    for(Region region : getAllRegions()){
-        hasPolyMesh(region);
-        hasTrimmerMesh(region);
-    }
-  }
+  public void execute() {  }
 
   public void initialize() {
     /***************************************************************/
