@@ -1,5 +1,4 @@
-package macroutils;
-
+import macroutils.*;
 import star.vis.*;
 
 public class Demo6c_Read_Camera_Views extends MacroUtils {
@@ -10,7 +9,7 @@ public class Demo6c_Read_Camera_Views extends MacroUtils {
     scene = getScene(".*");
     for (VisView vv : getCameraViews(".*")) {
         setSceneCameraView(scene, vv);
-        sleep(1000);   // Wait a second.
+        sleep(1000);   // Wait one second.
         //hardCopyPicture(scene, "pic " + vv.getPresentationName(), 1280, 720);
     }
   }

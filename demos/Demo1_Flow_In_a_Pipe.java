@@ -1,4 +1,19 @@
-package macroutils;
+import macroutils.*;
+  
+/**
+ * Simple Demo of a 3D laminar isothermal flow in a pipe.
+ * 
+ * Geometry:
+ *                                       L  
+ *      +---------------------------------------------------------------+
+ *      |                                                               |
+ *    r * O(0,0,0)                                                      |
+ *      |                                                               |
+ *      +---------------------------------------------------------------+
+ * 
+ * @since Macro Utils v2b.
+ * @author Fabio Kasper
+ */
 
 public class Demo1_Flow_In_a_Pipe extends MacroUtils {
 
@@ -8,87 +23,55 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
   public void execute() {
     _initUtils();
     simTitle = "Demo1_Cylinder";
-    saveIntermediates = false;
-    prep1_createAndSplit();
+    prep1_createPart();
     prep2_createRegion();
     prep3_BCsAndMesh();
     prep4_setPost();
-    runCase();
+    runCase(true);
     _finalize();
   }
   
-  void prep1_createAndSplit() {
-    if (!sim.getGeometryPartManager().isEmpty()) { 
-        sayLoud("Geometry already created. Skipping prep1...");
-        return;
-    }
-    string = "myCam|2.620891e-01,-1.328880e-02,-1.754044e-03|2.620891e-01,-1.328880e-02,9.690091e-01|0.000000e+00,1.000000e+00,0.000000e+00|1.463440e-01";
-    readCameraView(string);
-    coord1 = new double[] {0, 0, 0};
-    coord2 = new double[] {length, 0, 0};
-    simpleCylPrt = createShapePartCylinder(coord1, coord2, radius, radius, unit_mm, "Cyl");
-    simpleCylPrt.getPartSurfaces().iterator().next().setPresentationName(bcWall);
-    splitByAngle(simpleCylPrt.getPartSurfaces(), 80);
-    saveSimWithSuffix("a_created");
+  void prep1_createPart() {
+    defCamView = readCameraView("myCam|2.498938e-01,-1.450833e-02,-2.222717e-02|2.498938e-01,-1.450833e-02,9.690091e-01|0.000000e+00,1.000000e+00,0.000000e+00|1.463440e-01|1");
+    defTessOpt = TESSELATION_FINE;
+    cadBody = create3DCad_Cylinder(radius, length, coord0, unit_mm, X);
   }
   
   void prep2_createRegion() {
-    defCamView = getCameraView("myCam");
-    if (!sim.getRegionManager().isEmpty()) { 
-        sayLoud("Region already created. Skipping prep2...");
-        return;
-    }
-    String regexSearch = bcWall + ".*";
-    geomPrt = getAllGeometryParts().iterator().next();
-    partSrf = getPartSurface(geomPrt, "Min", "X", 1.0, regexSearch);
-    partSrf.setPresentationName(bcInlet);
-    partSrf = getPartSurface(geomPrt, "Max", "X", 1.0, regexSearch);
-    partSrf.setPresentationName(bcOutlet);
-    combinePartSurfaces(getPartSurfaces(geomPrt, regexSearch), bcWall);
+    getPartSurface("x0").setPresentationName(bcInlet);
+    getPartSurface("x1").setPresentationName(bcOutlet);
+    getPartSurface("Def.*").setPresentationName(bcWall);
     region = assignAllPartsToRegion();
-    saveSimWithSuffix("b_regionOK");
   }
     
   void prep3_BCsAndMesh() {
-    if (queryVolumeMesh() != null) {
-        sayLoud("Volume Mesh already exists. Skipping prep3...");
-        return;
-    }
     //-- Mesh settings
-    mshBaseSize = radius / 4;
+    mshBaseSize = radius / 8;
     prismsLayers = 3;
+    mshSrfSizeMin = 75.;
     prismsRelSizeHeight = 30;
-    mshTrimmerMaxCelSize = 100;
     //-- 
-    createMeshContinua_Trimmer();
+    createMeshContinua_PolyOnly();
     createPhysics_WaterSteadySegregatedIncompressibleLaminarIsothermal();
+    setSolverAggressiveURFs();
     //-- 
-    bdry = getBoundary(bcInlet);
-    setBC_VelocityMagnitudeInlet(bdry, 0.1, 0., 0., 0.);
-    //-- 
-    bdry = getBoundary(bcOutlet);
-    setBC_PressureOutlet(bdry, 0., 0., 0., 0.);
+    setBC_VelocityMagnitudeInlet(getBoundary(bcInlet), 0.1, 0., 0., 0.);
+    setBC_PressureOutlet(getBoundary(bcOutlet), 0., 0., 0., 0.);
+    setMeshGeneralizedCylinderExtrusion_Constant(getBoundary(bcWall), 60);
     //-- 
     genVolumeMesh();
-    createScene_Mesh().open(true);
-    saveSimWithSuffix("c_meshed");
   }
   
   void prep4_setPost() {
-    if (!sim.getReportManager().isEmpty()) {
-        sayLoud("Post-processing already exists. Skipping prep4...");
-        return;
-    }
     //-- Contour Plot
     plane = createSectionPlaneZ(coord0, "Plane Z");
-    vecObj.add(plane);
-    createScene_Scalar(vecObj, getFieldFunction(varVel), defUnitVel, true).open(true);
+    namedObjects.add(plane);
+    createScene_Scalar(namedObjects, getFieldFunction(varVel), defUnitVel, true);
     //-- Stopping Criteria
     bdry = getBoundary(bcInlet);
     createReportMassFlowAverage(bdry, "Pressure Inlet", getFieldFunction(varP), unit_Pa);
-    createStoppingCriteria(repMon, "Asymptotic", 0.005, 30);
-    openPlot(monPlot);
-    saveSimWithSuffix("e_Ready");
+    createStoppingCriteria(repMon, "Asymptotic", 0.001, 50);
+    openAllPlotsAndScenes();
   }
   
 }
