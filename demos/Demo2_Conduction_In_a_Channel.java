@@ -49,7 +49,7 @@ public class Demo2_Conduction_In_a_Channel extends MacroUtils {
     partSrf.setPresentationName(bcSym1);
     partSrf = getPartSurface(geomPrt, "Max", "Z", 1.0, regexSearch);
     partSrf.setPresentationName(bcSym2);
-    combinePartSurfaces(getAllPartSurfaces(geomPrt, regexSearch), bcWall);
+    combinePartSurfaces(getPartSurfaces(geomPrt, regexSearch), bcWall);
     region = assignAllPartsToRegion();
     saveSimWithSuffix("b_regionOK");
   }
@@ -91,7 +91,7 @@ public class Demo2_Conduction_In_a_Channel extends MacroUtils {
         return;
     }
     //-- Stopping Criteria
-    createReportVolumeAverage(getRegion(".*"), varT, varT, defUnitTemp);
+    createReportVolumeAverage(getRegion(".*"), varT, getFieldFunction(varT), defUnitTemp);
     createStoppingCriteria(repMon, "Asymptotic", 0.005, 50);
     //-- Contour Plot
     vecObj.add(getBoundary(bcSym1));

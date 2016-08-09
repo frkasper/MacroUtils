@@ -137,7 +137,7 @@ public class Demo3_Backward_Facing_Step extends MacroUtils {
     defCamView = readCameraView(string);
     //-- Stopping Criteria
     bdry = getBoundary(".*" + bcInlet);
-    createReportMassFlowAverage(bdry, "P_in", varP, defUnitPress);
+    createReportMassFlowAverage(bdry, "P_in", getFieldFunction(varP), defUnitPress);
     createStoppingCriteria(repMon, "Asymptotic", 1e-5, 50);
     //-- Contour Plot
     vecObj.add(getBoundary(".*" + bcSym1));

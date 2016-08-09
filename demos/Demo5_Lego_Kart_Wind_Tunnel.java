@@ -181,7 +181,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends MacroUtils {
     disp.setRepresentation(queryGeometryRepresentation());
     //-- Stopping Criteria
     bdry = getBoundary(tunnelName + ".*" + bcInlet);
-    createReportMassFlowAverage(bdry, "dP Tunnel", varP, unit_Pa);
+    createReportMassFlowAverage(bdry, "dP Tunnel", getFieldFunction(varP), unit_Pa);
     createStoppingCriteria(repMon, "Asymptotic", 0.2, 100);
     createReportForce(getCarBoundaries(), "F_y Car", new double[] {0, -1, 0});
     createStoppingCriteria(repMon, "Asymptotic", 0.002, 100);
@@ -192,7 +192,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends MacroUtils {
   }
 
   private Vector<Boundary> getCarBoundaries() {
-    return (Vector) getAllBoundaries("^((?!" + tunnelName + ").)*$", false);
+    return (Vector) getBoundaries("^((?!" + tunnelName + ").)*$", false);
   }
   
   private String camName = "myCam";
