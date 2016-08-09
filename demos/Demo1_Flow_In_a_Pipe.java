@@ -22,6 +22,8 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
         sayLoud("Geometry already created. Skipping prep1...");
         return;
     }
+    string = "myCam|2.620891e-01,-1.328880e-02,-1.754044e-03|2.620891e-01,-1.328880e-02,9.690091e-01|0.000000e+00,1.000000e+00,0.000000e+00|1.463440e-01";
+    readCameraView(string);
     coord1 = new double[] {0, 0, 0};
     coord2 = new double[] {length, 0, 0};
     simpleCylPrt = createShapePartCylinder(coord1, coord2, radius, radius, unit_mm, "Cyl");
@@ -31,6 +33,7 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
   }
   
   void prep2_createRegion() {
+    defCamView = getCameraView("myCam");
     if (!sim.getRegionManager().isEmpty()) { 
         sayLoud("Region already created. Skipping prep2...");
         return;
@@ -51,7 +54,6 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
         sayLoud("Volume Mesh already exists. Skipping prep3...");
         return;
     }
-    region = sim.getRegionManager().getRegions().iterator().next();
     //-- Mesh settings
     mshBaseSize = radius / 4;
     prismsLayers = 3;
@@ -68,7 +70,7 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
     setBC_PressureOutlet(bdry, 0., 0., 0., 0.);
     //-- 
     genVolumeMesh();
-    createScene_Mesh().openScene();
+    createScene_Mesh().open(true);
     saveSimWithSuffix("c_meshed");
   }
   
@@ -80,11 +82,11 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
     //-- Contour Plot
     plane = createSectionPlaneZ(coord0, "Plane Z");
     vecObj.add(plane);
-    createScene_Scalar(vecObj, varVel, defUnitVel, true).openScene();
+    createScene_Scalar(vecObj, getFieldFunction(varVel), defUnitVel, true).open(true);
     //-- Stopping Criteria
     bdry = getBoundary(bcInlet);
     createReportMassFlowAverage(bdry, "Pressure Inlet", varP, unit_Pa);
-    createStoppingCriteria(repMon, 0.01, 30, false);
+    createStoppingCriteria(repMon, "Asymptotic", 0.005, 30);
     openPlot(monPlot);
     saveSimWithSuffix("e_Ready");
   }

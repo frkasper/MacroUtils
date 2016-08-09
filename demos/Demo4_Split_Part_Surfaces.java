@@ -5,7 +5,7 @@ public class Demo4_Split_Part_Surfaces extends MacroUtils {
   public void execute() {
     _initUtils();
     simTitle = "Demo4_SplitPartSurfaces";
-    importCADPart("radial_impeller.stp", 3, false);
+    importCADPart("radial_impeller.stp");
     
     geomPrt = getLeafPart(".*");
     getPartSurface(geomPrt, ".*").setPresentationName("Faces");

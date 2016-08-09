@@ -106,15 +106,15 @@ public class Demo3_Backward_Facing_Step extends MacroUtils {
     setMeshTrimmerSizeToPrismThicknessRatio(mshCont, 2.0);
     createPhysics_AirSteadySegregatedIncompressibleKEps2LyrIsothermal();
     //-- 
-    bdry = getBoundary(bcInlet);
+    bdry = getBoundary(".*" + bcInlet);
     double vel = Re_h * 1.855e-5 / (1.184 * h * defUnitLength.getConversion());
     setBC_VelocityMagnitudeInlet(bdry, vel, 0, 0.01, 1);
     //-- 
-    bdry = getBoundary(bcOutlet);
+    bdry = getBoundary(".*" + bcOutlet);
     setBC_PressureOutlet(bdry, 0., 0., 0.01, 1);
     //-- 
-    setBC_Symmetry(getBoundary(bcSym1));
-    setBC_Symmetry(getBoundary(bcSym2));
+    setBC_Symmetry(getBoundary(".*" + bcSym1));
+    setBC_Symmetry(getBoundary(".*" + bcSym2));
     //-- 
     genVolumeMesh();
     createScene_Mesh().openScene();
@@ -126,25 +126,28 @@ public class Demo3_Backward_Facing_Step extends MacroUtils {
         sayLoud("Post-processing already exists. Skipping prep4...");
         return;
     }
+    /*
     //-- Camera Settings (Recorded a Macro from GUI to get the Coordinates)
     camFocalPoint = new double[] {0.35335640807924795, 0.09846122537045113, -9.66031784488397E-5};
     camPosition = new double[] {0.35335640807924795, 0.09846122537045113, 1.3660254041915463};
     camViewUp = new double[] {0.0, 1.0, 0.0};
-    defCamView = createCamView(camFocalPoint, camPosition, camViewUp, 0.16673195568938243, "MyCamera");
+    defCamView = createCameraView(camFocalPoint, camPosition, camViewUp, 0.16673195568938243, "MyCamera");
+    */
+    string = "myCam|3.533564e-01,9.846123e-02,-9.660318e-05|3.533564e-01,9.846123e-02,1.366025e+00|0.000000e+00,1.000000e+00,0.000000e+00|1.667320e-01";
+    defCamView = readCameraView(string);
     //-- Stopping Criteria
-    bdry = getBoundary(bcInlet);
+    bdry = getBoundary(".*" + bcInlet);
     createReportMassFlowAverage(bdry, "P_in", varP, defUnitPress);
-    createStoppingCriteria(repMon, 1e-5, 50, false);
+    createStoppingCriteria(repMon, "Asymptotic", 1e-5, 50);
     //-- Contour Plot
-    vecObj.add(getBoundary(bcSym1));
-    scene = createScene_Scalar(vecObj, varP, defUnitPress, true);
+    vecObj.add(getBoundary(".*" + bcSym1));
+    scene = createScene_Scalar(vecObj, getFieldFunction(varP), defUnitPress, true);
     //setUpdateFrequency(scene, 10);
     scene = createScene_Vector(vecObj, true);
     setUpdateFrequency(scene, 10);
     setUpdateFrequency(getPlot("Residual.*"), 20);
-    getPlot("Residual.*").open();
-    scene.openScene();
-    //openAllPlotsAndScenes();
+    //getPlot("Residual.*").open();
+    openAllPlotsAndScenes();
     saveSimWithSuffix("e_Ready");
   }
   

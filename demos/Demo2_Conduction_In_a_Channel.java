@@ -23,6 +23,8 @@ public class Demo2_Conduction_In_a_Channel extends MacroUtils {
         sayLoud("Geometry already created. Skipping prep1...");
         return;
     }
+    string = "myCam|5.189667e-01,3.166401e-02,1.624661e-03|5.189667e-01,3.166401e-02,-1.900342e+00|0.000000e+00,1.000000e+00,0.000000e+00|2.515100e-01";
+    readCameraView(string);
     coord1 = new double[] {0, 0, 0};
     coord2 = new double[] {length, height, depth};
     simpleBlkPrt = createShapePartBlock(coord1, coord2, unit_mm, "Block");
@@ -32,6 +34,7 @@ public class Demo2_Conduction_In_a_Channel extends MacroUtils {
   }
   
   void prep2_createRegion() {
+    defCamView = getCameraView("myCam");
     if (!sim.getRegionManager().isEmpty()) { 
         sayLoud("Region already created. Skipping prep2...");
         return;
@@ -89,10 +92,10 @@ public class Demo2_Conduction_In_a_Channel extends MacroUtils {
     }
     //-- Stopping Criteria
     createReportVolumeAverage(getRegion(".*"), varT, varT, defUnitTemp);
-    createStoppingCriteria(repMon, 0.005, 50, false);
+    createStoppingCriteria(repMon, "Asymptotic", 0.005, 50);
     //-- Contour Plot
     vecObj.add(getBoundary(bcSym1));
-    scene = createScene_Scalar(vecObj, varT, defUnitTemp, true);
+    scene = createScene_Scalar(vecObj, getFieldFunction(varT), defUnitTemp, true);
     setUpdateFrequency(scene, 50);
     openAllPlots();
     openAllScenes();
