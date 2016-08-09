@@ -44,7 +44,7 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
     partSrf.setPresentationName(bcInlet);
     partSrf = getPartSurface(geomPrt, "Max", "X", 1.0, regexSearch);
     partSrf.setPresentationName(bcOutlet);
-    combinePartSurfaces(getAllPartSurfaces(geomPrt, regexSearch), bcWall);
+    combinePartSurfaces(getPartSurfaces(geomPrt, regexSearch), bcWall);
     region = assignAllPartsToRegion();
     saveSimWithSuffix("b_regionOK");
   }
@@ -85,7 +85,7 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
     createScene_Scalar(vecObj, getFieldFunction(varVel), defUnitVel, true).open(true);
     //-- Stopping Criteria
     bdry = getBoundary(bcInlet);
-    createReportMassFlowAverage(bdry, "Pressure Inlet", varP, unit_Pa);
+    createReportMassFlowAverage(bdry, "Pressure Inlet", getFieldFunction(varP), unit_Pa);
     createStoppingCriteria(repMon, "Asymptotic", 0.005, 30);
     openPlot(monPlot);
     saveSimWithSuffix("e_Ready");

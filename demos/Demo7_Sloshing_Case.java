@@ -49,7 +49,7 @@ public class Demo7_Sloshing_Case extends MacroUtils {
     partSrf.setPresentationName(bcSym1);
     partSrf = getPartSurface(simpleBlkPrt, "Max", "Z", 1.0, bcWall + ".*");
     partSrf.setPresentationName(bcSym2);
-    combinePartSurfaces(getAllPartSurfaces(simpleBlkPrt, bcWall + ".*"), bcWall);
+    combinePartSurfaces(getPartSurfaces(simpleBlkPrt, bcWall + ".*"), bcWall);
     region = assignAllPartsToRegion();
     setBC_Symmetry(getBoundary(bcSym1));
     setBC_Symmetry(getBoundary(bcSym2));
@@ -92,11 +92,11 @@ public class Demo7_Sloshing_Case extends MacroUtils {
     createMotion_Translation("[$MotionVel, 0, 0]", region);
     //-- 
     //-- Some cool Reports/Plots
-    createReportMaximum(region, "CFL_max", "Convective.*Number", unit_Dimensionless);
-    createReportMassAverage(region, "CFL_avg", "Convective.*Number", unit_Dimensionless);
-    createReportMaximum(region, "Vel_max", varVel, defUnitVel);
-    createReportMaximum(region, "MotionVel", ff.getPresentationName(), defUnitVel);
-    createReportMaximum(region, "MotionDispl", ff2.getPresentationName(), defUnitLength);
+    createReportMaximum(region, "CFL_max", getFieldFunction("Convective.*Number"), unit_Dimensionless);
+    createReportMassAverage(region, "CFL_avg", getFieldFunction("Convective.*Number"), unit_Dimensionless);
+    createReportMaximum(region, "Vel_max", getFieldFunction(varVel), defUnitVel);
+    createReportMaximum(region, "MotionVel", ff, defUnitVel);
+    createReportMaximum(region, "MotionDispl", ff2, defUnitLength);
     //-- 
     //-- Scene setup
     vecObj.add(getBoundary(bcSym1));
@@ -104,7 +104,7 @@ public class Demo7_Sloshing_Case extends MacroUtils {
     scene = createScene_Scalar(vecObj, ff, unit_Dimensionless, false);
     scene.setPresentationName(sceneName);
     setSceneCameraView(scene, defCamView);
-    addAnnotation_SolutionTime(scene, new double[] {0.4, 0.9});
+    createAnnotation_Time(scene, new double[] {0.4, 0.9});
     ScalarDisplayer scalDisp = (ScalarDisplayer) getDisplayer(scene, ".*");
     scalDisp.getLegend().setHeight(0.1);
     scalDisp.setDisplayMeshBoolean(true);

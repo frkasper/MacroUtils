@@ -23,7 +23,7 @@ public class Demo8_Half_Wing extends MacroUtils {
         geomPrt = getGeometryPart(".*");
         return;
     }
-    importCADPart("WING.x_b", 4);
+    importCADPart("WING.x_b", 5);
     readCameraViews("wingCams.txt");
     //-- Split the single Part Surface by its Part Curve
     geomPrt = getGeometryPart(".*");
@@ -163,7 +163,7 @@ public class Demo8_Half_Wing extends MacroUtils {
     //--
     //-- Stopping Criteria
     int stopIter = 50;
-    createReportMaximum(region, "Max_Vel", varVel, defUnitVel);
+    createReportMaximum(region, "Max_Vel", getFieldFunction(varVel), defUnitVel);
     createStoppingCriteria(repMon, "Asymptotic", 0.05, stopIter);
     createReportForce(getWingBoundaries(), "F_y Wing", new double[] {0, 1, 0});
     createStoppingCriteria(repMon, "Asymptotic", 0.01, stopIter);
@@ -173,7 +173,7 @@ public class Demo8_Half_Wing extends MacroUtils {
   }
 
   private Vector<Boundary> getWingBoundaries() {
-    return (Vector) getAllBoundaries(".*wing.*", false);
+    return (Vector) getBoundaries(".*wing.*", false);
   }
   
   //-- 
