@@ -7,3 +7,6 @@ manifest.mf
 *.sim
 *.sim~
 *.jar
+*.stp
+*.x_b
+*.txt

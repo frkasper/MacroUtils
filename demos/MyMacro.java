@@ -6,7 +6,7 @@ public class MyMacro extends MacroUtils {
     
     public void execute() {
         
-        initialize();
+        _initUtils();
         
         for(Region r : getAllRegions()){
             
