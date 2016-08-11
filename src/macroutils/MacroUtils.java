@@ -42,7 +42,6 @@ import star.trimmer.*;
 import star.turbulence.*;
 import star.viewfactors.*;
 import star.vis.*;
-import star.walldistance.*;
 
 
 /**
@@ -103,7 +102,7 @@ import star.walldistance.*;
  *
  *          genVolumeMesh();
  *
- *          removeInvalidCells();
+ *          updateObjectsToFVRepresentation();
  *
  *          runCase();
  *
@@ -114,7 +113,7 @@ import star.walldistance.*;
  * }
  * </code></pre>
  * <p><p>
- * <b>Requirement:</b> <u>STAR-CCM+ v9.02 libs</u>
+ * <b>Requirement:</b> <u>STAR-CCM+ v10.02 libs</u>
  * <p>
  * In case of existing methods not available in older libraries, <b><span style="color:#0000FF">Macro Utils</b>
  * will not work and there will be an error when playing in STAR-CCM+. The usage of NetBeans is
@@ -122,11 +121,11 @@ import star.walldistance.*;
  * <p>
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version 3.1, June 08, 2014.
+ * @version 3.2, March 25, 2015.
  */
 public class MacroUtils extends StarMacro {
 
-  final private String MACROUTILSVERSION = "3.1";
+  final private String MACROUTILSVERSION = "3.2";
 
   /**
    * Regular execute() method. If you execute Macro Utils, it will do the following.
@@ -138,18 +137,24 @@ public class MacroUtils extends StarMacro {
 
   /**
    * Initialize Macro Utils. This method is <b>mandatory</b>. It begins here.
+   * <p>
+   * Alternatively, one can initialize with {@see #_initUtilsNonIntrusive} instead.
    */
   public void _initUtils() {
-    _initUtils(true, true);
+    _initUtils(true, verboseDebug);
   }
 
   /**
-   * Initialize Macro Utils. This method is <b>mandatory</b>. It all starts here.
-   *
-   * @param addChangeStuff Add or Change simulation items?
-   * @param verboseOption Print to standard output?
+   * Initialize Macro Utils in non intrusive mode, i.e., it will not create or change Colormaps,
+   * units, etc...
+   * <p>
+   * Alternatively, one can initialize in Intrusive mode. See {@see #_initUtilsNonIntrusive}.
    */
-  public void _initUtils(boolean addChangeStuff, boolean verboseOption) {
+  public void _initUtilsNonIntrusive() {
+    _initUtils(false, verboseDebug);
+  }
+
+  private void _initUtils(boolean addChangeStuff, boolean verboseOption) {
     sim = getActiveSimulation();
     /***************************************************************/
     /* Remember to initialize 'sim' before calling everything else */
@@ -541,28 +546,6 @@ public class MacroUtils extends StarMacro {
     }
     say("Regions created: " + createdRegions.size(), verboseOption);
     return createdRegions;
-  }
-
-  /**
-   * @deprecated in v3.1. Use {@see #evalGCI} instead.
-   */
-  public void calcGCI(Region r, FieldFunction f, Units u, double gciR, double gciFS,
-                            String[] simFiles, boolean createScene) {
-    evalGCI(r, f, u, gciR, gciFS, retFiles(simFiles), createScene, true);
-  }
-
-  /**
-   * @deprecated in v3.1. Use {@see #evalGCI} instead.
-   */
-  public void calcGCI(Report r, double gciR, double gciFS, String[] simFiles) {
-    evalGCI(r, gciR, gciFS, retFiles(simFiles), true);
-  }
-
-  /**
-   * @deprecated in v3.1. Use {@see #evalGCI} instead.
-   */
-  public void calcGCI(StarPlot plt, double gciR, double gciFS, String[] simFiles) {
-    evalGCI(plt, gciR, gciFS, retFiles(simFiles), true);
   }
 
   /**
@@ -1224,6 +1207,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * This method will convert the simulation to 2D <b>erasing the 3D Regions</b>.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void convertTo2D() {
     printAction("Converting Simulation to 2D");
@@ -1235,9 +1219,9 @@ public class MacroUtils extends StarMacro {
     }
     sim.getMeshManager().convertTo2d(1E-06, new Vector(getRegions(".*", false)), true);
     say("Restoring Views for all Scenes");
-    for (Scene scn : as) {
-        scn.setCameraStateInput(ac.get(as.indexOf(scn)));
-    }
+//    for (Scene scn : as) {
+//        scn.setCameraStateInput(ac.get(as.indexOf(scn)));
+//    }
     for (Region r : getRegions(".*", false)) {
         r.setMeshContinuum(null);
     }
@@ -1912,17 +1896,6 @@ public class MacroUtils extends StarMacro {
   }
 
   /**
-   * Creates a dimensionless Scalar Field Function.
-   * @param name given name.
-   * @param def given Field Function definition.
-   * @return The Field Function
-   * @deprecated in v3.1. Use the more elaborated versions.
-   */
-  public FieldFunction createFieldFunction(String name, String def) {
-    return createFieldFunction(name, def, null, FF_SCALAR, true);
-  }
-
-  /**
    * Creates a Scalar Field Function.
    *
    * @param name given name.
@@ -2029,6 +2002,7 @@ public class MacroUtils extends StarMacro {
    * <li> Prisms Layers are <b>OFF</b>
    * </ul>
    * @return The new Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public MeshContinuum createMeshContinua_EmbeddedThinMesher() {
     MeshContinuum continua = createMeshContinuaPoly();
@@ -2044,6 +2018,7 @@ public class MacroUtils extends StarMacro {
    * <li> Prisms Layers are <b>ON</b>
    * </ul>
    * @return The new Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public MeshContinuum createMeshContinua_PolyOnly() {
     MeshContinuum continua = createMeshContinuaPoly();
@@ -2060,6 +2035,7 @@ public class MacroUtils extends StarMacro {
    * <li> Surface Proximity for the Surface Remesher is <b>OFF</b>
    * </ul>
    * @return The new Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public MeshContinuum createMeshContinua_ThinMesher() {
     MeshContinuum continua = createMeshContinuaThinMesher();
@@ -2074,6 +2050,7 @@ public class MacroUtils extends StarMacro {
    * <li> Prisms Layers are <b>ON</b>
    * </ul>
    * @return The new Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public MeshContinuum createMeshContinua_Trimmer() {
     MeshContinuum continua = createMeshContinuaTrimmer();
@@ -2083,6 +2060,7 @@ public class MacroUtils extends StarMacro {
     return continua;
   }
 
+  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
   private MeshContinuum createMeshContinuaPoly() {
     printAction("Creating Mesh Continua");
     MeshContinuum continua = sim.getContinuumManager().createContinuum(MeshContinuum.class);
@@ -2100,6 +2078,7 @@ public class MacroUtils extends StarMacro {
     return continua;
   }
 
+  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
   private MeshContinuum createMeshContinuaThinMesher() {
     printAction("Creating Mesh Continua");
     MeshContinuum continua = sim.getContinuumManager().createContinuum(MeshContinuum.class);
@@ -2118,6 +2097,7 @@ public class MacroUtils extends StarMacro {
     return continua;
   }
 
+  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
   private MeshContinuum createMeshContinuaTrimmer() {
     printAction("Creating Mesh Continua");
     MeshContinuum continua = sim.getContinuumManager().createContinuum(MeshContinuum.class);
@@ -2388,8 +2368,8 @@ public class MacroUtils extends StarMacro {
     patchMsh.defineMeshPatchCurve(pc1, pc1.getStretchingFunction(), 0., 0., nP1, false, false);
     patchMsh.defineMeshPatchCurve(pc2, pc2.getStretchingFunction(), 0., 0., nP2, false, false);
 
-    DirectedSideMeshDistribution nv = dmo.getGuidedSurfaceMeshBaseManager().createDirectedSideMeshDistribution(getNeoObjectVector1(dmpc));
-    nv.setNumLayers(nVol);
+    DirectedMeshDistribution dmd = dmo.getDirectedMeshDistributionManager().createDirectedMeshDistribution(getNeoObjectVector1(dmpc), "Constant");
+    dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
     dmo.execute();
     sayOK();
     return dmo;
@@ -2451,8 +2431,8 @@ public class MacroUtils extends StarMacro {
         patchMsh.smoothPatchPolygonMesh(dmSmooths, 0.25, false);
     }
 
-    DirectedSideMeshDistribution nv = dmo.getGuidedSurfaceMeshBaseManager().createDirectedSideMeshDistribution(getNeoObjectVector1(dmpc));
-    nv.setNumLayers(nVol);
+    DirectedMeshDistribution dmd = dmo.getDirectedMeshDistributionManager().createDirectedMeshDistribution(getNeoObjectVector1(dmpc), "Constant");
+    dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
     dmo.execute();
     sayOK();
     return dmo;
@@ -2764,6 +2744,7 @@ public class MacroUtils extends StarMacro {
    * @param gp given Geometry Part.
    * @param name given name.
    * @param relSize relative size in (<b>%</b>).
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void createMeshVolumetricControl(MeshContinuum continua, GeometryPart gp, String name, double relSize) {
     createMeshVolumetricControl(continua, getArrayList(gp), name, relSize);
@@ -2776,6 +2757,7 @@ public class MacroUtils extends StarMacro {
    * @param gp given Geometry Part.
    * @param name given name.
    * @param relSizes given 3-component relative sizes in (<b>%</b>). E.g.: {0, 50, 0}. Zeros will be ignored.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void createMeshVolumetricControl(MeshContinuum continua, GeometryPart gp, String name, double[] relSizes) {
     if (!isTrimmer(continua)) {
@@ -2814,6 +2796,7 @@ public class MacroUtils extends StarMacro {
    * @param ag given ArrayList of Geometry Parts.
    * @param name given name.
    * @param relSize relative size in (<b>%</b>).
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void createMeshVolumetricControl(MeshContinuum continua, ArrayList<GeometryPart> ag,
                                                                     String name, double relSize) {
@@ -2846,6 +2829,7 @@ public class MacroUtils extends StarMacro {
    * @param distance given distance in default units. See {@see #defUnitLength}.
    * @param dir given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
    * @param relSizes given 3-component relative sizes in (<b>%</b>). E.g.: {0, 50, 0}. Zeros will be ignored.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void createMeshWakeRefinement(MeshContinuum continua, Boundary b, double distance,
                                                                 double[] dir, double[] relSizes) {
@@ -4437,34 +4421,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Creates a Report on P'. Useful for judging convergence.
-   *
-   * @param freq given iteration frequency.
-   * @param start given start of iteration frequency.
-   * @deprecated in v3.1. Use {@see #debugResidualsAndCorrections} instead.
-   */
-  public void createReport_PPrime(int freq, int start) {
-    printAction("Creating P' Report");
-    if (hasSegregatedFlow()) {
-        SegregatedFlowSolver sfs = ((SegregatedFlowSolver) getSolver(SegregatedFlowSolver.class));
-        sfs.setLeaveTemporaryStorage(true);
-    } else {
-        CoupledImplicitSolver cis = ((CoupledImplicitSolver) getSolver(CoupledImplicitSolver.class));
-        cis.setLeaveTemporaryStorage(true);
-    }
-    FieldFunction f = createFieldFunction("absPPrime", "abs($PPrime)", dimPress, FF_SCALAR, false);
-    f.setPresentationName("Absolute of PPrime");
-    createReportMaximum(new ArrayList(getRegions(".*", false)), "MaxPPrime", f, defUnitPress);
-    monPlot.setXAxisMonitor(getIterationMonitor());
-    ((MonitorDataSet) monPlot.getDataSetGroup().getObjects().iterator().next()).getSymbolStyle().setStyle(1);
-    StarUpdate su = repMon.getStarUpdate();
-    su.getUpdateModeOption().setSelected(StarUpdateModeOption.ITERATION);
-    su.getIterationUpdateFrequency().setIterations(freq);
-    su.getIterationUpdateFrequency().setStart(start);
-    sayOK();
-  }
-
-  /**
    * Creates some useful Reports for debugging purposes. This method will create these Reports and Annotations:
    * <ul>
    * <li>Maximum Velocity on all Fluid Regions</li>
@@ -4971,39 +4927,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Creates a Simple Cylinder Part with the default Tesselation option. See {@see #defTessOpt}.
-   *
-   * @param coord1 given 3-components array. <i>E.g.: new double[] {0, 0, 0}</i>
-   * @param coord2 given 3-components array. <i>E.g.: new double[] {1, 1, 1}</i>
-   * @param r1 given radius 1.
-   * @param r2 given radius 2.
-   * @param u given units.
-   * @param name given Cylinder name.
-   * @return The brand new Cylinder Part.
-   * @deprecated in v3.1. There is no reason for r2 in this method. Use the other {@see createShapePartCylinder} or
-   * {@see createShapePartCone} accordingly.
-   */
-  public SimpleCylinderPart createShapePartCylinder(double[] coord1, double[] coord2, double r1, double r2, Units u, String name) {
-    MeshPartFactory mpf = sim.get(MeshPartFactory.class);
-    SimpleCylinderPart scp = mpf.createNewCylinderPart(sim.get(SimulationPartManager.class));
-    LabCoordinateSystem labCSYS = sim.getCoordinateSystemManager().getLabCoordinateSystem();
-    scp.setCoordinateSystem(labCSYS);
-    scp.getRadius().setUnits(u);
-    scp.getEndRadius().setUnits(u);
-    Coordinate coordinate_0 = scp.getStartCoordinate();
-    Coordinate r = scp.getEndCoordinate();
-    coordinate_0.setCoordinate(u, u, u, new DoubleVector(coord1));
-    r.setCoordinate(u, u, u, new DoubleVector(coord2));
-    scp.getRadius().setValue(r1);
-    scp.getRadius().setUnits(u);
-    scp.getEndRadius().setValue(r2);
-    scp.getEndRadius().setUnits(u);
-    scp.getTessellationDensityOption().setSelected(defTessOpt);
-    scp.setPresentationName(name);
-    return scp;
-  }
-
-  /**
    * Creates a Simple Sphere Part. The origin is located in the Centroid of the given Part Surfaces.
    *
    * @param aps given Part Surfaces.
@@ -5089,6 +5012,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         return svm.getSolutionView(sh.getPresentationName());
     }
     RecordedSolutionView rsv = sh.createRecordedSolutionView();
+    say("Created: " + rsv.getPresentationName());
     sayOK();
     return rsv;
   }
@@ -5545,6 +5469,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Disables the Embedded Thin Mesher.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void disableEmbeddedThinMesher(MeshContinuum continua) {
     printAction("Disabling Embedded Thin Mesher");
@@ -5600,6 +5525,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     disableMeshContinua(r, true);
   }
 
+  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
   private void disableMeshContinua(Region r, boolean verboseOption) {
     printAction("Disabling Mesh Continua", verboseOption);
     sayRegion(r, verboseOption);
@@ -5616,6 +5542,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Disables the Mesh Per Region Flag in a Mesh Continua.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void disableMeshPerRegion(MeshContinuum continua) {
     printAction("Unsetting Mesh Continua as \"Per-Region Meshing\"");
@@ -5770,6 +5697,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Disables the Surface Remesher.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void disableSurfaceRemesher(MeshContinuum continua) {
     printAction("Disabling Surface Remesher");
@@ -5782,6 +5710,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Disables the Surface Remesher Automatic Repair.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void disableSurfaceRemesherAutomaticRepair(MeshContinuum continua) {
     printAction("Disabling Remesher Automatic Surface Repair");
@@ -5798,6 +5727,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Disables the Surface Remesher Project to CAD feature.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void disableSurfaceRemesherProjectToCAD(MeshContinuum continua) {
     printAction("Disabling Project to CAD");
@@ -5811,6 +5741,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Disables the Surface Wrapper.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void disableSurfaceWrapper(MeshContinuum continua) {
     printAction("Disabling Surface Wrapper");
@@ -5823,6 +5754,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Disables the Surface Wrapper GAP closure.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void disableWrapperGapClosure(MeshContinuum continua) {
     printAction("Disabling Wrapper Gap Closure");
@@ -5914,10 +5846,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayOK();
   }
 
-    /**
-     *
-     * @param continua
-     */
+   /**
+    *
+    * @param continua
+    * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
+    */
     public void enableEmbeddedThinMesher(MeshContinuum continua) {
     printAction("Enabling Embedded Thin Mesher");
     sayContinua(continua, true);
@@ -5975,11 +5908,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Enables the Generalized Cylinder Meshing Model.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void enableGeneralizedCylinderModel(MeshContinuum continua) {
     enableGeneralizedCylinderModel(continua, true);
   }
 
+  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
   private void enableGeneralizedCylinderModel(MeshContinuum continua, boolean verboseOption) {
     printAction("Enabling Generalized Cylinder Model", verboseOption);
     sayContinua(continua, verboseOption);
@@ -6027,6 +5962,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
      * This method will assume Prism Layers only on Fluid Regions
      *
      * @param continua given Mesh Continua.
+     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
      */
     public void enablePrismLayers(MeshContinuum continua) {
     printAction("Enabling Prism Layers");
@@ -6095,11 +6031,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayOK();
   }
 
-    /**
-     *
-     * @param phC
-     */
-    public void enableRadiationS2S(PhysicsContinuum phC) {
+  /**
+   * Enables Surface to Surface Radiation model.
+   *
+   * @param phC given Physics Continua.
+   */
+  public void enableRadiationS2S(PhysicsContinuum phC) {
     printAction("Enabling Radiation Surface to Surface (S2S)");
     sayContinua(phC, true);
     phC.enable(RadiationModel.class);
@@ -6115,6 +6052,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     /**
      *
      * @param continua
+     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
      */
     public void enableSurfaceProximityRefinement(MeshContinuum continua) {
     printAction("Enabling Surface Proximity Refinement");
@@ -6133,6 +6071,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     /**
      *
      * @param continua
+     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
      */
     public void enableSurfaceRemesher(MeshContinuum continua) {
     printAction("Enabling Surface Remesher");
@@ -6144,6 +6083,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     /**
      *
      * @param continua
+     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
      */
     public void enableSurfaceRemesherAutomaticRepair(MeshContinuum continua) {
     printAction("Enabling Remesher Automatic Surface Repair");
@@ -6159,6 +6099,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     /**
      *
      * @param continua
+     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
      */
     public void enableSurfaceRemesherProjectToCAD(MeshContinuum continua) {
     printAction("Enabling Project to CAD");
@@ -6171,6 +6112,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     /**
      *
      * @param continua
+     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
      */
     public void enableSurfaceWrapper(MeshContinuum continua) {
     printAction("Enabling Surface Wrapper");
@@ -6246,6 +6188,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
      *
      * @param continua
      * @param gapSize
+     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
      */
     public void enableWrapperGapClosure(MeshContinuum continua, double gapSize) {
     printAction("Enabling Wrapper Gap Closure");
@@ -6362,92 +6305,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Evaluates the Grid Convergence Index according to Roache approach for a series of Results. This
-   * method can be used if one is automating successive grid refinements. Hence, the coarse grid
-   * values are always evaluated first.
-   * <p>
-   * <b>Notes:</b> <ul>
-   * <li> This <a href="http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html">page</a> has a good tutorial.
-   * <li> The GCI coefficients are multiplied by 100 and are given in Percentage already.
-   * </ul>
-   *
-   * @param gciR given Grid Refinement Ratio for GCI.
-   * @param gciFS given Safety Factor for GCI.
-   * @param vals given ArrayList of doubles given by the successive refinements.
-   * @param grids given ArrayList of grid names given by the successive refinements.
-   * @deprecated in v3.1. This method was refactored with the method given in Celik's paper.
-   */
-  public void evalGCI(double gciR, double gciFS, ArrayList<Double> vals, ArrayList<String> grids) {
-    String fmt  = "%-45s %10g %10.3f %10.2f %10g";
-    String fmtS = "%-45s %10s %10s %10s %10s";
-    sayLoud("Assessing Grid Convergence Index", true);
-    double gci = 0., ratio = 0., fe = 0.;
-    say(String.format(fmtS, "Grid Name", "Value", "GCI (%)", "RATIO", "EXACT"));
-    for (double val : vals) {
-        int i = vals.indexOf(val);
-        if (i >= 2) {
-            double[] _vals = {vals.get(i), vals.get(i-1), vals.get(i-2)};
-            String[] _grids = {grids.get(i),grids.get(i-1), grids.get(i-2)};
-            double[] gciRes = evalGCI(gciR, gciFS, _vals, _grids, false);
-            gci = gciRes[1];
-            fe = gciRes[3];
-            ratio = gciRes[4];
-        }
-        say(String.format(fmt, grids.get(i), vals.get(i), gci, ratio, fe));
-    }
-    sayOK();
-  }
-
-  /**
-   * Evaluates the Grid Convergence Index according to Roache approach.
-   * <p>
-   * <b>Notes:</b> <ul>
-   * <li> This <a href="http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html">page</a> has a good tutorial.
-   * <li> The GCI coefficients are multiplied by 100 and are given in Percentage already.
-   * </ul>
-   *
-   * @param gciR given Grid Refinement Ratio for GCI.
-   * @param gciFS given Safety Factor for GCI.
-   * @param vals given array of doubles in the <b>following order: <u>coarse (F1), medium (F2)
-   *    and fine (F3)grid values</u></b>.
-   * @param grids given array of Strings in the same order of the values. E.g.: Grid names.
-   * @deprecated in v3.1. This method was refactored with the method given in Celik's paper.
-   * @return An array with in the form of double[] {GCI12, GCI23, Order (p), Exact, Ratio}.
-   */
-  public double[] evalGCI(double gciR, double gciFS, double[] vals, String[] grids) {
-    return evalGCI(gciR, gciFS, vals, grids, true);
-  }
-
-  @Deprecated // v3.1. Calculation was revised.
-  private double[] evalGCI(double gciR, double gciFS, double[] vals, String[] grids,
-                                                                            boolean verboseOption) {
-    //-- Log() clipping. This can change the results for non convergent results.
-    double p = Math.log(Math.max(SN, (vals[2] - vals[1]) / (vals[1] - vals[0] + SN))) / Math.log(gciR);
-    double fExact = vals[0] + (vals[0] - vals[1]) / (Math.pow(gciR, p) - 1.0);
-    double gci12 = 100. * gciFS * (Math.abs(vals[1] - vals[0]) / (vals[0] + SN)) / (Math.pow(gciR, p) - 1.0);
-    double gci23 = 100. * gciFS * (Math.abs(vals[2] - vals[1]) / (vals[1] + SN)) / (Math.pow(gciR, p) - 1.0);
-    double ratio = Math.pow(gciR, p) * gci12 / (gci23 + SN);
-    if (Double.isNaN(gci12) || Double.isNaN(gci23)) {
-        say("WARNING!!! NaN caught in GCI calculation...");
-        String fmt = "%12s, %12s, %12s, %12s, %12s, %12s, %12s";
-        say(String.format(fmt, "F1", "F2", "F3", "GCI12", "GCI23", "p", "fExact"));
-        say(String.format(fmt.replaceAll("s", "g"), vals[0], vals[1], vals[2], gci12, gci23, p, fExact));
-    }
-    printAction("GCI Overview", verboseOption);
-    say(String.format("F1: %12g --> %s (Coarse)", vals[0], grids[0]), verboseOption);
-    say(String.format("F2: %12g --> %s (Medium)", vals[1], grids[1]), verboseOption);
-    say(String.format("F3: %12g --> %s (Fine)", vals[2], grids[2]), verboseOption);
-    printLine(verboseOption);
-    say(String.format("GCI12: %12.2f%%", gci12), verboseOption);
-    say(String.format("GCI23: %12.2f%%", gci23), verboseOption);
-    say(String.format("Order: %12g", p), verboseOption);
-    say(String.format("Exact: %12g", fExact), verboseOption);
-    say(String.format("Ratio: %12g", ratio), verboseOption);
-    printLine(verboseOption);
-    return new double[] {gci12, gci23, p, fExact, ratio};
-  }
-
-  /**
    * The Grid Convergence Index (GCI) method below implements a variation of Celik et al. paper, i.e., F1, F2 and
    * F3 are the coarse, medium and fine solutions respectively.
    * <p>
@@ -6510,400 +6367,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     say(String.format(fmtP, "Extrapolated Error (E23_extr)", e23_extr), verboseOption);
     printLine(verboseOption);
     return new double[] {gci12, gci23, p, f23_extr, e12_a, e23_a};
-  }
-
-  /**
-   * <b><u>Experimental!</b></u> Calculates the Grid Convergence Index for 3 sim files, using the Roache's approach.
-   * <p>
-   * <b>Procedure:</b> <ul>
-   * <li> The finest grid must be loaded and active in STAR-CCM+;
-   * <li> Pick a Region and a Field Function to evaluate;
-   * <li> The 2 other sim files will be loaded in background and a .ccm file will be exported;
-   * <li> Coarser solutions will be projected in the finest and active one;
-   * <li> GCI is then calculated.
-   * </ul>
-   *
-   * <b>Notes:</b> <ul>
-   * <li> This method will checkout a second license of STAR-CCM+;
-   * <li> The accuracy of this method relies on the Data Mappers;
-   * <li> This <a href="http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html">page</a> has a good tutorial.
-   * </ul>
-   *
-   * @param r given Region.
-   * @param f given Field Function.
-   * @param u given variable units.
-   * @param gciR given Grid Refinement Ratio for GCI.
-   * @param gciFS given Safety Factor for GCI.
-   * @param simFiles array of sim files. Currently limited to 2. Must be in the same path of {@see #simPath}
-   *    variable.
-   * @param createScene option to create a Scene to evaluate GCI.
-   * @deprecated in v3.1. Still experimental.
-   */
-  private void evalGCI(Region r, FieldFunction f, Units u, double gciR, double gciFS,
-                            String[] simFiles, boolean createScene) {
-    evalGCI(r, f, u, gciR, gciFS, retFiles(simFiles), createScene, true);
-  }
-
-  /**
-   * Internal GCI.
-   *
-   * @param r
-   * @param f
-   * @param unit
-   * @param gciR
-   * @param gciFS
-   * @param simFiles
-   * @param createScene
-   * @param verboseOption
-   * @deprecated in v3.1. Still experimental.
-   */
-  private void evalGCI(Region r, FieldFunction f, Units u, double gciR, double gciFS,
-                            ArrayList<File> simFiles, boolean createScene, boolean verboseOption) {
-    printAction("Performing Roache's GCI calculation on Volume", verboseOption);
-    sayRegion(r, verboseOption);
-    sayFieldFunction(f, verboseOption);
-    String fnDef0 = "$" + f.getFunctionName();
-    /** GCI Field Functions: Fine, Medium and Coarse grids, respectively. */
-    UserFieldFunction gciF1, gciF2, gciF3;
-    /** Other GCI Field Functions. */
-    UserFieldFunction gci12, gci23, gciP, gciPNum;
-    if (simFiles.size() != 2) {
-        say("Only 2 sim files are expected. Found: " + simFiles.size(), verboseOption);
-        return;
-    }
-    if (isVector(f)) {
-        fnDef0 = "$$" + f.getFunctionName() + ".mag()";
-    }
-    gciF1 = cloneFieldFunction(sim, f.getFunctionName(), fnDef0);
-    gciF1.setPresentationName("GCI F1");
-    gciF1.setFunctionName("gciF1");
-    //-- Store Region boundaries for later
-    ArrayList<NamedObject> ano = new ArrayList<NamedObject>(r.getBoundaryManager().getObjects());
-    //--
-    String[] meshes = {"Medium", "Coarse"};
-    boolean firstMesh = true;
-    for (File sf : simFiles) {
-        say("Working on File: " + sf.getAbsoluteFile(), verboseOption);
-        int n = simFiles.indexOf(sf);
-        String ID = "Mesh" + meshes[n];
-        ArrayList<FieldFunction> alff = new ArrayList<FieldFunction>();
-        ArrayList<Region> alr = new ArrayList<Region>();
-        //--
-        Simulation sim2 = new Simulation(sf.toString());
-        String ccmFile = sim2.getSessionPath().replace(".sim", ".ccm");
-        alr.add(sim2.getRegionManager().getRegion(r.getPresentationName()));
-        alff.add(cloneFieldFunction(sim2, f.getFunctionName() + ID, fnDef0));
-        if (n > 0) {
-            firstMesh = false;
-        }
-        exportMeshAndData(sim2, ccmFile, alr, alff, firstMesh, false);
-        sim2.kill();
-        //--
-        Region src = importMeshAndData(ccmFile, false);
-        src.setPresentationName(r.getPresentationName() + ID);
-        PrimitiveFieldFunction f1 = (PrimitiveFieldFunction) getFieldFunction(".*" + ID, false);
-        boolean mapByCell = true;
-        mapData_Volume(src, r, f1, mapByCell, verboseOption);
-        //--
-        String fName = "MappedVertex" + f1.getFunctionName();
-        if (mapByCell) {
-            fName = "Mapped" + f1.getFunctionName();
-        }
-        PrimitiveFieldFunction f2 = (PrimitiveFieldFunction) getFieldFunction(fName, false);
-        String fn = f2.getFunctionName();
-        String mshDiff = "";
-        switch (n) {
-            case 0:
-                gciF2 = cloneFieldFunction(sim, fn, "$" + fn);
-                gciF2.setPresentationName("GCI F2");
-                gciF2.setFunctionName("gciF2");
-                mshDiff = String.format("Mesh Difference on %s (Fine-Medium)", f.getPresentationName());
-                break;
-            case 1:
-                gciF3 = cloneFieldFunction(sim, fn, "$" + fn);
-                gciF3.setPresentationName("GCI F3");
-                gciF3.setFunctionName("gciF3");
-                mshDiff = String.format("Mesh Difference on %s (Fine-Coarse)", f.getPresentationName());
-                break;
-        }
-        String def = String.format("%s - $%s", fnDef0, f2.getFunctionName());
-        FieldFunction f3 = createFieldFunction(mshDiff, def, null);
-        ((UserFieldFunction) f3).setDimensions(u.getDimensions());
-    }
-    gciPNum = (UserFieldFunction) createFieldFunction("GCI Formal Order Numerator",
-            String.format("($gciF3 - $gciF2) / ($gciF2 - $gciF1 + %g)", SN));
-    gciPNum.setFunctionName("gciPNum");
-    gciP = (UserFieldFunction) createFieldFunction("GCI Formal Order",
-            String.format("log(max(%g, $gciPNum)) / log(%g)", SN, gciR));
-    gciP.setFunctionName("gciP");
-    gci12 = (UserFieldFunction) createFieldFunction("Grid Convergence Index Fine-Medium (%)",
-            String.format("%g * abs(($gciF2 - $gciF1) / ($gciF1 + %g)) / (pow(%g, $gciP) - 1) * 100.",
-            gciFS, SN, gciR));
-    gci12.setFunctionName("gci12");
-    gci23 = (UserFieldFunction) createFieldFunction("Grid Convergence Index Medium-Coarse (%)",
-            String.format("%g * abs(($gciF3 - $gciF2) / ($gciF2 + %g)) / (pow(%g, $gciP) - 1) * 100.",
-            gciFS, SN, gciR));
-    gci23.setFunctionName("gci23");
-    if (createScene) {
-        Scene scn = createScene_Scalar(ano, getFieldFunction("gci12", false), null, false);
-        ScalarDisplayer sd = (ScalarDisplayer) scn.getDisplayerManager().getDisplayer("Scalar");
-        sd.getScalarDisplayQuantity().setRange(new double[] {0., 5});
-        sd.getLegend().setLabelFormat("%.1g");
-        sd.getLegend().setLookupTable(getColormap("cool-warm2", false));
-        scn.openScene();
-    }
-    sayOK(verboseOption);
-  }
-
-  /**
-   * <b>Experimental!!</b> Calculates the Grid Convergence Index for 3 sim files, using the
-   * Roache's approach.
-   * <p>
-   * <b>Procedure:</b> <ul>
-   * <li> The finest grid must be loaded and active in STAR-CCM+;
-   * <li> Pick a Report to evaluate;
-   * <li> The 2 other sim files will be loaded in background and the Report values will be collected;
-   * <li> GCI is then calculated.
-   * </ul>
-   *
-   * <b>Notes:</b> <ul>
-   * <li> This method will checkout a second license of STAR-CCM+;
-   * <li> This <a href="http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html">page</a> has a good tutorial.
-   * </ul>
-   *
-   * @param r given Report.
-   * @param gciR given Grid Refinement Ratio for GCI.
-   * @param gciFS given Safety Factor for GCI.
-   * @param simFiles array of sim files. Currently limited to 2. Must be in the same path of {@see #simPath}
-   *    variable.
-   * @deprecated in v3.1. No need?
-   */
-  private void evalGCI(Report r, double gciR, double gciFS, String[] simFiles) {
-    evalGCI(r, gciR, gciFS, retFiles(simFiles), true);
-  }
-
-  /**
-   * Internal GCI.
-   *
-   * @param r
-   * @param gciR
-   * @param gciFS
-   * @param simFiles
-   * @param verboseOption
-   * @deprecated in v3.1. No need?
-   */
-  private void evalGCI(Report r, double gciR, double gciFS, ArrayList<File> simFiles, boolean verboseOption) {
-    printAction("Performing Roache's GCI calculation on a Report", verboseOption);
-    ArrayList<Double> alr = new ArrayList();
-    ArrayList als = new ArrayList();
-    alr.add(r.getReportMonitorValue());
-    als.add(simTitle);
-    for (File sf : simFiles) {
-        say("Working on File: " + sf.getAbsoluteFile(), verboseOption);
-        //--
-        Simulation sim2 = new Simulation(sf.toString());
-        Report r2 = sim2.getReportManager().getReport(r.getPresentationName());
-        alr.add(r2.getReportMonitorValue());
-        als.add(sim2.getPresentationName());
-        sim2.kill();
-        //--
-    }
-    printFrame(String.format("GCI Overview on Report '%s'", r.getPresentationName()), verboseOption);
-    String[] grids = (String[]) als.toArray();
-    evalGCI(gciR, gciFS, retDouble(alr), grids, verboseOption);
-    sayOK(verboseOption);
-  }
-
-  /**
-   * Calculates the Grid Convergence Index for 3 sim files, using the Roache's approach.
-   * <p>
-   * <b>Procedure:</b> <ul>
-   * <li> The finest grid must be loaded and active in STAR-CCM+;
-   * <li> Pick a Plot to evaluate;
-   * <li> The 2 other sim files will be loaded in background and the CSV files will be exported from the Plots;
-   * <li> Coarser solutions will be projected on the CSV of the finest grid;
-   * <li> GCI is then calculated and the original Plot will be changed.
-   * </ul>
-   *
-   * <b>Notes:</b> <ul>
-   * <li> This method will checkout a second license of STAR-CCM+;
-   * <li> The reliability of this method depends on the accuracy of how the solution is projected;
-   * <li> Method is limited to sorted data in the Plot;
-   * <li> If there is more than one DataSet in the plot, only the first X-Y pair will be used;
-   * <li> This method is based on {@see #evalGCI(double, double, double[], java.lang.String[])}.
-   * </ul>
-   *
-   * @param plt given Plot.
-   * @param gciR given Grid Refinement Ratio for GCI.
-   * @param gciFS given Safety Factor for GCI.
-   * @param simFiles array of sim files. Currently limited to 2 and must be in the following order:
-   *    e.g.: {"mediumGrid.sim" , "coarseGrid.sim"}. In addition, must be in the same path as
-   *    {@see #simPath} variable.
-   * @deprecated in v3.1. This method was refactored with the method given in Celik's paper.
-   */
-  public void evalGCI(StarPlot plt, double gciR, double gciFS, String[] simFiles) {
-    evalGCI(plt, gciR, gciFS, retFiles(simFiles), true);
-  }
-
-  /**
-   * Internal GCI.
-   *
-   * @param plt
-   * @param gciR
-   * @param gciFS
-   * @param simFiles
-   * @param verboseOption
-   * @deprecated in v3.1. This method was refactored with the method given in Celik's paper.
- */
-  private void evalGCI(StarPlot plt, double gciR, double gciFS,
-                                                ArrayList<File> simFiles, boolean verboseOption) {
-    printAction("Performing Roache's GCI calculation on a Plot", verboseOption);
-    if (!isXYPlot(plt)) {
-        say("Currently limited to X-Y Plots only.");
-        return;
-    }
-    double[] x1 = null, y1 = null, x2 = null, y2 = null, x3 = null, y3 = null, y1p = null, y2p = null;
-    ArrayList<String> als = new ArrayList();
-    ArrayList plots = new ArrayList();
-    als.add(sim.getPresentationName());
-    //-- Export CSVs
-    exportPlot(plt, sim.getPresentationName() + ".csv", true);
-    for (File sf : simFiles) {
-        say("Working on File: " + sf.getAbsoluteFile(), verboseOption);
-        //--
-        Simulation sim2 = new Simulation(sf.toString());
-        StarPlot plt2 = sim2.getPlotManager().getPlot(plt.getPresentationName());
-        als.add(0, sim2.getPresentationName());
-        exportPlot(plt2, sim2.getPresentationName() + ".csv", true);
-        sim2.kill();
-        //--
-    }
-    //-- Read CSVs
-    for (String name : als) {
-        String csv = name + ".csv";
-        int n = als.indexOf(name);
-        String[] data = readFile(new File(simPath, csv));
-        say("Reading F%d: %s", n, csv);
-        switch (n) {
-            case 0:
-                x1 = retValsOnColumn(data, gciCsvReadColX);
-                y1 = retValsOnColumn(data, gciCsvReadColY);
-                break;
-            case 1:
-                x2 = retValsOnColumn(data, gciCsvReadColX);
-                y2 = retValsOnColumn(data, gciCsvReadColY);
-                break;
-            case 2:
-                x3 = retValsOnColumn(data, gciCsvReadColX);
-                y3 = retValsOnColumn(data, gciCsvReadColY);
-                break;
-        }
-    }
-    //-- Project coarser data into finer Grid
-    say("Projecting data...");
-    y1p = retProjected(x3, x1, y1);
-    y2p = retProjected(x3, x2, y2);
-    //-- GCI
-    say("Calculating GCI...");
-    String[] grids = als.toArray(new String[als.size()]);
-    double[] gci12 = new double[y3.length], gci23 = new double[y3.length],
-            gciP = new double[y3.length], gciRatio = new double[y3.length];
-    for (int i = 0; i < y3.length; i++) {
-        double[] gci = evalGCI(gciR, gciFS, new double[] {y1p[i], y2p[i], y3[i]}, grids, false);
-        gci12[i] = gci[0];
-        gci23[i] = gci[1];
-        gciP[i] = gci[2];
-        gciRatio[i] = gci[4];
-    }
-    //-- Write an absolute GCI CSV.
-    ArrayList<String> data = new ArrayList();
-    ArrayList<String> data2 = new ArrayList();
-    data2.add(String.format("X, GCI"));
-    double gciLimit = 1000;  //-- 1000% error. Should be skipped.
-    for (int i = 0; i < x3.length; i++) {
-        if (gci23[i] > gciLimit) {
-            say("Overflow detected. Skipped point x = " + x3[i] + "; y = " + y3[i]);
-            continue;
-        }
-        data2.add(String.format("%g,%g", x3[i], (1. + Math.abs(gci23[i]) / 100.) * y3[i]));
-        data2.add(String.format("%g,%g", x3[i], (1. - Math.abs(gci23[i]) / 100.) * y3[i]));
-    }
-    File newCsv = new File(simPath, "AbsoluteGCI.csv");
-    writeData(newCsv, data2, false);
-    say("New CSV file written: " + newCsv.getName());
-    FileTable it2 = (FileTable) sim.getTableManager().createFromFile(newCsv.toString());
-    //-- Changing the original Plot and adding stuff.
-    say("Changing Plot: " + plt.getPresentationName());
-    XYPlot xy = (XYPlot) plt;
-    XYPlot xy2 = sim.getPlotManager().createXYPlot();
-    //--
-    xy2.copyProperties(xy);
-    xy2.setPresentationName(plt.getPresentationName() + " - GCI");
-    xy2.getXAxisType().setUnits(xy.getXAxisType().getUnits());
-    YAxisType y = xy2.getYAxes().getDefaultAxis();
-    y.setUnits(xy.getYAxes().getDefaultAxis().getUnits());
-    //--
-    InternalDataSet ids = (InternalDataSet) y.getDataSets().getDataSets().iterator().next();
-    ids.setNeedsSorting(true);
-    ids.setPresentationName(sim.getPresentationName());
-    ids.setSeriesName(sim.getPresentationName());
-    ids.getSymbolStyle().setColor(colorDarkOrange);
-    //--
-    String s = "GCI";
-    ExternalDataSet eds = sim.getDataSetManager().createExternalDataSet(xy);
-    xy2.getDataSetGroup().addObjects(eds);
-    xy2.getExternal().add(eds);
-    eds.setTable(it2);
-    eds.setXValuesName("X");
-    eds.setYValuesName(s);
-    eds.setPresentationName(s);
-    eds.setSeriesName(s);
-    eds.getSymbolStyle().setStyle(ids.getSymbolStyle().getStyle());
-    eds.getSymbolStyle().setSize(ids.getSymbolStyle().getSize());
-    eds.getSymbolStyle().setColor(colorSlateGrayDark);
-    eds.getSymbolStyle().setSize(2 * ids.getSymbolStyle().getSize());
-    eds.getSymbolStyle().setStyle(5);
-    //--
-    plots.add(xy2.getPresentationName());
-    say("Creating new Plots...");
-    //-- Write a GCI CSV with original and projected data.
-    data.clear();
-    data.add("X, GCI12, GCI23, Order, Ratio, X1, F1, X2, F2, X3, F3, F1P, F2P");
-    String sx1, sf1, sx2, sf2;
-    for (int i = 0; i < x3.length; i++) {
-        try {
-            sx1 = String.format("%g", x1[i]);
-            sf1 = String.format("%g", y1[i]);
-        } catch (Exception e) {
-            sx1 = "null";
-            sf1 = "null";
-        }
-        try {
-            sx2 = String.format("%g", x2[i]);
-            sf2 = String.format("%g", y2[i]);
-        } catch (Exception e) {
-            sx2 = "null";
-            sf2 = "null";
-        }
-        data.add(String.format("%g,%g,%g,%g,%g,%s,%s,%s,%s,%g,%g,%g,%g",
-                x3[i], gci12[i], gci23[i], gciP[i], gciRatio[i], sx1, sf1, sx2, sf2,
-                x3[i], y3[i], y1p[i], y2p[i]));
-    }
-    File gciCsv = new File(simPath, "GCI.csv");
-    writeData(gciCsv, data, false);
-    say("Written GCI CSV file: " + gciCsv.getName());
-    FileTable it = (FileTable) sim.getTableManager().createFromFile(gciCsv.toString());
-    String[] colsNewPlot = data.get(0).split(",");
-    //-- F1, F2 & F3 plots
-    xy = evalGCI_createPlot("Original Grids Solutions", it, "X1,X2,X3".split(","), "F1,F2,F3".split(","), xy2);
-    plots.add(xy.getPresentationName());
-    xy = evalGCI_createPlot("Projected Grids Solutions", it, "X3,X3,X3".split(","), "F1P,F2P,F3".split(","), xy2);
-    plots.add(xy.getPresentationName());
-    prettifyPlots();
-    for (Object o : plots) {
-        getPlot((String) o, true).open();
-    }
-    sayOK(verboseOption);
   }
 
   /**
@@ -7417,92 +6880,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Freezes/Unfreezes the K-Epsilon Turbulent 2-equation Solver.
-   *
-   * @param freezeOption given option.
-   * @deprecated in v3.1. One should avoid freezing solvers whenever possible. Unused anymore.
-   */
-  public void freezeKeTurbSolver(boolean freezeOption) {
-    freezeSolver(KeTurbSolver.class, freezeOption);
-  }
-
-  /**
-   * Freezes/Unfreezes the K-Epsilon Turbulent Viscosity Solver.
-   *
-   * @param freezeOption given option.
-   * @deprecated in v3.1. One should avoid freezing solvers whenever possible. Unused anymore.
-   */
-  public void freezeKeTurbViscositySolver(boolean freezeOption) {
-    freezeSolver(KeTurbViscositySolver.class, freezeOption);
-  }
-
-  /**
-   * Freezes/Unfreezes the Surface to Surface (S2S) Solver.
-   *
-   * @param freezeOption given option.
-   * @deprecated in v3.1. One should avoid freezing solvers whenever possible. Unused anymore.
-   */
-  public void freezeS2SSolver(boolean freezeOption) {
-    freezeSolver(S2sSolver.class, freezeOption);
-  }
-
-  /**
-   * Freezes/Unfreezes the Segregated Energy Solver.
-   *
-   * @param freezeOption given option.
-   * @deprecated in v3.1. One should avoid freezing solvers whenever possible. Unused anymore.
-   */
-  public void freezeSegregatedEnergySolver(boolean freezeOption) {
-    freezeSolver(SegregatedEnergySolver.class, freezeOption);
-  }
-
-  /**
-   * Freezes/Unfreezes the Segregated Flow Solver.
-   *
-   * @param freezeOption given option.
-   * @deprecated in v3.1. One should avoid freezing solvers whenever possible. Unused anymore.
-   */
-  public void freezeSegregatedFlowSolver(boolean freezeOption) {
-    freezeSolver(SegregatedFlowSolver.class, freezeOption);
-  }
-
-  /**
-   * Freeze/Unfreeze the View Factors Solver. Updates the View Factors upon unfreezing.
-   *
-   * @param freezeOption given option.
-   * @deprecated in v3.1. One should avoid freezing solvers whenever possible. Unused anymore.
-   */
-  public void freezeViewfactorsCalculatorSolver(boolean freezeOption) {
-    Solver solver = freezeSolver(ViewfactorsCalculatorSolver.class, freezeOption);
-    if (!freezeOption) {
-        ((ViewfactorsCalculatorSolver) solver).calculateViewfactors();
-    }
-  }
-
-  /**
-   * Freeze/Unfreeze the Wall Distance Solver.
-   *
-   * @param freezeOption given option.
-   * @deprecated in v3.1. One should avoid freezing solvers whenever possible. Unused anymore.
-   */
-  public void freezeWallDistanceSolver(boolean freezeOption) {
-    freezeSolver(WallDistanceSolver.class, freezeOption);
-  }
-
-  /*
-   * @deprecated in v3.1. One should avoid freezing solvers whenever possible. Unused anymore.
-   */
-  private Solver freezeSolver(Class solverClass, boolean freezeOption) {
-    Solver solver = sim.getSolverManager().getSolver(solverClass);
-    String msg = "Freezing ";
-    if (!freezeOption) { msg = msg.replace("Free", "Unfree"); }
-    printAction(msg + solver);
-    solver.setFrozen(freezeOption);
-    sayOK();
-    return solver;
-  }
-
-  /**
    * This is the {@see #genSurfaceMesh} method.
    */
   public void generateSurfaceMesh() {
@@ -7977,11 +7354,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Get all Mesh Continuas.
    *
    * @return All Mesh Continuas.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public ArrayList<MeshContinuum> getAllMeshContinuas() {
     return getAllMeshContinuas(true);
   }
 
+  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
   private ArrayList<MeshContinuum> getAllMeshContinuas(boolean verboseOption) {
     say("Getting all Mesh Continuas...", verboseOption);
     ArrayList<MeshContinuum> vecMC = new ArrayList<MeshContinuum>();
@@ -8599,10 +7978,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     say(String.format("Getting a %s Continua by REGEX pattern: \"%s\"", type, regexPatt), verboseOption);
     for (Continuum cont : sim.getContinuumManager().getObjects()) {
         if (cont.getPresentationName().matches(regexPatt)) {
-            if (!type.equals("Mesh") && isMesh(cont)) {
+            if (!type.equals("Mesh") && isMeshContinua(cont)) {
                 continue;
             }
-            if (!type.equals("Physics") && isPhysics(cont)) {
+            if (!type.equals("Physics") && isPhysicsContinua(cont)) {
                 continue;
             }
             say("Found: " + cont.getPresentationName(), verboseOption);
@@ -8611,21 +7990,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
     say("Nothing found. Returning NULL!", verboseOption);
     return null;
-  }
-
-    /**
-     * @param b
-     * @deprecated in v3.1. Old method. Not used.
-     */
-    public void getDependentInterfaceAndEraseIt(Boundary b) {
-    Interface i = (DirectBoundaryInterface) b.getDependentInterfaces().get(0);
-    printAction("Erasing an Interface");
-    say("Name: " + i.getPresentationName());
-    say("Between Regions: ");
-    say("  " + i.getRegion0().getPresentationName());
-    say("  " + i.getRegion1().getPresentationName());
-    sim.getInterfaceManager().deleteInterfaces(i);
-    sayOK();
   }
 
   /**
@@ -9040,6 +8404,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param regexPatt given REGEX search pattern.
    * @return The Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public MeshContinuum getMeshContinua(String regexPatt) {
     return (MeshContinuum) getContinua(regexPatt, "Mesh", true) ;
@@ -10982,23 +10347,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public boolean isImplicitUnsteady() {
     boolean hasImpUnst = sim.getSolverManager().has("Implicit Unsteady");
     return hasImpUnst;
-//////    boolean haveRegSS = false;
-//////    //-- In Multi Regions simulations it is good to check if there are Continuas being run in SS.
-//////    for (Region r : getRegions(".*", false)) {
-//////        //-- Might get a null Exception some time.
-//////        if (r.getPhysicsContinuum() == null) {
-//////            continue;
-//////        }
-//////        if (r.getPhysicsContinuum().getModelManager().has("Steady")) {
-//////            haveRegSS = true;
-//////            break;
-//////        }
-//////    }
-//////    if (hasImpUnst && !haveRegSS) {
-//////        return true;
-//////    } else {
-//////        return false;
-//////    }
   }
 
   /**
@@ -11069,17 +10417,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private boolean isLinux() {
     return (OS.indexOf("nux") >= 0);
-  }
-
-  /**
-   * Is this a Mesh Continua?
-   *
-   * @param continua given Continua.
-   * @return True or False.
-   * @deprecated v3b. Use {@see #isMeshContinua}.
-   */
-  public boolean isMesh(Continuum continua) {
-    return hasClassName(continua, "star.common.MeshContinuum");
   }
 
   /**
@@ -11170,11 +10507,22 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Is this a Physics Continua?
    *
-   * @param continua given Continua.
+   * @param no given NamedObject.
    * @return True or False.
    */
+  public boolean isPhysicsContinua(NamedObject no) {
+    return hasClassName(no, "star.common.PhysicsContinuum");
+  }
+
+  /**
+   * Is this a Physics Continua?
+   *
+   * @param continua given Continua.
+   * @return True or False.
+   * @deprecated in v3.2. Use the other one.
+   */
   public boolean isPhysics(Continuum continua) {
-    return hasClassName(continua, "star.common.PhysicsContinuum");
+    return isPhysicsContinua(continua);
   }
 
   /**
@@ -11464,6 +10812,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param continua given Mesh Continua.
    * @return True or False.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public boolean isWrapper(MeshContinuum continua) {
     if (continua.getEnabledModels().containsKey("star.surfacewrapper.SurfaceWrapperMeshingModel"))
@@ -11483,13 +10832,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     String type = b.getBoundaryType().toString();
     if (type.equals(t1) || type.equals(t2)) return true;
     return false;
-  }
-
-  /**
-   * @deprecated Use {@see #isWall} instead.
-   */
-  public boolean isWallBoundary(Boundary b) {
-    return isWall(b);
   }
 
   private boolean isWindows() {
@@ -11568,7 +10910,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public void openAllPlots() {
     printAction("Opening All Plots");
     for (StarPlot sp : sim.getPlotManager().getObjects()) {
-        if (sp.getGraph().isDisplayable()) {
+        if (sp.getGraph().isShowing()) {
             say("Plot is open: %s", sp.getPresentationName());
             continue;
         }
@@ -11663,7 +11005,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private void postFlyOverAndSavePics(Scene scn, VisView v1, VisView v2, int frames,
                                                 ArrayList<VisView> cams, RecordedSolutionView rsv) {
-//////    ArrayList<VisView> cams = new ArrayList();
     postFrames = frames;
     int maxState = 10000;
     if (rsv != null) {
@@ -11677,24 +11018,23 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         return;
     }
     if (v1 != null) {
-        setSceneCameraView(scn, v1, false);
+        setSceneCameraView(scn, v1, verboseDebug);
         cam1 = v1.getPresentationName();
     }
     if (v1 != null && v2 != null) {
         cam2 = v2.getPresentationName();
-        cams.addAll(getCameraViews(v1, v2, frames));
+        cams.addAll(getCameraViews(v1, v2, frames, verboseDebug));
     }
     for (int i = 0; i < frames; i++) {
         int picNumber = i + postOldFrame;
         if (rsv != null) {
-//////            rsv.setStateIndex(picNumber);
             //printLine();
             //say("Setting: " + rsv.getStateName());
             //say("State Index: " + rsv.getStateIndex());
             rsv.setStateIndex(rsv.getStateIndex() + 1);
         }
         if (!cams.isEmpty()) {
-            setSceneCameraView(scn, cams.get(i+1), false);
+            setSceneCameraView(scn, cams.get(i+1), verboseDebug);
         }
         String picName = String.format("pic%04d_Cam_%s_to_%s.png", picNumber, cam1, cam2);
         File picFolder = createFolder("pics_" + simTitle, false);
@@ -11703,13 +11043,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         }
         say("Printing: %s", picName);
         postFlyOverAndSavePics_prePrintPicture();
-        hardCopyPicture(scn, new File(picFolder, picName), defPicResX, defPicResY, false);
+        hardCopyPicture(scn, new File(picFolder, picName), defPicResX, defPicResY, verboseDebug);
         postCurFrame ++;
-        //sleep(100);
     }
     postFlyOverAndSavePics_postPrintPicture();
     postCurFrame = postOldFrame + frames;
-    cleanUpTemporaryCameraViews(false);
+    cleanUpTemporaryCameraViews(verboseDebug);
   }
 
   /**
@@ -12029,6 +11368,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * An overview of the mesh parameters.
    * @param continua
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void printMeshParameters(MeshContinuum continua) {
     ReferenceValueManager rvm = continua.getReferenceValues();
@@ -13195,6 +12535,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Resets the Surface Remesher to default conditions.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void resetSurfaceRemesher(MeshContinuum continua) {
     enableSurfaceRemesher(continua);
@@ -13787,7 +13128,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private void sayContinua(Continuum continua, boolean verboseOption) {
     String contName = "Physics";
-    if (isMesh(continua)) contName = "Mesh";
+    if (isMeshContinua(continua)) {
+        contName = "Mesh";
+    }
     say(contName + " Continua: " + continua.getPresentationName(), verboseOption);
   }
 
@@ -14218,6 +13561,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param emissivity given Emissivity dimensionless.
    * @param transmissivity given Transmissivity dimensionless.
    * @param externalEmissivity given External Emissivity dimensionless.
+   * @deprecated in v3.2. Needs refactoring. Radiation is gone.
    */
   public void setBC_EnvironmentWall(Boundary b, double T, double htc, double emissivity,
                                                 double transmissivity, double externalEmissivity) {
@@ -14225,7 +13569,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     setBC_ConvectionWall(b, T, htc, false);
     if (hasRadiationBC(b)) {
         //say("  External Emissivity: " + externalEmissivity);
-        setRadiationParametersS2S(b, emissivity, transmissivity);
+        ////setRadiationParametersS2S(b, emissivity, transmissivity);
         b.getConditions().get(WallThermalOption.class).setSelected(WallThermalOption.ENVIRONMENT);
         ExternalEmissivityProfile eemP = b.getValues().get(ExternalEmissivityProfile.class);
         eemP.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(externalEmissivity);
@@ -14290,29 +13634,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     setBC_Values(b, "Static Temperature", T, defUnitTemp, false);
     setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, false);
     setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, false);
-    sayOK();
-  }
-
-  /**
-   * Sets the Wall Boundary as Free Stream.
-   *
-   * @param b given Boundary.
-   * @param dir given 3-components direction of the flow. E.g., in X: {1, 0, 0}.
-   * @param mach given Mach number.
-   * @param T given Static Temperature in default units. See {@see #defUnitTemp}.
-   * @param ti given Turbulent Intensity dimensionless, if applicable.
-   * @param tvr given Turbulent Viscosity Ratio dimensionless, if applicable.
-   * @deprecated in v3.1. This one was missing input Pressure. Use the other one.
-   */
-  public void setBC_FreeStream(Boundary b, double[] dir, double mach, double T,
-                                                                    double ti, double tvr) {
-    printAction("Setting BC as a Free Stream", b, true);
-    b.setBoundaryType(FreeStreamBoundary.class);
-    setBC_Values(b, "Mach Number", mach, unit_Dimensionless, false);
-    setBC_Values(b, "Static Temperature", T, defUnitTemp, false);
-    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, false);
-    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, false);
-    setBC_Values(b, "Flow Direction", dir, unit_Dimensionless, false);
     sayOK();
   }
 
@@ -14785,6 +14106,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param continua given Mesh Continua.
    * @param minProx given Minimum Proximity. Default is 5%.
    * @param minQual given Minimum Quality. Default is 1%.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshAutomaticSurfaceRepairParameters(MeshContinuum continua, double minProx, double minQual) {
     if (!isRemesh(continua)) return;
@@ -14810,20 +14132,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     setMeshBaseSize(no, val, u, true);
   }
 
-  /**
-   * Specifies the Base Mesh Size for a Mesh Operation.
-   *
-   * @param mo given Mesh Operation.
-   * @param val reference size.
-   * @param u given units.
-   * @deprecated in v3.1. Use the one with Named Object instead.
-   *
-   */
-  private void setMeshBaseSize(MeshOperation mo, double val, Units u) {
-    setMeshBaseSize(mo, val, u, true);
-  }
-
-
   private void setMeshBaseSize(NamedObject no, double val, Units u, boolean verboseOption) {
     printAction("Setting the Mesh Base Size", verboseOption);
     sayNamedObject(no, verboseOption);
@@ -14835,38 +14143,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     bs.setUnits(u);
     say("Base Size: " + val + u.getPresentationName(), verboseOption);
     sayOK(verboseOption);
-  }
-
-  @Deprecated // v3.1
-  private void setMeshBaseSize(MeshOperation mo, double val, Units u, boolean verboseOption) {
-    printAction("Setting the Base Size in a Mesh Operation", verboseOption);
-    sayMeshOp(mo, verboseOption);
-    if (!(isAutoMeshOperation(mo) || isSurfaceWrapperOperation(mo))) {
-        say("This Mesh Operation can not have Custom Controls. Skipping...", verboseOption);
-        return;
-    }
-    AutoMeshOperation amo = (AutoMeshOperation) mo;
-    say("Base Size: " + val + u.getPresentationName(), verboseOption);
-    amo.getDefaultValues().get(BaseSize.class).setValue(val);
-    amo.getDefaultValues().get(BaseSize.class).setUnits(u);
-    sayOK(verboseOption);
-  }
-
-  /**
-   * Specifies the Base Mesh Size for a Mesh Continuum.
-   *
-   * @param continua given Mesh Continua.
-   * @param val reference size.
-   * @param u given units.
-     @deprecated in v3.1. Use the one with Named Object instead.
-   */
-  private void setMeshBaseSize(MeshContinuum continua, double val, Units u) {
-    printAction("Setting Mesh Continua Base Size");
-    sayContinua(continua, true);
-    say("Base Size: " + val + u.getPresentationName());
-    continua.getReferenceValues().get(BaseSize.class).setUnits(u);
-    continua.getReferenceValues().get(BaseSize.class).setValue(val);
-    sayOK();
   }
 
   /**
@@ -14916,6 +14192,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param b given boundary.
    * @param layers given number of layers.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshGeneralizedCylinderExtrusion_Constant(Boundary b, int layers) {
     printAction("Activating Generalized Cylinder Model");
@@ -14932,6 +14209,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Sets a Per-Region meshing on a Continua.
    *
    * @param continua given Mesh Continua.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshPerRegionFlag(MeshContinuum continua) {
     printAction("Setting Mesh Continua as \"Per-Region Meshing\"");
@@ -15005,6 +14283,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param numLayers given number of prisms.
    * @param stretch given prism stretch relation.
    * @param relSize given relative size in (%).
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshPrismsParameters(MeshContinuum continua, int numLayers, double stretch, double relSize) {
     printAction("Changing Prism Layers Parameters");
@@ -15213,6 +14492,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
      *
      * @param continua
      * @param numPoints
+     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
      */
     public void setMeshCurvatureNumberOfPoints(MeshContinuum continua, double numPoints) {
     printAction("Setting Mesh Continua Surface Curvature");
@@ -15228,6 +14508,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param continua given Mesh Continua.
    * @param min minimum relative size (%).
    * @param tgt target relative size (%).
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshSurfaceSizes(MeshContinuum continua, double min, double tgt) {
     printAction("Setting Mesh Continua Surface Sizes");
@@ -15242,6 +14523,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param continua given Mesh Continua.
    * @param growthFactor given Growth Factor.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshTetPolyGrowthRate(MeshContinuum continua, double growthFactor) {
     printAction("Setting Mesh Volume Growth Factor");
@@ -15256,6 +14538,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param continua given Mesh Continua.
    * @param sizeThicknessRatio given Size Thickness Ratio. <i>Default is 5</i>.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshTrimmerSizeToPrismThicknessRatio(MeshContinuum continua, double sizeThicknessRatio) {
     printAction("Setting Mesh Trimmer Size To Prism Thickness Ratio");
@@ -15272,6 +14555,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param continua given Mesh Continua.
    * @param featAngle
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshWrapperFeatureAngle(MeshContinuum continua, double featAngle) {
     printAction("Setting Wrapper Feature Angle");
@@ -15286,6 +14570,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param continua given Mesh Continua.
    * @param scaleFactor given Scale Factor. E.g.: 70.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
    */
   public void setMeshWrapperScaleFactor(MeshContinuum continua, double scaleFactor) {
     printAction("Setting Wrapper Scale Factor");
@@ -15365,101 +14650,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     vp.getMethod(ConstantVectorProfileMethod.class).getQuantity().setConstant(vals);
     vp.getMethod(ConstantVectorProfileMethod.class).getQuantity().setUnits(u);
     say(vp.getPresentationName() + ": " + retString(vals) + u.getPresentationName());
-  }
-
-  /**
-    * @deprecated in v3.1. Needs refactoring.
-   */
-  private void setRadiationEmissivityTransmissivity(Boundary b, double emissivity, double transmissivity) {
-    printAction("S2S Radiation Parameters on Boundary");
-    sayBdry(b);
-    if (!hasRadiationBC(b)) {
-        say("  Radiation Settings not available. Skipping...");
-        return;
-    }
-    EmissivityProfile emP;
-    TransmissivityProfile trP = null;
-    if (isDirectBoundaryInterface(b)) {
-        DirectBoundaryInterfaceBoundary intrfBdryD = (DirectBoundaryInterfaceBoundary) b;
-        emP = intrfBdryD.getValues().get(EmissivityProfile.class);
-        setRadiationEmissTransmiss(emP, emissivity, trP, transmissivity);
-    } else if (isIndirectBoundaryInterface(b)) {
-        IndirectBoundaryInterfaceBoundary intrfBdryI = (IndirectBoundaryInterfaceBoundary) b;
-        emP = intrfBdryI.getValues().get(EmissivityProfile.class);
-        setRadiationEmissTransmiss(emP, emissivity, trP, transmissivity);
-    } else {
-        emP = b.getValues().get(EmissivityProfile.class);
-        trP = b.getValues().get(TransmissivityProfile.class);
-        setRadiationEmissTransmiss(emP, emissivity, trP, transmissivity);
-    }
-//    catch (Exception e) {
-//        say("ERROR! Radiation Settings not available. Skipping...");
-//        say(e.getMessage());
-//    }
-  }
-
-
-  /**
-   * @deprecated in v3.1. Needs refactoring.
-   */
-  private void setRadiationEmissTransmiss(EmissivityProfile emP, double em, TransmissivityProfile trP, double tr) {
-    say("  Emissivity: " + em);
-    emP.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(em);
-    if (trP == null) { return; }
-    say("  Transmissivity: " + tr);
-    trP.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(tr);
-  }
-
-    /**
-     *
-     * @param r
-     * @param angle
-     * @param patchProportion
-     * @deprecated in v3.1. Needs refactoring.
-     */
-    public void setRadiationParametersS2S(Region r, double angle, double patchProportion) {
-    printAction("S2S Radiation Parameters on Region");
-    sayRegion(r);
-    say("  Sharp Angle: " + angle);
-    say("  Face/Patch Proportion: " + patchProportion);
-    SharpAngle sharpAngle = r.getValues().get(SharpAngle.class);
-    sharpAngle.setSharpAngle(angle);
-    PatchPerBFaceProportion patchProp = r.getValues().get(PatchPerBFaceProportion.class);
-    patchProp.setPatchPerBFaceProportion(patchProportion);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param b
-     * @param emissivity
-     * @param transmissivity
-     * @deprecated in v3.1. Needs refactoring.
-     */
-    public void setRadiationParametersS2S(Boundary b, double emissivity, double transmissivity) {
-    setRadiationEmissivityTransmissivity(b, emissivity, transmissivity);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param b
-     * @param emissivity
-     * @param transmissivity
-     * @param temperature
-     * @deprecated in v3.1. Needs refactoring.
-     */
-    public void setRadiationParametersS2S(Boundary b, double emissivity, double transmissivity, double temperature) {
-    setRadiationEmissivityTransmissivity(b, emissivity, transmissivity);
-    say("  Radiation " + retTemp(temperature));
-    try{
-        RadiationTemperatureProfile rtP = b.getValues().get(RadiationTemperatureProfile.class);
-        rtP.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(temperature);
-        rtP.getMethod(ConstantScalarProfileMethod.class).getQuantity().setUnits(defUnitTemp);
-    } catch (Exception e) {
-        say("ERROR! Radiation Temperature not applicable on: " + b.getPresentationName());
-    }
-    sayOK();
   }
 
   /**
@@ -15938,6 +15128,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Split a Non-Contiguous r.
    *
    * @param r given Region.
+   * @deprecated in v3c. Not used anymore.
    */
   public void splitRegionNonContiguous(Region r) {
     printAction("Splitting Non Contiguous Regions");
@@ -16829,7 +16020,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Default Colormap for Scalar Displayers. */
   public LookupTable defColormap = null;
 
-  /** Some useful Global Variables: Mesh Continuas. */
+  /**
+   * Some useful Global Variables: Mesh Continuas.
+   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
+   */
   public MeshContinuum mshCont = null, mshCont1 = null, mshCont2 = null;
 
   /** Some useful Global Variables: Mesh Operations. */
@@ -17024,6 +16218,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /** Enable Cell Quality Remediation when creating Physics Continua with Macro Utils?. Default = yes. */
   public boolean enableCQR = true;
+
+  /** Prints extra messages when using Macro Utils. Useful for debugging. */
+  public boolean verboseDebug = false;
 
   /**
    * Enable temporary storage in Solvers? Useful when debugging and with {@see #updateSolverSettings}.
