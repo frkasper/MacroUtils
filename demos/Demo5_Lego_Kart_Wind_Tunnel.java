@@ -120,6 +120,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends MacroUtils {
         return;
     }
     //-- Physics Continua
+    enableCQR = true;
     physCont = createPhysics_AirSteadySegregatedIncompressibleKEps2LyrIsothermal();
     //-- Convert to Coupled Solver
     CFL = 150;
