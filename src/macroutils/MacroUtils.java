@@ -8,12 +8,12 @@ import javax.swing.*;
 import star.base.neo.*;
 import star.base.report.*;
 import star.cadmodeler.*;
+import star.combustion.*;
 import star.common.*;
 import star.common.graph.*;
 import star.coupledflow.*;
 import star.dualmesher.*;
 import star.energy.*;
-import star.extruder.*;
 import star.flow.*;
 import star.keturb.*;
 import star.kwturb.*;
@@ -35,7 +35,6 @@ import star.segregatedenergy.*;
 import star.segregatedflow.*;
 import star.segregatedmultiphase.*;
 import star.segregatedspecies.*;
-import star.solidmesher.*;
 import star.surfacewrapper.*;
 import star.sweptmesher.*;
 import star.trimmer.*;
@@ -113,7 +112,7 @@ import star.vis.*;
  * }
  * </code></pre>
  * <p><p>
- * <b>Requirement:</b> <u>STAR-CCM+ v10.02 libs</u>
+ * <b>Requirement:</b> <u>STAR-CCM+ v10.04 libs</u>
  * <p>
  * In case of existing methods not available in older libraries, <b><span style="color:#0000FF">Macro Utils</b>
  * will not work and there will be an error when playing in STAR-CCM+. The usage of NetBeans is
@@ -121,11 +120,11 @@ import star.vis.*;
  * <p>
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version 3.2, March 25, 2015.
+ * @version 3.3, December 18, 2015.
  */
 public class MacroUtils extends StarMacro {
 
-  final private String MACROUTILSVERSION = "3.2";
+  final private String MACROUTILSVERSION = "3.3";
 
   /**
    * Regular execute() method. If you execute Macro Utils, it will do the following.
@@ -138,28 +137,33 @@ public class MacroUtils extends StarMacro {
   /**
    * Initialize Macro Utils. This method is <b>mandatory</b>. It begins here.
    * <p>
-   * Alternatively, one can initialize with {@see #_initUtilsNonIntrusive} instead.
+   * Alternatively, one can initialize with {@link #_initUtilsNonIntrusive} instead.
    */
   public void _initUtils() {
-    _initUtils(true, verboseDebug);
+    _initUtils(true, true);
   }
 
   /**
    * Initialize Macro Utils in non intrusive mode, i.e., it will not create or change Colormaps,
    * units, etc...
    * <p>
-   * Alternatively, one can initialize in Intrusive mode. See {@see #_initUtilsNonIntrusive}.
+   * Alternatively, one can initialize in Intrusive mode. See {@link #_initUtilsNonIntrusive}.
    */
   public void _initUtilsNonIntrusive() {
-    _initUtils(false, verboseDebug);
+    _initUtils(false, true);
   }
 
   private void _initUtils(boolean addChangeStuff, boolean verboseOption) {
     sim = getActiveSimulation();
+    Locale.setDefault(Locale.ENGLISH);
     /***************************************************************/
     /* Remember to initialize 'sim' before calling everything else */
     /***************************************************************/
-    sayLoud("Starting " + getMacroUtilsVersion(), verboseOption);
+    //##############################################################
+    // For debugging...
+    // verboseOption = verboseDebug = true;
+    //##############################################################
+    sayLoud("Starting Macro Utils", verboseOption);
     //--
     //-- Store essential variables
     //--
@@ -170,7 +174,7 @@ public class MacroUtils extends StarMacro {
     simPath = sim.getSessionDir();
     cadPath = new File(simPath, "CAD");
     dbsPath = new File(simPath, "DBS");
-    saySimName(true);
+    say("Simulation Name: " + sim.getPresentationName(), verboseOption);
     say("Simulation File: " + simFile.toString(), verboseOption);
     say("Simulation Path: " + simPath, verboseOption);
     try {
@@ -183,9 +187,9 @@ public class MacroUtils extends StarMacro {
         addColormaps(verboseOption);
         addTags(verboseOption);
         prettifyLogo(false);
-        updateUnits(verboseOption);
         //setAbortStoppingCriteria(false);      <--- Very dangerous.
     }
+    updateUnits(verboseOption, addChangeStuff);
     printAction(getMacroUtilsVersion() + " initialized.");
   }
 
@@ -206,7 +210,7 @@ public class MacroUtils extends StarMacro {
    * Adds a custom Colormap to be used in Scalar Displayers.
    *
    * @param name given Colormap name.
-   * @param arrayColors given Array of Colors. See {@see java.awt.Color} for details.
+   * @param arrayColors given Array of Colors. See {@link java.awt.Color} for details.
    * @return
    */
   public LookupTable addColormap(String name, Color[] arrayColors) {
@@ -217,7 +221,7 @@ public class MacroUtils extends StarMacro {
    * Adds a custom Colormap to be used in Scalar Displayers.
    *
    * @param name given Colormap name.
-   * @param vc given ArrayList of Colors. See {@see java.awt.Color} for details.
+   * @param vc given ArrayList of Colors. See {@link java.awt.Color} for details.
    * @return
    */
   public LookupTable addColormap(String name, ArrayList<Color> vc) {
@@ -254,7 +258,7 @@ public class MacroUtils extends StarMacro {
     cmap.setPresentationName(name);
     cmap.setColorSpace(0);
     cmap.setValues(dv);
-    say("Colormap created: " + name, verboseOption);
+    sayCreated(cmap, verboseOption);
     return cmap;
   }
 
@@ -326,7 +330,7 @@ public class MacroUtils extends StarMacro {
     }
     UserTag ut = sim.get(TagManager.class).createNewUserTag(name);
     ut.getCustomizableIcon().setStarImagePixelData(iv);
-    say("Tag created: " + name, verboseOption);
+    sayCreated(ut, verboseOption);
     TagClientServerObjectFilter tf = (TagClientServerObjectFilter) sim.get(GeometryFilterManager.class).createObjectFilter("TagClientServerObjectFilter");
     tf.setPresentationName(name + " Filter");
     tf.getTagGroup().setObjects(ut);
@@ -334,8 +338,12 @@ public class MacroUtils extends StarMacro {
   }
 
   /**
-   * Add Custom Simulation Tags
+   * Add some custom Simulation Tags. It can be useful in a simulation.
    */
+  public void addTags() {
+    addTags(true);
+  }
+
   private void addTags(boolean verboseOption) {
     printAction("Adding Custom Simulation Tags", verboseOption);
     addTag("Black", new IntVector(new int[] {16, 16, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 6644833, 6776419, 6842212, 208168804, 2120705379, -966433951, -60727203, -60990375, -967223211, 2119455569, 206523980, 5000009, 4802630, 4671044, 16777215, 16777215, 6644833, 6776163, 1063741027, -563648925, -6908783, -5592665, -5263700, -5658459, -6908526, -8882572, -565425335, 1061767238, 4605251, 4539458, 16777215, 16777215, 6513247, 1365599073, -8421766, -5790303, -5790301, -7106420, -8224900, -8685451, -8553608, -8093058, -8553608, -10790314, 1363362367, 4276286, 16777215, 16777215, 308305756, -211722147, -6250597, -7237749, -8093058, -8487816, -8882573, -9343124, -9803675, -9935261, -9540503, -8948109, -213959108, 306003002, 16777215, 16777215, -2074322088, -8092801, -7961472, -8487816, -8685195, -9014160, -9408918, -9803675, -10001054, -10198434, -10461605, -10264226, -10527141, -2076559050, 16777215, 16777215, -816425645, -8488329, -8882573, -9146002, -9408917, -9737882, -9935261, -10132640, -10330019, -10527399, -10724778, -10790570, -10593705, -818596814, 16777215, 16777215, -112111539, -9079695, -9737625, -9935004, -10000797, -10132383, -10329762, -10527141, -10724777, -10921899, -11119278, -11185071, -10856107, -265146322, 16777215, 16777215, -263501240, -9737883, -10330019, -10395812, -10527398, -10724777, -10856364, -11119535, -11251122, -11448501, -11645879, -11711673, -11316914, -215011797, 16777215, 16777215, -817478333, -10264225, -10461605, -10724778, -10856364, -11053743, -11251122, -11382964, -11645879, -11777466, -11909052, -11777466, -11711671, -819188952, 16777215, 16777215, -2075966913, -11119536, -10593191, -11053743, -11185585, -11382707, -11580086, -11711673, -11909052, -11975101, -12106431, -11711673, -12501189, -2077611738, 16777215, 16777215, 356466235, -214156487, -10987950, -11053744, -11514294, -11646136, -11843259, -11975101, -12106431, -12172224, -11909053, -12040638, -215472348, 355084582, 16777215, 16777215, 3881528, 1413036085, -12435139, -11579829, -11251635, -11711929, -12040894, -12172224, -12106687, -11777980, -12172481, -13422034, 1411917604, 2828839, 16777215, 16777215, 3881271, 3618356, 1160983088, -567201747, -12369346, -11777209, -11448757, -11580343, -12040381, -12895690, -567925470, 1210591012, 2763046, 2960425, 16777215, 16777215, 3815734, 3552563, 3355184, 204484396, -2127746007, -919918041, -14079963, -14211549, -920181213, -2128140765, 203958052, 2763046, 2894632, 3092011, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215, 16777215}), verboseOption);
@@ -388,7 +396,7 @@ public class MacroUtils extends StarMacro {
   }
 
   /**
-   * This is the same as {@see #updateObjectsToFVRepresentation}.
+   * This is the same as {@link #updateObjectsToFVRepresentation}.
    */
   public void applyFVRepresentationToAllObjects() {
     updateObjectsToFVRepresentation();
@@ -565,7 +573,7 @@ public class MacroUtils extends StarMacro {
    * @return PhysicsContinuum
    */
   private PhysicsContinuum changePhysics_AirWaterEMP(PhysicsContinuum phC) {
-    updateUnits(false);
+    updateUnits(false, true);
     EulerianMultiPhaseModel empm = phC.getModelManager().getModel(EulerianMultiPhaseModel.class);
     ConstantMaterialPropertyMethod cmpm = null;
     Model model = null;
@@ -600,7 +608,7 @@ public class MacroUtils extends StarMacro {
    */
   private PhysicsContinuum changePhysics_SegrFlTemp(PhysicsContinuum phC) {
     phC.enable(SegregatedFluidTemperatureModel.class);
-    updateUnits(false);
+    updateUnits(false, true);
     setInitialCondition_T(phC, refT, false);
     return phC;
   }
@@ -613,7 +621,7 @@ public class MacroUtils extends StarMacro {
   private PhysicsContinuum changePhysics_SegrFlBoussinesq(PhysicsContinuum phC, double thermalExpansion) {
     phC.enable(GravityModel.class);
     phC.enable(BoussinesqModel.class);
-    updateUnits(false);
+    updateUnits(false, true);
     Model model = phC.getModelManager().getModel(SingleComponentGasModel.class);
     ConstantMaterialPropertyMethod cmpm = getMatPropMeth_Const(model, ThermalExpansionProperty.class);
     cmpm.getQuantity().setValue(thermalExpansion);
@@ -625,7 +633,7 @@ public class MacroUtils extends StarMacro {
    * @return PhysicsContinuum
    */
   private PhysicsContinuum changePhysics_TurbKEps2Lyr(PhysicsContinuum phC) {
-    try{
+    try {
         phC.disableModel(phC.getModelManager().getModel(LaminarModel.class));
     } catch (Exception e) {}
     phC.enable(TurbulentModel.class);
@@ -633,7 +641,7 @@ public class MacroUtils extends StarMacro {
     phC.enable(KEpsilonTurbulence.class);
     phC.enable(RkeTwoLayerTurbModel.class);
     phC.enable(KeTwoLayerAllYplusWallTreatment.class);
-    updateUnits(false);
+    updateUnits(false, true);
     setInitialCondition_TVS_TI_TVR(phC, tvs0, ti0, tvr0, false);
     return phC;
   }
@@ -643,7 +651,7 @@ public class MacroUtils extends StarMacro {
    * @return PhysicsContinuum
    */
   private PhysicsContinuum changePhysics_TurbSA_AllWall(PhysicsContinuum phC) {
-    try{
+    try {
         phC.disableModel(phC.getModelManager().getModel(LaminarModel.class));
     } catch (Exception e) {}
     phC.enable(TurbulentModel.class);
@@ -651,16 +659,16 @@ public class MacroUtils extends StarMacro {
     phC.enable(SpalartAllmarasTurbulence.class);
     phC.enable(SaTurbModel.class);
     phC.enable(SaAllYplusWallTreatment.class);
-    updateUnits(false);
+    updateUnits(false, true);
     setInitialCondition_TVS_TI_TVR(phC, tvs0, ti0, tvr0, false);
     return phC;
   }
 
   /**
-   * When using {@see #getCameraViews}, several temporary Camera Views are created. This method gets
+   * When using {@link #getCameraViews}, several temporary Camera Views are created. This method gets
    * rid of all of them.
    * <p>
-   * This method is also called automatically in {@see #_finalize}.
+   * This method is also called automatically in {@link #_finalize}.
    */
   public void cleanUpTemporaryCameraViews() {
     cleanUpTemporaryCameraViews(true);
@@ -687,6 +695,7 @@ public class MacroUtils extends StarMacro {
    * <li> All Parts
    * </ol>
    * It is useful when creating simulation templates.
+   * @deprecated in v3d. Not used anymore.
    */
   public void clearAllMeshesRegionsAndParts() {
     clearScenes();
@@ -699,6 +708,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * Removes all Interfaces of the model.
+   * @deprecated in v3d. Not used anymore.
    */
   public void clearInterfaces() {
     clearInterfaces(true);
@@ -706,6 +716,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * @param verboseOption
+   * @deprecated in v3d. Not used anymore.
    */
   private void clearInterfaces(boolean verboseOption) {
     printAction("Removing all Interfaces", verboseOption);
@@ -723,17 +734,22 @@ public class MacroUtils extends StarMacro {
    * Removes all Mesh Representations of the model.
    */
   public void clearMeshes() {
-    clearMeshes(true);
+    printAction("Removing all Mesh Representations");
+    removeViewFactors();
+    sim.get(MeshPipelineController.class).clearGeneratedMeshes();
+    sayOK();
   }
 
   /**
    * Removes the Mesh Representations of the model, except the Volume Mesh. Use
-   *    {@see #clearMeshes_SurfaceRepresentations} otherwise.
+   *    {@link #clearMeshes_SurfaceRepresentations} otherwise.
+   * @deprecated in v3d. Not used anymore.
    */
   public void clearMeshes_SurfaceRepresentations() {
     clearMeshes(false);
   }
 
+  @Deprecated // in v3d. Not used anymore.
   private void clearMeshes(boolean volMsh) {
     printAction("Removing all Mesh Representations");
     removeViewFactors();
@@ -767,6 +783,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * Removes all Operations of the model.
+   * @deprecated in v3d. Not used anymore.
    */
   public void clearMeshOperations() {
     clearMeshOperations(true);
@@ -774,6 +791,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * @param verboseOption
+   * @deprecated in v3d. Not used anymore.
    */
   private void clearMeshOperations(boolean verboseOption) {
     printAction("Removing all Mesh Operations", verboseOption);
@@ -790,6 +808,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * Removes all Regions of the model.
+   * @deprecated in v3d. Not used anymore.
    */
   public void clearRegions() {
     printAction("Removing all Regions");
@@ -805,6 +824,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * Removes all Geometry Parts of the model.
+   * @deprecated in v3d. Not used anymore.
    */
   public void clearParts() {
     clearParts(true);
@@ -812,6 +832,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * @param verboseOption
+   * @deprecated in v3d. Not used anymore.
    */
   private void clearParts(boolean verboseOption) {
     printAction("Removing all Parts", verboseOption);
@@ -847,10 +868,11 @@ public class MacroUtils extends StarMacro {
 
   /**
    * Removes all Scenes of the model.
+   * @deprecated in v3d. Not used anymore.
    */
   public void clearScenes() {
     printAction("Removing all Scenes");
-    try{
+    try {
         ArrayList<Scene> as = new ArrayList(sim.getSceneManager().getScenes());
         say("Removing " + as.size() + " Scene(s)");
         sim.getSceneManager().removeObjects(as);
@@ -928,7 +950,7 @@ public class MacroUtils extends StarMacro {
    */
   public Boundary combineBoundaries(Region r) {
     printAction("Combining All Boundaries from Region");
-    sayRegion(r, true);
+    sayNamedObject("Region", r);
     return combineBoundaries(new ArrayList(getAllBoundariesFromRegion(r)), true);
   }
 
@@ -1206,33 +1228,6 @@ public class MacroUtils extends StarMacro {
   }
 
   /**
-   * This method will convert the simulation to 2D <b>erasing the 3D Regions</b>.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void convertTo2D() {
-    printAction("Converting Simulation to 2D");
-    say("Reading Views from all Scenes");
-    ArrayList<Scene> as = getScenes(".*", false);
-    ArrayList<CameraStateInput> ac = new ArrayList();
-    for (Scene scn : as) {
-        ac.add(getCameraStateInput(scn));
-    }
-    sim.getMeshManager().convertTo2d(1E-06, new Vector(getRegions(".*", false)), true);
-    say("Restoring Views for all Scenes");
-//    for (Scene scn : as) {
-//        scn.setCameraStateInput(ac.get(as.indexOf(scn)));
-//    }
-    for (Region r : getRegions(".*", false)) {
-        r.setMeshContinuum(null);
-    }
-    clearMeshes_SurfaceRepresentations();
-    clearMeshOperations(false);
-    clearParts(false);
-    say("Number of 2D Cells: " + queryVolumeMesh().getCellCount());
-    sayOK();
-  }
-
-  /**
    * Creates a Block/Channel 3D-CAD model and creates a Part with 6 Part Surfaces inside, i.e.,
    *    x0, x1, y0, y1, z0 and z1.
    *
@@ -1247,7 +1242,7 @@ public class MacroUtils extends StarMacro {
 
   /**
    * Creates a Block/Channel 3D-CAD model and creates a Part with 6 Part Surfaces inside, i.e.,
-   *    x0, x1, y0, y1, z0 and z1. The default Tesselation option is used. See {@see #defTessOpt}.
+   *    x0, x1, y0, y1, z0 and z1. The default Tesselation option is used. See {@link #defTessOpt}.
    *
    * @param c1 given 3-components array with coordinates. E.g.: {0, -1, -10}.
    * @param c2 given 3-components array with coordinates. E.g.: {1, 1, 1}.
@@ -1261,8 +1256,8 @@ public class MacroUtils extends StarMacro {
 
   private Body create3DCad_Block(double[] c1, double[] c2, Units u, String name, boolean verboseOption) {
     printAction("Creating a Block/Channel 3D-CAD Model");
-    say(verboseOption, "Coordinate 1 = %s %s", retString(c1), u.getPresentationName());
-    say(verboseOption, "Coordinate 2 = %s %s", retString(c2), u.getPresentationName());
+    say(verboseOption, "Coordinate 1 = %s %s", retString(c1), getString(u));
+    say(verboseOption, "Coordinate 2 = %s %s", retString(c2), getString(u));
     CadModel cm = sim.get(SolidModelManager.class).createSolidModel();
     cm.setPresentationName(name + " 3D-CAD Model");
     CanonicalSketchPlane csp = ((CanonicalSketchPlane) cm.getFeatureManager().getObject("XY"));
@@ -1293,13 +1288,13 @@ public class MacroUtils extends StarMacro {
 
   /**
    * Creates a Cylinder 3D-CAD model and creates a Part using the default Tesselation option.
-   * See {@see #defTessOpt}.
+   * See {@link #defTessOpt}.
    *
    * @param r given Radius.
    * @param l given Length.
    * @param org given origin as a 3-components array with coordinates. E.g.: {0, -1, -10}.
    * @param u given Units.
-   * @param dir given extrusion direction. Options: {@see #X}, {@see #Y} or {@see #Z}.
+   * @param dir given extrusion direction. Options: {@link #X}, {@link #Y} or {@link #Z}.
    * @return The Cad Body.
    */
   public Body create3DCad_Cylinder(double r, double l, double[] org, Units u, String dir) {
@@ -1313,7 +1308,7 @@ public class MacroUtils extends StarMacro {
    * @param l given Length.
    * @param org given origin as a 3-components array with coordinates. E.g.: {0, -1, -10}.
    * @param u given Units.
-   * @param dir given extrusion direction. Options: {@see #X}, {@see #Y} or {@see #Z}.
+   * @param dir given extrusion direction. Options: {@link #X}, {@link #Y} or {@link #Z}.
    * @param name given Cad Body name.
    * @return The Cad Body.
    */
@@ -1324,8 +1319,8 @@ public class MacroUtils extends StarMacro {
   private Body create3DCad_Cylinder(double r, double l, double[] org, Units u, String dir,
                                                                 String name, boolean verboseOption) {
     printAction("Creating a Cylinder 3D-CAD Model");
-    say(verboseOption, "Radius = %g%s", r, u.getPresentationName());
-    say(verboseOption, "%s Length = %g%s", dir.toUpperCase(), l, u.getPresentationName());
+    sayValue("Radius", r, u, verboseOption);
+    sayValue(dir.toUpperCase() + " Length", l, u, verboseOption);
     double rC = r * u.getConversion();
     double[] offsetPlane = {0., 0., 0.};
     double[] sketchCircle = {0., 0.};
@@ -1404,7 +1399,7 @@ public class MacroUtils extends StarMacro {
    */
   public FixedAspectAnnotationProp createAnnotation(Scene scn, star.vis.Annotation annot) {
     printAction("Embedding an Annotation in a Scene");
-    sayScene(scn, true);
+    sayNamedObject("Scene", scn);
     sayOK();
     return (FixedAspectAnnotationProp) scn.getAnnotationPropManager().createPropForAnnotation(annot);
   }
@@ -1451,6 +1446,7 @@ public class MacroUtils extends StarMacro {
         annot.setDefaultPosition(dv);
     }
     annot.setPresentationName(n);
+    sayNamedObject("Annotation Name", annot);
     sayOK(verboseOption);
     return annot;
   }
@@ -1473,7 +1469,7 @@ public class MacroUtils extends StarMacro {
     }
     FixedAspectAnnotationProp faap = null;
     if (scn != null) {
-        sayScene(scn, verboseOption);
+        sayNamedObject("Scene", scn);
         faap = (FixedAspectAnnotationProp) scn.getAnnotationPropManager().createPropForAnnotation(ra);
     }
     sayOK(verboseOption);
@@ -1584,7 +1580,7 @@ public class MacroUtils extends StarMacro {
    */
   public FixedAspectAnnotationProp createAnnotation_Text(Scene scn, String text, double height, double[] pos) {
     printAction("Creating a Simple Annotation text on a Scene");
-    sayScene(scn, true);
+    sayNamedObject("Scene", scn);
     sayString(text, true);
     SimpleAnnotation annot = createAnnotation(text.replace(" ", ""), text, height, new DoubleVector(pos), false);
     sayOK();
@@ -1609,7 +1605,7 @@ public class MacroUtils extends StarMacro {
     printAction("Creating a Camera View");
     VisView v = createCameraView(new DoubleVector(fp), new DoubleVector(pos), new DoubleVector(vu), ps);
     v.setPresentationName(camName);
-    say(camName + " created.");
+    sayCreated(v, true);
     sayOK();
     return v;
   }
@@ -1660,7 +1656,7 @@ public class MacroUtils extends StarMacro {
     cp.getPartSurfaceGroup().setObjects(ago);
     cp.getFloor().setUnits(u);
     cp.getFloor().setValue(val);
-    say("Search Floor: " + val + u.getPresentationName());
+    sayValue("Search Floor", val, u);
     sayOK();
   }
 
@@ -1714,13 +1710,13 @@ public class MacroUtils extends StarMacro {
     cps.getBoundaryGroup().setObjects(ar);
     cps.getFloor().setUnits(u);
     cps.getFloor().setValue(value);
-    say("Search Floor: " + value + u.getPresentationName(), verboseOption);
+    sayValue("Search Floor", value, u, verboseOption);
     sayOK(verboseOption);
     return cps;
   }
 
   /**
-   * Creates a Cylindrical Coordinate System using default length units. See {@see #defUnitLength}.
+   * Creates a Cylindrical Coordinate System using default length units. See {@link #defUnitLength}.
    *
    * @param org given 3-components double[] array for the Origin. E.g.: {0, 0, 0}.
    * @param b1 given 3-components double[] array for the Basis1. E.g.: {0, 1, 0}.
@@ -1740,7 +1736,7 @@ public class MacroUtils extends StarMacro {
     c.setCoordinate(defUnitLength, defUnitLength, defUnitLength, new DoubleVector(org));
     ccsys.setBasis0(new DoubleVector(b1));
     ccsys.setBasis1(new DoubleVector(b2));
-    say(verboseOption, "%s created.", ccsys.getPresentationName());
+    sayCreated(ccsys, verboseOption);
     sayOK(verboseOption);
     return ccsys;
   }
@@ -1757,13 +1753,14 @@ public class MacroUtils extends StarMacro {
   public IsoPart createDerivedPart_Isosurface(ArrayList<NamedObject> ano, FieldFunction f,
                                                                             double val, Units u) {
     printAction("Creating an Isosurface");
-    sayNamedObjects(ano, true);
+    sayObjects(ano, "Parts", true);
     sayFieldFunction(f, true);
     NeoObjectVector where = new NeoObjectVector(ano.toArray());
     IsoPart ip = sim.getPartManager().createIsoPart(where, f);
     ip.setMode(0);
     ip.getSingleIsoValue().setValue(val);
     ip.getSingleIsoValue().setUnits(u);
+    sayCreated(ip, true);
     sayOK();
     return ip;
   }
@@ -1772,19 +1769,20 @@ public class MacroUtils extends StarMacro {
    * Creates a Line Probe.
    *
    * @param ano given ArrayList of NamedObjects.
-   * @param c1 given coordinates using {@see #defUnitLength}. E.g.: new double[] {0., 0., 0.}
-   * @param c2 given coordinates using {@see #defUnitLength}. E.g.: new double[] {0., 1., 0.}
+   * @param c1 given coordinates using {@link #defUnitLength}. E.g.: new double[] {0., 0., 0.}
+   * @param c2 given coordinates using {@link #defUnitLength}. E.g.: new double[] {0., 1., 0.}
    * @return The created Line.
    */
   public LinePart createDerivedPart_Line(ArrayList<NamedObject> ano, double[] c1, double[] c2, int res) {
     printAction("Creating a Line Probe");
-    sayNamedObjects(ano, true);
+    sayObjects(ano, "Parts", true);
     NeoObjectVector where = new NeoObjectVector(ano.toArray());
     DoubleVector from = new DoubleVector(c1);
     DoubleVector to = new DoubleVector(c2);
     LinePart lp = sim.getPartManager().createLinePart(where, from, to, res);
     lp.getPoint1Coordinate().setCoordinate(defUnitLength, defUnitLength, defUnitLength, from);
     lp.getPoint2Coordinate().setCoordinate(defUnitLength, defUnitLength, defUnitLength, to);
+    sayCreated(lp, true);
     sayOK();
     return lp;
   }
@@ -1793,38 +1791,41 @@ public class MacroUtils extends StarMacro {
    * Creates a Point Probe.
    *
    * @param ano given ArrayList of NamedObjects.
-   * @param c given coordinates using {@see #defUnitLength}. E.g.: new double[] {0., 0., 0.}
+   * @param c given coordinates using {@link #defUnitLength}. E.g.: new double[] {0., 0., 0.}
    * @return The created Point.
    */
   public PointPart createDerivedPart_Point(ArrayList<NamedObject> ano, double[] c) {
     printAction("Creating a Point Probe");
-    sayNamedObjects(ano, true);
+    sayObjects(ano, "Parts", true);
     NeoObjectVector on = new NeoObjectVector(ano.toArray());
     DoubleVector where = new DoubleVector(c);
     PointPart pp = sim.getPartManager().createPointPart(on, where);
     pp.getPointCoordinate().setCoordinate(defUnitLength, defUnitLength, defUnitLength, where);
+    sayCreated(pp, true);
     sayOK();
     return pp;
   }
 
   /**
-   * Creates a Section Plane. This is similar to {@see #createSectionPlane()}.
+   * Creates a Section Plane. This is similar to {@link #createSectionPlane()}.
    *
    * @param ano given ArrayList of NamedObjects.
-   * @param origin given origin coordinates using {@see #defUnitLength}. E.g.: new double[] {0., 0., 0.}
+   * @param origin given origin coordinates using {@link #defUnitLength}. E.g.: new double[] {0., 0., 0.}
    * @param orientation  given normal orientation coordinates. E.g.: Normal to X is new double[] {1., 0., 0.}
    * @return The created Section Plane.
    */
   public PlaneSection createDerivedPart_SectionPlane(ArrayList<NamedObject> ano,
                                                             double[] origin, double[] orientation) {
     printAction("Creating a Section Plane");
-    sayNamedObjects(ano, true);
+    sayObjects(ano, "Parts", true);
     NeoObjectVector where = new NeoObjectVector(ano.toArray());
     DoubleVector vecOrient = new DoubleVector(orientation);
     DoubleVector vecOrigin = new DoubleVector(origin);
     DoubleVector vecOffsets = new DoubleVector(new double[] {0.0});
     PlaneSection p = (PlaneSection) sim.getPartManager().createImplicitPart(where, vecOrient, vecOrigin, 0, 1, vecOffsets);
     p.getOriginCoordinate().setCoordinate(defUnitLength, defUnitLength, defUnitLength, vecOrigin);
+    sayCreated(p, true);
+    sayOK();
     return p;
   }
 
@@ -1842,11 +1843,12 @@ public class MacroUtils extends StarMacro {
   public ThresholdPart createDerivedPart_Threshold(ArrayList<NamedObject> ano,
                                         FieldFunction f, double min, double max, Units u) {
     printAction("Creating a Threshold Part");
-    sayNamedObjects(ano, true);
+    sayObjects(ano, "Parts", true);
     sayFieldFunction(f, true);
     say(retMinMaxString(min, max));
     DoubleVector vecMinMax = new DoubleVector(new double[] {min, max});
     ThresholdPart thr = sim.getPartManager().createThresholdPart(new NeoObjectVector(ano.toArray()), vecMinMax, u, f, 0);
+    sayCreated(thr, true);
     sayOK();
     return thr;
   }
@@ -1882,6 +1884,7 @@ public class MacroUtils extends StarMacro {
     }
     DirectBoundaryInterface i = createDirectInterfacePair(ab.get(0), ab.get(1), false);
     sayInterface(i);
+    sayCreated(i, true);
     sayOK();
     return i;
   }
@@ -1891,6 +1894,7 @@ public class MacroUtils extends StarMacro {
     DirectBoundaryInterface dbi = sim.getInterfaceManager().createDirectInterface(b1, b2, "In-place");
     dbi.getTopology().setSelected(InterfaceConfigurationOption.IN_PLACE);
     sayInterface(dbi, verboseOption, false);
+    sayCreated(dbi, verboseOption);
     sayOK(verboseOption);
     return dbi;
   }
@@ -1913,8 +1917,8 @@ public class MacroUtils extends StarMacro {
    * @param name given name.
    * @param def given Field Function definition.
    * @param dim given Field Function dimensions. Use <b>null</b> for Dimensionless.
-   * @param type given Field Function type. Choices are: {@see #FF_ARRAY}, {@see #FF_POSITION},
-   *    {@see #FF_SCALAR} or {@see #FF_VECTOR}.
+   * @param type given Field Function type. Choices are: {@link #FF_ARRAY}, {@link #FF_POSITION},
+   *    {@link #FF_SCALAR} or {@link #FF_VECTOR}.
    * @return The Field Function
    */
   public FieldFunction createFieldFunction(String name, String def, Dimensions dim, int type) {
@@ -1945,7 +1949,7 @@ public class MacroUtils extends StarMacro {
   }
 
   /**
-   * Creates a Folder in the current {@see #simPath} path.
+   * Creates a Folder in the current {@link #simPath} path.
    *
    * @param foldername given folder name.
    * @return
@@ -1955,7 +1959,7 @@ public class MacroUtils extends StarMacro {
   }
 
   /**
-   * Creates a Folder in the current {@see #simPath} path.
+   * Creates a Folder in the current {@link #simPath} path.
    *
    * @param foldername given folder name.
    * @param verboseOption print output messages when inside a loop, for instance? Probably not.
@@ -1981,13 +1985,14 @@ public class MacroUtils extends StarMacro {
     return null;
   }
 
-    /**
-     *
-     * @param b1
-     * @param b2
-     * @return
-     */
-    public IndirectBoundaryInterface createIndirectInterfacePair(Boundary b1, Boundary b2) {
+  /**
+   *
+   * @param b1
+   * @param b2
+   * @return
+   * @deprecated in v2d. Not used anymore.
+   */
+  public IndirectBoundaryInterface createIndirectInterfacePair(Boundary b1, Boundary b2) {
     printAction("Creating Indirect Interface Pair given two boundaries");
     IndirectBoundaryInterface i = sim.getInterfaceManager().createIndirectInterface(b1, b2);
     sayInterface(i);
@@ -1996,131 +2001,12 @@ public class MacroUtils extends StarMacro {
   }
 
   /**
-   * Creates a Continua with Poly + Embedded Thin Meshers. <p>
-   * Note: <ul>
-   * <li> Surface Proximity for the Surface Remesher is <b>OFF</b>
-   * <li> Prisms Layers are <b>OFF</b>
-   * </ul>
-   * @return The new Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public MeshContinuum createMeshContinua_EmbeddedThinMesher() {
-    MeshContinuum continua = createMeshContinuaPoly();
-    enableEmbeddedThinMesher(continua);
-    sayOK();
-    return continua;
-  }
-
-  /**
-   * Creates a Continua with Poly Mesher.<p>
-   * Note: <ul>
-   * <li> Surface Proximity for the Surface Remesher is <b>ON</b>
-   * <li> Prisms Layers are <b>ON</b>
-   * </ul>
-   * @return The new Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public MeshContinuum createMeshContinua_PolyOnly() {
-    MeshContinuum continua = createMeshContinuaPoly();
-    enableSurfaceProximityRefinement(continua);
-    enablePrismLayers(continua);
-    sayOK();
-    return continua;
-  }
-
-  /**
-   * Creates a Continua with the <b>PURE</b> Poly Thin Mesher. It is intended for
-   * pure conducting solids. Please see Documentation.<p>
-   * Note: <ul>
-   * <li> Surface Proximity for the Surface Remesher is <b>OFF</b>
-   * </ul>
-   * @return The new Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public MeshContinuum createMeshContinua_ThinMesher() {
-    MeshContinuum continua = createMeshContinuaThinMesher();
-    sayOK();
-    return continua;
-  }
-
-  /**
-   * Creates a Continua with the Trimmer Mesher.<p>
-   * Note: <ul>
-   * <li> Surface Proximity for the Surface Remesher is <b>ON</b>
-   * <li> Prisms Layers are <b>ON</b>
-   * </ul>
-   * @return The new Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public MeshContinuum createMeshContinua_Trimmer() {
-    MeshContinuum continua = createMeshContinuaTrimmer();
-    enableSurfaceProximityRefinement(continua);
-    enablePrismLayers(continua);
-    sayOK();
-    return continua;
-  }
-
-  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-  private MeshContinuum createMeshContinuaPoly() {
-    printAction("Creating Mesh Continua");
-    MeshContinuum continua = sim.getContinuumManager().createContinuum(MeshContinuum.class);
-    continua.setPresentationName(contNamePoly);
-    continua.enable(ResurfacerMeshingModel.class);
-    continua.enable(DualMesherModel.class);
-    disableSurfaceProximityRefinement(continua);
-
-    setMeshBaseSize(continua, mshBaseSize, defUnitLength);
-    setMeshSurfaceSizes(continua, mshSrfSizeMin, mshSrfSizeTgt);
-    setMeshCurvatureNumberOfPoints(continua, mshSrfCurvNumPoints);
-    setMeshTetPolyGrowthRate(continua, mshGrowthFactor);
-
-    printMeshParameters(continua);
-    return continua;
-  }
-
-  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-  private MeshContinuum createMeshContinuaThinMesher() {
-    printAction("Creating Mesh Continua");
-    MeshContinuum continua = sim.getContinuumManager().createContinuum(MeshContinuum.class);
-    continua.setPresentationName(contNameThinMesher);
-    continua.enable(ResurfacerMeshingModel.class);
-    continua.enable(SolidMesherModel.class);
-    disableSurfaceProximityRefinement(continua);
-    continua.getModelManager().getModel(SolidMesherModel.class).setOptimize(true);
-
-    setMeshBaseSize(continua, mshBaseSize, defUnitLength);
-    setMeshSurfaceSizes(continua, mshSrfSizeMin, mshSrfSizeTgt);
-    setMeshCurvatureNumberOfPoints(continua, mshSrfCurvNumPoints);
-    continua.getReferenceValues().get(ThinSolidLayers.class).setLayers(thinMeshLayers);
-
-    printMeshParameters(continua);
-    return continua;
-  }
-
-  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-  private MeshContinuum createMeshContinuaTrimmer() {
-    printAction("Creating Mesh Continua");
-    MeshContinuum continua = sim.getContinuumManager().createContinuum(MeshContinuum.class);
-    continua.setPresentationName(contNameTrimmer);
-    continua.enable(ResurfacerMeshingModel.class);
-    continua.enable(TrimmerMeshingModel.class);
-
-    setMeshBaseSize(continua, mshBaseSize, defUnitLength);
-    setMeshSurfaceSizes(continua, mshSrfSizeMin, mshSrfSizeTgt);
-    setMeshPerRegionFlag(continua);
-    setMeshCurvatureNumberOfPoints(continua, mshSrfCurvNumPoints);
-    continua.getReferenceValues().get(MaximumCellSize.class).getRelativeSize().setPercentage(mshTrimmerMaxCelSize);
-    //-- Growth Rate is not changed anymore sinc v2c
-    printMeshParameters(continua);
-    return continua;
-  }
-
-  /**
    * Creates an Automated Mesh Mesh Operation in a set of Geometry Parts.
    *
    * @param ag given ArrayList of Geometry Parts.
-   * @param am given ArrayList of Meshers. <u>Hint</u>: use with {@see #getMeshers}.
+   * @param am given ArrayList of Meshers. <u>Hint</u>: use with {@link #getMeshers}.
    * @return The Automated Mesh Operation.
+   * @deprecated // in v2d. Cleaning up. Use the same one, but with a name.
    */
   public AutoMeshOperation createMeshOperation_AutomatedMesh(
                                                 ArrayList<GeometryPart> ag, ArrayList<String> am) {
@@ -2131,24 +2017,44 @@ public class MacroUtils extends StarMacro {
    * Creates an Automated Mesh Mesh Operation in a set of Geometry Parts.
    *
    * @param ag given ArrayList of Geometry Parts.
-   * @param am given ArrayList of Meshers. <u>Hint</u>: use with {@see #getMeshers}.
+   * @param am given ArrayList of Meshers. <u>Hint</u>: use with {@link #getMeshers}.
    * @param name given name for the Operation.
    * @return The Automated Mesh Operation.
    */
   public AutoMeshOperation createMeshOperation_AutomatedMesh(ArrayList<GeometryPart> ag,
                                                                 ArrayList<String> am, String name) {
-    printAction("Creating an Automated Mesh Operation");
-    say("Number of Parts: " + ag.size());
-    say("Meshers: " + am.toString());
     AutoMeshOperation amo = sim.get(MeshOperationManager.class).createAutoMeshOperation(am, ag);
+    createMeshOperation_AutomatedMesh(amo, ag, am, name, "");
+    return amo;
+  }
+
+  /**
+   * Creates a 2D Automated Mesh Mesh Operation in a set of Geometry Parts.
+   *
+   * @param ag given ArrayList of Geometry Parts.
+   * @param am given ArrayList of 2D Meshers. <u>Hint</u>: use with {@link #getMeshers2D(int, boolean) }.
+   * @param name given name for the Operation.
+   * @return The 2D Automated Mesh Operation.
+   */
+  public AutoMeshOperation2d createMeshOperation_AutomatedMesh2D(ArrayList<GeometryPart> ag,
+                                                                ArrayList<String> am, String name) {
+    AutoMeshOperation2d amo2d = sim.get(MeshOperationManager.class).createAutoMeshOperation2d(am, ag);
+    createMeshOperation_AutomatedMesh(amo2d, ag, am, name, "2D ");
+    return amo2d;
+  }
+
+  private void createMeshOperation_AutomatedMesh(AutoMeshOperation amo, ArrayList<GeometryPart> ag,
+                                                        ArrayList<String> am, String name, String txt) {
+    printAction("Creating an Automated Mesh Operation " + txt);
+    sayParts(ag, true);
+    say("Meshers: " + retStringBetweenBrackets(amo.getMeshersCollection().toString()));
     setMeshBaseSize(amo, mshBaseSize, defUnitLength, false);
     setMeshSurfaceSizes(amo, mshSrfSizeMin, mshSrfSizeTgt, false);
-    setMeshPrismsParameters(amo, prismsLayers, prismsStretching, prismsRelSizeHeight);
-    amo.getDefaultValues().get(SurfaceCurvature.class).getSurfaceCurvatureNumPts().setNumPointsAroundCircle(mshSrfCurvNumPoints);
+    setMeshPrismsParameters(amo, prismsLayers, prismsStretching, prismsRelSizeHeight, false);
+    setMeshSurfaceCurvature(amo.getDefaultValues().get(SurfaceCurvature.class), mshSrfCurvNumPoints, false);
     SurfaceProximity sp = amo.getDefaultValues().get(SurfaceProximity.class);
     sp.setNumPointsInGap(mshProximityPointsInGap);
-    sp.getFloor().setUnits(defUnitLength);
-    sp.getFloor().setValue(mshProximitySearchFloor);
+    setScalarPhysicalQuantity(sp.getFloor(), mshProximitySearchFloor, null, defUnitLength, "Proximity Search Floor");
     if (hasPolyMesher(amo)) {
         DualAutoMesher dam = ((DualAutoMesher) amo.getMeshers().getObject("Polyhedral Mesher"));
         dam.setTetOptimizeCycles(mshOptCycles);
@@ -2161,19 +2067,35 @@ public class MacroUtils extends StarMacro {
     if (name != null) {
         amo.setPresentationName(name);
     }
-    say("Created: " + amo.getPresentationName());
+    sayCreated(amo, true);
     sayOK();
-    return amo;
   }
 
   /**
-   * Creates a Custom Surface Control for a Mesh Operation.
+   * Creates a Badge for 2D Mesh Operation between a set of Geometry Parts.
+   *
+   * @param ag given ArrayList of Geometry Parts.
+   * @param name given name for the Operation.
+   * @return Badge for 2D Mesh Operation.
+   */
+  public PrepareFor2dOperation createMeshOperation_BadgeFor2D(ArrayList<GeometryPart> ag, String name) {
+    printAction("Creating a Badge for 2D Mesh Operation");
+    sayParts(ag, true);
+    PrepareFor2dOperation p2d = (PrepareFor2dOperation) sim.get(MeshOperationManager.class).createPrepareFor2dOperation(ag);
+    p2d.execute();
+    sayCreated(p2d, true);
+    sayOK();
+    return p2d;
+  }
+
+  /**
+   * Creates a Custom Surface Control for a Mesh Operation. <u>This method will change only Surface Sizes</u>.
    *
    * @param mo given Mesh Operation.
    * @param ago given ArrayList of Geometry Objects.
    * @param name given name for the control.
-   * @param min minimum relative size (%).
-   * @param tgt target relative size (%).
+   * @param min minimum relative size (%). If 0, this parameter will not be customized.
+   * @param tgt target relative size (%). If 0, this parameter will not be customized.
    * @return The Custom Surface Control.
    */
   public SurfaceCustomMeshControl createMeshOperation_CustomSurfaceControl(MeshOperation mo,
@@ -2185,12 +2107,71 @@ public class MacroUtils extends StarMacro {
         return null;
     }
     AutoMeshOperation amo = (AutoMeshOperation) mo;
-    say("Number of Objects: " + ago.size());
+    sayObjects(ago, "Geometry Objects", true);
     SurfaceCustomMeshControl scmc = amo.getCustomMeshControls().createSurfaceControl();
     scmc.setPresentationName(name);
     scmc.getGeometryObjects().setObjects(ago);
     setMeshSurfaceSizes(scmc, min, tgt, false);
+    sayCreated(scmc, true);
     sayOK();
+    return scmc;
+  }
+
+  /**
+   * Creates a Custom Surface Control for a Mesh Operation. <u>This method will change only Prism Layers</u>.
+   *
+   * <b>Important:</b> If all three arguments are 0, prisms will be disabled.
+   *
+   * @param amo given Auto Mesh Operation.
+   * @param ago given ArrayList of Geometry Objects.
+   * @param name given name for the control.
+   * @param numLayers given number of prisms. If 0, this parameter will not be customized.
+   * @param stretch given prism stretch relation. If 0, this parameter will not be customized.
+   * @param relSize given relative size in (%). If 0, this parameter will not be customized.
+   * @return The Custom Surface Control.
+   */
+  public SurfaceCustomMeshControl createMeshOperation_CustomSurfaceControl(AutoMeshOperation amo,
+            ArrayList<GeometryObject> ago, String name, int numLayers, double stretch, double relSize) {
+    return createMeshOperation_CustomSurfaceControl(amo, ago, name, numLayers, stretch, relSize, true);
+  }
+
+  private SurfaceCustomMeshControl createMeshOperation_CustomSurfaceControl(AutoMeshOperation amo,
+        ArrayList<GeometryObject> ago, String name, int numLayers, double stretch, double relSize, boolean verboseOption) {
+    printAction("Creating a Custom Surface Mesh Control");
+    sayMeshOp(amo, true);
+    sayObjects(ago, "Geometry Objects", true);
+    SurfaceCustomMeshControl scmc = amo.getCustomMeshControls().createSurfaceControl();
+    scmc.setPresentationName(name);
+    scmc.getGeometryObjects().setObjects(ago);
+    PartsCustomizePrismMesh pcpm = scmc.getCustomConditions().get(PartsCustomizePrismMesh.class);
+    if (numLayers + stretch + relSize == 0.0) {
+        pcpm.getCustomPrismOptions().setSelected(PartsCustomPrismsOption.DISABLE);
+        say("Prism Layers DISABLED.");
+    } else {
+        pcpm.getCustomPrismOptions().setSelected(PartsCustomPrismsOption.CUSTOMIZE);
+        sayPrismsParameters(numLayers, stretch, relSize, true);
+        CustomPrismValuesManager cpvm = scmc.getCustomValues().get(CustomPrismValuesManager.class);
+        if (numLayers > 0) {
+            pcpm.getCustomPrismControls().setCustomizeNumLayers(true);
+            cpvm.get(NumPrismLayers.class).setNumLayers(numLayers);
+        } else {
+            pcpm.getCustomPrismControls().setCustomizeNumLayers(false);
+        }
+        if (stretch > 0) {
+            pcpm.getCustomPrismControls().setCustomizeStretching(true);
+            cpvm.get(PrismLayerStretching.class).setStretching(stretch);
+        }  else {
+            pcpm.getCustomPrismControls().setCustomizeStretching(false);
+        }
+        if (relSize > 0) {
+            pcpm.getCustomPrismControls().setCustomizeTotalThickness(true);
+            cpvm.get(PrismThickness.class).setRelativeSize(relSize);
+        }  else {
+            pcpm.getCustomPrismControls().setCustomizeTotalThickness(false);
+        }
+    }
+    sayCreated(scmc, verboseOption);
+    sayOK(verboseOption);
     return scmc;
   }
 
@@ -2216,6 +2197,7 @@ public class MacroUtils extends StarMacro {
     SurfaceCustomMeshControl scmc2 = amo.getCustomMeshControls().createSurfaceControl();
     scmc2.setPresentationName(name);
     scmc2.copyProperties(scmc);
+    sayCreated(scmc2, true);
     sayOK();
     return scmc2;
   }
@@ -2248,7 +2230,7 @@ public class MacroUtils extends StarMacro {
     printAction("Creating a Custom Volumetric Control in a Mesh Operation");
     AutoMeshOperation amo = (AutoMeshOperation) mo;
     sayMeshOp(amo, true);
-    say("Number of Parts: " + ag.size());
+    sayObjects(ag, "Parts", true);
     VolumeCustomMeshControl vcmc = amo.getCustomMeshControls().createVolumeControl();
     vcmc.setPresentationName(name);
     vcmc.getGeometryObjects().setObjects(ag);
@@ -2283,6 +2265,7 @@ public class MacroUtils extends StarMacro {
         tas.setZSize(true);
         tas.getRelativeZSize().setPercentage(relSizes[2]);
     }
+    sayCreated(vcmc, true);
     sayOK();
   }
 
@@ -2371,6 +2354,7 @@ public class MacroUtils extends StarMacro {
     DirectedMeshDistribution dmd = dmo.getDirectedMeshDistributionManager().createDirectedMeshDistribution(getNeoObjectVector1(dmpc), "Constant");
     dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
     dmo.execute();
+    sayCreated(dmo, true);
     sayOK();
     return dmo;
   }
@@ -2434,6 +2418,7 @@ public class MacroUtils extends StarMacro {
     DirectedMeshDistribution dmd = dmo.getDirectedMeshDistributionManager().createDirectedMeshDistribution(getNeoObjectVector1(dmpc), "Constant");
     dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
     dmo.execute();
+    sayCreated(dmo, true);
     sayOK();
     return dmo;
   }
@@ -2641,6 +2626,7 @@ public class MacroUtils extends StarMacro {
     vol.setNumLayers(nVol);
     dmo.stopEditingDirectedMeshOperation();
 
+    sayCreated(dmo, verboseOption);
     sayOK(verboseOption);
     return dmo;
   }
@@ -2658,8 +2644,28 @@ public class MacroUtils extends StarMacro {
   }
 
   /**
+   * Creates a Discrete Imprint Mesh Operation between a set of Geometry Parts.
+   *
+   * @param ag given ArrayList of Geometry Parts.
+   * @param val given tolerance value.
+   * @param u given Units.
+   * @param name given name for the Operation.
+   * @return The Imprint Mesh Operation.
+   */
+  public ImprintPartsOperation createMeshOperation_Imprint(ArrayList<GeometryPart> ag, double val, Units u, String name) {
+    printAction("Creating a Discrete Imprint Mesh Operation");
+    sayParts(ag, true);
+    ImprintPartsOperation ipo = (ImprintPartsOperation) sim.get(MeshOperationManager.class).createImprintPartsOperation(ag);
+    setScalarPhysicalQuantity(ipo.getTolerance(), val, null, u, "Tolerance");
+    ipo.execute();
+    sayCreated(ipo, true);
+    sayOK();
+    return ipo;
+  }
+
+  /**
    * Creates a Subtraction Mesh Operation between a set of Geometry Parts. This is the same as
-   * {@see #meshOperationSubtractParts}, returning the Mesh Operation only not the resulting Part.
+   * {@link #meshOperationSubtractParts}, returning the Mesh Operation only not the resulting Part.
    *
    * @param ag given ArrayList of Geometry Parts.
    * @param tgtGP given target  Geometry Part.
@@ -2702,13 +2708,14 @@ public class MacroUtils extends StarMacro {
         swamo.setPresentationName(name);
     }
     say("Created: " + swamo.getPresentationName());
+    sayCreated(swamo, true);
     sayOK();
     return swamo;
   }
 
   /**
    * Creates an Unite Mesh Operation between a set of Geometry Parts. This is the same as
-   * {@see #meshOperationUniteParts}, returning the Mesh Operation only not the resulting Part.
+   * {@link #meshOperationUniteParts}, returning the Mesh Operation only not the resulting Part.
    *
    * @param ag given ArrayList of Geometry Parts.
    * @return The Mesh Operation.
@@ -2733,159 +2740,30 @@ public class MacroUtils extends StarMacro {
     pd.setSurface(true);
     pd.setMesh(true);
     pd.setColorMode(colourByRegion);
+    sayCreated(cellSet, true);
     sayOK();
     return scn;
   }
 
   /**
-   * Creates a Volumetric Control in the given Part.
-   *
-   * @param continua given Mesh Continua.
-   * @param gp given Geometry Part.
-   * @param name given name.
-   * @param relSize relative size in (<b>%</b>).
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void createMeshVolumetricControl(MeshContinuum continua, GeometryPart gp, String name, double relSize) {
-    createMeshVolumetricControl(continua, getArrayList(gp), name, relSize);
-  }
-
-  /**
-   * Creates an Anisotropic Volumetric Control in the given Part. <b>Only for Trimmer</b>.
-   *
-   * @param continua given Mesh Continua.
-   * @param gp given Geometry Part.
-   * @param name given name.
-   * @param relSizes given 3-component relative sizes in (<b>%</b>). E.g.: {0, 50, 0}. Zeros will be ignored.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void createMeshVolumetricControl(MeshContinuum continua, GeometryPart gp, String name, double[] relSizes) {
-    if (!isTrimmer(continua)) {
-        return;
-    }
-    printAction("Creating an Anisotropic Volumetric Control in Mesh Continua");
-    sayContinua(continua, true);
-    sayPart(gp);
-    VolumeSource volSrc = continua.getVolumeSources().createVolumeSource();
-    volSrc.setPresentationName(name);
-    volSrc.getPartGroup().setObjects(Arrays.asList(new GeometryPart[] {gp}));
-    volSrc.get(MeshConditionManager.class).get(TrimmerSizeOption.class).setTrimmerAnisotropicSizeOption(true);
-    TrimmerAnisotropicSize tas = volSrc.get(MeshValueManager.class).get(TrimmerAnisotropicSize.class);
-    if (relSizes[0] > 0) {
-        say("Relative Size X (%): " + relSizes[0]);
-        tas.setXSize(true);
-        tas.getRelativeXSize().setPercentage(relSizes[0]);
-    }
-    if (relSizes[1] > 0) {
-        say("Relative Size Y (%): " + relSizes[1]);
-        tas.setYSize(true);
-        tas.getRelativeYSize().setPercentage(relSizes[1]);
-    }
-    if (relSizes[2] > 0) {
-        say("Relative Size Z (%): " + relSizes[2]);
-        tas.setZSize(true);
-        tas.getRelativeZSize().setPercentage(relSizes[2]);
-    }
-    sayOK();
-  }
-
-  /**
-   * Creates a Volumetric Control in the given Parts.
-   *
-   * @param continua given Mesh Continua.
-   * @param ag given ArrayList of Geometry Parts.
-   * @param name given name.
-   * @param relSize relative size in (<b>%</b>).
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void createMeshVolumetricControl(MeshContinuum continua, ArrayList<GeometryPart> ag,
-                                                                    String name, double relSize) {
-    printAction("Creating a Volumetric Control in Mesh Continua");
-    sayContinua(continua, true);
-    say("Given Parts: ");
-    for (GeometryPart gp : ag) {
-        say("  " + gp.getPathInHierarchy());
-    }
-    VolumeSource volSrc = continua.getVolumeSources().createVolumeSource();
-    volSrc.setPresentationName(name);
-    volSrc.getPartGroup().setObjects(ag);
-    if (isPoly(continua)) {
-        volSrc.get(MeshConditionManager.class).get(VolumeSourceDualMesherSizeOption.class).setVolumeSourceDualMesherSizeOption(true);
-    }
-    if (isTrimmer(continua)) {
-        volSrc.get(MeshConditionManager.class).get(TrimmerSizeOption.class).setTrimmerSizeOption(true);
-    }
-    VolumeSourceSize volSrcSize = volSrc.get(MeshValueManager.class).get(VolumeSourceSize.class);
-    ((GenericRelativeSize) volSrcSize.getRelativeSize()).setPercentage(relSize);
-    say("Relative Size (%): " + relSize);
-    sayOK();
-  }
-
-  /**
-   * Creates an Anisotropic Wake Refinement in the given Boundary. <b>Only for Trimmer</b>.
-   *
-   * @param continua given Mesh Continua.
-   * @param b given Boundary.
-   * @param distance given distance in default units. See {@see #defUnitLength}.
-   * @param dir given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
-   * @param relSizes given 3-component relative sizes in (<b>%</b>). E.g.: {0, 50, 0}. Zeros will be ignored.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void createMeshWakeRefinement(MeshContinuum continua, Boundary b, double distance,
-                                                                double[] dir, double[] relSizes) {
-    if (!isTrimmer(continua)) {
-        return;
-    }
-    printAction("Creating a Mesh Wake Refinement");
-    sayContinua(continua, true);
-    sayBdry(b);
-    WakeRefinementSet wrs = b.getRegion().get(MeshValueManager.class).get(WakeRefinementSetManager.class).createWakeRefinementSet();
-    wrs.setPresentationName(b.getPresentationName());
-    wrs.getDirection().setComponents(dir[0], dir[1], dir[2]);
-    wrs.getBoundaryFeatureCurveGroup().setObjects(b);
-    wrs.getGrowthRateOption().setSelected(GrowthRateOption.MEDIUM);
-    wrs.getDistance().setUnits(defUnitLength);
-    wrs.getDistance().setValue(distance);
-    wrs.setWRTrimmerAnisotropicSizeOption(true);
-    WRTrimmerAnisotropicSize wras = wrs.getWRTrimmerAnisotropicSize();
-    wras.getRelativeOrAbsoluteOption().setSelected(RelativeOrAbsoluteOption.RELATIVE);
-    if (relSizes[0] > 0) {
-        say("Relative Size X (%): " + relSizes[0]);
-        wras.setXSize(true);
-        wras.getRelativeXSize().setPercentage(relSizes[0]);
-    }
-    if (relSizes[1] > 0) {
-        say("Relative Size Y (%): " + relSizes[1]);
-        wras.setYSize(true);
-        wras.getRelativeYSize().setPercentage(relSizes[1]);
-    }
-    if (relSizes[2] > 0) {
-        say("Relative Size Z (%): " + relSizes[2]);
-        wras.setZSize(true);
-        wras.getRelativeZSize().setPercentage(relSizes[2]);
-    }
-    sayOK();
-  }
-
-  /**
-   * Creates the Monitor and a Plot from a Report. The {@see #repMon} and {@see #monPlot} variables
+   * Creates the Monitor and a Plot from a Report. The {@link #repMon} and {@link #monPlot} variables
    * will be updated.
    *
    * @param rep given Report.
    * @param repName given Report name.
    * @param xAxisLabel given X-axis labelFmt. If <b>null</b> it is ignored.
    * @param yAxisLabel given Y-axis labelFmt. If <b>null</b> it is ignored.
-   * @return The created Report Monitor, which is {@see #repMon}.
+   * @return The created Report Monitor, which is {@link #repMon}.
    */
   public ReportMonitor createMonitorAndPlotFromReport(Report rep, String repName,
                                                 String xAxisLabel, String yAxisLabel) {
     repMon = rep.createMonitor();
     repMon.setPresentationName(repName);
-    say("Created Monitor: %s", repName);
+    sayCreated(repMon, true);
 
     MonitorPlot monPl = sim.getPlotManager().createMonitorPlot();
     monPl.setPresentationName(repName);
-    say("Created Plot: %s", repName);
+    sayCreated(monPl, true);
     monPl.getMonitors().addObjects(repMon);
 
     Axes axes = monPl.getAxes();
@@ -2911,17 +2789,18 @@ public class MacroUtils extends StarMacro {
     printAction("Creating a Field Mean Monitor");
     FieldMeanMonitor fmm = sim.getMonitorManager().createMonitor(FieldMeanMonitor.class);
     sayFieldFunction(f, true);
-    sayNamedObjects(ano, true);
+    sayObjects(ano, "Parts", true);
     fmm.setObjects(ano);
     fmm.setFieldFunction(f);
     setUpdateEvent(fmm.getStarUpdate(), ue);
+    sayCreated(fmm, true);
     sayOK();
     return fmm;
   }
 
   /**
    * Creates a Translation Motion and assigns to a Region.<p>
-   * Note the Translation Velocity will be given in default units. See {@see #defUnitVel}.
+   * Note the Translation Velocity will be given in default units. See {@link #defUnitVel}.
    *
    * @param definition
    * @param r given Region.
@@ -2930,11 +2809,12 @@ public class MacroUtils extends StarMacro {
   public Motion createMotion_Translation(String definition, Region r) {
     printAction("Creating a Translation Motion");
     say("Definition: " + definition);
-    sayRegion(r);
+    sayNamedObject("Region", r);
     TranslatingMotion tm = sim.get(MotionManager.class).createMotion(TranslatingMotion.class, "Translation");
     tm.getTranslationVelocity().setDefinition(definition);
     tm.getTranslationVelocity().setUnits(defUnitVel);
     ((MotionSpecification) r.getValues().get(MotionSpecification.class)).setMotion(tm);
+    sayCreated(tm, true);
     sayOK();
     return tm;
   }
@@ -2944,27 +2824,25 @@ public class MacroUtils extends StarMacro {
    *
    * @param colRP given ArrayList of Report Monitors.
    * @param plotName given Plot name.
-   * @param pm given Plotable Monitor. Use with {@see #getIterationMonitor} or
-   *    {@see #getPhysicalTimeMonitor} method.
+   * @param pm given Plotable Monitor. Use with {@link #getIterationMonitor} or
+   *    {@link #getPhysicalTimeMonitor} method.
    * @return The created Monitor Plot.
    */
   public MonitorPlot createPlot(ArrayList<ReportMonitor> colRP, String plotName, PlotableMonitor pm) {
     MonitorPlot monPl = sim.getPlotManager().createMonitorPlot();
     monPl.setPresentationName(plotName);
     monPl.getMonitors().addObjects(colRP);
-
     Axes axes = monPl.getAxes();
     Axis _xx = axes.getXAxis();
     _xx.getTitle().setText(pm.getPresentationName());
     Axis _yy = axes.getYAxis();
     _yy.getTitle().setText(colRP.iterator().next().getMonitorDescription());
-
     return monPl;
   }
 
   /**
    * Creates a Single Plot XY type from the selected Objects.
-   * @param ano given ArrayList of NamedObjects.
+   * @param ano given ArrayList of STAR-CCM+ Objects.
    * @param ffx given Field Function for the x-axis.
    * @param ux given units for the Field Function in the x-axis.
    * @param ffy given Field Function for the y-axis.
@@ -2974,7 +2852,7 @@ public class MacroUtils extends StarMacro {
   public XYPlot createPlot_XY(ArrayList<NamedObject> ano, FieldFunction ffx, Units ux,
                                                                     FieldFunction ffy, Units uy) {
     printAction("Creating a XY Plot");
-    sayNamedObjects(ano, true);
+    sayObjects(ano, "Parts", true);
     if (isVector(ffx)) {
         ffx = ffx.getMagnitudeFunction();
     }
@@ -2995,29 +2873,9 @@ public class MacroUtils extends StarMacro {
     ids.getSymbolStyle().setStyle(1);
     ids.getSymbolStyle().setSize(12);
     ids.getSymbolStyle().setColor(colorSlateGray);
+    sayCreated(xypl, true);
     sayOK();
     return xypl;
-  }
-
-  /**
-   * Creates a Surface Wrapper seed point in a Region.
-   *
-   * @param r given Region.
-   * @param X given X coordinate.
-   * @param Y given Y coordinate.
-   * @param Z given Z coordinate.
-   * @param u given unit.
-   */
-  public void createWrapperSeedPoint(Region r, double X, double Y, double Z, Units u) {
-    setMeshWrapperVolumeSeedPoints(r);
-    printAction("Creating a Wrapper Seed Point");
-    sayRegion(r);
-    say(String.format("Point Coordinate: %f, %f, %f [%s]", X, Y, Z, u.toString()));
-    VolumeOfInterestSeedPoint seedPt = r.get(MeshValueManager.class).get(VolumeOfInterestSeedPointManager.class).createSeedPoint();
-    seedPt.getCoordinates().setUnits(u);
-    seedPt.getCoordinates().setComponents(X, Y, Z);
-    say("Created: " + seedPt.getPresentationName());
-    sayOK();
   }
 
   /**
@@ -3030,6 +2888,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AirSteadySegregatedBoussinesqKEps2Lyr() {
     text = "Air / Steady State / Segregated Solver / Boussinesq / k-eps 2 Layers";
@@ -3053,6 +2912,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AirSteadySegregatedIdealGasKEps2Lyr() {
     text = "Air / Steady State / Segregated Solver / Ideal Gas / k-eps 2 Layers";
@@ -3075,6 +2935,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AirSteadySegregatedIdealGasSA_AllWall() {
     text = "Air / Steady State / Segregated Solver / Ideal Gas / Spalart-Allmaras All Wall Y+";
@@ -3097,6 +2958,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AirSteadySegregatedIncompressibleKEps2LyrIsothermal() {
     text = "Air / Steady State / Segregated Solver / Constant Density / k-eps 2 Layers / Isothermal";
@@ -3117,6 +2979,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AirSteadySegregatedIncompressibleKEps2LyrThermal() {
     text = "Air / Steady State / Segregated Solver / Constant Density / k-eps 2 Layers / Thermal";
@@ -3138,6 +3001,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AirSteadySegregatedIncompressibleLaminarIsothermal() {
     text = "Air / Steady State / Segregated Solver / Constant Density / Laminar / Isothermal";
@@ -3157,6 +3021,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AirSteadySegregatedIncompressibleLaminarThermal() {
     text = "Air / Steady State / Segregated Solver / Constant Density / Laminar / Thermal";
@@ -3177,6 +3042,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AirSteadySegregatedIncompressibleSA_AllWallIsothermal() {
     text = "Air / Steady State / Segregated Solver / Constant Density / Spalart-Allmaras All Wall Y+ / Isothermal";
@@ -3243,6 +3109,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_AluminumSteadySegregated() {
     text = "Aluminum / Steady State / Segregated Solver";
@@ -3261,9 +3128,10 @@ public class MacroUtils extends StarMacro {
    * <li> Isothermal
    * </ul>
    *
-   * @param den given fluid density in default units. See {@see #defUnitVel}.
-   * @param visc given fluid viscosity. See {@see #defUnitVisc}.
+   * @param den given fluid density in default units. See {@link #defUnitVel}.
+   * @param visc given fluid viscosity. See {@link #defUnitVisc}.
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_FluidSteadySegregatedIncompressibleLaminarIsothermal(double den, double visc) {
     text = "Fluid / Steady State / Segregated Solver / Constant Density / Laminar / Isothermal";
@@ -3292,6 +3160,7 @@ public class MacroUtils extends StarMacro {
    * @param k given Thermal Conductivity in default Units.
    * @param cp given Specific Heat in default Units.
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_SolidSteadySegregated(String name, double den, double k, double cp) {
     text = "Generic Solid / Steady State / Segregated Solver / Constant Properties";
@@ -3323,6 +3192,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_SteelSteadySegregated() {
     text = "Steel / Steady State / Segregated Solver";
@@ -3342,6 +3212,7 @@ public class MacroUtils extends StarMacro {
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
 public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2LyrIsothermal() {
     text = "Water / Steady State / Segregated Solver / Constant Density / k-eps 2 Layer / Isothermal";
@@ -3362,6 +3233,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2LyrThermal() {
     text = "Water / Steady State / Segregated Solver / Constant Density / k-eps 2 Layer / Thermal";
@@ -3383,6 +3255,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleLaminarIsothermal() {
     text = "Water / Steady State / Segregated Solver / Constant Density / Laminar / Isothermal";
@@ -3402,6 +3275,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * </ul>
    *
    * @return The New Physics Continua.
+   * @deprecated in v3d. Use {@link #createPhysicsContinua} instead.
    */
   public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleLaminarThermal() {
     text = "Water / Steady State / Segregated Solver / Constant Density / Laminar / Thermal";
@@ -3412,6 +3286,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return phC;
   }
 
+  @Deprecated // in v3d. Use {@link #createPhysicsContinua} instead.
   private PhysicsContinuum createPhysics_3D_SS_SngCmp_SegrFL_ConDen_Lam_CQR(
                                             Class singleComponentClass, String text) {
     printAction("Creating Physics Continua");
@@ -3431,6 +3306,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return phC;
   }
 
+  @Deprecated // in v3d. Use {@link #createPhysicsContinua} instead.
   private PhysicsContinuum createPhysics_3D_SS_SegrSLD(String solidMaterial, String text) {
     printAction("Creating Physics Continua");
     say(text);
@@ -3485,17 +3361,17 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Physics Continua based on models choices.
    *
-   * @param spc given Space model. Currently options: {@see #_2D} or {@see #_3D}.
-   * @param time given Time model. Currently options: {@see #_STEADY} or {@see #_IMPLICIT_UNSTEADY}.
-   * @param mat given Material model. Currently options: {@see #_GAS}, {@see #_LIQUID},
-   *        {@see #_SOLID}, {@see #_VOF} or {@see #_VOF_AIR_WATER}.
-   * @param slv given Solver strategy. Currently options: {@see #_SEGREGATED} or {@see #_COUPLED}.
-   * @param eos given Equation of State. Currently options: {@see #_INCOMPRESSIBLE} or {@see #_IDEAL_GAS}.
-   * @param enrgy given Energy model. Currently options: {@see #_ISOTHERMAL} or {@see #_THERMAL}.
-   * @param visc given Viscous Regime. Currently options: {@see #_LAMINAR},
-   *        {@see #_KE_STD}, {@see #_RKE_2LAYER},
-   *        {@see #_KW_STD}, {@see #_KW_2008}, {@see #_SST_KW},
-   *        {@see #_DES_SST_KW_IDDES} or {@see #_DES_SST_KW_DDES}.
+   * @param spc given Space model. Currently options: {@link #_2D} or {@link #_3D}.
+   * @param time given Time model. Currently options: {@link #_STEADY} or {@link #_IMPLICIT_UNSTEADY}.
+   * @param mat given Material model. Currently options: {@link #_GAS}, {@link #_LIQUID},
+   *        {@link #_SOLID}, {@link #_VOF} or {@link #_VOF_AIR_WATER}.
+   * @param slv given Solver strategy. Currently options: {@link #_SEGREGATED} or {@link #_COUPLED}.
+   * @param eos given Equation of State. Currently options: {@link #_INCOMPRESSIBLE} or {@link #_IDEAL_GAS}.
+   * @param enrgy given Energy model. Currently options: {@link #_ISOTHERMAL} or {@link #_THERMAL}.
+   * @param visc given Viscous Regime. Currently options: {@link #_LAMINAR},
+   *        {@link #_KE_STD}, {@link #_RKE_2LAYER}, {@link #_KW_STD},
+   *        {@link #_KW_2008}, {@link #_SST_KW}, {@link #_DES_SST_KW_IDDES},
+   *        {@link #_DES_SST_KW_DDES} or {@link #_NOT_APPLICABLE} in case of a solid material.
    * @param grav enable Gravity?
    * @param cqr enable Cell Quality Remediation?
    * @param recom apply Recommendations based on the Selected Models? Hint: True.
@@ -3582,11 +3458,19 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     //-- Solver
     switch (slv) {
         case _SEGREGATED:
-            pc.enable(SegregatedFlowModel.class);
+            if (mat == _SOLID) {
+                pc.enable(SegregatedSolidEnergyModel.class);
+            } else {
+                pc.enable(SegregatedFlowModel.class);
+            }
             s.add("Segregated");
             break;
         case _COUPLED:
-            pc.enable(CoupledFlowModel.class);
+            if (mat == _SOLID) {
+                pc.enable(CoupledSolidEnergyModel.class);
+            } else {
+                pc.enable(CoupledFlowModel.class);
+            }
             s.add("Coupled");
             break;
         default:
@@ -3615,11 +3499,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         case _ISOTHERMAL:
             s.add("Isothermal");
             break;
-        case _IDEAL_GAS:
-            if (slv == _SEGREGATED) {
-                pc.enable(SegregatedFluidTemperatureModel.class);
-            } else if (slv == _COUPLED) {
-                pc.enable(CoupledEnergyModel.class);
+        case _THERMAL:
+            if (mat != _SOLID) {
+                if (slv == _SEGREGATED) {
+                    pc.enable(SegregatedFluidTemperatureModel.class);
+                } else if (slv == _COUPLED) {
+                    pc.enable(CoupledEnergyModel.class);
+                }
             }
             s.add("Thermal");
             break;
@@ -3651,6 +3537,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         useMinMod = true;
     }
     switch (visc) {
+        case _NOT_APPLICABLE:
+            break;
         case _INVISCID:
             pc.enable(InviscidModel.class);
             s.add("Inviscid");
@@ -3697,19 +3585,32 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
             s.add("Menter SST DDES");
             break;
         default:
-            say("Invalid option for Energy. Aborting...", verboseOption);
+            say("Invalid option for Viscous Regime. Aborting...", verboseOption);
             return null;
     }
-    //--
-    //-- Miscellaneous
-    if (grav) {
-        pc.enable(GravityModel.class);
-    }
-    if (cqr) {
-        pc.enable(CellQualityRemediationModel.class);
-    }
-    updateUnits(true);
-    if (useMinMod) {
+    createPhysicsContinua_Misc(pc, useMinMod, recom, grav, cqr, verboseOption);
+    createPhysicsContinua_InitialConditions(pc, verboseOption);
+    pc.setPresentationName(retStringBetweenBrackets(s.toString()).replaceAll(", ", " / "));
+    say("");
+    sayCreated(pc, verboseOption);
+    sayOK(verboseOption);
+    return pc;
+  }
+
+  private void createPhysicsContinua_InitialConditions(PhysicsContinuum pc, boolean verboseOption) {
+    printAction("Setting Initial Conditions", verboseOption);
+    setInitialCondition(pc, varP, p0, defUnitPress, false);
+    setInitialCondition(pc, "Static Temperature", refT, defUnitTemp, false);
+    setInitialCondition(pc, varTI, ti0, unit_Dimensionless, false);
+    setInitialCondition(pc, varTVR, tvr0, unit_Dimensionless, false);
+    setInitialCondition(pc, varTVS, tvs0, defUnitVel, false);
+    setInitialCondition(pc, varVel, v0, defUnitVel, false);
+  }
+
+  private void createPhysicsContinua_Misc(PhysicsContinuum pc, boolean mm, boolean recom, boolean grav,
+                                                                        boolean cqr, boolean verboseOption) {
+    updateUnits(false, true);
+    if (mm) {
         //-- Trick learned from Development. Preferred gradient limiter for LES/DES simulations.
         printAction("Using MinMod Limiter Method...", verboseOption);
         GradientsModel gm = pc.getModelManager().getModel(GradientsModel.class);
@@ -3718,24 +3619,18 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         gm.setUseTVBGradientLimiting(true);
         gm.setAcceptableFieldVariationFactor(0.1);
     }
-    printAction("Setting Initial Conditions");
-    setInitialCondition(pc, varP, p0, defUnitPress, false);
-    setInitialCondition(pc, "Static Temperature", refT, defUnitTemp, false);
-    setInitialCondition(pc, varTI, ti0, unit_Dimensionless, false);
-    setInitialCondition(pc, varTVR, refT, unit_Dimensionless, false);
-    setInitialCondition(pc, varTVS, tvs0, defUnitVel, false);
-    setInitialCondition_Velocity(pc, v0[0], v0[1], v0[2], false);
-    pc.setPresentationName(retStringBetweenBrackets(s.toString()).replaceAll(", ", " / "));
     if (recom) {
         printAction("Applying Recommendations based on the Models selected");
         enableExpertDriver();
         enableGridSequencing();
         updateSolverSettings();
     }
-    printAction("Physics Continua created", verboseOption);
-    say(pc.getPresentationName(), verboseOption);
-    sayOK(verboseOption);
-    return pc;
+    if (grav) {
+        pc.enable(GravityModel.class);
+    }
+    if (cqr) {
+        pc.enable(CellQualityRemediationModel.class);
+    }
   }
 
   /**
@@ -3743,7 +3638,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param name given Report name.
    * @param u given units.
-   * @param dim given dimensions. E.g.: {@see #dimVel}
+   * @param dim given dimensions. E.g.: {@link #dimVel}
    * @param def given Expression definition. E.g.: "$Time".
    * @return The new Report.
    */
@@ -3767,11 +3662,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         return sim.getReportManager().getReport(name);
     }
     ExpressionReport er = sim.getReportManager().createReport(ExpressionReport.class);
-    say(verboseOption, "%s == %s (%s)", name, definition, u.getPresentationName());
+    say(verboseOption, "%s == %s (%s)", name, definition, getString(u));
     er.setPresentationName(name);
     er.setDimensions(dimension);
     er.setDefinition(definition);
     er.setUnits(u);
+    sayCreated(er, verboseOption);
     sayOK(verboseOption);
     return er;
   }
@@ -3779,7 +3675,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Force Report in a Boundary.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param b given Boundary.
    * @param name given Report name.
@@ -3792,7 +3688,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Force Report in the selected Boundaries.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param ab given ArrayList of Boundaries.
    * @param name given Report name.
@@ -3825,7 +3721,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Force Coefficient Report in a Boundary.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    * <p>
    * <b>The Reference Density will be taken from the Physics Continua associated with the Boundary.</b>
    * <p>
@@ -3833,8 +3729,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param b given Boundary.
    * @param name given Report name.
-   * @param refVel given Reference Velocity in default unit. See {@see #defUnitVel}.
-   * @param refArea given Reference Area in default unit. See {@see #defUnitArea}.
+   * @param refVel given Reference Velocity in default unit. See {@link #defUnitVel}.
+   * @param refArea given Reference Area in default unit. See {@link #defUnitArea}.
    * @param direction a 3-component array of the given direction of flow. E.g.: in X it is {1, 0, 0}.
    */
   public void createReportForceCoefficient(Boundary b, String name, double refVel,
@@ -3845,7 +3741,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Force Coefficient Report in the selected Boundaries.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated. <p>
+   * return anything, {@link #repMon} will still be updated. <p>
    * <p>
    * <b>The Reference Density will be taken from the Physics Continua associated with the Boundary.</b>
    * <p>
@@ -3853,8 +3749,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param ab given ArrayList of Boundaries.
    * @param name given Report name.
-   * @param refVel given Reference Velocity in default unit. See {@see #defUnitVel}.
-   * @param refArea given Reference Area in default unit. See {@see #defUnitArea}.
+   * @param refVel given Reference Velocity in default unit. See {@link #defUnitVel}.
+   * @param refArea given Reference Area in default unit. See {@link #defUnitArea}.
    * @param direction a 3-component array of the given direction of flow. E.g.: in X it is {1, 0, 0}.
    */
   public void createReportForceCoefficient(ArrayList<Boundary> ab, String name,
@@ -3884,9 +3780,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         ConstantMaterialPropertyMethod cmpm = getMatPropMeth_Const(model, ConstantDensityProperty.class);
         u = cmpm.getQuantity().getUnits();
         den = cmpm.getQuantity().getValue();
-        say("Got: : " + den + u.getPresentationName());
+        sayValue("Got", den, u);
     } catch (Exception e) {
-        say("Error getting Reference Density! Using " + den + u.getPresentationName());
+        sayValue("Error getting Reference Density! Using", den, u);
     }
     forceCoeffRep.getReferenceDensity().setUnits(u);
     forceCoeffRep.getReferenceDensity().setValue(den);
@@ -3953,7 +3849,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Mass Average Report in a Region.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param r given Region.
    * @param name given Report name.
@@ -3967,7 +3863,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Mass Average Report in the selected Regions.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param ar given ArrayList of Regions.
    * @param name given Report name.
@@ -3999,7 +3895,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     massAvgRep.setUnits(u);
     massAvgRep.setPresentationName(name);
     massAvgRep.getParts().setObjects(ar);
-    String yAxisLabel = "Mass Average of " + f.getPresentationName() + " (" + u.getPresentationName() + ")";
+    String yAxisLabel = "Mass Average of " + f.getPresentationName() + " (" + getString(u) + ")";
     repMon = createMonitorAndPlotFromReport(massAvgRep, name, null, yAxisLabel);
     return massAvgRep;
   }
@@ -4007,7 +3903,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Mass Flow Report in a Boundary.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param b given Boundary.
    * @param name given Report name.
@@ -4020,7 +3916,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Mass Flow Report in the selected Boundaries.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param ab given ArrayList of Boundaries.
    * @param name given Report name.
@@ -4057,7 +3953,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Mass Flow Average Report in a Boundary.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param b given Boundary.
    * @param name given Report name.
@@ -4071,7 +3967,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Mass Flow Average Report in the selected Boundaries.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param ab given ArrayList of Boundaries.
    * @param name given Report name.
@@ -4095,8 +3991,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     mfaRep.setUnits(u);
     mfaRep.setPresentationName(name);
     mfaRep.getParts().setObjects(ab);
-    String unitStr = u.getPresentationName();
-    String yAxisLabel = "Mass Flow Average of " + f.getPresentationName() + " (" + unitStr + ")";
+    String yAxisLabel = "Mass Flow Average of " + f.getPresentationName() + " (" + getString(u) + ")";
     if (crPl) {
         repMon = createMonitorAndPlotFromReport(mfaRep, name, null, yAxisLabel);
     }
@@ -4106,7 +4001,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Maximum Report in a STAR-CCM+ NamedObject.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param n given NamedObject.
    * @param name given Report name.
@@ -4118,11 +4013,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Creates a Maximum Report in the selected STAR-CCM+ NamedObjects.<p>
+   * Creates a Maximum Report in the selected STAR-CCM+ Objects.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
-   * @param ano given ArrayList of NamedObjects.
+   * @param ano given ArrayList of STAR-CCM+ Objects.
    * @param name given Report name.
    * @param f given Field Function.
    * @param u variable corresponding Unit.
@@ -4138,13 +4033,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         say("Skipping... Report already exists: " + name);
         return sim.getReportManager().getReport(name);
     }
-    sayNamedObjects(ano, true);
+    sayObjects(ano, "Parts", true);
     MaxReport maxRep = sim.getReportManager().createReport(MaxReport.class);
     maxRep.setScalar(f);
     maxRep.setUnits(u);
     maxRep.setPresentationName(name);
     maxRep.getParts().setObjects(ano);
-    String yAxisLabel = "Maximum of " + f.getPresentationName() + " (" + u.getPresentationName() + ")";
+    String yAxisLabel = "Maximum of " + f.getPresentationName() + " (" + getString(u) + ")";
     repMon = createMonitorAndPlotFromReport(maxRep, name, null, yAxisLabel);
     return maxRep;
   }
@@ -4153,7 +4048,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Creates a Minimum Report in a STAR-CCM+ NamedObject.
    * <p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param n given NamedObject.
    * @param name given Report name.
@@ -4167,7 +4062,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Minimum Report in the selected NamedObjects.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param ano given ArrayList of NamedObjects.
    * @param name given Report name.
@@ -4198,16 +4093,16 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     minRep.setUnits(u);
     minRep.setPresentationName(name);
     minRep.getParts().setObjects(ano);
-    String yAxisLabel = "Minimum of " + f.getPresentationName() + " (" + u.getPresentationName() + ")";
+    String yAxisLabel = "Minimum of " + f.getPresentationName() + " (" + getString(u) + ")";
     repMon = createMonitorAndPlotFromReport(minRep, name, null, yAxisLabel);
     return minRep;
   }
 
   /**
-   * Creates a Pressure Drop Report. Definition: dP = P1 - P2 in default unit. See {@see #defUnitPress}.
+   * Creates a Pressure Drop Report. Definition: dP = P1 - P2 in default unit. See {@link #defUnitPress}.
    * <p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param b1 given Boundary 1.
    * @param b2 given Boundary 2.
@@ -4263,7 +4158,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Surface Average Report in a STAR-CCM+ NamedObject.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param n given NamedObject.
    * @param name given Report name.
@@ -4277,7 +4172,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Surface Average Report in the selected NamedObjects.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param ano given ArrayList of NamedObjects.
    * @param name given Report name.
@@ -4308,7 +4203,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     aar.setUnits(u);
     aar.setPresentationName(name);
     aar.getParts().setObjects(ano);
-    String yAxisLabel = "Surface Average of " + f.getPresentationName() + " (" + u.getPresentationName() + ")";
+    String yAxisLabel = "Surface Average of " + f.getPresentationName() + " (" + getString(u) + ")";
     repMon = createMonitorAndPlotFromReport(aar, name, null, yAxisLabel);
     return aar;
   }
@@ -4316,7 +4211,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Surface Uniformity Report in a STAR-CCM+ NamedObject.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param n given NamedObject.
    * @param name given Report name.
@@ -4330,7 +4225,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Surface Uniformity Report in the selected NamedObjects.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param ano given ArrayList of NamedObjects.
    * @param name given Report name.
@@ -4361,7 +4256,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sur.setUnits(u);
     sur.setPresentationName(name);
     sur.getParts().setObjects(ano);
-    String yAxisLabel = "Surface Uniformity of " + f.getPresentationName() + " (" + u.getPresentationName() + ")";
+    String yAxisLabel = "Surface Uniformity of " + f.getPresentationName() + " (" + getString(u) + ")";
     repMon = createMonitorAndPlotFromReport(sur, name, null, yAxisLabel);
     return sur;
   }
@@ -4369,7 +4264,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Volume Average Report in a Region.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param r given Region.
    * @param name given Report name.
@@ -4383,7 +4278,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a Volume Average Report in the selected Regions.<p>
    * <b>Note that a Monitor and a Plot will be created too.</b> Even though this method will not
-   * return anything, {@see #repMon} will still be updated.
+   * return anything, {@link #repMon} will still be updated.
    *
    * @param ar given ArrayList of Regions.
    * @param name given Report name.
@@ -4415,7 +4310,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     volAvgRep.setUnits(u);
     volAvgRep.setPresentationName(name);
     volAvgRep.getParts().setObjects(ar);
-    String yAxisLabel = "Volume Average of " + f.getPresentationName() + " (" + u.getPresentationName() + ")";
+    String yAxisLabel = "Volume Average of " + f.getPresentationName() + " (" + getString(u) + ")";
     repMon = createMonitorAndPlotFromReport(volAvgRep, name, null, yAxisLabel);
     return volAvgRep;
   }
@@ -4485,6 +4380,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
      * @param origUnit
      * @param rotValue
      * @param rotUnit
+     * @deprecated in v3d. Not sed anymore.
      */
     public void createRotatingReferenceFrameForRegion(Region r, double[] axis, double[] origin, Units origUnit,
                                     double rotValue, Units rotUnit) {
@@ -4531,7 +4427,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   private Scene createScene_Geometry(boolean verboseOption) {
-    return createScene("Geometry", new ArrayList<NamedObject>(), null, null, false);
+    return createScene("Geometry", new ArrayList<NamedObject>(), null, null, verboseOption);
   }
 
   /**
@@ -4579,10 +4475,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Creates a Scalar Scene containing the input Objects. <b><u>Hint:</u></b> Use an ArrayList
-   * to collect the Objects. E.g.: {@see #namedObjects}.
+   * to collect the Objects. E.g.: {@link #namedObjects}.
    *
    * @param ano given ArrayList of NamedObjects.
-   * @param f given Field Function. Use {@see #getFieldFunction} method as needed.
+   * @param f given Field Function. Use {@link #getFieldFunction} method as needed.
    * @param u given variable Unit.
    * @param smoothFilled Smooth Fill?
    * @return Created Scene.
@@ -4619,16 +4515,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     printAction("Creating a " + sceneType + " Scene", verboseOption);
     Scene scn = sim.getSceneManager().createScene(sceneType);
     scn.setPresentationName(sceneType);
-    sayScene(scn, verboseOption);
+    sayNamedObject("Scene", scn);
     scn.initializeAndWait();
     //--
     ((PartDisplayer) scn.getCreatorDisplayer()).initialize();
-    //--
-    //-- Trick to address issues when running in batch and a Scalar Scene
-    //-- Confirmed in v8.06.005. Need to apply a VisView too outside.
-    //-- Happened in a custom case. But not on MacroUtils Demos? Odd.
-    scn.getCurrentView().setInput(dv0, getDoubleVector(1, 0, 0), getDoubleVector(0, 0, 1), 1, 1);
-    scn.resetCamera();
     //--
     if (isWindows()) {
         //-- I have found issues in some Linux machines.
@@ -4645,6 +4535,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     setSceneCameraView(scn, defCamView);
     //-- If there is a Camera with the Scene name why not using it?
     setSceneCameraView(scn, getCameraView(scn.getPresentationName(), false), false);
+    sayCreated(scn, verboseOption);
     sayOK(verboseOption);
     return scn;
   }
@@ -4742,14 +4633,14 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Creates a Streamline Displayer in a Scene containing the input Objects as the Input Part.
-   * <b><u>Hint:</u></b> Use an ArrayList to collect the Objects. E.g.: {@see #namedObjects}.
+   * <b><u>Hint:</u></b> Use an ArrayList to collect the Objects. E.g.: {@link #namedObjects}.
    * <p>
    * A Streamline Part is created too and will consider all Regions and the Velocity Vector.
    *
    * @param scn given Scene.
    * @param ano given ArrayList of NamedObjects.
    * @param tubes Would like to see tubes in the Streamlines? Control the tubes width with
-   *    {@see #postStreamlinesTubesWidth} variable.
+   *    {@link #postStreamlinesTubesWidth} variable.
    * @return The Created Displayer.
    */
   public StreamDisplayer createSceneDisplayer_Streamline(Scene scn,
@@ -4764,7 +4655,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Creates a Section Plane using All Regions. This is similar to {@see #createDerivedPart_SectionPlane()}.
+   * Creates a Section Plane using All Regions. This is similar to {@link #createDerivedPart_SectionPlane()}.
    *
    * @param origin given origin coordinates. E.g.: new double[] {0., 0., 0.}
    * @param orientation  given normal orientation coordinates. E.g.: Normal to X is new double[] {1., 0., 0.}
@@ -4785,7 +4676,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     PlaneSection pln = createSectionPlane(origin, new double[] {1., 0., 0.});
     say("Normal to X direction");
     pln.setPresentationName(name);
-    sayOK();
     return pln;
   }
 
@@ -4800,7 +4690,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     PlaneSection pln = createSectionPlane(origin, new double[] {0., 1., 0.});
     say("Normal to Y direction");
     pln.setPresentationName(name);
-    sayOK();
     return pln;
   }
 
@@ -4815,7 +4704,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     PlaneSection pln = createSectionPlane(origin, new double[] {0., 0., 1.});
     say("Normal to Z direction");
     pln.setPresentationName(name);
-    sayOK();
     return pln;
   }
 
@@ -4847,7 +4735,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Creates a Simple Block with the default Tesselation option. See {@see #defTessOpt}.
+   * Creates a Simple Block with the default Tesselation option. See {@link #defTessOpt}.
    *
    * @param coord1 given 3-components array. <i>E.g.: new double[] {0, 0, 0}</i>
    * @param coord2 given 3-components array. <i>E.g.: new double[] {1, 1, 1}</i>
@@ -4866,13 +4754,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     r.setCoordinate(u, u, u, new DoubleVector(coord2));
     sbp.getTessellationDensityOption().setSelected(defTessOpt);
     sbp.setPresentationName(name);
-    say("Created: " + sbp.getPresentationName());
+    sayCreated(sbp, true);
     sayOK();
     return sbp;
   }
 
   /**
-   * Creates a Simple Cone Part with the default Tesselation option. See {@see #defTessOpt}.
+   * Creates a Simple Cone Part with the default Tesselation option. See {@link #defTessOpt}.
    *
    * @param coord1 given 3-components array. <i>E.g.: new double[] {0, 0, 0}</i>
    * @param coord2 given 3-components array. <i>E.g.: new double[] {1, 1, 1}</i>
@@ -4888,7 +4776,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Creates a Simple Cylinder Part with the default Tesselation option. See {@see #defTessOpt}.
+   * Creates a Simple Cylinder Part with the default Tesselation option. See {@link #defTessOpt}.
    *
    * @param coord1 given 3-components array. <i>E.g.: new double[] {0, 0, 0}</i>
    * @param coord2 given 3-components array. <i>E.g.: new double[] {1, 1, 1}</i>
@@ -4921,7 +4809,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     scp.getEndRadius().setUnits(u);
     scp.getTessellationDensityOption().setSelected(defTessOpt);
     scp.setPresentationName(name);
-    sayNamedObject(scp, true);
+    sayCreated(scp, true);
     sayOK();
     return scp;
   }
@@ -4949,7 +4837,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Creates a Simple Sphere Part with the default Tesselation option. See {@see #defTessOpt}.
+   * Creates a Simple Sphere Part with the default Tesselation option. See {@link #defTessOpt}.
    *
    * @param coord given 3-components array. <i>E.g.: new double[] {0, 0, 0}</i>
    * @param r given radius.
@@ -4972,7 +4860,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Creates a Solution History using the {@see #simTitle} name under {@see #simPath}.
+   * Creates a Solution History using the {@link #simTitle} name under {@link #simPath}.
    *
    * @param ano given ArrayList of NamedObjects.
    * @param aff given Array of Field Functions.
@@ -4994,6 +4882,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
     sh.setVectors(new Vector(vFF));
     sh.setScalars(new Vector(sFF));
+    sayCreated(sh, true);
     sayOK();
     return sh;
   }
@@ -5012,7 +4901,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         return svm.getSolutionView(sh.getPresentationName());
     }
     RecordedSolutionView rsv = sh.createRecordedSolutionView();
-    say("Created: " + rsv.getPresentationName());
+    sayCreated(rsv, true);
     sayOK();
     return rsv;
   }
@@ -5096,12 +4985,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a File Table to be used inside STAR-CCM+.
    *
-   * @param filename given file which must be in {@see #simPath} folder.
+   * @param filename given file which must be in {@link #simPath} folder.
    * @return The File Table.
    */
   public FileTable createTable_File(String filename) {
     printAction("Creating a File Table");
     FileTable ft = (FileTable) sim.getTableManager().createFromFile(new File(simPath, filename).toString());
+    sayCreated(ft, true);
     sayOK();
     return ft;
   }
@@ -5158,6 +5048,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     createUpdateEvent_Type("Logic", verboseOption);
     LogicUpdateEvent l = sim.getUpdateEventManager().createUpdateEvent(LogicUpdateEvent.class);
     l.getLogicOption().setSelected(createUpdateEvent_getLogic(logicOption, verboseOption));
+    sayCreated(l, verboseOption);
     sayOK(verboseOption);
     return l;
   }
@@ -5169,6 +5060,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     ev.setMonitor(pm);
     ev.getRangeOption().setSelected(createUpdateEvent_getOperator(operOption, verboseOption));
     ev.getRangeQuantity().setValue(range);
+    sayCreated(ev, verboseOption);
     sayOK(verboseOption);
     return ev;
   }
@@ -5199,7 +5091,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Creates a stand-alone Logic Update Event.
    *
-   * @param logicOption given Logic Option ({@see #AND} (Default), {@see #OR} or {@see #XOR}).
+   * @param logicOption given Logic Option ({@link #AND} (Default), {@link #OR} or {@link #XOR}).
    * @return The Update Event variable.
    */
   public LogicUpdateEvent createUpdateEvent_Logic(int logicOption) {
@@ -5220,6 +5112,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         say("Adding: " + ue.getPresentationName());
         createUpdateEvent_Logic(l, ue, logicOption, false);
     }
+    sayCreated(l, true);
     sayOK();
     return l;
   }
@@ -5242,15 +5135,16 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     lue.getLogicOption().setSelected(createUpdateEvent_getLogic(logicOption, true));
     u.copyProperties(ue);
     u.setPresentationName(ue.getPresentationName());
+    sayCreated(u, verboseOption);
     sayOK(verboseOption);
   }
 
   /**
    * Creates an Update Event based on a Range.
    *
-   * @param pm given Plotable Monitor. Use with {@see #getIterationMonitor} or
-   *    {@see #getPhysicalTimeMonitor} method.
-   * @param operOption {@see #GE} (Default) or {@see #LE}.
+   * @param pm given Plotable Monitor. Use with {@link #getIterationMonitor} or
+   *    {@link #getPhysicalTimeMonitor} method.
+   * @param operOption {@link #GE} (Default) or {@link #LE}.
    * @param range given Range.
    * @return The Range Monitor Update Event variable.
    */
@@ -5278,11 +5172,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Creates a Simple Transform for Visualization (Vis Transform).
    * <p>
    * When providing values to Method, <b>null</b> values are ignored. Units used are
-   * {@see #defUnitLength} and {@see #defUnitAngle}.
+   * {@link #defUnitLength} and {@link #defUnitAngle}.
    *
    * @param org given 3-components array with origin coordinates (<b>null</b> is ignored). E.g.: {0, 0, -10}.
    * @param rot given 3-components array with the rotation axis (<b>null</b> is ignored). E.g.: {0, 1, 0}.
-   * @param angle given rotation angle in {@see #defUnitAngle}.
+   * @param angle given rotation angle in {@link #defUnitAngle}.
    * @param tran given 3-components array with translation coordinates (<b>null</b> is ignored). E.g.: {12, 0, -5}.
    * @param scale given 3-components array with scaling factors (<b>null</b> is ignored). E.g.: {1, 2, 1}.
    * @param name given name.
@@ -5307,7 +5201,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     if (scale != null) {
         st.setScale(new DoubleVector(scale));
     }
-    say("Created: " + st.getPresentationName());
+    sayCreated(st, true);
     sayOK();
     return st;
   }
@@ -5316,10 +5210,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Creates a Flat VOF Wave. Useful for Initial Conditions using the VOF model.
    *
    * @param phC given Physics Continua.
-   * @param ptLvl given Point on Level. A 3-components array in Length dimensions. {@see #defUnitLength}.
+   * @param ptLvl given Point on Level. A 3-components array in Length dimensions. {@link #defUnitLength}.
    * @param vertDir given Vertical Direction. A 3-components array.
-   * @param curr given Current. A 3-component array in Velocity dimensions. {@see #defUnitVel}.
-   * @param wind given Wind. A 3-component array in Velocity dimensions. {@see #defUnitVel}.
+   * @param curr given Current. A 3-component array in Velocity dimensions. {@link #defUnitVel}.
+   * @param wind given Wind. A 3-component array in Velocity dimensions. {@link #defUnitVel}.
    * @param applyIC apply the Wave Field Functions as Initial Conditions? This is recommended.
    * @return The Flat VOF Wave
    */
@@ -5381,6 +5275,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         vpp.getMethod(FunctionVectorProfileMethod.class).setFieldFunction(flatWave.getVelocityFF());
     }
     //--
+    sayCreated(flatWave, verboseOption);
     sayOK(verboseOption);
     return flatWave;
   }
@@ -5390,11 +5285,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
      * @param r
      * @param T
      * @param u
+     * @deprecated in v3d. Not used anymore.
      */
     public void customizeInitialTemperatureConditionForRegion(Region r, double T, Units u) {
     printAction("Customizing a Region Initial Condition");
-    sayRegion(r);
-    say("Value: " + T + u.getPresentationName());
+    sayNamedObject("Region", r);
+    sayValue("Value", T, u);
     r.getConditions().get(InitialConditionOption.class).setSelected(InitialConditionOption.REGION);
     StaticTemperatureProfile temp = r.get(RegionInitialConditionManager.class).get(StaticTemperatureProfile.class);
     temp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setUnits(u);
@@ -5402,20 +5298,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayOK();
   }
 
-    /**
-     *
-     * @param r
-     * @param numLayers
-     */
-    public void customizeThinMesherForRegion(Region r, int numLayers) {
-    printAction("Customizing a Region Thin Mesher Parameter");
-    sayRegion(r);
-    say("Thin Mesher Layers: " + numLayers);
-    r.get(MeshConditionManager.class).get(SolidMesherRegionOption.class).setSelected(SolidMesherRegionOption.CUSTOM_VALUES);
-    r.get(MeshValueManager.class).get(ThinSolidLayers.class).setLayers(numLayers);
-    sayOK();
-  }
-
+  /*
+   *
+   * @deprecated in v3d. Not used anymore.
+   */
   public void debugResidualsAndCorrections() {
     leaveTemporaryStorage = true;
     String preffix = "Absolute of ";
@@ -5439,7 +5325,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * This methods deletes files or directories. Be careful on how using it.
    *
-   * @param f given file. See {@see java.io.File}.
+   * @param f given file. See {@link java.io.File}.
    */
   void deleteFile(File f) {
     String type = "file";
@@ -5465,96 +5351,28 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayOK();
   }
 
-  /**
-   * Disables the Embedded Thin Mesher.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void disableEmbeddedThinMesher(MeshContinuum continua) {
-    printAction("Disabling Embedded Thin Mesher");
-    sayContinua(continua, true);
-    continua.disableModel(continua.getModelManager().getModel(SolidMesherSubModel.class));
-    sayOK();
-  }
-
-  /**
-   * Disable the Custom Surface Size in all Feature Curves of a Region.
-   *
-   * @param r given Region.
-   */
-  public void disableFeatureCurveSizeOnRegion(Region r) {
-    disableFeatureCurveSizeOnRegion(r, true);
-  }
-
-  /**
-   * Disable the Custom Surface Size in all Feature Curves of the Regions searched by REGEX.
-   *
-   * @param regexPatt given REGEX search pattern.
-   */
-  public void disableFeatureCurveSizeOnRegions(String regexPatt) {
-    printAction(String.format("Disabling Feature Curves Mesh Size on all " +
-                                "Regions by REGEX pattern: \"%s\"", regexPatt));
-    for (Region _reg : getRegions(regexPatt, false)) {
-        disableFeatureCurveSizeOnRegion(_reg, false);
-        sayRegion(_reg, true);
-    }
-    sayOK();
-  }
-
-  private void disableFeatureCurveSizeOnRegion(Region r, boolean verboseOption) {
-    printAction("Disabling Custom Feature Curve Mesh Size", verboseOption);
-    sayRegion(r, verboseOption);
-    ArrayList<FeatureCurve> af = new ArrayList(r.getFeatureCurveManager().getFeatureCurves());
-    for (FeatureCurve fc : af) {
-        try{
-            fc.get(MeshConditionManager.class).get(SurfaceSizeOption.class).setSurfaceSizeOption(false);
-        } catch (Exception e) {
-            say("  Error disabling " + fc.getPresentationName(), verboseOption);
-        }
-    }
+  private void disableMesh(Region r, boolean verboseOption) {
+    printAction("Disabling Mesh in Region", verboseOption);
+    Continuum c = r.getMeshContinuum();
+    sayNamedObject("Region", r);
+    sayNamedObject("Continua associated", c);
+    c.erase(r);
     sayOK(verboseOption);
   }
 
   /**
-   * Disables the Mesh Continua from a Region.
+   * Disables the Physics Continua in a Region.
    *
    * @param r given Region.
    */
-  public void disableMeshContinua(Region r) {
-    disableMeshContinua(r, true);
-  }
-
-  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-  private void disableMeshContinua(Region r, boolean verboseOption) {
-    printAction("Disabling Mesh Continua", verboseOption);
-    sayRegion(r, verboseOption);
-    try{
-        sayContinua(r.getMeshContinuum(), true);
-        r.getMeshContinuum().erase(r);
-    } catch (Exception e) {
-        say("Already disabled.", verboseOption);
-    }
-    sayOK(verboseOption);
-  }
-
-  /**
-   * Disables the Mesh Per Region Flag in a Mesh Continua.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void disableMeshPerRegion(MeshContinuum continua) {
-    printAction("Unsetting Mesh Continua as \"Per-Region Meshing\"");
-    sayContinua(continua, true);
-    continua.setMeshRegionByRegion(false);
-    sayOK();
+  public void disablePhysicsContinua(Region r) {
+    disablePhysicsContinua(r, true);
   }
 
   private void disablePhysicsContinua(Region r, boolean verboseOption) {
     printAction("Disabling Physics Continua", verboseOption);
-    sayRegion(r, verboseOption);
-    try{
+    sayNamedObject("Region", r);
+    try {
         sayContinua(r.getPhysicsContinuum(), true);
         r.getPhysicsContinuum().erase(r);
     } catch (Exception e) {
@@ -5564,113 +5382,28 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Disable the Prisms Layers on a given Boundary.
+   * Disables Surface to Surface Radiation Model in Region.
    *
-   * @param b given Boundary.
+   * @param r given Region.
    */
-  public void disablePrismLayers(Boundary b) {
-    disablePrismLayers(b, true);
-  }
-
-  /**
-   * Disable the Prisms Layers on all Boundaries that match the search criteria.
-   *
-   * @param regexPatt given REGEX pattern.
-   */
-  public void disablePrismLayers(String regexPatt) {
-    printAction(String.format("Disabling Prism Layers on all Boundaries " +
-                                "by REGEX pattern: \"%s\"", regexPatt));
-    printLine();
-    for (Boundary b : getBoundaries(regexPatt, false, false)) {
-        say("");
-        disablePrismLayers(b, true);
-        say("");
-    }
-    printLine();
-    sayOK();
-  }
-
-  /**
-   * Disables the Prism Layers.
-   *
-   * @param continua given Mesh Continua.
-   */
-  public void disablePrismLayers(Continuum continua) {
-    disablePrismLayers(continua, true);
-  }
-
-    /**
-     *
-     * @param continua
-     * @param verboseOption
-     */
-    public void disablePrismLayers(Continuum continua, boolean verboseOption) {
-    if (!hasPrismLayerMesher(continua)) {
-        return;
-    }
-    printAction("Disabling Prism Layers", verboseOption);
-    sayContinua(continua, true);
-    continua.disableModel(continua.getModelManager().getModel(PrismMesherModel.class));
-    sayOK(verboseOption);
-  }
-
-  private void disablePrismLayers(Boundary b, boolean verboseOption) {
-    say("Disabling Prism Layers on Boundary...", verboseOption);
-    sayBdry(b);
-    try {
-        b.get(MeshConditionManager.class).get(CustomizeBoundaryPrismsOption.class).setSelected(CustomizeBoundaryPrismsOption.DISABLE);
-        sayOK(verboseOption);
-    } catch (Exception e1) {
-        say("Warning! Could not disable Prism in Boundary.", verboseOption);
-    }
-  }
-
-    /**
-     *
-     * @param r
-     */
-    public void disableRadiationS2S(Region r) {
+  public void disableRadiationS2S(Region r) {
     printAction("Disabling Radiation Surface to Surface (S2S)");
-    sayRegion(r);
+    sayNamedObject("Region", r);
     r.getConditions().get(RadiationTransferOption.class).setOptionEnabled(false);
     sayOK();
   }
 
   /**
-   * Disables a Region, i.e., unsets its Physics and Mesh Continuas.
+   * Disables a Region by removing its Physics Continua and Mesh association.
    *
    * @param r given Region.
    */
   public void disableRegion(Region r) {
     printAction("Disabling a Region");
-    sayRegion(r);
-    disableMeshContinua(r, false);
+    sayNamedObject("Region", r);
+    disableMesh(r, false);
     disablePhysicsContinua(r, false);
     sayOK();
-  }
-
-    /**
-     *
-     * @param b
-     */
-    public void disableSurfaceSizeOnBoundary(Boundary b) {
-    say("Disable Surface Mesh Size on Boundary: " + b.getPresentationName());
-    try {
-        b.get(MeshConditionManager.class).get(SurfaceSizeOption.class).setSurfaceSizeOption(false);
-        sayOK();
-    } catch (Exception e1) {
-        say("Warning! Could not disable as Boundary. Trying to do in the Interface Parent");
-        try {
-            DirectBoundaryInterfaceBoundary ib = (DirectBoundaryInterfaceBoundary) b;
-            DirectBoundaryInterface i = ib.getDirectBoundaryInterface();
-            say("Interface: " + i.getPresentationName());
-            i.get(MeshConditionManager.class).get(SurfaceSizeOption.class).setSurfaceSizeOption(false);
-            sayOK();
-        } catch (Exception e2) {
-            say("ERROR! Please review settings. Skipping this Boundary.");
-            say(e2.getMessage() + "\n");
-        }
-    }
   }
 
   /**
@@ -5680,103 +5413,14 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    */
   public void disableSurfaceProximityRefinement(NamedObject no) {
     printAction("Disabling Surface Proximity Refinement");
-    if (isMeshContinua(no)) {
-        MeshContinuum mc = (MeshContinuum) no;
-        sayContinua(mc, true);
-        mc.getModelManager().getModel(ResurfacerMeshingModel.class).setDoProximityRefinement(false);
-    }
     if (isAutoMeshOperation(no)) {
         AutoMeshOperation amo = (AutoMeshOperation) no;
         sayMeshOp(amo, true);
         ((ResurfacerAutoMesher) amo.getMeshers().getObject("Surface Remesher")).setDoProximityRefinement(false);
+    } else {
+        say("Nothing done.");
     }
     sayOK();
-  }
-
-  /**
-   * Disables the Surface Remesher.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void disableSurfaceRemesher(MeshContinuum continua) {
-    printAction("Disabling Surface Remesher");
-    sayContinua(continua, true);
-    continua.disableModel(continua.getModelManager().getModel(ResurfacerMeshingModel.class));
-    sayOK();
-  }
-
-  /**
-   * Disables the Surface Remesher Automatic Repair.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void disableSurfaceRemesherAutomaticRepair(MeshContinuum continua) {
-    printAction("Disabling Remesher Automatic Surface Repair");
-    if (!isRemesh(continua)) {
-        say("Surface Remesher not enabled. Skipping");
-        return;
-    }
-    sayContinua(continua, true);
-    continua.getModelManager().getModel(ResurfacerMeshingModel.class).setDoAutomaticSurfaceRepair(false);
-    sayOK();
-  }
-
-  /**
-   * Disables the Surface Remesher Project to CAD feature.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void disableSurfaceRemesherProjectToCAD(MeshContinuum continua) {
-    printAction("Disabling Project to CAD");
-    sayContinua(continua, true);
-    continua.getModelManager().getModel(ResurfacerMeshingModel.class).setDoAlignedMeshing(false);
-    continua.getReferenceValues().get(ProjectToCadOption.class).setProjectToCad(false);
-    sayOK();
-  }
-
-  /**
-   * Disables the Surface Wrapper.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void disableSurfaceWrapper(MeshContinuum continua) {
-    printAction("Disabling Surface Wrapper");
-    sayContinua(continua, true);
-    continua.disableModel(continua.getModelManager().getModel(SurfaceWrapperMeshingModel.class));
-    sayOK();
-  }
-
-  /**
-   * Disables the Surface Wrapper GAP closure.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void disableWrapperGapClosure(MeshContinuum continua) {
-    printAction("Disabling Wrapper Gap Closure");
-    sayContinua(continua, true);
-    continua.getModelManager().getModel(SurfaceWrapperMeshingModel.class).setDoGapClosure(false);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param r
-     */
-    public void disableThinMesherOnRegion(Region r) {
-    printAction("Disabling Thin Mesher on Region");
-    int opt = SolidMesherRegionOption.DISABLE;
-    sayRegion(r);
-    try{
-        r.get(MeshConditionManager.class).get(SolidMesherRegionOption.class).setSelected(opt);
-        sayOK();
-    } catch (Exception e) {
-        say("ERROR! Skipping...\n");
-    }
   }
 
   /**
@@ -5833,6 +5477,15 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
+   * Enables Auto Save functionality.
+   */
+  public void enableAutoSave() {
+    printAction("Enabling Auto Save");
+    sim.getSimulationIterator().getAutoSave().getStarUpdate().setEnabled(true);
+    sayOK();
+  }
+
+  /**
    * Associate a Continua to a Region. It can be a Mesh or Physics Continua.
    *
    * @param continua given Continua.
@@ -5841,35 +5494,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public void enableContinua(Continuum continua, Region r) {
     printAction("Enabling Continua...");
     sayContinua(continua, true);
-    sayRegion(r);
+    sayNamedObject("Region", r);
     continua.add(r);
-    sayOK();
-  }
-
-   /**
-    *
-    * @param continua
-    * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-    */
-    public void enableEmbeddedThinMesher(MeshContinuum continua) {
-    printAction("Enabling Embedded Thin Mesher");
-    sayContinua(continua, true);
-    say("Embedded Thin Mesher overview:");
-    continua.enable(SolidMesherSubModel.class);
-    //continua.getModelManager().getModel(ResurfacerMeshingModel.class).setDoAutomaticSurfaceRepair(false);
-    disableSurfaceProximityRefinement(continua);
-    SolidMesherSubModel sldSubMdl = continua.getModelManager().getModel(SolidMesherSubModel.class);
-    sldSubMdl.setOptimize(true);
-    say("  Optimizer ON");
-    if (thinMeshIsPolyType) {
-        sldSubMdl.getPrismType().setSelected(PrismTypeValue.POLYGONAL);
-        say("  Prisms Type: POLYGONAL");
-    } else {
-        sldSubMdl.getPrismType().setSelected(PrismTypeValue.TRIANGULAR);
-        say("  Prisms Type: TRIANGULAR");
-    }
-    continua.getReferenceValues().get(ThinSolidLayers.class).setLayers(thinMeshLayers);
-    say("  Thin Layers: " + thinMeshLayers);
     sayOK();
   }
 
@@ -5905,30 +5531,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Enables the Generalized Cylinder Meshing Model.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void enableGeneralizedCylinderModel(MeshContinuum continua) {
-    enableGeneralizedCylinderModel(continua, true);
-  }
-
-  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-  private void enableGeneralizedCylinderModel(MeshContinuum continua, boolean verboseOption) {
-    printAction("Enabling Generalized Cylinder Model", verboseOption);
-    sayContinua(continua, verboseOption);
-    if (!hasPolyMesher(continua)) {
-        say("Generalized Cylinder model only available for Poly meshes. Skipping...", verboseOption);
-        return;
-    }
-    if (!hasGenCylModel(continua)) {
-        continua.enable(GenCylModel.class);
-    }
-    sayOK(verboseOption);
-  }
-
-  /**
    * Enables the Grid Sequencing Initialization for the Coupled Flow Solver.
    */
   public void enableGridSequencing() {
@@ -5958,78 +5560,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     gridSeqInit.setGSCfl(gsiCFL);
     sayOK(verboseOption);
   }
-    /**
-     * This method will assume Prism Layers only on Fluid Regions
-     *
-     * @param continua given Mesh Continua.
-     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-     */
-    public void enablePrismLayers(MeshContinuum continua) {
-    printAction("Enabling Prism Layers");
-    sayContinua(continua, true);
-    if (prismsLayers <= 0 || prismsRelSizeHeight <= 0.) {
-        say("Prisms disabled.");
-        disablePrismLayers(continua, false);
-        return;
-    }
-    printPrismsParameters();
-    ArrayList<Interface> ai = new ArrayList(sim.getInterfaceManager().getObjects());
-
-    continua.enable(PrismMesherModel.class);
-    PrismMesherModel pmm = continua.getModelManager().getModel(PrismMesherModel.class);
-    NumPrismLayers npl = continua.getReferenceValues().get(NumPrismLayers.class);
-    PrismLayerStretching pls = continua.getReferenceValues().get(PrismLayerStretching.class);
-    PrismThickness pt = continua.getReferenceValues().get(PrismThickness.class);
-    GenericRelativeSize pgrs = ((GenericRelativeSize) pt.getRelativeSize());
-    npl.setNumLayers(prismsLayers);
-    pls.setStretching(prismsStretching);
-    pgrs.setPercentage(prismsRelSizeHeight);
-    pmm.setMinimumThickness(prismsMinThickn);
-    pmm.setLayerChoppingPercentage(prismsLyrChoppPerc);
-    pmm.setNearCoreLayerAspectRatio(prismsNearCoreAspRat);
-
-    say("Disabling Prisms on Solid Regions");
-    for (Region r : getRegions(".*", false)) {
-        MeshContinuum mshC = r.getMeshContinuum();
-        //if (r.getMeshContinuum() == null) {
-        if (!r.isMeshing() || continua != mshC) {
-            say("  Skipping: " + r.getPresentationName());
-            continue;
-        }
-        if (isFluid(r)) {
-            say("  Region ON: " + r.getPresentationName());
-            r.get(MeshConditionManager.class).get(CustomizeBoundaryPrismsOption.class).setSelected(CustomizeBoundaryPrismsOption.DEFAULT);
-        } else if (isSolid(r)) {
-            r.get(MeshConditionManager.class).get(CustomizeBoundaryPrismsOption.class).setSelected(CustomizeBoundaryPrismsOption.DISABLE);
-            say("  Region OFF: " + r.getPresentationName());
-        }
-    }
-    say("Enabling Prisms on Fluid-Solid interfaces with same Mesh Continua");
-    int n = 0;
-    int k = 0;
-    InterfacePrismsOption ipo = null;
-    for (Interface i : ai) {
-        String name = i.getPresentationName();
-        if (isFluid(i.getRegion0()) && isFluid(i.getRegion1())) {
-            say("  Prism OFF: " + name + " (Fluid-Fluid Interface)");
-            k++;
-            continue;
-        }
-        if (isFluid(i.getRegion0()) || isFluid(i.getRegion1())) {
-            try {
-                ipo = i.get(MeshConditionManager.class).get(InterfacePrismsOption.class);
-                ipo.setPrismsEnabled(true);
-                say("  Prism ON: " + name);
-                n++;
-            } catch (Exception e) {
-                continue;
-            }
-        }
-    }
-    say("Fluid-Solid interfaces with Prisms enabled: " + n);
-    say("Fluid-Fluid interfaces skipped: " + k);
-    sayOK();
-  }
 
   /**
    * Enables Surface to Surface Radiation model.
@@ -6047,83 +5577,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     RadiationTemperature radT = gtrm.getThermalEnvironmentManager().get(RadiationTemperature.class);
     radT.getEnvRadTemp().setUnits(defUnitTemp);
     radT.getEnvRadTemp().setValue(refT);
-  }
-
-    /**
-     *
-     * @param continua
-     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-     */
-    public void enableSurfaceProximityRefinement(MeshContinuum continua) {
-    printAction("Enabling Surface Proximity Refinement");
-    sayContinua(continua, true);
-    say("Proximity settings overview: ");
-    say("  Proximity Number of Points in Gap: " + mshProximityPointsInGap);
-    say("  Proximity Search Floor: " + mshProximitySearchFloor + defUnitLength.toString());
-    continua.getModelManager().getModel(ResurfacerMeshingModel.class).setDoProximityRefinement(true);
-    SurfaceProximity sp = continua.getReferenceValues().get(SurfaceProximity.class);
-    sp.setNumPointsInGap(mshProximityPointsInGap);
-    sp.getFloor().setUnits(defUnitLength);
-    sp.getFloor().setValue(mshProximitySearchFloor);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param continua
-     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-     */
-    public void enableSurfaceRemesher(MeshContinuum continua) {
-    printAction("Enabling Surface Remesher");
-    sayContinua(continua, true);
-    continua.enable(ResurfacerMeshingModel.class);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param continua
-     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-     */
-    public void enableSurfaceRemesherAutomaticRepair(MeshContinuum continua) {
-    printAction("Enabling Remesher Automatic Surface Repair");
-    if (!isRemesh(continua)) {
-        say("Surface Remesher not enabled. Skipping");
-        return;
-    }
-    sayContinua(continua, true);
-    continua.getModelManager().getModel(ResurfacerMeshingModel.class).setDoAutomaticSurfaceRepair(true);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param continua
-     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-     */
-    public void enableSurfaceRemesherProjectToCAD(MeshContinuum continua) {
-    printAction("Enabling Project to CAD");
-    sayContinua(continua, true);
-    continua.getModelManager().getModel(ResurfacerMeshingModel.class).setDoAlignedMeshing(true);
-    continua.getReferenceValues().get(ProjectToCadOption.class).setProjectToCad(true);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param continua
-     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-     */
-    public void enableSurfaceWrapper(MeshContinuum continua) {
-    printAction("Enabling Surface Wrapper");
-    sayContinua(continua, true);
-    say("Surface Wrapper settings overview: ");
-    say("  Geometric Feature Angle (deg): " + mshWrapperFeatureAngle);
-    say("  Wrapper Scale Factor (%): " + mshWrapperScaleFactor);
-    continua.enable(SurfaceWrapperMeshingModel.class);
-    setMeshWrapperFeatureAngle(continua, mshWrapperFeatureAngle);
-    setMeshWrapperScaleFactor(continua, mshWrapperScaleFactor);
-    sayOK();
   }
 
   /**
@@ -6184,40 +5637,62 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayOK(verboseOption);
   }
 
-    /**
-     *
-     * @param continua
-     * @param gapSize
-     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-     */
-    public void enableWrapperGapClosure(MeshContinuum continua, double gapSize) {
-    printAction("Enabling Wrapper Gap Closure");
-    sayContinua(continua, true);
-    say("  Gap Closure Size (%): " + gapSize);
-    continua.getModelManager().getModel(SurfaceWrapperMeshingModel.class).setDoGapClosure(true);
-    continua.getReferenceValues().get(GapClosureSize.class).getRelativeSize().setPercentage(gapSize);
+ /**
+   * Creates an Anisotropic Wake Refinement in the given Boundary. <b>Only for Trimmer</b>.
+   *
+   * @param scmc given Surface Mesh Control.
+   * @param distance given distance in default units. See {@link #defUnitLength}.
+   * @param angle given spread angle in degrees.
+   * @param dir given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
+   * @param relSize given isotropic relative size in (<b>%</b>). E.g.: 50. If any anisotropic value is used
+   *    isotropic size will be ignored.
+   * @param relSizes given anisotropic 3-component relative sizes in (<b>%</b>). E.g.: {0, 25, 0}. Zeros will be ignored.
+   *    Use {@link #coord0} if convenient.
+   * @param gr given Trimmer Growth Rate. Use {@link #TRIMMER_GROWTH_RATE_MEDIUM} or equivalent.
+   */
+  public void enableTrimmerWakeRefinement(SurfaceCustomMeshControl scmc, double distance,
+                            double angle, double[] dir, double relSize, double[] relSizes, int gr) {
+    printAction("Enabling Trimmer Wake Refinement");
+    CustomMeshControlManager cmcm = scmc.getParent();
+    AutoMeshOperation amo = (AutoMeshOperation) cmcm.getMeshOperation();
+    if (!hasTrimmerMesher(amo)) {
+        say("Not a Trimmer Mesh Operation.");
+        return;
+    }
+    sayMeshOp(amo, true);
+    sayNamedObject("Custom Surface Control", scmc);
+    scmc.getCustomConditions().get(PartsTrimmerWakeRefinementOption.class).setPartsWakeRefinementOption(true);
+    CustomMeshControlValueManager cmcvm = scmc.getCustomValues();
+    PartsWakeRefinementValuesManager pwrvm = cmcvm.get(PartsWakeRefinementValuesManager.class);
+    setScalarPhysicalQuantity(pwrvm.getDistance(), distance, null, defUnitLength, "Distance");
+    setVectorPhysicalQuantity(pwrvm.getDirection(), dir, null);
+    setScalarPhysicalQuantity(pwrvm.getSpreadAngle(), angle, null, unit_deg, "Spread Angle");
+    say("Isotropic Relative Size (%): " + relSize);
+    if (relSizes[0]+relSizes[1]+relSizes[2] > 0) {
+        say("Anisotropic sizing detect. Isotropic size will be ignored by STAR-CCM+.");
+    }
+    pwrvm.getRelativeRefSize().setPercentage(relSize);
+    PartsTrimmerWakeRefinementSet ptwrs = pwrvm.get(PartsTrimmerWakeRefinementSet.class);
+    ptwrs.getGrowthRateOption().setSelected(gr);
+    ptwrs.setWRTrimmerAnisotropicSizeOption(true);
+    WRTrimmerAnisotropicSize wras = ptwrs.getWRTrimmerAnisotropicSize();
+    wras.getRelativeOrAbsoluteOption().setSelected(RelativeOrAbsoluteOption.RELATIVE);
+    if (relSizes[0] > 0) {
+        say("Relative Size X (%): " + relSizes[0]);
+        wras.setXSize(true);
+        wras.getRelativeXSize().setPercentage(relSizes[0]);
+    }
+    if (relSizes[1] > 0) {
+        say("Relative Size Y (%): " + relSizes[1]);
+        wras.setYSize(true);
+        wras.getRelativeYSize().setPercentage(relSizes[1]);
+    }
+    if (relSizes[2] > 0) {
+        say("Relative Size Z (%): " + relSizes[2]);
+        wras.setZSize(true);
+        wras.getRelativeZSize().setPercentage(relSizes[2]);
+    }
     sayOK();
-  }
-
-  private void exportMeshAndData(Simulation simu, String file, ArrayList<Region> ar,
-                        ArrayList<FieldFunction> colFF, boolean firstExp, boolean verboseOption) {
-    printAction("Exporting Mesh and Data", verboseOption);
-    ImportManager im = simu.getImportManager();
-    //-- Trick for first export only.
-    if (firstExp) {
-        colFF.add(colFF.iterator().next());
-    }
-    for (Region r : ar) {
-        say("Exporting Region: " + r.getPresentationName(), verboseOption);
-    }
-    for (FieldFunction f : colFF) {
-        say("Exporting Field Function: " + f.getPresentationName(), verboseOption);
-    }
-    boolean appendToFile = false;
-//    boolean dataAtVertices = true;
-    boolean dataAtVertices = false;
-    im.export(file, ar, emptyNeoObjVec, emptyNeoObjVec, colFF, appendToFile, dataAtVertices);
-    sayOK(verboseOption);
   }
 
   private void exportMeshedRegions(String subDirName, SurfaceRep sr) {
@@ -6244,7 +5719,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * <li> Wrapped Representation
    * </ol>
    * @param subDirName given subfolder name to store the DBS files. It is stored by default in a folder
-   * defined by {@see #dbsPath} variable.
+   * defined by {@link #dbsPath} variable.
    */
   public void exportMeshedRegionsToDBS(String subDirName) {
     printAction("Exporting Meshed Regions to DBS files");
@@ -6286,7 +5761,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Exports the Remeshed Regions to DBS files. Each Region will have a specific .dbs file.
    *
    * @param subDirName given subfolder name to store the DBS files. It is stored by default in a folder
-   * defined by {@see #dbsPath} variable.
+   * defined by {@link #dbsPath} variable.
    */
   public void exportRemeshedRegionsToDBS(String subDirName) {
     printAction("Exporting All Remeshed Regions to DBS files");
@@ -6297,7 +5772,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Exports the Wrapped Regions to DBS files. Each Region will have a specific .dbs file.
    *
    * @param subDirName given subfolder name to store the DBS files. It is stored by default in a folder
-   * defined by {@see #dbsPath} variable.
+   * defined by {@link #dbsPath} variable.
    */
   public void exportWrappedRegionsToDBS(String subDirName) {
     printAction("Exporting All Wrapped Regions to DBS files");
@@ -6308,7 +5783,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * The Grid Convergence Index (GCI) method below implements a variation of Celik et al. paper, i.e., F1, F2 and
    * F3 are the coarse, medium and fine solutions respectively.
    * <p>
-   * For more information, see {@see #evalGCI2}.
+   * For more information, see {@link #evalGCI2}.
    *
    * @param h given array of doubles containing grid sizes in the <b>following order:
    *    <u>coarse (F1), medium (F2) and fine (F3) grid values</u></b>.
@@ -6371,7 +5846,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Evaluates the Grid Convergence Index (GCI) method below for a series of grids. For more information, see
-   * {@see #evalGCI(double[], double[], java.lang.String[])}.
+   * {@link #evalGCI(double[], double[], java.lang.String[])}.
    *
    * @param gridSizes given ArrayList of Doubles containing grid sizes in the <b>following order:
    *    <u>coarse (F1), medium (F2) and fine (F3) grid values</u></b>.
@@ -6421,14 +5896,14 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * <li> The reliability of this method depends on the accuracy of how the solution is projected;
    * <li> Method is limited to sorted data in the Plot;
    * <li> If there is more than one DataSet in the plot, only the first X-Y pair will be used;
-   * <li> This method is based on {@see #evalGCI(double[], double[], java.lang.String[])}.
+   * <li> This method is based on {@link #evalGCI(double[], double[], java.lang.String[])}.
    * </ul>
    *
    * @param plt given Plot.
    * @param simFiles array of sim files. Currently limited to 2 and must be ordered the same
-   *    way as required by {@see #evalGCI(double[], double[], java.lang.String[])}:
+   *    way as required by {@link #evalGCI(double[], double[], java.lang.String[])}:
    *    e.g.: {"coarseGrid.sim" , "mediumGrid.sim"}. In addition, must be in the same path as
-   *    {@see #simPath} variable. If more arguments are provided, only the first 2 will be used
+   *    {@link #simPath} variable. If more arguments are provided, only the first 2 will be used
    *    as the macro will take the current simulation as the 3rd one, i.e., the fine grid.
    */
   public void evalGCI(StarPlot plt, String[] simFiles) {
@@ -6451,7 +5926,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * <li> The reliability of this method depends on the accuracy of how the solution is projected;
    * <li> Method is limited to sorted data in the Plot;
    * <li> If there is more than one DataSet in the plot, only the first X-Y pair will be used;
-   * <li> This method is based on {@see #evalGCI(double[], double[], java.lang.String[])}.
+   * <li> This method is based on {@link #evalGCI(double[], double[], java.lang.String[])}.
    * </ul>
    *
    * @param plt given Plot.
@@ -6694,9 +6169,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Gets the current grid size for the GCI calculation. Only useful with {@see #evalGCI}.
+   * Gets the current grid size for the GCI calculation. Only useful with {@link #evalGCI}.
    *
-   * @return The grid size in the {@see #defUnitLength} unit.
+   * @return The grid size in the {@link #defUnitLength} unit.
    */
   public double evalGCI_getGridSize() {
     return evalGCI_getGridSize(sim, true);
@@ -6747,7 +6222,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * This method is in conjunction with {@see #evalGCI(star.common.StarPlot, java.util.ArrayList)} and it only works
+   * This method is in conjunction with {@link #evalGCI(star.common.StarPlot, java.util.ArrayList)} and it only works
    * along with an @Override call. Useful for adding some code before exporting the CSV file.
    *
    * It is invoked prior to exporting the CSV file from the Plot.
@@ -6880,14 +6355,14 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * This is the {@see #genSurfaceMesh} method.
+   * This is the {@link #genSurfaceMesh} method.
    */
   public void generateSurfaceMesh() {
     genSurfaceMesh();
   }
 
   /**
-   * This is the {@see #genVolumeMesh} method.
+   * This is the {@link #genVolumeMesh} method.
    */
   public void generateVolumeMesh() {
     genVolumeMesh();
@@ -6915,6 +6390,17 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     hasBeenMeshed++;
     sayOK();
     printMeshDiagnostics();
+  }
+
+  /**
+   * Gets the active Scene open in the GUI.
+   *
+   * @return The Scene.
+   */
+  public Scene getActiveScene() {
+    Scene scn = sim.getSceneManager().getSelectedScene();
+    printAction("Getting the active Scene in the GUI.", scn, true);
+    return scn;
   }
 
   /**
@@ -6951,7 +6437,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   private ArrayList<Boundary> getAllBoundaries(Region r, String regexPatt,
                                     boolean verboseOption, boolean skipInterfaces) {
     say(String.format("Getting all Boundaries from Region by REGEX pattern: \"%s\"", regexPatt), verboseOption);
-    sayRegion(r, verboseOption);
+    sayNamedObject("Region", r);
     ArrayList<Boundary> chosenBdrys = (ArrayList<Boundary>) getAllBoundariesFromRegion(r, false, skipInterfaces);
     ArrayList<Boundary> retBdrys = (ArrayList<Boundary>) chosenBdrys.clone();
     for (Boundary b : chosenBdrys) {
@@ -6974,7 +6460,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         say("Getting all Boundaries from all Regions by an Array of REGEX pattern", verboseOption);
     } else {
         say("Getting all Boundaries from a Region by an Array of REGEX pattern", verboseOption);
-        sayRegion(r, verboseOption);
+        sayNamedObject("Region", r);
     }
     ArrayList<Boundary> allBdrys = new ArrayList<Boundary>();
     for (int i = 0; i < regexPattArray.length; i++) {
@@ -7201,8 +6687,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public ArrayList<Interface> getAllInterfaces(Region region0, Region region1) {
     ArrayList<Interface> intrfVec = new ArrayList<Interface>();
     say("Getting all Interfacess between 2 Regions...");
-    sayRegion(region0);
-    sayRegion(region1);
+    sayNamedObject("Region", region0);
+    sayNamedObject("Region", region1);
     Integer r0 = region0.getIndex();
     Integer r1 = region1.getIndex();
     for (Interface i : getAllInterfaces(false)) {
@@ -7351,29 +6837,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Get all Mesh Continuas.
-   *
-   * @return All Mesh Continuas.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public ArrayList<MeshContinuum> getAllMeshContinuas() {
-    return getAllMeshContinuas(true);
-  }
-
-  @Deprecated // in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-  private ArrayList<MeshContinuum> getAllMeshContinuas(boolean verboseOption) {
-    say("Getting all Mesh Continuas...", verboseOption);
-    ArrayList<MeshContinuum> vecMC = new ArrayList<MeshContinuum>();
-    for (Continuum cont : sim.getContinuumManager().getObjects()) {
-        if (cont.getBeanDisplayName().equals("MeshContinum")) {
-            vecMC.add((MeshContinuum) cont);
-        }
-    }
-    say("Mesh Continuas found: " + vecMC.size(), verboseOption);
-    return vecMC;
-  }
-
-  /**
    * Get all Physics Continuas.
    *
    * @return All Physics Continuas.
@@ -7448,6 +6911,21 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    */
   public ArrayList getArrayList(Object obj) {
     return new ArrayList(Arrays.asList(new Object[] {obj}));
+  }
+
+  /**
+   * @param no given Continua or Mesh Operation, if applicable.
+   */
+  private BaseSize getBaseSize(NamedObject no) {
+    BaseSize bs = null;
+    if (isAutoMeshOperation2D(no)) {
+        bs = ((AutoMeshOperation2d) no).getDefaultValues().get(BaseSize.class);
+    } else if (isMeshOperation(no) || isSurfaceWrapperOperation(no)) {
+        bs = ((AutoMeshOperation) no).getDefaultValues().get(BaseSize.class);
+    } else if (isMeshContinua(no)) {
+        bs = ((MeshContinuum) no).getReferenceValues().get(BaseSize.class);
+    }
+    return bs;
   }
 
   /**
@@ -7546,7 +7024,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @return Boundary
    */
   private Boundary getBoundary(Region r, String regexPatt, boolean verboseOption, boolean skipInterfaces) {
-    sayRegion(r);
+    sayNamedObject("Region", r);
     try {
         Boundary foundBdry = r.getBoundaryManager().getBoundary(regexPatt);
         if (foundBdry != null) {
@@ -7600,6 +7078,16 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
     say("Got NULL.", verboseOption);
     return null;
+  }
+
+  /**
+   * Gets the current cell count for a Region.
+   *
+   * @param r given Region.
+   * @return number of cells in Long integer.
+   */
+  public Long getCellCount(Region r) {
+    return queryVolumeMesh().getFvRegionManager().getFvRegion(r).getCellCount();
   }
 
   private CameraStateInput getCameraStateInput(Scene scn) {
@@ -7954,7 +7442,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   private int getCompositePartParentLevel(CompositePart cp, int level, boolean verboseOption) {
-    try{
+    try {
         CompositePart parent = (CompositePart) cp.getParentPart();
         say("  Level " + level + ". Parent: " + parent.getPresentationName(), verboseOption);
         level++;
@@ -7994,7 +7482,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Returns the first match of a Derived Part, given the REGEX pattern. Note this is the same
-   * method as {@see #getPart}.
+   * method as {@link #getPart}.
    *
    * @param regexPatt given REGEX search pattern.
    * @return The Part.
@@ -8012,7 +7500,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     public DirectBoundaryInterface getDirectBoundaryInterfaceBetween2Regions(Region r1, Region r2) {
     DirectBoundaryInterface intrfP = null;
     for (Interface i : sim.getInterfaceManager().getObjects()) {
-        try{
+        try {
             intrfP = (DirectBoundaryInterface) i;
         } catch (Exception e) { continue; }
         if (intrfP.getRegion0() == r1 && intrfP.getRegion1() == r2 ||
@@ -8096,7 +7584,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Get the Geometric Range from a ArrayList of Part Surfaces. Note that the resulting output will
-   * be given in default length units. See {@see #defUnitLength}.
+   * be given in default length units. See {@link #defUnitLength}.
    *
    * @param aps given ArrayList of Part Surfaces.
    * @return A DoubleVector with 9 components in the following order
@@ -8108,7 +7596,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Get the Geometric Range from a Composite Part. Note that the resulting output will
-   * be given in default length units. See {@see #defUnitLength}.
+   * be given in default length units. See {@link #defUnitLength}.
    *
    * @param cp given Composite Part.
    * @return A DoubleVector with 9 components in the following order
@@ -8120,7 +7608,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Get the Geometric Range from a Geometry Part. Note that the resulting output will
-   * be given in default length units. See {@see #defUnitLength}.
+   * be given in default length units. See {@link #defUnitLength}.
    *
    * @param gp given Geometry Part.
    * @return A DoubleVector with 9 components in the following order
@@ -8152,7 +7640,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private ArrayList<FeatureCurve> getFeatureCurves(Region r, boolean verboseOption) {
     say("Getting Feature Curves...", verboseOption);
-    sayRegion(r, verboseOption);
+    sayNamedObject("Region", r);
     ArrayList<FeatureCurve> vfc = (ArrayList<FeatureCurve>) r.getFeatureCurveManager().getFeatureCurves();
     say("All Feature Curves: " + vfc.size(), verboseOption);
     return vfc;
@@ -8218,10 +7706,55 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
+   * Get the Part Surfaces associated to a boundary.
+   *
+   * @param b given boundary.
+   * @return an ArrayList of Part Surfaces as Geometry Objects.
+   */
+  public ArrayList<GeometryObject> getGeometryObjects(Boundary b) {
+    return getGeometryObjects(getArrayList(b));
+  }
+
+  /**
+   * Get the Part Surfaces associated to boundaries.
+   *
+   * @param ab given ArrayList of boundaries.
+   * @return an ArrayList of Part Surfaces as Geometry Objects.
+   */
+  public ArrayList<GeometryObject> getGeometryObjects(ArrayList<Boundary> ab) {
+    return getGeometryObjects(ab, true);
+  }
+
+  private ArrayList<GeometryObject> getGeometryObjects(ArrayList<Boundary> ab, boolean verboseOption) {
+    ArrayList<GeometryObject> ago = new ArrayList();
+    sayBoundaries(ab, verboseOption);
+    for (Boundary b : ab) {
+        ago.addAll(b.getPartSurfaceGroup().getObjects());
+    }
+    say(verboseOption, "Found %d Part Surfaces.", ago.size());
+      sayOK(verboseOption);
+    return ago;
+  }
+
+  /**
+   * Gets the Geometry Part from a Mesh Operation, if applicable.
+   *
+   * @param mo given Mesh Operation.
+   * @return The Geometry Part. If the Mesh Operation does not produces a Part downstream <b>null</b> is returned.
+   */
+  public GeometryPart getGeometryPart(MeshOperation mo) {
+    if (isSurfaceWrapperOperation(mo)) {
+        return ((SurfaceWrapperAutoMeshOperation) mo).getOutputParts().getObjects().iterator().next();
+    }
+    return null;
+  }
+
+  /**
    * Gets the Geometry Part from a Surface Wrapper Operation.
    *
    * @param swamo given Surface Wrapper Mesh Operation.
    * @return The Geometry Part.
+   * @deprecated in v3d. Use {@link #getGeometryPart(star.meshing.MeshOperation)} instead.
    */
   public GeometryPart getGeometryPart(SurfaceWrapperAutoMeshOperation swamo) {
     return swamo.getOutputParts().getObjects().iterator().next();
@@ -8256,7 +7789,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Gets the Iteration Monitor. It is a type of {@see PlotableMonitor}.
+   * Gets the Iteration Monitor. It is a type of {@link PlotableMonitor}.
    *
    * @return The Iteration Monitor.
    */
@@ -8384,11 +7917,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param mo given Named Object.
    * @param verboseOption Print to standard output?
-   * @return The Base Size value in the {@see #defUnitLength} unit.
+   * @return The Base Size value in the {@link #defUnitLength} unit.
    */
   public double getMeshBaseSize(NamedObject no, boolean verboseOption) {
     printAction("Getting the Mesh Base Size", verboseOption);
-    sayNamedObject(no, verboseOption);
+    sayObject(no, verboseOption);
     BaseSize bs = getClassBaseSize(no);
     double val = 0.0;
     if (bs != null) {
@@ -8397,17 +7930,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
     say("Base Size: " + val + defUnitLength.getPresentationName(), verboseOption);
     return val;
-  }
-
-  /**
-   * Get a Mesh Continua based on REGEX search.
-   *
-   * @param regexPatt given REGEX search pattern.
-   * @return The Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public MeshContinuum getMeshContinua(String regexPatt) {
-    return (MeshContinuum) getContinua(regexPatt, "Mesh", true) ;
   }
 
   /**
@@ -8427,10 +7949,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param sm enable Surface Remesher? True or False.
    * @param smar enable Automatic Surface Repair for Remesher? True or False.
-   * @param vm given Volume Mesher choice. Currently can be {@see #POLY}, {@see #TRIMMER}
-   *    or {@see #TETRA}.
+   * @param vm given Volume Mesher choice. Currently can be {@link #POLY}, {@link #TRIMMER}
+   *    or {@link #TETRA}.
    * @param pl enable Prism Layers? True or False.
-   * @return An ArrayList of Strings. Useful with {@see #createMeshOperation_AutomatedMesh}.
+   * @return An ArrayList of Strings. Useful with {@link #createMeshOperation_AutomatedMesh}.
    */
   public ArrayList<String> getMeshers(boolean sm, boolean smar, int vm, boolean pl) {
     ArrayList<String> m = new ArrayList();
@@ -8547,8 +8069,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private NamedObject getNamedObject(String regexPatt, ArrayList<NamedObject> ano, boolean verboseOption) {
     if (!ano.isEmpty()) {
-        say(String.format("Getting %s by REGEX pattern: \"%s\"",
-                ano.get(0).getClass().getName(), regexPatt), verboseOption);
+//        String s = retStringSplitByCapitalLetter(ano.get(0).getClass().getName());
+        String s = ano.get(0).getParent().getBeanDisplayName();
+        say(String.format("Getting %s by REGEX pattern: \"%s\"", s, regexPatt), verboseOption);
         for (NamedObject no : ano) {
             if (no.getPresentationName().matches(regexPatt)) {
                 say("Got by REGEX: " + no.getPresentationName(), verboseOption);
@@ -8594,8 +8117,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return vecNthLevel;
   }
 
-  private String getParentName(NamedObject no) {
-    String s = no.getParent().getBeanDisplayName();
+  private String getParentName(ClientServerObject cso) {
+    String s = cso.getParent().getBeanDisplayName();
     if (s.endsWith("ies")) {
         return s.replace("ies", "y");
     } else if (s.endsWith("s")) {
@@ -8744,11 +8267,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param gp given Geometry Part. All its Part Surfaces will be used.
    * @param rangeType given type. Can be <b>Min</b> or <b>Max</b>.
    * @param what what will be queried? Can be <b>X</b>, <b>Y</b>, <b>Z</b> or <b>AREA</b>.
-   * @param tol given absolute tolerance for searching in default units (see {@see #defUnitLength}). E.g.: 1mm.
+   * @param tol given absolute tolerance for searching in default units (see {@link #defUnitLength}). E.g.: 1mm.
    * @return The Part Surface.
    */
   public PartSurface getPartSurface(GeometryPart gp, String rangeType, String what, double tol) {
-    PartSurface ps = (PartSurface) queryPartSurfaces(new ArrayList(gp.getPartSurfaces()), rangeType, what, tol * defUnitLength.getConversion()).get(0);
+    PartSurface ps = (PartSurface) queryPartSurfaces(new ArrayList(gp.getPartSurfaces()),
+            rangeType, what, tol * defUnitLength.getConversion()).get(0);
     say("Returning: " + ps.getPresentationName());
     return ps;
   }
@@ -8760,7 +8284,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param gp given Geometry Part. All its Part Surfaces will be used.
    * @param rangeType given type. Can be <b>Min</b> or <b>Max</b>.
    * @param what what will be queried? Can be <b>X</b>, <b>Y</b>, <b>Z</b> or <b>AREA</b>.
-   * @param tol given absolute tolerance for searching in default units (see {@see #defUnitLength}). E.g.: 1mm.
+   * @param tol given absolute tolerance for searching in default units (see {@link #defUnitLength}). E.g.: 1mm.
    * @param regexPatt given search pattern.
    * @return The Part Surface.
    */
@@ -8875,7 +8399,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param gp given Geometry Part. All its Part Surfaces will be used.
    * @param rangeType given type. Can be <b>Min</b> or <b>Max</b>.
    * @param what what will be queried? Can be <b>X</b>, <b>Y</b>, <b>Z</b> or <b>AREA</b>.
-   * @param tol given absolute tolerance for searching in default units (see {@see #defUnitLength}). E.g.: 1mm.
+   * @param tol given absolute tolerance for searching in default units (see {@link #defUnitLength}). E.g.: 1mm.
    * @return The Part Surfaces.
    */
   public ArrayList<PartSurface> getPartSurfaces(GeometryPart gp, String rangeType, String what, double tol) {
@@ -8889,7 +8413,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param gp given Geometry Part. All its Part Surfaces will be used.
    * @param rangeType given type. Can be <b>Min</b> or <b>Max</b>.
    * @param what what will be queried? Can be <b>X</b>, <b>Y</b>, <b>Z</b> or <b>AREA</b>.
-   * @param tol given absolute tolerance for searching in default units (see {@see #defUnitLength}). E.g.: 1mm.
+   * @param tol given absolute tolerance for searching in default units (see {@link #defUnitLength}). E.g.: 1mm.
    * @param regexPatt given search pattern.
    * @return The Part Surfaces.
    */
@@ -8905,7 +8429,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param aps given ArrayList of Part Surfaces.
    * @param rangeType given type. Can be <b>Min</b> or <b>Max</b>.
    * @param what what will be queried? Can be <b>X</b>, <b>Y</b>, <b>Z</b> or <b>AREA</b>.
-   * @param tol given absolute tolerance for searching in default units (see {@see #defUnitLength}). E.g.: 1mm.
+   * @param tol given absolute tolerance for searching in default units (see {@link #defUnitLength}). E.g.: 1mm.
    * @return The Part Surface.
    */
   public PartSurface getPartSurface(ArrayList<PartSurface> aps, String rangeType, String what, double tol) {
@@ -8921,7 +8445,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param aps given ArrayList of Part Surfaces.
    * @param rangeType given type. Can be <b>Min</b> or <b>Max</b>.
    * @param what what will be queried? Can be <b>X</b>, <b>Y</b>, <b>Z</b> or <b>AREA</b>.
-   * @param tol given absolute tolerance for searching in default units (see {@see #defUnitLength}). E.g.: 1mm.
+   * @param tol given absolute tolerance for searching in default units (see {@link #defUnitLength}). E.g.: 1mm.
    * @return The Part Surfaces.
    */
   public ArrayList<PartSurface> getPartSurfaces(ArrayList<PartSurface> aps, String rangeType, String what, double tol) {
@@ -8937,16 +8461,18 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Gets the current physical time.
+   * Gets the current physical time, in seconds.
    *
    * @return The current physical time.
    */
   public double getPhysicalTime() {
-    return sim.getSolution().getPhysicalTime();
+    double t = sim.getSolution().getPhysicalTime();
+    say("Current Physical Time: %g s.", t);
+    return t;
   }
 
   /**
-   * Gets the Physical Time Monitor. It is a type of {@see PlotableMonitor}.
+   * Gets the Physical Time Monitor. It is a type of {@link PlotableMonitor}.
    *
    * @return The Physical Time Monitor.
    */
@@ -9135,7 +8661,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return vecMon;
   }
 
-//  private Profile getProfile(ConditionManager cm, String name, boolean verboseOption) {
   private Profile getProfile(ClientServerObjectManager csom, String name, boolean verboseOption) {
     if (!csom.has(name)) {
         say(verboseOption, "'%s' does not have a '%s' value. Returning NULL...",
@@ -9143,15 +8668,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         return null;
     }
     return (Profile) csom.getObject(name);
-  }
-
-  private Profile getProfile(Boundary b, String name, boolean verboseOption) {
-    if (!b.getValues().has(name)) {
-        say(verboseOption, "Boundary '%s' does not have a '%s' in Physics Values. Returning NULL...",
-            b, name);
-        return null;
-    }
-    return (Profile) b.getValues().getObject(name);
   }
 
   /**
@@ -9174,12 +8690,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return null;
   }
 
-  private ScalarProfile getScalarProfile(Boundary b, String name, boolean verboseOption) {
-    return (ScalarProfile) getProfile(b, name, verboseOption);
-  }
-
   private ScalarProfile getScalarProfile(ClientServerObjectManager csom, String name, boolean verboseOption) {
     return (ScalarProfile) getProfile(csom, name, verboseOption);
+  }
+
+  private VectorProfile getVectorProfile(ClientServerObjectManager csom, String name, boolean verboseOption) {
+    return (VectorProfile) getProfile(csom, name, verboseOption);
   }
 
   /**
@@ -9296,14 +8812,25 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayOK();
     return n;
   }
+
+  /**
+   * Get the maximum physical time for the unsteady simulation, in seconds.
+   *
+   * @return Maximum Physical Time in seconds.
+   * @deprecated in v3d. Use {@link getSolverMaxPhysicalTimes} instead.
+   */
+  public double getSolverMaxPhysicalTimestep() {
+    return getSolverMaxPhysicalTime();
+  }
+
   /**
    * Get the maximum physical time for the unsteady simulation, in seconds.
    *
    * @return Maximum Physical Time in seconds.
    */
-  public double getSolverMaxPhysicalTimestep() {
-    printAction("Getting Maximum Physical Timestep in seconds");
-    PhysicalTimeStoppingCriterion stpCrit = (PhysicalTimeStoppingCriterion) getStoppingCriteria("Maximum Physical Time.*", false);
+  public double getSolverMaxPhysicalTime() {
+    printAction("Getting Maximum Physical Time in seconds");
+    PhysicalTimeStoppingCriterion stpCrit = (PhysicalTimeStoppingCriterion) getStoppingCriteria("Maximum Physical Time", false);
     Units unit = stpCrit.getMaximumTime().getUnits();
     double d = stpCrit.getMaximumTime().getValue() * unit.getConversion();
     say("Maximum Physical Time: %gs", d);
@@ -9356,7 +8883,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Returns the first match of a Stopping Criteria, given the REGEX pattern.
    *
-   * @param regexPatt REGEX search pattern.
+   * @param regexPatt given REGEX search pattern.
    * @return A Stopping Criteria.
    */
   public SolverStoppingCriterion getStoppingCriteria(String regexPatt) {
@@ -9366,6 +8893,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   private SolverStoppingCriterion getStoppingCriteria(String regexPatt, boolean verboseOption) {
     return (SolverStoppingCriterion) getNamedObject(regexPatt,
             new ArrayList(sim.getSolverStoppingCriterionManager().getObjects()), verboseOption);
+  }
+
+  private String getString(Units u) {
+    if (u != null) {
+        return u.toString();
+    }
+    return _s;
   }
 
   /**
@@ -9412,13 +8946,24 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
     say(verboseOption, "Getting Unit by exact match: \"%s\"", name);
     for (Units u : sim.getUnitsManager().getObjects()) {
-        if (u.getPresentationName().equals(name) || u.getDescription().equals(name)) {
-            say("Got: " + u.getPresentationName(), verboseOption);
+        if (getString(u).equals(name) || u.getDescription().equals(name)) {
+            say("Got: " + getString(u), verboseOption);
             return u;
         }
     }
     say("Got NULL.", verboseOption);
     return null;
+  }
+
+  /**
+   * Gets an Update Event based on a REGEX pattern.
+   *
+   * @param regexPatt given REGEX search pattern.
+   * @return The Update Event.
+   */
+  public UpdateEvent getUpdateEvent(String regexPatt) {
+    return (UpdateEvent) getNamedObject(regexPatt,
+            new ArrayList(sim.getUpdateEventManager().getObjects()), true);
   }
 
   private int getVer() {
@@ -9449,10 +8994,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
     say("There is no VectorDisplayQuantity in Displayer: " + d.getPresentationName(), verboseOption);
     return null;
-  }
-
-  private VectorProfile getVectorProfile(Boundary b, String name, boolean verboseOption) {
-    return (VectorProfile) getProfile(b, name, verboseOption);
   }
 
   /**
@@ -9509,7 +9050,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Saves a picture from the Scene. This method will use the current Scene size.
-   * <p>The picture will be saved on {@see #simPath} folder.
+   * <p>The picture will be saved on {@link #simPath} folder.
    *
    * @param scn given Scene.
    * @param picName given picture name. File extension is optional. If it does not find any,
@@ -9521,7 +9062,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Saves a picture from the Scene with a given resolution.
-   * <p>The picture will be saved on {@see #simPath} folder.
+   * <p>The picture will be saved on {@link #simPath} folder.
    *
    * @param scn given Scene.
    * @param resx given width pixel resolution.
@@ -9550,7 +9091,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param scn given Scene.
    * @param resx given width pixel resolution.
    * @param resy given height pixel resolution.
-   * @param picFile given picture as a {@see java.io.File}.
+   * @param picFile given picture as a {@link java.io.File}.
    * @param verboseOption Print to standard output?
    */
   public void hardCopyPicture(Scene scn, File picFile, int resx, int resy, boolean verboseOption) {
@@ -9585,7 +9126,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Saves a picture from the Plot with a given resolution.
-   * <p>The picture will be saved on {@see #simPath} folder.
+   * <p>The picture will be saved on {@link #simPath} folder.
    *
    * @param plot given StarPlot.
    * @param resx given width pixel resolution.
@@ -9611,7 +9152,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param plot given StarPlot.
    * @param resx given width pixel resolution.
    * @param resy given height pixel resolution.
-   * @param picFile given picture as a {@see java.io.File}.
+   * @param picFile given picture as a {@link java.io.File}.
    */
   public void hardCopyPicture(StarPlot plot, File picFile, int resx, int resy) {
     hardCopyPicture(plot, picFile, resx, resy, true);
@@ -9627,8 +9168,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * This method will loop through all Plots and Scenes and will print them to PNG files. The
-   * pictures will be based on {@see #simTitle} variable and resolution will be {@see #defPicResX}
-   * x {@see #defPicResY}.
+   * pictures will be based on {@link #simTitle} variable and resolution will be {@link #defPicResX}
+   * x {@link #defPicResY}.
    */
   public void hardCopyPictures() {
     hardCopyPictures(defPicResX, defPicResY, "", "");
@@ -9636,7 +9177,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * This method will loop through all Plots and Scenes and will print them to PNG files. The
-   * pictures will be based on {@see #simTitle} variable.
+   * pictures will be based on {@link #simTitle} variable.
    *
    * @param resx given width pixel resolution.
    * @param resy given height pixel resolution.
@@ -9647,7 +9188,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * This method will loop through all Plots and Scenes and will print them to PNG files. The
-   * pictures will be based on {@see #simTitle} variable.
+   * pictures will be based on {@link #simTitle} variable.
    *
    * @param resx given width pixel resolution.
    * @param resy given height pixel resolution.
@@ -9659,7 +9200,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * This method will loop through all Plots and Scenes and will print them to PNG files. The
-   * pictures will be based on {@see #simTitle} variable.
+   * pictures will be based on {@link #simTitle} variable.
    *
    * @param resx given width pixel resolution.
    * @param resy given height pixel resolution.
@@ -9768,7 +9309,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   private boolean hasDeletedCells(Region r, boolean verboseOption) {
-    sayRegion(r, verboseOption);
+    sayNamedObject("Region", r);
     say("Has came from Remove Invalid Cells command?", verboseOption);
     if (r.getPresentationName().matches("^Cells deleted.*")) {
         sayAnswerYes(verboseOption);
@@ -9811,8 +9352,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   private boolean hasGeometryParts(boolean verboseOption) {
-    saySimName(verboseOption);
-    say("Has Geometry Parts?", verboseOption);
+    say("Has this simulation Geometry Parts?", verboseOption);
     if (sim.getGeometryPartManager().isEmpty()) {
         sayAnswerNo(verboseOption);
         return false;
@@ -9855,33 +9395,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return false;
   }
 
-  /**
-   * Does the Region have a Polyhedral mesh?
-   *
-   * @param r given Region.
-   * @return True or False.
-   */
-  public boolean hasPolyMesh(Region r) {
-    if (hasDeletedCells(r, false) ) { return false; }
-    if (r.getMeshContinuum() == null) { return false; }
-    if (isPoly(r.getMeshContinuum())) {
-        sayRegion(r);
-        say(" Has Poly mesh.");
-        return true;
-    }
-    return false;
-  }
-
-  private boolean hasPolyMesher(Continuum continua) {
-    return isBoolean(continua.getModelManager().has("Polyhedral Mesher"));
+  private boolean hasPISO() {
+      return isPISO();
   }
 
   private boolean hasPolyMesher(AutoMeshOperation amo) {
     return hasMesher(amo, "Polyhedral Mesher");
-  }
-
-  private boolean hasPrismLayerMesher(Continuum continua) {
-    return isBoolean(continua.getModelManager().has("Prism Layer Mesher"));
   }
 
   private boolean hasPrismLayerMesher(AutoMeshOperation amo) {
@@ -9936,23 +9455,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    */
   public boolean hasSolution() {
     if (sim.getSolution().isInitialized() || getIteration() > 0) {
-        return true;
-    }
-    return false;
-  }
-
-  /**
-   * Does the Region have a Trimmer mesh?
-   *
-   * @param r given Region.
-   * @return True or False.
-   */
-  public boolean hasTrimmerMesh(Region r) {
-    if (hasDeletedCells(r)) { return false; }
-    if (r.getMeshContinuum() == null) { return false; }
-    if (isTrimmer(r.getMeshContinuum())) {
-        sayRegion(r);
-        say(" Has Trimmer mesh.");
         return true;
     }
     return false;
@@ -10035,8 +9537,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Imports a CAD file using the default Tesselation option. See {@see #defTessOpt}. It assumes
-   * the file is inside {@see #simPath}. Informing the Path might be necessary.
+   * Imports a CAD file using the default Tesselation option. See {@link #defTessOpt}. It assumes
+   * the file is inside {@link #simPath}. Informing the Path might be necessary.
    *
    * @param part given CAD file with extension. E.g.: "CAD\\machine.prt"
    */
@@ -10045,9 +9547,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Imports a CAD file using the default Tesselation option. See {@see #defTessOpt}.
+   * Imports a CAD file using the default Tesselation option. See {@link #defTessOpt}.
    *
-   * @param cadFile given CAD in {@see java.io.File} format.
+   * @param cadFile given CAD in {@link java.io.File} format.
    */
   public void importCADPart(File cadFile) {
     importCADPart(cadFile, true);
@@ -10190,7 +9692,20 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   private boolean isAutoMeshOperation(NamedObject no) {
-    return hasClassName(no, "star.meshing.AutoMeshOperation");
+    return hasClassName(no, "star.meshing.AutoMeshOperation") || isAutoMeshOperation2D(no);
+  }
+
+  private boolean isAutoMeshOperation2D(NamedObject no) {
+    return hasClassName(no, "star.meshing.AutoMeshOperation2d");
+  }
+
+  /**
+   * Is the current STAR-CCM+ server being run in batch mode?
+   *
+   * @return True or False.
+   */
+  public boolean isBatchServer() {
+    return Simulation.isHeadless();
   }
 
   /** Is this Geometry Part a Simple Block Part?
@@ -10264,7 +9779,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Does the file exist in the {@see #simPath} folder?
+   * Does the file exist in the {@link #simPath} folder?
    *
    * @param filename given filename.
    * @return True if it is a file. False it is not.
@@ -10419,13 +9934,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return (OS.indexOf("nux") >= 0);
   }
 
-  /**
-   * Is this a Mesh Continua?
-   *
-   * @param no given NamedObject.
-   * @return True or False.
-   */
-  public boolean isMeshContinua(NamedObject no) {
+  private boolean isMeshContinua(NamedObject no) {
     return hasClassName(no, "star.common.MeshContinuum");
   }
 
@@ -10504,6 +10013,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return hasClassName(d, "star.vis.PartDisplayer");
   }
 
+  private boolean isPartsMeshContinua(NamedObject no) {
+    return hasClassName(no, "star.meshing.MeshContinuum");
+  }
+
   /**
    * Is this a Physics Continua?
    *
@@ -10515,14 +10028,16 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Is this a Physics Continua?
+   * Is this a simulation running the PISO algorithm?
    *
-   * @param continua given Continua.
    * @return True or False.
-   * @deprecated in v3.2. Use the other one.
    */
-  public boolean isPhysics(Continuum continua) {
-    return isPhysicsContinua(continua);
+  public boolean isPISO() {
+    return isPisoUnsteady();
+  }
+
+  private boolean isPisoUnsteady() {
+    return sim.getSolverManager().has("PISO Unsteady");
   }
 
   /**
@@ -10634,7 +10149,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Is this filename a sim file in the current {@see #simPath}?
+   * Is this filename a sim file in the current {@link #simPath}?
    *
    * @param filename given file name. Extension is optional.
    * @return True or False.
@@ -10808,19 +10323,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Is this a Wrapper Mesh Continua?
-   *
-   * @param continua given Mesh Continua.
-   * @return True or False.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public boolean isWrapper(MeshContinuum continua) {
-    if (continua.getEnabledModels().containsKey("star.surfacewrapper.SurfaceWrapperMeshingModel"))
-        return true;
-    return false;
-  }
-
-  /**
    * Is this a Wall Boundary?
    *
    * @param b given boundary.
@@ -10921,8 +10423,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * As simple as opening all Plots and Scenes available in the simulation. See {@see #openAllPlots}
-   * and {@see #openAllScenes}.
+   * As simple as opening all Plots and Scenes available in the simulation. See {@link #openAllPlots}
+   * and {@link #openAllScenes}.
    */
   public void openAllPlotsAndScenes() {
     openAllPlots();
@@ -10971,13 +10473,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Flies over between two cameras and print pictures in between. The current picture number
-   * is controlled by {@see #postCurFrame}. Picture resolution is controlled by {@see #defPicResX}
-   * and {@see #defPicResY}.
+   * is controlled by {@link #postCurFrame}. Picture resolution is controlled by {@link #defPicResX}
+   * and {@link #defPicResY}.
    *
    * @param scn given Scene.
    * @param v1 given Camera 1.
    * @param v2 given Camera 2.
-   * @param frames given number of frames to be generated. It updates {@see #postFrames} variable.
+   * @param frames given number of frames to be generated. It updates {@link #postFrames} variable.
    */
   public void postFlyOverAndSavePics(Scene scn, VisView v1, VisView v2, int frames) {
     postFlyOverAndSavePics(scn, v1, v2, frames, new ArrayList(), null);
@@ -10985,13 +10487,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Flies over between two cameras and print pictures in between. The current picture number
-   * is controlled by {@see #postCurFrame}. Picture resolution is controlled by {@see #defPicResX}
-   * and {@see #defPicResY}.
+   * is controlled by {@link #postCurFrame}. Picture resolution is controlled by {@link #defPicResX}
+   * and {@link #defPicResY}.
    *
    * @param scn given Scene.
    * @param v1 given Camera 1.
    * @param v2 given Camera 2.
-   * @param frames given number of frames to be generated. It updates {@see #postFrames} variable.
+   * @param frames given number of frames to be generated. It updates {@link #postFrames} variable.
    * @param rsv given Recorded Solution View.
    */
   public void postFlyOverAndSavePics(Scene scn, VisView v1, VisView v2, int frames,
@@ -11052,7 +10554,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * This method is in conjunction with {@see #postFlyOverAndSavePics} and it only works along with
+   * This method is in conjunction with {@link #postFlyOverAndSavePics} and it only works along with
    * an @Override. Useful for changing Displayer opacities, colors and other local stuff.
    *
    * It is invoked within the loop prior to printing the pictures.
@@ -11062,7 +10564,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * This method is in conjunction with {@see #postFlyOverAndSavePics} and it only works along with
+   * This method is in conjunction with {@link #postFlyOverAndSavePics} and it only works along with
    * an @Override. Useful for changing global stuff.
    *
    * It is invoked outside the loop after the last printed picture.
@@ -11109,7 +10611,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     prettifyLogo(verboseOption);
     prettifyMonitors(verboseOption);
     prettifyHistograms(verboseOption);
-    prettifyPlots(fontTitle, fontOther, verboseOption);
+    prettifyPlots(fontTitle, fontOther, fontOther, verboseOption);
     prettifyScenes(verboseOption);
     sayOK(verboseOption);
   }
@@ -11164,22 +10666,23 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * This specific method makes the Plots look fancier in Presentations. It raises the Font sizes a little more
-   * than the {@see #prettifyMe()} method.
+   * than the {@link #prettifyMe()} method.
    */
   public void prettifyPlots() {
-    Font newTitle = new Font(fontTitle.getName(), fontTitle.getStyle(), fontTitle.getSize() + 8);
-    Font newOthers = new Font(fontOther.getName(), fontOther.getStyle(), fontOther.getSize() + 4);
-    prettifyPlots(newTitle, newOthers, true);
+    Font newTitle = new Font(fontTitle.getName(), fontTitle.getStyle(), 20);
+    Font newOthers = new Font(fontOther.getName(), fontOther.getStyle(), 14);
+    Font newLeg = new Font(fontOther.getName(), fontOther.getStyle(), 12);
+    prettifyPlots(newTitle, newOthers, newLeg, true);
   }
 
-  private void prettifyPlots(Font title, Font others, boolean verboseOption) {
+  private void prettifyPlots(Font title, Font others, Font leg, boolean verboseOption) {
     say("Prettifying Plots...");
     for (StarPlot sp : sim.getPlotManager().getObjects()) {
-        prettifyPlot(sp, title, others, verboseOption);
+        prettifyPlot(sp, title, others, leg, verboseOption);
     }
   }
 
-  private void prettifyPlot(StarPlot sp, Font title, Font others, boolean verboseOption) {
+  private void prettifyPlot(StarPlot sp, Font title, Font others, Font leg, boolean verboseOption) {
     int thickness = 2;
     String name = sp.getPresentationName();
     String[] endsWith = {" Plot", " Monitor"};
@@ -11203,7 +10706,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
     sp.setTitleFont(title);
     sp.getLegend().setMapLineStyle(true);
-    sp.getLegend().setFont(others);
+    sp.getLegend().setFont(leg);
     sp.getAxes().getXAxis().getLabels().setFont(others);
     sp.getAxes().getXAxis().getTitle().setFont(others);
     sp.getAxes().getXAxis().getGrid().setColor(colorLightGray);
@@ -11293,9 +10796,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     printLine(verboseOption);
   }
 
+  /**
+   * Prints a text action followed by the NO.
+   */
   private void printAction(String text, NamedObject no, boolean verboseOption) {
     printAction(text, verboseOption);
-    sayNamedObject(no, verboseOption);
+    sayObject(no, verboseOption);
   }
 
   /**
@@ -11366,46 +10872,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * An overview of the mesh parameters.
-   * @param continua
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void printMeshParameters(MeshContinuum continua) {
-    ReferenceValueManager rvm = continua.getReferenceValues();
-    say("");
-    say("*******************************************************************");
-    say("**                                                               **");
-    say("**       M E S H   P A R A M E T E R S   O V E R V I E W         **");
-    say("**                                                               **");
-    say("*******************************************************************");
-    say("**");
-    say("** Mesh Continua: " + continua.getPresentationName());
-    say("**");
-    say("*******************************************************************");
-    say("**");
-    say("** Base Size (%s): %g", defUnitLength.getPresentationName(),  rvm.get(BaseSize.class).getValue());
-    say("**");
-    say("** Surface Size Relative Min (%): " +
-            rvm.get(SurfaceSize.class).getRelativeMinimumSize().getPercentage());
-    say("** Surface Size Relative Tgt (%): " +
-            rvm.get(SurfaceSize.class).getRelativeTargetSize().getPercentage());
-    say("**");
-    say("** Feature Curve Relative Min (%): " + featCurveMeshMin);
-    say("** Feature Curve Relative Tgt (%): " + featCurveMeshTgt);
-    say("**");
-    if (isPoly(continua)) {
-        say("** Mesh Growth Factor: " + mshGrowthFactor);
-        say("**");
-    }
-    if (isTrimmer(continua)) {
-        say("** Maximum Cell Size: " + mshTrimmerMaxCelSize);
-        say("**");
-    }
-    say("*******************************************************************");
-    say("");
-  }
-
-  /**
    * Prints an overview of the Prism Mesh Parameters.
    */
   public void printPrismsParameters() {
@@ -11429,7 +10895,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Prints all available Plots and Scenes as PNG files. This is the same method as {@see #hardCopyPictures}.
+   * Prints all available Plots and Scenes as PNG files. This is the same method as {@link #hardCopyPictures}.
    *
    * @param x given picture resolution (width).
    * @param y given picture resolution (height).
@@ -11439,7 +10905,27 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Prints all available Reports to text files in {@see #simPath} with an <u>.out</u> extension.
+   * Prints the cell count in all Regions.
+   */
+  public void printRegionsCellCount() {
+    printRegionsCellCount(true);
+  }
+
+  private void printRegionsCellCount(boolean verboseOption) {
+    String s = "Cell Count on Regions:";
+    if (verboseOption) {
+        printAction(s);
+    } else {
+        say(s);
+    }
+    for (Region r : getRegions(".*", false)) {
+        say("  %s: %,d cells.", r.getPresentationName(), getCellCount(r));
+    }
+    sayOK(verboseOption);
+  }
+
+  /**
+   * Prints all available Reports to text files in {@link #simPath} with an <u>.out</u> extension.
    */
   public void printReports() {
     printAction("Printing all Reports to text files");
@@ -11647,7 +11133,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return aps2;
   }
 
-  private void queryPartSurfaces_initPartSurfaceMeshWidget(PartSurfaceMeshWidget psmw) {
+  private SurfaceMeshWidgetDiagnosticsController queryPartSurfaces_initPartSurfaceMeshWidget(PartSurfaceMeshWidget psmw) {
     psmw.startSurfaceMeshDiagnostics();
     psmw.startSurfaceMeshRepair();
     psmw.startMergeImprintController();
@@ -11683,6 +11169,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     smwdc.setCheckHardFeatureErrors(false);
     smwdc.setHardFeatureErrorsActive(false);
     //smwdc.changeDisplayedThresholds(new NeoObjectVector(new Object[] {}), true);
+    return smwdc;
   }
 
   /**
@@ -11692,6 +11179,15 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    */
   public SurfaceRep queryRemeshedSurface() {
     return querySurfaceRep("Remeshed Surface");
+  }
+
+  /**
+   * Get the Root Description Representation.
+   *
+   * @return Root Description Representation.
+   */
+  public RootDescriptionSource queryRootDescription() {
+    return ((RootDescriptionSource) sim.get(SimulationMeshPartDescriptionSourceManager.class).getObject("Root"));
   }
 
   private DoubleVector queryStats(ArrayList<PartSurface> aps) {
@@ -11719,7 +11215,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     //-- Init Widget
     Scene scn = createScene_Geometry(false);
     PartSurfaceMeshWidget psmw = queryGeometryRepresentation().startSurfaceMeshWidget(scn);
-    psmw.setActiveParts(agp);
+    RootDescriptionSource rds = ((RootDescriptionSource) sim.get(SimulationMeshPartDescriptionSourceManager.class).getObject("Root"));
+    psmw.setActiveParts(agp, rds);
     queryPartSurfaces_initPartSurfaceMeshWidget(psmw);
     //--
     //-- Add the Part Surfaces
@@ -11738,12 +11235,15 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     //--
     //-- Init Query
     SurfaceMeshWidgetSelectController smwsc = psmw.getControllers().getController(SurfaceMeshWidgetSelectController.class);
+    smwsc.getOptions().setCanSelectFaces(true);
     smwsc.selectPartSurfaces(psObjs);
     SurfaceMeshWidgetQueryController smwqc = psmw.getControllers().getController(SurfaceMeshWidgetQueryController.class);
     NeoProperty retRange = null;
     //--
     //-- Overall Stats
     retRange = smwqc.queryFaceGeometricRange();
+//    say(psObjs.toString());
+//    say(retRange.toString());
     labMinXYZ = retRange.getDoubleVector("LabMinRange");
     labMaxXYZ = retRange.getDoubleVector("LabMaxRange");
     labDeltaXYZ = retRange.getDoubleVector("XYZComponents");
@@ -11811,7 +11311,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Reads a Camera string generated by {@see #getCameraViews} and then creates a new Camera View.
+   * Reads a Camera string generated by {@link #getCameraViews} and then creates a new Camera View.
    *
    * @param cam given camera string.
    * @return The created Camera View.
@@ -11873,9 +11373,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Creates all Camera Views stored in a file.<p>
-   * Note that the Cameras must be in the same format as defined in {@see #getCameraViews}.
+   * Note that the Cameras must be in the same format as defined in {@link #getCameraViews}.
    *
-   * @param filename given filename. File will be read from {@see #simPath} folder.
+   * @param filename given filename. File will be read from {@link #simPath} folder.
    */
   public void readCameraViews(String filename) {
     readCameraViews(filename, ".*", true);
@@ -11883,9 +11383,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Creates the Camera Views stored in a file, given a REGEX criteria.<p>
-   * Note that the Cameras must be in the same format as defined in {@see #getCameraViews}.
+   * Note that the Cameras must be in the same format as defined in {@link #getCameraViews}.
    *
-   * @param filename given filename. File will be read from {@see #simPath} folder.
+   * @param filename given filename. File will be read from {@link #simPath} folder.
    * @param regexPatt given REGEX search pattern.
    */
   public void readCameraViews(String filename, String regexPatt) {
@@ -11971,7 +11471,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
             say("");
             continue;
         }
-        try{
+        try {
             newCP = (CompositePart) cp.getChildParts().getPart(name0);
         } catch (Exception e) {
             say("Creating Composite Part: " + name0);
@@ -12107,7 +11607,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private int removeCompositePart(CompositePart cp, boolean verboseOption) {
     printAction("Removing a Composite Part", verboseOption);
-    try{
+    try {
         CompositePart parent = ((CompositePart) cp.getParentPart());
         say("Removing Composite: " + cp.getPresentationName());
         parent.getChildParts().remove(cp);
@@ -12171,18 +11671,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Removes all the Feature Curves of a Region. Useful when using the Surface Wrapper.
-   *
-   * @param r given Region.
-   */
-  public void removeFeatureCurves(Region r) {
-    printAction("Removing all Feature Curves");
-    sayRegion(r);
-    r.getFeatureCurveManager().deleteChildren(r.getFeatureCurveManager().getFeatureCurves());
-    sayOK();
-  }
-
-  /**
    * Removes a Geometry Part.
    *
    * @param gp given Geometry Part.
@@ -12197,7 +11685,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     if (isCompositePart(gp)) {
         removeCompositePart((CompositePart) gp, false);
     } else {
-        try{
+        try {
             sim.get(SimulationPartManager.class).remove(gp);
             say("Geometry Part removed.");
         } catch(Exception e) {
@@ -12222,61 +11710,22 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Removes the Invalid Cells in the model.
    */
   public void removeInvalidCells() {
-    ArrayList<Region> regionsPoly = new ArrayList<Region>();
-    ArrayList<Region> regionsTrimmer = new ArrayList<Region>();
-    ArrayList<Region> fvRegions = new ArrayList<Region>();
-    for (Region r : getRegions(".*", false)) {
-        if (hasPolyMesh(r)) {
-            regionsPoly.add(r);
-            continue;
-        }
-        if (hasTrimmerMesh(r)) {
-            regionsTrimmer.add(r);
-            continue;
-        }
-        fvRegions.add(r);
+    ArrayList<Region> fvRegions = getRegions(".*", false);
+    if (fvRegions.size() < 1) {
+        say("Nothing to remove.");
     }
-    /* Removing From fvRepresentation */
-    if (fvRegions.size() > 0) {
-        printAction("Removing Invalid Cells from Regions using Default Parameters");
-        say("Number of Regions: " + fvRegions.size());
-        sim.getMeshManager().removeInvalidCells(new NeoObjectVector(fvRegions.toArray()),
-                minFaceValidity, minCellQuality, minVolChange, minContigCells,
-                minConFaceAreas, minCellVolume);
-        sayOK();
+    sayRegions(fvRegions);
+    if (aggressiveRemoval) {
+        minFaceValidity = 0.95;
+        minCellQuality = 1.e-5;
+        minVolChange = 1.e-4;
+        minContigCells = 100;
+        minConFaceAreas = 1.e-8;
     }
-    /* Removing From Poly Meshes */
-    if (regionsPoly.size() > 0) {
-        printAction("Removing Invalid Cells from Poly Meshes");
-        say("Number of Regions: " + regionsPoly.size());
-        if (aggressiveRemoval) {
-            minFaceValidity = 0.95;
-            minCellQuality = 1.e-5;
-            minVolChange = 1.e-4;
-            minContigCells = 100;
-            minConFaceAreas = 1.e-8;
-        }
-        sim.getMeshManager().removeInvalidCells(new NeoObjectVector(regionsPoly.toArray()),
-                minFaceValidity, minCellQuality, minVolChange, minContigCells,
-                minConFaceAreas, minCellVolume);
-        sayOK();
-    }
-    /* Removing From Trimmer Meshes */
-    if (regionsTrimmer.size() > 0) {
-        printAction("Removing Invalid Cells from Trimmer Meshes");
-        say("Number of Regions: " + regionsTrimmer.size());
-        if (aggressiveRemoval) {
-            minFaceValidity = 0.51;
-            minCellQuality = 1.e-5;
-            minVolChange = 1.e-4;
-            minContigCells = 100;
-            minConFaceAreas = 1.e-8;
-        }
-        sim.getMeshManager().removeInvalidCells(new NeoObjectVector(regionsTrimmer.toArray()),
-                minFaceValidity, minCellQuality, minVolChange, minContigCells,
-                minConFaceAreas, minCellVolume);
-        sayOK();
-    }
+    sim.getMeshManager().removeInvalidCells(new NeoObjectVector(fvRegions.toArray()),
+            minFaceValidity, minCellQuality, minVolChange, minContigCells,
+            minConFaceAreas, minCellVolume);
+    sayOK();
   }
 
   /**
@@ -12330,6 +11779,33 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    */
   public void removeLeafParts(String regexPatt) {
     removeLeafParts(regexPatt, true);
+  }
+
+  /**
+   * Removes the non-contiguous cells in Regions (if applicable). The method can avoid Ap=0 errors
+   * when iterating.
+   */
+  public void removeNonContiguousCells() {
+    printAction("Removing Non-contiguous Regions");
+    MeshManager mm = sim.getMeshManager();
+    ArrayList<Region> ar = getRegions(".*", false);
+    printRegionsCellCount(false);
+    mm.splitNonContiguousRegions(new Vector(ar), 0.0);
+    ArrayList<Region> nr = getRegions(".*", false);
+    if (nr.size() == ar.size()) {
+        say("No Regions have been split.");
+        return;
+    }
+    for (Region r : nr) {
+        if (ar.contains(r)) {
+            continue;
+        }
+        say("Removing %s with %d cells.", r.getPresentationName(), getCellCount(r));
+    }
+    nr.removeAll(ar);
+    sim.getRegionManager().removeRegions(new Vector(nr));
+    printRegionsCellCount(false);
+    sayOK();
   }
 
   private void removeLeafParts(String regexPatt, boolean verboseOption) {
@@ -12459,11 +11935,40 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private void renameBoundary(Region r, String regexPatt, String renameTo, boolean verboseOption) {
     printAction("Renaming Boundary", verboseOption);
-    sayRegion(r);
+    sayNamedObject("Region", r);
     Boundary b = getBoundary(r, regexPatt, false);
     sayOldNameNewName(b.getPresentationName(), renameTo);
     b.setPresentationName(renameTo);
     sayOK(verboseOption);
+  }
+
+  /**
+   * <u>This is an experimental method</u>. It will zip all free edges in the model
+   * from the Geometry representation.
+   *
+   * @param gp given Geometry Part.
+   */
+  public void repair_ZipAllFreeEdges(GeometryPart gp) {
+    printAction("Trying to zip/sew all Free Edges from the model.");
+    Scene scn = sim.getSceneManager().createScene("Repair Surface");
+    scn.initializeAndWait();
+    PartSurfaceMeshWidget psmw = queryGeometryRepresentation().startSurfaceMeshWidget(scn);
+    psmw.setActiveParts(new NeoObjectVector(new Object[] {gp}));
+    SurfaceMeshWidgetDiagnosticsController smwdc = queryPartSurfaces_initPartSurfaceMeshWidget(psmw);
+    SurfaceMeshWidgetRepairController smwrc = psmw.getControllers().getController(SurfaceMeshWidgetRepairController.class);
+    FreeEdgesThreshold fet = smwdc.getOptions().getThresholdDiagnosticsManager().getDefaultFreeEdgesThreshold();
+    fet.setIsEnabled(true);
+    smwdc.setDiagnosticsInputType(0);
+    smwdc.runThresholdDiagnostics();
+    smwdc.setCheckSoftFeatureErrors(false);
+    smwdc.setSoftFeatureErrorsActive(false);
+    smwdc.setCheckHardFeatureErrors(false);
+    smwdc.setHardFeatureErrorsActive(false);
+    fet.showThresholdSelection(false);
+    smwrc.zipSelectedEdges();
+    psmw.stop();
+    sim.getSceneManager().deleteScene(scn);
+    sayOK();
   }
 
   /**
@@ -12474,7 +11979,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    */
   public void resetBoundaryNames(Region r) {
     printAction("Removing Prefixes from Boundary Names");
-    sayRegion(r);
+    sayNamedObject("Region", r);
     for (Boundary b : r.getBoundaryManager().getBoundaries()) {
         String name = b.getPresentationName();
         String newName = name.replace(r.getPresentationName() + ".", "");
@@ -12523,25 +12028,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     urfKOmega = urfKEps0;
     urfFluidEnrgy = urfFluidEnrgy0;
     urfSolidEnrgy = urfSolidEnrgy0;
+    urfPPDFComb = urfPPDFComb0;
     urfRS = urfRS0;
     urfSpecies = urfSpecies0;
     urfVOF = urfVOF0;
     urfVolFrac = urfVolFrac0;
     urfKEpsTurbVisc = urfKOmegaTurbVisc = urfRSTurbVisc = 1.0;
     updateSolverSettings();
-  }
-
-  /**
-   * Resets the Surface Remesher to default conditions.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void resetSurfaceRemesher(MeshContinuum continua) {
-    enableSurfaceRemesher(continua);
-    enableSurfaceProximityRefinement(continua);
-    enableSurfaceRemesherAutomaticRepair(continua);
-    enableSurfaceRemesherProjectToCAD(continua);
   }
 
   /**
@@ -12923,6 +12416,16 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     return s;
   }
 
+  private String retStringSplitByCapitalLetter(String text) {
+    return text.replaceAll(String.format("%s|%s|%s", "(?<=[A-Z])(?=[A-Z][a-z])",
+         "(?<=[^A-Z])(?=[A-Z])", "(?<=[A-Za-z])(?=[^A-Za-z])"), " ");
+  }
+
+  private String retStringStarSplit(String text) {
+    String[] fields = text.split("\\.");
+    return retStringSplitByCapitalLetter(fields[fields.length-1]);
+  }
+
   private String retStringBetweenBrackets(String text) {
     java.util.regex.Pattern patt = java.util.regex.Pattern.compile(".*\\[(.*)\\]");
     java.util.regex.Matcher matcher = patt.matcher(text);
@@ -12971,7 +12474,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Runs or Steps the case for the given number of iterations.
+   * Runs or Steps the case for the given number of iterations, or timesteps
+   * when in Unsteady.
    *
    * @param n If n > 0: step n iterations; If n == 0: just run.
    */
@@ -12980,7 +12484,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Runs or Steps the case for the given number of iterations.
+   * Runs or Steps the case for the given number of iterations, or timesteps
+   * when in Unsteady.
    *
    * @param n If n > 0: step n iterations; If n == 0: just run.
    * @param prettifyOpt Prettify me before running?
@@ -12997,14 +12502,16 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     if (prettifyOpt) {
         prettifyMe(false);
     }
+    String s = "iterations";
+    if (isUnsteady()) {
+        ((StepStoppingCriterion) getStoppingCriteria("Maximum Steps.*", false)).setIsUsed(false);
+        s = "timesteps";
+    }
     if (n > 0) {
-        say("Running " + n + " iterations of the case");
+        say("Running %d %s...", n, s);
         sayCellCount(true);
         sim.getSimulationIterator().step(n);
     } else {
-        if (isUnsteady()) {
-            ((StepStoppingCriterion) getStoppingCriteria("Maximum Steps.*", false)).setIsUsed(false);
-        }
         sayCellCount(true);
         sim.getSimulationIterator().run();
     }
@@ -13042,12 +12549,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Print something to output/log file using a {@see String#format} syntax.
+   * Print something to output/log file using a {@link String#format} syntax.
    *
    * @param format message to be printed using.
    * @param args arguments used in the format.
-   * @see  java.lang.String
-   * @see  java.util.Formatter
+   * @link  java.lang.String
+   * @link  java.util.Formatter
    */
   public void say(String format, Object ... args) {
     say(true, format, args);
@@ -13135,11 +12642,22 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   private void sayCellCount(boolean verboseOption) {
-    if (hasValidVolumeMesh()) {
-        say(String.format("Cell Count: %,d", queryVolumeMesh().getCellCount()), verboseOption);
-        say(String.format("Face Count: %,d", queryVolumeMesh().getInteriorFaceCount()), verboseOption);
-        say(String.format("Vertex Count: %,d", queryVolumeMesh().getVertexCount()), verboseOption);
+    if (!hasValidVolumeMesh()) {
+        return;
     }
+    say(String.format("Cell Count: %,d", queryVolumeMesh().getCellCount()), verboseOption);
+    say(String.format("Face Count: %,d", queryVolumeMesh().getInteriorFaceCount()), verboseOption);
+    say(String.format("Vertex Count: %,d", queryVolumeMesh().getVertexCount()), verboseOption);
+  }
+
+  /**
+   * Internal Macro Utils.
+   *
+   * @param cso
+   * @param verboseOption
+   */
+  private void sayCreated(ClientServerObject cso, boolean verboseOption) {
+    say(verboseOption, "Created %s: %s", getParentName(cso), cso.getPresentationName());
   }
 
   /**
@@ -13163,7 +12681,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Says something in a fancy frame. This is the same as {@see #printAction}.
+   * Says something in a fancy frame. This is the same as {@link #printAction}.
    *
    * @param text message to be said.
    */
@@ -13240,26 +12758,50 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Says the Presentation Name for a given object.
+   * Says the Presentation Name for a given STAR-CCM+ Named Object (NO).
+   *
+   * @param no given STAR-CCM+ NamedObject. Note this is the same method as {@link #sayObject}.
+   */
+  public void sayNamedObject(NamedObject no) {
+    sayObject(no, true);
+  }
+
+  /**
+   * Says the Presentation Name of some object preceeded by a string.
+   *
+   * @param what given text. E.g.: "My Text: STAR NamedObject".
+   * @param no given STAR-CCM+ NamedObject.
+   */
+  public void sayNamedObject(String what, NamedObject no) {
+    say("%s: %s", what, no.getPresentationName());
+  }
+
+  /**
+   * Says the Presentation Name for a given STAR-CCM+ object (CSO).
    *
    * @param no given STAR-CCM+ NamedObject.
    */
-  public void sayNamedObject(NamedObject no) {
-    sayNamedObject(no, true);
+  public void sayObject(ClientServerObject cso) {
+    sayObject(cso, true);
   }
 
-  private void sayNamedObject(NamedObject no, boolean verboseOption) {
-    if (no == null) {
-        say("Named Object is NULL", verboseOption);
-        return;
-    }
-    say(verboseOption, "%s name: %s", getParentName(no), no.getPresentationName());
+  private void sayObject(ClientServerObject cso, boolean verboseOption) {
+    say(verboseOption, "%s name: %s", getParentName(cso), cso.getPresentationName());
   }
 
-  private void sayNamedObjects(ArrayList<NamedObject> ano, boolean verboseOption) {
-    say("Number of NamedObjects: " + ano.size(), verboseOption);
-    for (NamedObject n : ano) {
-        say("  " + n.getPresentationName(), verboseOption);
+  /**
+   * Gives a list of the STAR-CCM+ objects inside an ArrayList.
+   *
+   * @param objs given ArrayList with STAR-CCM+ objects (CSO).
+   */
+  public void sayObjects(ArrayList objs) {
+    sayObjects(objs, "Objects", true);
+  }
+
+  private void sayObjects(ArrayList objs, String what, boolean verboseOption) {
+    say(verboseOption, "Number of %s: %d", what, objs.size(), verboseOption);
+    for (Object o : objs) {
+        say("  " + ((ClientServerObject) o).getPresentationName(), verboseOption);
     }
   }
 
@@ -13293,15 +12835,14 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     String toSay = "Part: ";
     if (isCadPart(gp)) {
         toSay += ((CadPart) gp).getPathInHierarchy();
-    }
-    if (isLeafMeshPart(gp)) {
+    } else if (isLeafMeshPart(gp)) {
         toSay += ((LeafMeshPart) gp).getPathInHierarchy();
-    }
-    if (isSimpleBlockPart(gp)) {
+    } else if (isSimpleBlockPart(gp)) {
         toSay += ((SimpleBlockPart) gp).getPathInHierarchy();
-    }
-    if (isSolidModelPart(gp)) {
+    } else if (isSolidModelPart(gp)) {
         toSay += ((SolidModelPart) gp).getPathInHierarchy();
+    } else {
+        toSay += gp.getPresentationName();
     }
     say(toSay, verboseOption);
     return toSay;
@@ -13328,18 +12869,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
   }
 
-  private void sayPlot(StarPlot sp, boolean verboseOption) {
-    say("Plot: " + sp.getPresentationName(), verboseOption);
-  }
-
-  private void sayRegion(Region r) {
-    sayRegion(r, true);
-  }
-
-  private void sayRegion(Region r, boolean verboseOption) {
-    say("Region: " + r.getPresentationName(), verboseOption);
-  }
-
   private void sayRegions(ArrayList<Region> regions) {
     say("Number of Regions: " + regions.size());
     for (Region reg : regions) {
@@ -13347,16 +12876,30 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
   }
 
-  private void sayScene(Scene scn, boolean verboseOption) {
-    say("Scene: " + scn.getPresentationName(), verboseOption);
-  }
-
-  private void saySimName(boolean verboseOption) {
-    say("Simulation Name: " + sim.getPresentationName(), verboseOption);
-  }
-
   private void sayString(String strng, boolean verboseOption) {
     say(String.format("String: \"%s\"", strng), verboseOption);
+  }
+
+  /**
+   * Says something with Values and Units.
+   *
+   * @param what given String.
+   * @param val given value.
+   * @param u given unit.
+   */
+  public void sayValue(String what, double val, Units u) {
+    sayValue(what, val, u, true);
+  }
+
+  private void sayValue(String what, double val, Units u, boolean verboseOption) {
+    sayValue(what, String.format("%g", val), u, verboseOption);
+  }
+
+  private void sayValue(String what, String sval, Units u, boolean verboseOption) {
+    if (what == null) {
+        return;
+    }
+    say(verboseOption, "%s: %s %s", what, sval, getString(u));
   }
 
   /**
@@ -13365,9 +12908,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public void sayVersion() {
     String version = getVersion();
     say("Version: " + version);
-    //String[] versionDetails = version.split("\\.");
-    //int IV = Integer.parseInt(versionDetails[0]) * 100 + Integer.parseInt(versionDetails[1]);
-    //say("Version: " + IV);
   }
 
   private void sayWarning(String ... messages) {
@@ -13387,40 +12927,46 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Saves the simulation file using a custom name.
    *
-   * The {@see #simTitle} variable will be updated.
+   * The {@link #simTitle} variable will be updated.
    *
    * @param name given name.
    */
   public void saveSim(String name) {
-    saveSim(name, true);
+    saveSim(name, true, true);
   }
 
   /**
    * Saves the simulation file using a custom name.
    *
-   * @param updSimTitle update the {@see #simTitle} variable?
+   * @param updSimTitle update the {@link #simTitle} variable?
    * @param name given name.
    */
   public void saveSim(String name, boolean updSimTitle) {
+    saveSim(name, updSimTitle, true);
+  }
+
+  private void saveSim(String name, boolean updSimTitle, boolean verboseOption) {
     String newName = name + ".sim";
-    printAction("Saving: " + newName);
+    printAction("Saving: " + newName, verboseOption);
     sim.saveState(new File(simPath, newName).toString());
     if (updSimTitle) {
         simTitle = sim.getPresentationName();
+        say(verboseOption, "Simulation Name updated to: %s", simTitle);
     }
+    sayOK(verboseOption);
   }
 
   /**
    * Saves the simulation file appending a suffix. <p>
    *
-   * The basic name is given using the {@see #simTitle} variable and a suffix.
+   * The basic name is given using the {@link #simTitle} variable and a suffix.
    *
    * @param suffix given suffix.
    */
   public void saveSimWithSuffix(String suffix) {
     if (!saveIntermediates) { return; }
     String newName = simTitle + "_" + suffix;
-    saveSim(newName, false);
+    saveSim(newName, false, true);
     savedWithSuffix++;
   }
 
@@ -13428,11 +12974,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Saves the simulation file appending a suffix with the option to force saving
    * intermediate files. <p>
    *
-   * The basic name is given using the {@see #simTitle} variable and a suffix.
+   * The basic name is given using the {@link #simTitle} variable and a suffix.
    *
    * @param suffix given suffix.
    * @param forceOption save intermediate simulation files as well?
-   *                    Depends on {@see #saveIntermediates}
+   *                    Depends on {@link #saveIntermediates}
    */
   public void saveSimWithSuffix(String suffix, boolean forceOption) {
     boolean interm = saveIntermediates;
@@ -13480,9 +13026,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    *
    * @param maxSavedFiles how many saved sim files to keep?
    * @param startAt given start of savings. Iterations when Steady, Time in
-   *    {@see #defUnitTime} when unsteady.
+   *    {@link #defUnitTime} when unsteady.
    * @param atEvery saving frequency. Iterations when Steady, Time in
-   *    {@see #defUnitTime} when unsteady.
+   *    {@link #defUnitTime} when unsteady.
    */
   public void setAutoSave(int maxSavedFiles, double startAt, double atEvery) {
     setAutoSave(maxSavedFiles, startAt, atEvery, true);
@@ -13531,13 +13077,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Sets the Wall Boundary as Constant Temperature.
    *
    * @param b given Boundary.
-   * @param T given Temperature in default units. See {@see #defUnitTemp}.
+   * @param T given Temperature in default units. See {@link #defUnitTemp}.
    */
   public void setBC_ConstantTemperatureWall(Boundary b, double T) {
     printAction("Setting BC as Constant Temperature Wall", b, true);
     b.setBoundaryType(WallBoundary.class);
     b.getConditions().get(WallThermalOption.class).setSelected(WallThermalOption.TEMPERATURE);
-    setBC_Values(b, "Static Temperature", T, defUnitTemp, false);
+    setBC_Values(b, "Static Temperature", T, defUnitTemp, true, false);
     sayOK();
   }
 
@@ -13545,41 +13091,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Sets the Wall Boundary as Convection Heat Transfer type.
    *
    * @param b given Boundary.
-   * @param T given Ambient Temperature in default units. See {@see #defUnitTemp}.
-   * @param htc given Heat Transfer Coefficient in default units. See {@see #defUnitHTC}.
+   * @param T given Ambient Temperature in default units. See {@link #defUnitTemp}.
+   * @param htc given Heat Transfer Coefficient in default units. See {@link #defUnitHTC}.
    */
   public void setBC_ConvectionWall(Boundary b, double T, double htc) {
     setBC_ConvectionWall(b, T, htc, true);
-  }
-
-  /**
-   * Sets the Wall Boundary as Environment Heat Transfer type.
-   *
-   * @param b given Boundary.
-   * @param T given Ambient Temperature in default units. See {@see #defUnitTemp}.
-   * @param htc given Heat Transfer Coefficient in default units. See {@see #defUnitHTC}.
-   * @param emissivity given Emissivity dimensionless.
-   * @param transmissivity given Transmissivity dimensionless.
-   * @param externalEmissivity given External Emissivity dimensionless.
-   * @deprecated in v3.2. Needs refactoring. Radiation is gone.
-   */
-  public void setBC_EnvironmentWall(Boundary b, double T, double htc, double emissivity,
-                                                double transmissivity, double externalEmissivity) {
-    printAction("Setting BC as an Environment Wall", b, true);
-    setBC_ConvectionWall(b, T, htc, false);
-    if (hasRadiationBC(b)) {
-        //say("  External Emissivity: " + externalEmissivity);
-        ////setRadiationParametersS2S(b, emissivity, transmissivity);
-        b.getConditions().get(WallThermalOption.class).setSelected(WallThermalOption.ENVIRONMENT);
-        ExternalEmissivityProfile eemP = b.getValues().get(ExternalEmissivityProfile.class);
-        eemP.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(externalEmissivity);
-    } else {
-        say("  Radiation Settings not available. Skipping...");
-        return;
-    }
-    printLine(3);
-    say("Environment BC set.");
-    sayOK();
   }
 
   /**
@@ -13597,7 +13113,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Applies a Field Function in a Physics Value of a Boundary.
    *
-   * <b>Note:</b> Current method is limited to Scalar values only.
+   * <b>Note:</b> Current method is limited to Scalar values only, i.e., no formulas.
    *
    * @param b given boundary.
    * @param name given Physics Values. E.g.: Pressure, Temperature, etc...
@@ -13607,7 +13123,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     printAction("Applying a Field Function on a Boundary", b, true);
     say("Field Function used at '%s' is '%s'...",
             b.getPresentationName(), f.getPresentationName());
-    ScalarProfile sp = getScalarProfile(b, name, true);
+    ScalarProfile sp = getScalarProfile(b.getConditions(), name, true);
     sp.setMethod(FunctionScalarProfileMethod.class);
     sp.getMethod(FunctionScalarProfileMethod.class).setFieldFunction(f);
     sayOK();
@@ -13619,8 +13135,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param b given Boundary.
    * @param dir given 3-components direction of the flow. E.g., in X: {1, 0, 0}.
    * @param mach given Mach number.
-   * @param P given Pressure in default units. See {@see #defUnitPress}.
-   * @param T given Static Temperature in default units. See {@see #defUnitTemp}.
+   * @param P given Pressure in default units. See {@link #defUnitPress}.
+   * @param T given Static Temperature in default units. See {@link #defUnitTemp}.
    * @param ti given Turbulent Intensity dimensionless, if applicable.
    * @param tvr given Turbulent Viscosity Ratio dimensionless, if applicable.
    */
@@ -13628,12 +13144,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
                                                                         double ti, double tvr) {
     printAction("Setting BC as a Free Stream", b, true);
     b.setBoundaryType(FreeStreamBoundary.class);
-    setBC_Values(b, "Flow Direction", dir, unit_Dimensionless, false);
-    setBC_Values(b, "Mach Number", mach, unit_Dimensionless, false);
-    setBC_Values(b, "Pressure", P, defUnitPress, false);
-    setBC_Values(b, "Static Temperature", T, defUnitTemp, false);
-    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, false);
-    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, false);
+    setBC_Values(b, "Flow Direction", dir, unit_Dimensionless, true, false);
+    setBC_Values(b, "Mach Number", mach, unit_Dimensionless, true, false);
+    setBC_Values(b, "Pressure", P, defUnitPress, true, false);
+    setBC_Values(b, "Static Temperature", T, defUnitTemp, true, false);
+    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, true, false);
+    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, true, false);
     sayOK();
   }
 
@@ -13642,18 +13158,18 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * <i>Note when running Laminar or Isothermal models, the other parameters are ignored</p>.
    *
    * @param b given Boundary.
-   * @param mfr given Mass Flow Rate in default units. See {@see #defUnitMFR}.
-   * @param T given Static Temperature in default units. See {@see #defUnitTemp}.
+   * @param mfr given Mass Flow Rate in default units. See {@link #defUnitMFR}.
+   * @param T given Static Temperature in default units. See {@link #defUnitTemp}.
    * @param ti given Turbulent Intensity dimensionless, if applicable.
    * @param tvr given Turbulent Viscosity Ratio dimensionless, if applicable.
    */
   public void setBC_MassFlowRateInlet(Boundary b, double mfr, double T, double ti, double tvr) {
     printAction("Setting BC as Mass Flow Rate Inlet", b, true);
     b.setBoundaryType(MassFlowBoundary.class);
-    setBC_Values(b, "Mass Flow Rate", mfr, defUnitMFR, false);
-    setBC_Values(b, "Total Temperature", T, defUnitTemp, false);
-    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, false);
-    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, false);
+    setBC_Values(b, "Mass Flow Rate", mfr, defUnitMFR, true, false);
+    setBC_Values(b, "Total Temperature", T, defUnitTemp, true, false);
+    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, true, false);
+    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, true, false);
     sayOK();
   }
 
@@ -13662,18 +13178,18 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * <i>Note when running Laminar or Isothermal models, the other parameters are ignored</p>.
    *
    * @param b given Boundary.
-   * @param P given Static Pressure in default units. See {@see #defUnitTemp}.
-   * @param T given Static Temperature in default units. See {@see #defUnitTemp}.
+   * @param P given Static Pressure in default units. See {@link #defUnitTemp}.
+   * @param T given Static Temperature in default units. See {@link #defUnitTemp}.
    * @param ti given Turbulent Intensity dimensionless, if applicable.
    * @param tvr given Turbulent Viscosity Ratio dimensionless, if applicable.
    */
   public void setBC_PressureOutlet(Boundary b, double P, double T, double ti, double tvr) {
     printAction("Setting BC as Pressure Outlet", b, true);
     b.setBoundaryType(PressureBoundary.class);
-    setBC_Values(b, "Static Pressure", P, defUnitPress, false);
-    setBC_Values(b, "Static Temperature", T, defUnitTemp, false);
-    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, false);
-    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, false);
+    setBC_Values(b, "Static Pressure", P, defUnitPress, true, false);
+    setBC_Values(b, "Static Temperature", T, defUnitTemp, true, false);
+    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, true, false);
+    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, true, false);
     sayOK();
   }
 
@@ -13682,18 +13198,18 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * <i>Note when running Laminar or Isothermal models, the other parameters are ignored</p>.
    *
    * @param b given Boundary.
-   * @param P given Total Pressure in default units. See {@see #defUnitPress}.
-   * @param T given Total Temperature in default units. See {@see #defUnitTemp}.
+   * @param P given Total Pressure in default units. See {@link #defUnitPress}.
+   * @param T given Total Temperature in default units. See {@link #defUnitTemp}.
    * @param ti given Turbulent Intensity dimensionless.
    * @param tvr given Turbulent Viscosity Ratio dimensionless.
    */
   public void setBC_StagnationInlet(Boundary b, double P, double T, double ti, double tvr) {
     printAction("Setting BC as Stagnation Inlet", b, true);
     b.setBoundaryType(StagnationBoundary.class);
-    setBC_Values(b, "Total Pressure", P, defUnitPress, false);
-    setBC_Values(b, "Total Temperature", T, defUnitTemp, false);
-    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, false);
-    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, false);
+    setBC_Values(b, "Total Pressure", P, defUnitPress, true, false);
+    setBC_Values(b, "Total Temperature", T, defUnitTemp, true, false);
+    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, true, false);
+    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, true, false);
     sayOK();
   }
 
@@ -13713,8 +13229,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * <i>Note when running Laminar or Isothermal models, the other parameters are ignored</p>.
    *
    * @param b given Boundary.
-   * @param vel given Velocity Magnitude in default units. See {@see #defUnitVel}.
-   * @param T given Static Temperature in default units. See {@see #defUnitTemp}.
+   * @param vel given Velocity Magnitude in default units. See {@link #defUnitVel}.
+   * @param T given Static Temperature in default units. See {@link #defUnitTemp}.
    * @param ti given Turbulent Intensity dimensionless.
    * @param tvr given Turbulent Viscosity Ratio dimensionless.
    */
@@ -13722,10 +13238,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
                                                                 double ti, double tvr) {
     printAction("Setting BC as Velocity Inlet", b, true);
     b.setBoundaryType(InletBoundary.class);
-    setBC_Values(b, "Velocity Magnitude", vel, defUnitVel, false);
-    setBC_Values(b, "Static Temperature", T, defUnitTemp, false);
-    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, false);
-    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, false);
+    setBC_Values(b, "Velocity Magnitude", vel, defUnitVel, true, false);
+    setBC_Values(b, "Static Temperature", T, defUnitTemp, true, false);
+    setBC_Values(b, "Turbulence Intensity", ti, unit_Dimensionless, true, false);
+    setBC_Values(b, "Turbulent Viscosity Ratio", tvr, unit_Dimensionless, true, false);
     sayOK();
   }
 
@@ -13734,15 +13250,15 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayBdry(b, verboseOption);
     b.setBoundaryType(WallBoundary.class);
     b.getConditions().get(WallThermalOption.class).setSelected(WallThermalOption.CONVECTION);
-    setBC_Values(b, "Ambient Temperature", T, defUnitTemp, false);
-    setBC_Values(b, "Heat Transfer Coefficient", htc, defUnitHTC, false);
+    setBC_Values(b, "Ambient Temperature", T, defUnitTemp, true, false);
+    setBC_Values(b, "Heat Transfer Coefficient", htc, defUnitHTC, true, false);
     sayOK(verboseOption);
   }
 
   /**
    * Applies a Physics Value to a Boundary.
    *
-   * <b>Note:</b> Current method is limited to Constant Scalar values only.
+   * <b>Note:</b> Current method is limited to Constant Scalar values only, i.e., no formulas.
    *
    * @param b given boundary.
    * @param name given Physics Values. E.g.: Pressure, Temperature, etc...
@@ -13750,20 +13266,23 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param u given units.
    */
   public void setBC_Values(Boundary b, String name, double val, Units u) {
-    setBC_Values(b, name, val, u, true);
+    setBC_Values(b, name, val, u, true, true);
   }
 
-  private void setBC_Values(Boundary b, String name, double val, Units u, boolean verboseOption) {
-    printAction("Setting a Constant Boundary Value", b, verboseOption);
-    ScalarProfile sp = getScalarProfile(b, name, verboseOption);
+  private void setBC_Values(Boundary b, String name, double val, Units u, boolean verboseOption, boolean prtAct) {
+    if (!b.getValues().has(name)) {
+        return;
+    }
+    printAction("Setting a Constant Boundary Value", b, prtAct);
+    ScalarProfile sp = getScalarProfile(b.getValues(), name, verboseOption);
     setProfile(sp, val, u);
-    sayOK(verboseOption);
+    sayOK(prtAct);
   }
 
   /**
    * Applies Physics Values to a Boundary.
    *
-   * <b>Note:</b> Current method is limited to Constant Vector values only.
+   * <b>Note:</b> Current method is limited to Constant Vector values only, i.e., no formulas.
    *
    * @param b given boundary.
    * @param name given Physics Values. E.g.: Volume Fraction, Flow Direction, etc...
@@ -13771,14 +13290,17 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param u given units.
    */
   public void setBC_Values(Boundary b, String name, double[] vals, Units u) {
-    setBC_Values(b, name, vals, u, true);
+    setBC_Values(b, name, vals, u, true, true);
   }
 
-  private void setBC_Values(Boundary b, String name, double[] vals, Units u, boolean verboseOption) {
-    printAction("Setting Constant Vector Boundary Values", b, verboseOption);
-    VectorProfile vp = getVectorProfile(b, name, verboseOption);
+  private void setBC_Values(Boundary b, String name, double[] vals, Units u, boolean verboseOption, boolean prtAct) {
+    if (!b.getValues().has(name)) {
+        return;
+    }
+    printAction("Setting Constant Vector Boundary Values", b, prtAct);
+    VectorProfile vp = getVectorProfile(b.getValues(), name, verboseOption);
     setProfile(vp, vals, u);
-    sayOK(verboseOption);
+    sayOK(prtAct);
   }
 
   /**
@@ -13927,29 +13449,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     }
   }
 
-    /**
-     *
-     * @param min
-     * @param tgt
-     */
-    public void setGlobalFeatureCurveMeshRefinement(double min, double tgt) {
-    printAction("Setting global mesh refinement on all Feature Curves");
-    for (Region r : getRegions(".*", false)) {
-        sayRegion(r);
-        ArrayList<FeatureCurve> afc = new ArrayList(r.getFeatureCurveManager().getFeatureCurves());
-        for (FeatureCurve featCurve : afc) {
-            setMeshFeatureCurveSizes(featCurve, min, tgt);
-        }
-    }
-  }
-
   /**
-   * Applies an Initial Condition to a Variable Physics Value to a Boundary.
-   *
-   * <b>Note:</b> Current method is limited to Constant Scalar values only.
+   * Applies an Initial Condition to a Scalar Variable.
    *
    * @param pc given Physics Continua.
-   * @param name given Initial Conditions. E.g.: Pressure, Temperature, etc...
+   * @param name given Initial Condition name. E.g.: Pressure, Temperature, etc...
    * @param val given value.
    * @param u given units.
    */
@@ -13957,21 +13461,47 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     setInitialCondition(pc, name, val, u, true);
   }
 
+  /**
+   * Applies an Initial Condition to a Vector Variable.
+   *
+   * @param pc given Physics Continua.
+   * @param name given Initial Condition name. E.g.: Velocity, etc...
+   * @param vals given double[] array of values. E.g.: {1.2, 0, 0}.
+   * @param u given units.
+   */
+  public void setInitialCondition(PhysicsContinuum pc, String name, double[] vals, Units u) {
+    setInitialCondition(pc, name, vals, u, true);
+  }
+
   private void setInitialCondition(PhysicsContinuum pc, String name, double val, Units u,
                                                                             boolean verboseOption) {
+    setInitialCondition(pc, name, new double[] {val}, u, verboseOption);
+  }
+
+  private void setInitialCondition(PhysicsContinuum pc, String name, double[] vals, Units u,
+                                                                            boolean verboseOption) {
+    updateUnits(verboseDebug, false);
     printAction("Setting Initial Conditions", verboseOption);
-    setProfile(getScalarProfile(pc.getInitialConditions(), name, verboseOption), val, u);
+    if (vals.length == 1) {
+        setProfile(getScalarProfile(pc.getInitialConditions(), name, verboseOption), vals[0], u);
+    } else {
+        setProfile(getVectorProfile(pc.getInitialConditions(), name, verboseOption), vals, u);
+    }
     sayOK(verboseOption);
   }
 
+  @Deprecated // in v3d. Use the simpler and more flexible {@link #setInitialCondition} instead.
   private void setInitialCondition_P(PhysicsContinuum phC, double press, boolean verboseOption) {
+    updateUnits(verboseDebug, false);
     printAction("Setting Initial Conditions for Pressure", verboseOption);
     InitialPressureProfile ipp = phC.getInitialConditions().get(InitialPressureProfile.class);
     ipp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(press);
     ipp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setUnits(defUnitPress);
   }
 
+  @Deprecated // in v3d. Use the simpler and more flexible {@link #setInitialCondition} instead.
   private void setInitialCondition_T(PhysicsContinuum phC, double temp, boolean verboseOption) {
+    updateUnits(verboseDebug, false);
     printAction("Setting Initial Conditions for Temperature", verboseOption);
     sayContinua(phC, true);
     say(retTemp(temp), verboseOption);
@@ -13984,7 +13514,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Set Initial Conditions for Temperature.
    *
    * @param phC given Physics Continua
-   * @param T0 initial Temperature in default unit. See {@see #defUnitTemp}.
+   * @param T0 initial Temperature in default unit. See {@link #defUnitTemp}.
+   * @deprecated in v3d. Use the simpler and more flexible {@link #setInitialCondition} instead.
    */
   public void setInitialCondition_Temperature(PhysicsContinuum phC, double T0) {
     setInitialCondition_T(phC, T0, true);
@@ -13998,13 +13529,16 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param tvs0 initial Turbulent Velocity Scale.
    * @param ti0 initial Turbulent Intensity.
    * @param tvr0 initial Turbulent Viscosity Ratio.
+   * @deprecated in v3d. Use the simpler and more flexible {@link #setInitialCondition} instead.
    */
   public void setInitialCondition_Turbulence(PhysicsContinuum phC, double tvs0, double ti0, double tvr0) {
     setInitialCondition_TVS_TI_TVR(phC, tvs0, ti0, tvr0, true);
     sayOK();
   }
 
+  @Deprecated // in v3d. Use the simpler and more flexible {@link #setInitialCondition} instead.
   private void setInitialCondition_TVS_TI_TVR(PhysicsContinuum phC, double tvs0, double ti0, double tvr0, boolean verboseOption) {
+    updateUnits(verboseDebug, false);
     printAction("Setting Initial Conditions for Turbulence", verboseOption);
     sayContinua(phC, true);
     if (phC.getInitialConditions().has("Turbulent Velocity Scale")) {
@@ -14025,21 +13559,25 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Set Initial Conditions for Velocity in default units. See {@see #defUnitVel}.
+   * Set Initial Conditions for Velocity in default units. See {@link #defUnitVel}.
    *
    * @param phC given Physics Continua
    * @param Vx given X-Velocity component.
    * @param Vy given Y-Velocity component.
    * @param Vz given Z-Velocity component.
+   * @deprecated in v3d. Use the simpler and more flexible {@link #setInitialCondition} instead.
    */
   public void setInitialCondition_Velocity(PhysicsContinuum phC, double Vx, double Vy, double Vz) {
+    updateUnits(verboseDebug, false);
     setInitialCondition_Velocity(phC, Vx, Vy, Vz, true);
     sayOK();
   }
 
+  @Deprecated // in v3d. Use the simpler and more flexible {@link #setInitialCondition} instead.
   private void setInitialCondition_Velocity(PhysicsContinuum phC, double Vx, double Vy, double Vz, boolean verboseOption) {
+    updateUnits(verboseDebug, false);
     printAction("Setting Initial Conditions for Velocity Components", verboseOption);
-    sayContinua(phC, true);
+    sayContinua(phC, verboseOption);
     say("Velocity X: " + Vx, verboseOption);
     say("Velocity Y: " + Vy, verboseOption);
     say("Velocity Z: " + Vz, verboseOption);
@@ -14054,6 +13592,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
      *
      * @param i
      * @param tol
+     * @deprecated in v3d. Not used anymore.
      */
     public void setInterfaceTolerance(Interface i, double tol) {
     String intrfType = i.getBeanDisplayName();
@@ -14092,33 +13631,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
             cmpm.getMaterialProperty().getPresentationName(),
             cmpm.getMaterialProperty().getParent().getParent().getPresentationName());
     cmpm.getQuantity().setValue(val);
-    String us = "";
     if (u != null) {
-        us = u.getPresentationName();
         cmpm.getQuantity().setUnits(u);
     }
-    say("  Value: %g %s", val, us);
-  }
-
-  /**
-   * Sets the Automatic Surface Repair Parameters for the Remesher.
-   *
-   * @param continua given Mesh Continua.
-   * @param minProx given Minimum Proximity. Default is 5%.
-   * @param minQual given Minimum Quality. Default is 1%.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshAutomaticSurfaceRepairParameters(MeshContinuum continua, double minProx, double minQual) {
-    if (!isRemesh(continua)) return;
-    say("Setting Automatic Surface Repair Parameters:");
-    say("   Minimum Proximity: " + minProx);
-    say("   Minimum Quality: " + minQual);
-    AutomaticSurfaceRepair asr = continua.getReferenceValues().get(AutomaticSurfaceRepair.class);
-    AutomaticSurfaceRepairMinimumProximity asrmp = asr.getAutomaticSurfaceRepairMinimumProximity();
-    asrmp.setAutomaticSurfaceRepairMinimumProximity(minProx);
-    AutomaticSurfaceRepairMinimumQuality asrmq = asr.getAutomaticSurfaceRepairMinimumQuality();
-    asrmq.setAutomaticSurfaceRepairMinimumQuality(minQual);
-    sayOK();
+    say("  Value: %g %s", val, getString(u));
   }
 
   /**
@@ -14134,88 +13650,31 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private void setMeshBaseSize(NamedObject no, double val, Units u, boolean verboseOption) {
     printAction("Setting the Mesh Base Size", verboseOption);
-    sayNamedObject(no, verboseOption);
-    BaseSize bs = getClassBaseSize(no);
+    sayObject(no, verboseOption);
+    BaseSize bs = getBaseSize(no);
     if (bs == null) {
         return;
     }
-    bs.setValue(val);
-    bs.setUnits(u);
-    say("Base Size: " + val + u.getPresentationName(), verboseOption);
+    setScalarPhysicalQuantity(bs, val, null, u, "Base Size");
     sayOK(verboseOption);
   }
 
   /**
-   * Set a custom Mesh Surface Size for a Feature Curve.
+   * Sets the number of Points/Curve in a Surface Curvature.
    *
-   * @param fc given Feature Curve.
-   * @param min given Minimum size.
-   * @param tgt give Target size.
+   * @param amo given Automated Mesh Operation.
+   * @param numPoints given number of Points.
    */
-  public void setMeshFeatureCurveSizes(FeatureCurve fc, double min, double tgt) {
-    say("Custom Feature Curve Mesh Size: " + fc.getPresentationName());
-    sayRegion(fc.getRegion());
-    try {
-        fc.get(MeshConditionManager.class).get(SurfaceSizeOption.class).setSurfaceSizeOption(true);
-        SurfaceSize srfSize = fc.get(MeshValueManager.class).get(SurfaceSize.class);
-        setMeshSurfaceSizes(srfSize, min, tgt, true);
-    } catch (Exception e) {
-        say("ERROR! Please review settings. Skipping this Feature Curve.");
-        say(e.getMessage());
-        return;
-    }
-    sayOK();
+  public void setMeshSurfaceCurvature(AutoMeshOperation amo, double numPoints) {
+    setMeshSurfaceCurvature(amo.getDefaultValues().get(SurfaceCurvature.class), numPoints, true);
   }
 
-  /**
-   * Set a custom Mesh Surface Size all Feature Curves based on REGEX search.
-   *
-   * @param regexPatt given REGEX search pattern.
-   * @param min given Minimum size.
-   * @param tgt give Target size.
-   */
-  public void setMeshFeatureCurvesSizes(String regexPatt, double min, double tgt) {
-    printAction(String.format("Setting Mesh Feature Curves by REGEX pattern: \"%s\"", regexPatt));
-    int n = 0;
-    for (Region reg : getRegions(regexPatt, false)) {
-        for (FeatureCurve fc : getFeatureCurves(reg, false)) {
-            setMeshFeatureCurveSizes(fc, min, tgt);
-            n++;
-        }
-    }
-    say("Feature Curves changed: " + n);
-    printLine();
-  }
-
-  /**
-   * Enables the Generalized Cylinder Model Constant Extrusion.
-   *
-   * @param b given boundary.
-   * @param layers given number of layers.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshGeneralizedCylinderExtrusion_Constant(Boundary b, int layers) {
-    printAction("Activating Generalized Cylinder Model");
-    sayBdry(b);
-    say("Constant Extrusion Layers: " + layers);
-    enableGeneralizedCylinderModel(b.getRegion().getMeshContinuum(), false);
-    GenCylOption gco = b.get(MeshConditionManager.class).get(GenCylOption.class);
-    gco.getType().setSelected(GenCylExtrusionType.CONSTANT);
-    b.get(MeshValueManager.class).get(GenCylConstantExtrusionValues.class).setNumLayers(layers);
-    sayOK();
-  }
-
-  /**
-   * Sets a Per-Region meshing on a Continua.
-   *
-   * @param continua given Mesh Continua.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshPerRegionFlag(MeshContinuum continua) {
-    printAction("Setting Mesh Continua as \"Per-Region Meshing\"");
-    sayContinua(continua, true);
-    continua.setMeshRegionByRegion(true);
-    sayOK();
+  private void setMeshSurfaceCurvature(SurfaceCurvature sc, double n, boolean verboseOption) {
+    printAction("Setting Surface Curvature on " + sc.getParent().getParent().getPresentationName(), verboseOption);
+    say("Surface Curvature:");
+    say("   Points/Curve: " + n);
+    sc.getSurfaceCurvatureNumPts().setNumPointsAroundCircle(n);
+    sayOK(verboseOption);
   }
 
   /**
@@ -14226,73 +13685,30 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param stretch given prism stretch relation.
    * @param relSize given relative size in (%).
    */
-  public void setMeshPrismsParameters(MeshOperation mo, int numLayers, double stretch, double relSize) {
-    sayMeshOp(mo, true);
-    if (!isAutoMeshOperation(mo)) {
-        say("This Mesh Operation can not have Prism Layers Controls. Skipping...");
-        return;
-    }
-    AutoMeshOperation amo = (AutoMeshOperation) mo;
+  public void setMeshPrismsParameters(AutoMeshOperation amo, int numLayers, double stretch, double relSize) {
+    setMeshPrismsParameters(amo, numLayers, stretch, relSize, true);
+  }
+
+  private void setMeshPrismsParameters(AutoMeshOperation amo, int numLayers, double stretch,
+                                                            double relSize, boolean verboseOption) {
+    sayMeshOp(amo, verboseOption);
     if (!hasPrismLayerMesher(amo)) {
         return;
     }
-    sayPrismsParameters(numLayers, stretch, relSize, true);
     PrismAutoMesher pam = ((PrismAutoMesher) amo.getMeshers().getObject("Prism Layer Mesher"));
     pam.setMinimumThickness(prismsMinThickn);
     pam.setGapFillPercentage(prismsGapFillPerc);
     pam.setLayerChoppingPercentage(prismsLyrChoppPerc);
     pam.setNearCoreLayerAspectRatio(prismsNearCoreAspRat);
-    amo.getDefaultValues().get(NumPrismLayers.class).setNumLayers(numLayers);
-    amo.getDefaultValues().get(PrismLayerStretching.class).setStretching(stretch);
-    amo.getDefaultValues().get(PrismThickness.class).getRelativeSize().setPercentage(relSize);
-    sayOK();
+    setMeshPrismsParameters(amo.getDefaultValues(), numLayers, stretch, relSize);
+    sayOK(verboseOption);
   }
 
-  /**
-   * Set custom Prism Mesh parameters for a boundary.
-   *
-   * @param b given Boundary.
-   * @param numLayers given number of prisms.
-   * @param stretch given prism stretch relation.
-   * @param relSize given relative size in (%).
-   */
-  public void setMeshPrismsParameters(Boundary b, int numLayers, double stretch, double relSize) {
-    sayBdry(b);
+  private void setMeshPrismsParameters(ConditionManager cm, int numLayers, double stretch, double relSize) {
+    cm.get(NumPrismLayers.class).setNumLayers(numLayers);
+    cm.get(PrismLayerStretching.class).setStretching(stretch);
+    cm.get(PrismThickness.class).getRelativeSize().setPercentage(relSize);
     sayPrismsParameters(numLayers, stretch, relSize, true);
-    if (isDirectBoundaryInterface(b)) {
-        DirectBoundaryInterfaceBoundary intrfBdry = (DirectBoundaryInterfaceBoundary) b;
-        intrfBdry.get(MeshConditionManager.class).get(CustomizeBoundaryPrismsOption.class).setSelected(CustomizeBoundaryPrismsOption.CUSTOM_VALUES);
-        intrfBdry.get(MeshValueManager.class).get(NumPrismLayers.class).setNumLayers(numLayers);
-        intrfBdry.get(MeshValueManager.class).get(PrismLayerStretching.class).setStretching(stretch);
-        setMeshPrismsThickness(intrfBdry.get(MeshValueManager.class).get(PrismThickness.class), relSize);
-    } else if (isIndirectBoundaryInterface(b)) {
-        say("Prisms not available here. Skipping...");
-    } else {
-        b.get(MeshConditionManager.class).get(CustomizeBoundaryPrismsOption.class).setSelected(CustomizeBoundaryPrismsOption.CUSTOM_VALUES);
-        b.get(MeshValueManager.class).get(NumPrismLayers.class).setNumLayers(numLayers);
-        b.get(MeshValueManager.class).get(PrismLayerStretching.class).setStretching(stretch);
-        setMeshPrismsThickness(b.get(MeshValueManager.class).get(PrismThickness.class), relSize);
-    }
-    sayOK();
-  }
-
-  /**
-   * Set custom Prism Mesh parameters for a Mesh Continua.
-   *
-   * @param continua given Mesh Continua.
-   * @param numLayers given number of prisms.
-   * @param stretch given prism stretch relation.
-   * @param relSize given relative size in (%).
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshPrismsParameters(MeshContinuum continua, int numLayers, double stretch, double relSize) {
-    printAction("Changing Prism Layers Parameters");
-    sayContinua(continua, true);
-    sayPrismsParameters(numLayers, stretch, relSize, true);
-    continua.getReferenceValues().get(NumPrismLayers.class).setNumLayers(numLayers);
-    continua.getReferenceValues().get(PrismLayerStretching.class).setStretching(stretch);
-    continua.getReferenceValues().get(PrismThickness.class).getRelativeSize().setPercentage(relSize);
-    sayOK();
   }
 
   /**
@@ -14324,30 +13740,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayOK();
   }
 
-  private void setMeshPrismsThickness(PrismThickness prismThick, double relSize) {
-    ((GenericRelativeSize) prismThick.getRelativeSize()).setPercentage(relSize);
-  }
-
-  /**
-   * Sets the Surface Growth Rate for the Trimmer. Available options implemented in JAVA API are:
-   * <ul>
-   * <li>SurfaceGrowthRateOption.VERYSLOW</li>
-   * <li>SurfaceGrowthRateOption.SLOW</li>
-   * <li>SurfaceGrowthRateOption.MEDIUM</li>
-   * <li>SurfaceGrowthRateOption.FAST</li>
-   * </ul>
-   *
-   * @param b given Boundary.
-   * @param growthRate the integer given by one of the variables above.
-   */
-  public void setMeshSurfaceGrowthRate(Boundary b, int growthRate) {
-    printAction("Setting Custom Surface Growth on Trimmer Mesh");
-    sayBdry(b);
-    b.get(MeshConditionManager.class).get(CustomSurfaceGrowthRateOption.class).setEnabled(true);
-    b.get(MeshValueManager.class).get(CustomSimpleSurfaceGrowthRate.class).getSurfaceGrowthRateOption().setSelected(growthRate);
-    sayOK();
-  }
-
   /**
    * Specifies Surface Mesh Sizes for a Mesh Operation.
    *
@@ -14373,17 +13765,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     PartsMinimumSurfaceSize pmss = amo.getDefaultValues().get(PartsMinimumSurfaceSize.class);
     ((GenericRelativeSize) pmss.getRelativeSize()).setPercentage(min);
      sayOK(verboseOption);
-  }
-
-  /**
-   * Specifies Surface Mesh Sizes for a Boundary.
-   *
-   * @param b given Boundary.
-   * @param min minimum relative size (%).
-   * @param tgt target relative size (%).
-   */
-  public void setMeshSurfaceSizes(Boundary b, double min, double tgt) {
-    setMeshSurfaceSizes(b, min, tgt, true);
   }
 
   /**
@@ -14416,205 +13797,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
      sayOK(verboseOption);
   }
 
-  /**
-   * Specify Surface Mesh Sizes for an Interface.
-   *
-   * @param i given Interface.
-   * @param min minimum relative size (%).
-   * @param tgt target relative size (%).
-   */
-  public void setMeshSurfaceSizes(Interface i, double min, double tgt) {
-    sayInterface(i);
-    if (isDirectBoundaryInterface(i)) {
-        DirectBoundaryInterface dbi = (DirectBoundaryInterface) i;
-        dbi.get(MeshConditionManager.class).get(SurfaceSizeOption.class).setSurfaceSizeOption(true);
-        SurfaceSize srfSize = i.get(MeshValueManager.class).get(SurfaceSize.class);
-        setMeshSurfaceSizes(srfSize, min, tgt, true);
-    } else {
-        say("Not a Direct Boundary Interface. Skipping...");
-    }
-    sayOK();
-  }
-
-  /**
-   * Loop through all boundaries in the Region and specify Surface Mesh Sizes for them.
-   *
-   * @param r given Region.
-   * @param min minimum relative size (%).
-   * @param tgt target relative size (%).
-   */
-  public void setMeshSurfaceSizes(Region r, double min, double tgt) {
-    printAction("Setting Mesh Sizes in a Region");
-    sayRegion(r);
-    say("  " + retMinTargetString(min, tgt));
-    printLine();
-    for (Boundary b : getAllBoundariesFromRegion(r, false, false)) {
-        if (!setMeshSurfaceSizes(b, min, tgt, false)) {
-            say("Skipped!  " + b.getPresentationName());
-            continue;
-        }
-        say("OK!  " + b.getPresentationName());
-    }
-    printLine();
-    sayOK();
-  }
-
-  private boolean setMeshSurfaceSizes(Boundary b, double min, double tgt, boolean verboseOption) {
-    sayBdry(b, verboseOption, true);
-    if (!isMeshing(b, verboseOption)) {
-        say("Region has no Mesh Continua. Skipping...", verboseOption);
-        return false;
-    } else if (isIndirectBoundaryInterface(b)) {
-        say("Skipping...", verboseOption);
-        return false;
-    } else if (isDirectBoundaryInterface(b)) {
-        DirectBoundaryInterfaceBoundary intrfBdry = (DirectBoundaryInterfaceBoundary) b;
-        DirectBoundaryInterface i = intrfBdry.getDirectBoundaryInterface();
-        i.get(MeshConditionManager.class).get(SurfaceSizeOption.class).setSurfaceSizeOption(true);
-        SurfaceSize srfSize = i.get(MeshValueManager.class).get(SurfaceSize.class);
-        setMeshSurfaceSizes(srfSize, min, tgt, verboseOption);
-    } else {
-        b.get(MeshConditionManager.class).get(SurfaceSizeOption.class).setSurfaceSizeOption(true);
-        SurfaceSize srfSize = b.get(MeshValueManager.class).get(SurfaceSize.class);
-        setMeshSurfaceSizes(srfSize, min, tgt, verboseOption);
-    }
-    sayOK(verboseOption);
-    return true;
-  }
-
   private void setMeshSurfaceSizes(SurfaceSize srfSize, double min, double tgt, boolean verboseOption) {
     say("  " + retMinTargetString(min, tgt), verboseOption);
     srfSize.getRelativeMinimumSize().setPercentage(min);
     srfSize.getRelativeTargetSize().setPercentage(tgt);
-  }
-
-    /**
-     *
-     * @param continua
-     * @param numPoints
-     * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-     */
-    public void setMeshCurvatureNumberOfPoints(MeshContinuum continua, double numPoints) {
-    printAction("Setting Mesh Continua Surface Curvature");
-    sayContinua(continua, true);
-    say("  Points/Curve: " + numPoints);
-    continua.getReferenceValues().get(SurfaceCurvature.class).getSurfaceCurvatureNumPts().setNumPointsAroundCircle(numPoints);
-    sayOK();
-  }
-
-  /**
-   * Specify Surface Mesh Sizes for a Mesh Continuum.
-   *
-   * @param continua given Mesh Continua.
-   * @param min minimum relative size (%).
-   * @param tgt target relative size (%).
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshSurfaceSizes(MeshContinuum continua, double min, double tgt) {
-    printAction("Setting Mesh Continua Surface Sizes");
-    sayContinua(continua, true);
-    SurfaceSize srfSize = continua.getReferenceValues().get(SurfaceSize.class);
-    setMeshSurfaceSizes(srfSize, min, tgt, true);
-    sayOK();
-  }
-
-  /**
-   * Sets a Mesh Volume Growth Factor for the Poly Mesh.
-   *
-   * @param continua given Mesh Continua.
-   * @param growthFactor given Growth Factor.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshTetPolyGrowthRate(MeshContinuum continua, double growthFactor) {
-    printAction("Setting Mesh Volume Growth Factor");
-    sayContinua(continua, true);
-    say("  Growth Factor: " + growthFactor);
-    continua.getReferenceValues().get(VolumeMeshDensity.class).setGrowthFactor(growthFactor);
-    sayOK();
-  }
-
-  /**
-   * Sets the Mesh Trimmer Size To Prism Thickness Ratio.
-   *
-   * @param continua given Mesh Continua.
-   * @param sizeThicknessRatio given Size Thickness Ratio. <i>Default is 5</i>.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshTrimmerSizeToPrismThicknessRatio(MeshContinuum continua, double sizeThicknessRatio) {
-    printAction("Setting Mesh Trimmer Size To Prism Thickness Ratio");
-    sayContinua(continua, true);
-    MaxTrimmerSizeToPrismThicknessRatio ptr = continua.getReferenceValues().get(MaxTrimmerSizeToPrismThicknessRatio.class);
-    ptr.setLimitCellSizeByPrismThickness(true);
-    say("  Size Thickness Ratio: " + sizeThicknessRatio);
-    ptr.getSizeThicknessRatio().setNeighboringThicknessMultiplier(sizeThicknessRatio);
-    sayOK();
-  }
-
-  /**
-   * Sets the Surface Wrapper Feature Angle.
-   *
-   * @param continua given Mesh Continua.
-   * @param featAngle
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshWrapperFeatureAngle(MeshContinuum continua, double featAngle) {
-    printAction("Setting Wrapper Feature Angle");
-    sayContinua(continua, true);
-    say("Feature Angle: " + featAngle + " deg");
-    continua.getReferenceValues().get(GeometricFeatureAngle.class).setGeometricFeatureAngle(featAngle);
-    sayOK();
-  }
-
-  /**
-   * Sets the Surface Wrapper Scale Factor.
-   *
-   * @param continua given Mesh Continua.
-   * @param scaleFactor given Scale Factor. E.g.: 70.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public void setMeshWrapperScaleFactor(MeshContinuum continua, double scaleFactor) {
-    printAction("Setting Wrapper Scale Factor");
-    sayContinua(continua, true);
-    if (scaleFactor < 1) {
-        say("Warning! Scale Factor < 1. Multiplying by 100.");
-        scaleFactor *= 100.;
-    }
-    say("Scale Factor: " + scaleFactor);
-    continua.getReferenceValues().get(SurfaceWrapperScaleFactor.class).setScaleFactor(scaleFactor);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param r
-     */
-    public void setMeshWrapperVolumeExternal(Region r) {
-    printAction("Setting Wrapping Region as EXTERNAL in VOLUME OF INTEREST");
-    sayRegion(r);
-    r.get(MeshConditionManager.class).get(VolumeOfInterestOption.class).setSelected(VolumeOfInterestOption.EXTERNAL);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param r
-     */
-    public void setMeshWrapperVolumeLargestInternal(Region r) {
-    printAction("Setting Wrapping Region as LARGEST INTERNAL in VOLUME OF INTEREST");
-    sayRegion(r);
-    r.get(MeshConditionManager.class).get(VolumeOfInterestOption.class).setSelected(VolumeOfInterestOption.LARGEST_INTERNAL);
-    sayOK();
-  }
-
-    /**
-     *
-     * @param r
-     */
-    public void setMeshWrapperVolumeSeedPoints(Region r) {
-    printAction("Setting Wrapping Region as SEED POINTS in VOLUME OF INTEREST");
-    sayRegion(r);
-    r.get(MeshConditionManager.class).get(VolumeOfInterestOption.class).setSelected(VolumeOfInterestOption.SEED_POINT);
-    sayOK();
   }
 
   /**
@@ -14637,9 +13823,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         return;
     }
     sp.setMethod(ConstantScalarProfileMethod.class);
-    sp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setValue(val);
-    sp.getMethod(ConstantScalarProfileMethod.class).getQuantity().setUnits(u);
-    say("%s: %g %s", sp.getPresentationName(), val, u.getPresentationName());
+    setScalarPhysicalQuantity(sp.getMethod(ConstantScalarProfileMethod.class).getQuantity(),
+            val, null, u, sp.getPresentationName());
   }
 
   private void setProfile(VectorProfile vp, double[] vals, Units u) {
@@ -14647,15 +13832,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
         return;
     }
     vp.setMethod(ConstantVectorProfileMethod.class);
-    vp.getMethod(ConstantVectorProfileMethod.class).getQuantity().setConstant(vals);
-    vp.getMethod(ConstantVectorProfileMethod.class).getQuantity().setUnits(u);
-    say(vp.getPresentationName() + ": " + retString(vals) + u.getPresentationName());
+    setVectorPhysicalQuantity(vp.getMethod(ConstantVectorProfileMethod.class).getQuantity(), vals, u);
   }
 
   /**
    * Updates a Plot or Scene to Saves Pictures with a given resolution. Control the updates using
-   * {@see #setUpdateFrequency}.<p>
-   * Pictures will be saved on {@see #simPath} under a folder called <b>pics_<i>ObjectName</i></b>.
+   * {@link #setUpdateFrequency}.<p>
+   * Pictures will be saved on {@link #simPath} under a folder called <b>pics_<i>ObjectName</i></b>.
    *
    * @param no given Named Object. It can be a Plot or Scene.
    * @param resx given width pixel resolution.
@@ -14663,7 +13846,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    */
   public void setSaveToFile(NamedObject no, int resx, int resy) {
     printAction("Setting a Scene to Save Pictures");
-    sayNamedObject(no, true);
+    sayObject(no, true);
     String picName = "pics_" + getStringForFilename(no);
     if (isScene(no)) {
         setSaveToFile(((Scene) no).getSceneUpdate(), picName, resx, resy);
@@ -14679,6 +13862,27 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     wu.setAnimationFilenameBase("pic");
     wu.setXResolution(resx);
     wu.setYResolution(resy);
+  }
+
+  /**
+   * Internal MacroUtils. Print something like: "Text: value unit".
+   *
+   * @param spq given ScalarPhysicalQuantity.
+   * @param val given value.
+   * @param def given definition. <b>null</b> to ignore.
+   * @param u given Units
+   * @param text given text. <b>null</b> to ignore.
+   */
+  private void setScalarPhysicalQuantity(ScalarPhysicalQuantity spq, double val, String def, Units u, String text) {
+    String s = "" + val;
+    if (def == null) {
+        spq.setValue(val);
+    } else {
+        spq.setDefinition(def);
+        s = def;
+    }
+    sayValue(text, s, u, true);
+    spq.setUnits(u);
   }
 
   /**
@@ -14738,8 +13942,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Updates the Scene to Saves Pictures with a given resolution. Control the updates using
-   * {@see #setUpdateFrequency} or {@see #setSceneUpdateFrequency}.<p>
-   * Pictures will be saved on {@see #simPath} under a folder called <b>pics_<i>SceneName</i></b>.
+   * {@link #setUpdateFrequency} or {@link #setSceneUpdateFrequency}.<p>
+   * Pictures will be saved on {@link #simPath} under a folder called <b>pics_<i>SceneName</i></b>.
    *
    * @param scn given Scene.
    * @param resx given width pixel resolution.
@@ -14821,23 +14025,30 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * @param maxTime
    * @param u
    */
-  public void setSolverMaxPhysicalTimestep(double maxTime, Units u) {
-    setSolverMaxPhysicalTimestep(maxTime, u, true);
+  public void setSolverMaxPhysicalTime(double maxTime, Units u) {
+    setSolverMaxPhysicalTime(maxTime, u, true);
   }
 
-  private void setSolverMaxPhysicalTimestep(double maxTime, Units u, boolean verboseOption) {
+  /**
+   * @deprecated in v3d. Typo in the function. Use {@link #setSolverMaxPhysicalTime) instead.
+   */
+  public void setSolverMaxPhysicalTimestep(double maxTime, Units u) {
+    setSolverMaxPhysicalTime(maxTime, u, true);
+  }
+
+  private void setSolverMaxPhysicalTime(double maxTime, Units u, boolean verboseOption) {
     printAction("Setting Maximum Physical Timestep", verboseOption);
     PhysicalTimeStoppingCriterion stpCrit = (PhysicalTimeStoppingCriterion) getStoppingCriteria("Maximum Physical Time.*", false);
     stpCrit.getMaximumTime().setUnits(u);
     stpCrit.getMaximumTime().setValue(maxTime);
-    say(verboseOption, "Maximum Physical Time: %g %s", maxTime, u.getPresentationName());
+    sayValue("Maximum Physical Time", maxTime, u, verboseOption);
     sayOK(verboseOption);
   }
 
   /**
    * Set a constant Physical timestep for the unsteady solver.
    *
-   * @param val given value in default units. See {@see #defUnitTime}.
+   * @param val given value in default units. See {@link #defUnitTime}.
    */
   public void setSolverPhysicalTimestep(double val) {
     setSolverPhysicalTimestep(val, null, true);
@@ -14855,25 +14066,49 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   private void setSolverPhysicalTimestep(double val, String def, boolean verboseOption) {
     printAction("Setting Physical Timestep", verboseOption);
     if (!isUnsteady()) {
-        say("Not Unsteady.");
+        sayWarning("setSolverPhysicalTimestep() called for a non Unsteady model.");
         return;
     }
-    ImplicitUnsteadySolver trn = ((ImplicitUnsteadySolver) getSolver(ImplicitUnsteadySolver.class));
-    if (val != 0) {
-        say("Timestep: " + val, verboseOption);
-        trn.getTimeStep().setValue(val);
-    } else if (def != null) {
-        say("Timestep: " + def, verboseOption);
-        trn.getTimeStep().setDefinition(def);
-    }
-    trn.getTimeStep().setUnits(defUnitTime);
+    ScalarPhysicalQuantity dt;
     String timeDiscr = "1st Order";
-    if (trn2ndOrder) {
-        trn.getTimeDiscretizationOption().setSelected(TimeDiscretizationOption.SECOND_ORDER);
-        timeDiscr = "2nd Order";
+    if (isPISO()) {
+        PisoUnsteadySolver ps = (PisoUnsteadySolver) getSolver(PisoUnsteadySolver.class);
+        dt = ps.getTimeStep();
+    } else {
+        ImplicitUnsteadySolver trn = ((ImplicitUnsteadySolver) getSolver(ImplicitUnsteadySolver.class));
+        dt = trn.getTimeStep();
+        trn.getTimeDiscretizationOption().setSelected(TimeDiscretizationOption.FIRST_ORDER);
+        if (trn2ndOrder) {
+            trn.getTimeDiscretizationOption().setSelected(TimeDiscretizationOption.SECOND_ORDER);
+            timeDiscr = "2nd Order";
+        }
     }
+    setScalarPhysicalQuantity(dt, val, def, defUnitTime, "Timestep");
     say("Time Discretization: " + timeDiscr, verboseOption);
     sayOK(verboseOption);
+  }
+
+  /**
+   * Sets the PISO Stopping Criteria Parameters.
+   *
+   * @param corr given PISO correctors.
+   * @param rr given PISO Residual Reduction.
+   */
+  public void setStoppingCriteriaPISO(int pc, double prr) {
+    printAction("Setting PISO Stopping Criteria Parameters");
+    if (!hasPISO()) {
+        say("Not running PISO algorithm!");
+        return;
+    }
+    String spc = "Maximum PISO Correctors";
+    String srr = "PISO Residual Reduction";
+    PisoCorrectorStoppingCriterion pcc = (PisoCorrectorStoppingCriterion) getStoppingCriteria(spc, false);
+    PisoResidualStoppingCriterion prrc = (PisoResidualStoppingCriterion) getStoppingCriteria(srr, false);
+    say("%s: %g", spc, pcc);
+    say("%s: %g", srr, prrc);
+    pcc.setPisoCorrectors(pc);
+    prrc.setPisoResidualReduction(prr);
+    sayOK();
   }
 
   /**
@@ -14898,7 +14133,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   private void setUpdateEvent(NamedObject no, UpdateEvent ue, boolean verboseOption) {
     printAction("Setting an Update Event", verboseOption);
-    sayNamedObject(no, true);
+    sayObject(no, true);
     say("Event: " + ue.getPresentationName(), verboseOption);
     if (isStarPlot(no)) {
         setUpdateEvent(((UpdatePlot) no).getPlotUpdate(), ue);
@@ -14915,6 +14150,21 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   private void setUpdateEvent(StarUpdate su, UpdateEvent ue) {
     su.getUpdateModeOption().setSelected(StarUpdateModeOption.EVENT);
     su.getEventUpdateFrequency().setUpdateEvent(ue);
+  }
+
+  /**
+   * Internal MacroUtils. Print something like: "Text: val1, val2, val3 unit".
+   *
+   * @param vpq given VectorPhysicalQuantity.
+   * @param vals given double[] values.
+   * @param u given Units values. null to ignore.
+   */
+  private void setVectorPhysicalQuantity(VectorPhysicalQuantity vpq, double[] vals, Units u) {
+    vpq.setConstant(vals);
+    if (u != null) {
+        vpq.setUnits(u);
+    }
+    say(String.format("%s: %s %s", vpq.getParent().getParent().getPresentationName(), retString(vals), getString(u)));
   }
 
   /**
@@ -15125,31 +14375,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   /**
-   * Split a Non-Contiguous r.
-   *
-   * @param r given Region.
-   * @deprecated in v3c. Not used anymore.
-   */
-  public void splitRegionNonContiguous(Region r) {
-    printAction("Splitting Non Contiguous Regions");
-    MeshContinuum mshc = null;
-    PhysicsContinuum phc = null;
-    sayRegion(r);
-    Object[] objArr = {r};
-    sim.getMeshManager().splitNonContiguousRegions(new NeoObjectVector(objArr), minConFaceAreas);
-    // Loop into the generated Regions created by Split
-    for (Region reg : getRegions("^" + r.getPresentationName() + " \\d{1,2}", false)) {
-        if (r == reg) { continue; }
-        mshc = reg.getMeshContinuum();
-        if (mshc != null) { mshc.erase(reg); }
-        phc = reg.getPhysicsContinuum();
-        if (phc != null) { phc.erase(reg); }
-        say("  Disabled Region: " + reg.getPresentationName());
-    }
-    sayOK();
-  }
-
-  /**
    * Converts a given string into a wildcard REGEX pattern.
    *
    * @param text given string or text.
@@ -15203,7 +14428,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   }
 
   private void updateReferenceValues(PhysicsContinuum phC) {
-    updateUnits(false);
+    updateUnits(verboseDebug, true);
     printAction("Updating Reference Values");
     sayContinua(phC, true);
     if (phC.getReferenceValues().has("Gravity")) {
@@ -15275,10 +14500,14 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     printAction("Updating all objects FV Representation");
     FvRepresentation fv = queryVolumeMesh();
     sayCellCount(true);
-    sim.getSceneManager().applyRepresentation(fv);
+    //-- Bug in 10.02
+    //sim.getSceneManager().applyRepresentation(fv);
     sim.getPlotManager().applyRepresentation(fv);
     sim.getTableManager().applyRepresentation(fv);
     sim.getReportManager().applyRepresentation(fv);
+    for (Displayer d : getDisplayers(".*", false)) {
+        d.setRepresentation(fv);
+    }
     if (regexPatt != null) {
         for (Displayer dsp : getDisplayers(regexPatt, false)) {
             if (queryGeometryRepresentation() != null) {
@@ -15294,11 +14523,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Updates all Solver Settings. E.g.: Relaxation Factors, Linear Ramps, etc... Currently, the
    * following variables can be set:<ul>
-   * <li>Segregated: {@see #urfVel}, {@see #urfP}, {@see #urfFluidEnrgy}, {@see #urfSolidEnrgy},
-   * {@see #urfVOF}, {@see #urfKEps}, {@see #rampURF_Vel}, {@see #rampURF_}, {@see #rampURF_T},
+   * <li>Segregated: {@link #urfVel}, {@link #urfP}, {@link #urfFluidEnrgy}, {@link #urfSolidEnrgy},
+   * {@link #urfVOF}, {@link #urfKEps}, {@link #rampURF_Vel}, {@link #rampURF_}, {@link #rampURF_T},
    * and some others...;</li>
-   * <li>Steady State: {@see #maxIter};</li>
-   * <li>Unsteady: {@see #trnTimestep}, {@see #trnInnerIter}, {@see #trnMaxTime}.</li>
+   * <li>Steady State: {@link #maxIter};</li>
+   * <li>Unsteady: {@link #trnTimestep}, {@link #trnInnerIter}, {@link #trnMaxTime}.</li>
    * </ul>
    */
   public void updateSolverSettings() {
@@ -15328,7 +14557,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
                 say("Maximum Inner Iterations: %d", trnInnerIter);
                 say("Physical Timestep: %g %s", trnTimestep, defUnitTime.getPresentationName());
             }
-            setSolverMaxPhysicalTimestep(trnMaxTime, defUnitTime, false);
+            setSolverMaxPhysicalTime(trnMaxTime, defUnitTime, false);
             say("Maximum Physical Time: %g %s", trnMaxTime, defUnitTime.getPresentationName());
         } else {
             setSolverMaxIterations(maxIter, false);
@@ -15416,6 +14645,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     updateSolverSettings(KeTurbViscositySolver.class, "K-Epsilon Turbulent Viscosity", urfKEpsTurbVisc, updData);
     updateSolverSettings(KwTurbSolver.class, "K-Omega Turbulence", urfKOmega, updData);
     updateSolverSettings(KwTurbViscositySolver.class, "K-Omega Turbulent Viscosity", urfKOmegaTurbVisc, updData);
+    updateSolverSettings(PpdfCombustionSolver.class, "PPDF Combustion", urfPPDFComb, updData);
     updateSolverSettings(RsTurbSolver.class, "Reynolds Stress Turbulence", urfRS, updData);
     updateSolverSettings(RsTurbViscositySolver.class, "Reynolds Stress Turbulent Viscosity", urfRSTurbVisc, updData);
     updateSolverSettings(SegregatedSpeciesSolver.class, "Segregated Species", urfSpecies, updData);
@@ -15424,22 +14654,29 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     sayOK();
   }
 
-  private void updateSolverSettings(Class cl, String hasStr, double urf, boolean updData) {
+  private void updateSolverSettings(Class cl, String hasStr, double val, boolean updData) {
     Solver slv = getSolver(cl);
-    if (slv == null || !sim.getSolverManager().has(hasStr) || !updData) {
+    boolean b1 = slv == null;
+    boolean b2 = !sim.getSolverManager().has(hasStr);
+    boolean b3 = !updData;
+    if (b1 || b2 || b3) {
+//        say("%s --> b1 = %s; b2 = %s; b3 = %s", hasStr, String.valueOf(b1), String.valueOf(b2), String.valueOf(b3));
         return;
     }
-    say("URF %s: %g", hasStr, urf);
     if (hasStr.endsWith("Turbulent Viscosity")) {
+        say("URF %s: %g", hasStr, val);
+        say("Maximum Ratio: %g", maxTVR);
         TurbViscositySolver tvs = (TurbViscositySolver) slv;
-        tvs.setViscosityUrf(urf);
+        tvs.setViscosityUrf(val);
+        tvs.setMaxTvr(maxTVR);
         return;
     }
     ScalarSolverBase ssb = (ScalarSolverBase) slv;
     if (leaveTemporaryStorage) {
         ssb.setLeaveTemporaryStorage(leaveTemporaryStorage);
     }
-    ssb.setUrf(urf);
+    say("URF %s: %g", hasStr, val);
+    ssb.setUrf(val);
     ssb.getAMGLinearSolver().setConvergeTol(amgConvTol);
     ssb.getAMGLinearSolver().setVerbosity(amgVerbosity);
   }
@@ -15470,7 +14707,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
    * Private Adding/Updating Units
    * @param verboseOption
    */
-  private void updateUnits(boolean verboseOption) {
+  private void updateUnits(boolean verboseOption, boolean intrusiveOption) {
     printAction("Adding/Updating Units", verboseOption);
     unit_C = queryUnit("C", verboseOption);
     unit_deg = queryUnit("deg", verboseOption);
@@ -15500,6 +14737,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     unit_radps = queryUnit("radian/s", verboseOption);
     unit_s = queryUnit("s", verboseOption);
     unit_Wpm2K = queryUnit("W/m^2-K", verboseOption);
+    /*    DEFAULT UNITS      */
+    updateDefaultUnits(verboseOption);
+    if (!intrusiveOption) {
+        sayOK(verboseOption);
+        return;
+    }
     /*    CUSTOM UNITS      */
     dimDensity.setMass(1);
     dimDensity.setVolume(-1);
@@ -15518,47 +14761,46 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
     dimVolFlow.setVolume(1);
     dimVolFlow.setTime(-1);
     /*    DENSITY UNITS [M/V]    */
-    unit_gpcm3 = addUnit("g/cm^3", "gram per cubic centimeter", 1000, dimDensity);
+    unit_gpcm3 = addUnit("g/cm^3", "gram per cubic centimeter", 1000, dimDensity, verboseOption);
     /*    FORCE UNITS [M*L/T^2]    */
-    unit_kN = addUnit("kN", "kilonewton", 1000, dimForce);
+    unit_kN = addUnit("kN", "kilonewton", 1000, dimForce, verboseOption);
     /*    MASS UNITS [M]    */
-    unit_g = addUnit("g", "gram", 0.001, dimMass);
+    unit_g = addUnit("g", "gram", 0.001, dimMass, verboseOption);
     /*    MASS FLOW UNITS [M/T]    */
-    unit_kgph = addUnit("kg/h", "kilogram per hour", 1./3600, dimMassFlow);
-    unit_kgpmin = addUnit("kg/min", "kilogram per minute", 1./60, dimMassFlow);
-    unit_gpmin = addUnit("g/min", "gram per minute", 0.001/60, dimMassFlow);
-    unit_gps = addUnit("g/s", "gram per second", 0.001, dimMassFlow);
+    unit_kgph = addUnit("kg/h", "kilogram per hour", 1./3600, dimMassFlow, verboseOption);
+    unit_kgpmin = addUnit("kg/min", "kilogram per minute", 1./60, dimMassFlow, verboseOption);
+    unit_gpmin = addUnit("g/min", "gram per minute", 0.001/60, dimMassFlow, verboseOption);
+    unit_gps = addUnit("g/s", "gram per second", 0.001, dimMassFlow, verboseOption);
     /*    MOLECULAR FLOW UNITS [Mol/T]    */
-    unit_kmolps = addUnit("kmol/s", "kilogram-mol per second", 1.0, dimMolFlow);
+    unit_kmolps = addUnit("kmol/s", "kilogram-mol per second", 1.0, dimMolFlow, verboseOption);
     /*    PRESSURE UNITS [P]    */
     //--- http://www.sensorsone.co.uk/pressure-units-conversion.html
     //--- http://www.onlineconversion.com/pressure.htm
-    unit_cmH2O = addUnit("cmH2O", "centimeter of water", 98.0665, dimPress);
-    unit_cmHg = addUnit("cmHg", "centimeter of mercury", 1333.2239, dimPress);
-    unit_dynepcm2 = addUnit("dyne/cm^2", "dyne per square centimeter", 0.1, dimPress);
-    unit_kPa = addUnit("kPa", "kilopascal", 1000, dimPress);
-    unit_mbar = addUnit("mbar", "millibar", 100, dimPress);
-    unit_mmH2O = addUnit("mmH2O", "millimeter of water", 9.80665, dimPress);
-    unit_mmHg = addUnit("mmHg", "millimeter of mercury", 133.32239, dimPress);
-    unit_uPa = addUnit("uPa", "micropascal", 1e-6, dimPress);
+    unit_cmH2O = addUnit("cmH2O", "centimeter of water", 98.0665, dimPress, verboseOption);
+    unit_cmHg = addUnit("cmHg", "centimeter of mercury", 1333.2239, dimPress, verboseOption);
+    unit_dynepcm2 = addUnit("dyne/cm^2", "dyne per square centimeter", 0.1, dimPress, verboseOption);
+    unit_kPa = addUnit("kPa", "kilopascal", 1000, dimPress, verboseOption);
+    unit_mbar = addUnit("mbar", "millibar", 100, dimPress, verboseOption);
+    unit_mmH2O = addUnit("mmH2O", "millimeter of water", 9.80665, dimPress, verboseOption);
+    unit_mmHg = addUnit("mmHg", "millimeter of mercury", 133.32239, dimPress, verboseOption);
+    unit_uPa = addUnit("uPa", "micropascal", 1e-6, dimPress, verboseOption);
     /*    TIME UNITS [T]    */
-    unit_ms = addUnit("ms", "milliseconds", 0.001, dimTime);
+    unit_ms = addUnit("ms", "milliseconds", 0.001, dimTime, verboseOption);
     /*    VELOCITY UNITS [L/T]    */
-    unit_kt = addUnit("kt", "knot", 1852./3600., dimVel);
-    unit_mmps = addUnit("mm/s", "millimeter per second", 0.001, dimVel);
-    unit_umps = addUnit("um/s", "micrometer per second", 1e-6, dimVel);
+    unit_kt = addUnit("kt", "knot", 1852./3600., dimVel, verboseOption);
+    unit_mmps = addUnit("mm/s", "millimeter per second", 0.001, dimVel, verboseOption);
+    unit_umps = addUnit("um/s", "micrometer per second", 1e-6, dimVel, verboseOption);
     /*    VISCOSITY UNITS [P*T]    */
-    unit_P = addUnit("P", "Poise", 0.1, dimVisc);
-    unit_cP = addUnit("cP", "centipoise", 0.001, dimVisc);
+    unit_P = addUnit("P", "Poise", 0.1, dimVisc, verboseOption);
+    unit_cP = addUnit("cP", "centipoise", 0.001, dimVisc, verboseOption);
     /*    VOLUMETRIC FLOW RATE UNITS [V/T]    */
-    unit_galps = addUnit("gal/s", "gallons per second", 0.00378541, dimVolFlow);
-    unit_galpmin = addUnit("gal/min", "gallons per minute", 0.00378541/60, dimVolFlow);
-    unit_lph = addUnit("l/h", "liter per hour", 0.001/3600, dimVolFlow);
-    unit_lpmin = addUnit("l/min", "liter per minute", 0.001/60, dimVolFlow);
-    unit_lps = addUnit("l/s", "liter per second", 0.001, dimVolFlow);
-    unit_m3ph = addUnit("m^3/h", "cubic meter per hour", 1./3600, dimVolFlow);
+    unit_galps = addUnit("gal/s", "gallons per second", 0.00378541, dimVolFlow, verboseOption);
+    unit_galpmin = addUnit("gal/min", "gallons per minute", 0.00378541/60, dimVolFlow, verboseOption);
+    unit_lph = addUnit("l/h", "liter per hour", 0.001/3600, dimVolFlow, verboseOption);
+    unit_lpmin = addUnit("l/min", "liter per minute", 0.001/60, dimVolFlow, verboseOption);
+    unit_lps = addUnit("l/s", "liter per second", 0.001, dimVolFlow, verboseOption);
+    unit_m3ph = addUnit("m^3/h", "cubic meter per hour", 1./3600, dimVolFlow, verboseOption);
     sayOK(verboseOption);
-    updateDefaultUnits(verboseOption);
   }
 
   /**
@@ -15577,9 +14819,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * Stores all the Camera Views into a filename. The Cameras will be read from
-   * {@see #getCameraViews}.
+   * {@link #getCameraViews}.
    *
-   * @param filename given filename. File will be saved in {@see #simPath} folder.
+   * @param filename given filename. File will be saved in {@link #simPath} folder.
    */
   public void writeCameraViews(String filename) {
     writeCameraViews(filename, getCameraViews(false), true);
@@ -15588,8 +14830,8 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Stores the given Camera Views into a filename.
    *
-   * @param filename given filename. File will be saved in {@see #simPath} folder.
-   * @param cameras given Cameras in the format defined in {@see #getCameraViews}.
+   * @param filename given filename. File will be saved in {@link #simPath} folder.
+   * @param cameras given Cameras in the format defined in {@link #getCameraViews}.
    */
   public void writeCameraViews(String filename, String cameras) {
     writeCameraViews(filename, cameras, true);
@@ -15620,7 +14862,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Writes String data to a file.
    *
-   * @param filename given filename. File will be saved in {@see #simPath} folder.
+   * @param filename given filename. File will be saved in {@link #simPath} folder.
    * @param data given array of Strings.
    */
   public void writeData(String filename, String[] data) {
@@ -15630,7 +14872,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /**
    * Writes String data to a file.
    *
-   * @param f given {@see java.io.File}.
+   * @param f given {@link java.io.File}.
    * @param als given ArrayList of Strings.
    * @param verboseOption Print to standard output?
    */
@@ -15669,6 +14911,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   //--
   //--  Private Definitions
   //--
+  private final String _s = "";
   private boolean meshedInMacroUtils = false;
   private int colourByPart = 4;
   private int colourByRegion = 2;
@@ -15718,6 +14961,9 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   //--
   //-- Immutable Public definitions
   //--
+
+  /** Not applicable, when using the method. E.g.: Viscous regime for a Solid material? Probably not. */
+  final public int _NOT_APPLICABLE = -1;
 
   /** Special Macro Utils variable for creating a Physics Continua Model in Space: Two-Dimensional. */
   final public int _2D = 2;
@@ -15860,19 +15106,19 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Special Macro Utils variable to select the Polyhedral technology when volume meshing in Parts. */
   final public int POLY = 1;
 
-  /** Coarse Tessellation option when working with Parts. It is based on {@see TessellationDensityOption}. */
+  /** Coarse Tessellation option when working with Parts. It is based on {@link TessellationDensityOption}. */
   final public int TESSELATION_COARSE = TessellationDensityOption.COARSE;
 
-  /** Fine Tessellation option when working with Parts. It is based on {@see TessellationDensityOption}. */
+  /** Fine Tessellation option when working with Parts. It is based on {@link TessellationDensityOption}. */
   final public int TESSELATION_FINE = TessellationDensityOption.FINE;
 
-  /** Medium Tessellation option when working with Parts. It is based on {@see TessellationDensityOption}. */
+  /** Medium Tessellation option when working with Parts. It is based on {@link TessellationDensityOption}. */
   final public int TESSELATION_MEDIUM = TessellationDensityOption.MEDIUM;
 
-  /** Very Coarse Tessellation option when working with Parts. It is based on {@see TessellationDensityOption}. */
+  /** Very Coarse Tessellation option when working with Parts. It is based on {@link TessellationDensityOption}. */
   final public int TESSELATION_VERY_COARSE = TessellationDensityOption.VERY_COARSE;
 
-  /** Very Fine Tessellation option when working with Parts. It is based on {@see TessellationDensityOption}. */
+  /** Very Fine Tessellation option when working with Parts. It is based on {@link TessellationDensityOption}. */
   final public int TESSELATION_VERY_FINE = TessellationDensityOption.VERY_FINE;
 
   /** Special Macro Utils variable to select the Tetrahedral technology when volume meshing in Parts. */
@@ -15955,7 +15201,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   //--
 
   /** Some useful Global Variables: Auto Mesh Operations. */
-  public MeshOperation autoMshOp = null, autoMshOp1 = null, autoMshOp2 = null, autoMshOp3 = null;
+  public AutoMeshOperation autoMshOp = null, autoMshOp1 = null, autoMshOp2 = null, autoMshOp3 = null;
 
   /** A Global Boundary variable. Useful somewhere. */
   public Boundary bdry = null, bdry1 = null, bdry2 = null, bdry3 = null;
@@ -16020,12 +15266,6 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Default Colormap for Scalar Displayers. */
   public LookupTable defColormap = null;
 
-  /**
-   * Some useful Global Variables: Mesh Continuas.
-   * @deprecated in v3c as STAR-CCM+ is being focused in Parts Based Mesh operations.
-   */
-  public MeshContinuum mshCont = null, mshCont1 = null, mshCont2 = null;
-
   /** Some useful Global Variables: Mesh Operations. */
   public MeshOperation mshOp = null, mshOp1 = null, mshOp2 = null, mshOp3 = null;
 
@@ -16036,7 +15276,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public Monitor mon = null, mon1 = null, mon2 = null;
 
   /** Global MacroUtils variable for storing a Monitor Plot. Useful when creating a Report.
-   * E.g.: {@see #createReportMassFlow}
+   * E.g.: {@link #createReportMassFlow}
    */
   public MonitorPlot monPlot = null;
 
@@ -16068,7 +15308,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public Report rep = null, rep1 = null, rep2 = null, rep3 = null;
 
   /** Global MacroUtils variable for storing a Report Monitor. Useful when creating a Report.
-   * E.g.: {@see #createReportMassFlow}
+   * E.g.: {@link #createReportMassFlow}
    */
   public ReportMonitor repMon = null;
 
@@ -16080,7 +15320,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
 
   /**
    * This variable is the current session in STAR-CCM+. It is the first variable initialized in
-   * {@see #}. If not initialized, an error will occur.
+   * {@link #}. If not initialized, an error will occur.
    */
   public Simulation sim = null;
 
@@ -16120,7 +15360,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Some useful Global Variables: Visualization View (Camera View). */
   public VisView camView = null, camView1 = null, camView2 = null, camView3 = null;
 
-  /** Default Camera when creating new Scenes. For more see {@see #createCamView}. */
+  /** Default Camera when creating new Scenes. For more see {@link #createCamView}. */
   public VisView defCamView = null;
 
   /** Some useful Global Variables: Visualization View (Camera View). */
@@ -16223,12 +15463,12 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public boolean verboseDebug = false;
 
   /**
-   * Enable temporary storage in Solvers? Useful when debugging and with {@see #updateSolverSettings}.
+   * Enable temporary storage in Solvers? Useful when debugging and with {@link #updateSolverSettings}.
    * Default = false.
    */
   public boolean leaveTemporaryStorage = false;
 
-  /** Save intermediate files when troubleshooting a macro? Useful with {@see #saveSimWithSuffix}. Default = yes. */
+  /** Save intermediate files when troubleshooting a macro? Useful with {@link #saveSimWithSuffix}. Default = yes. */
   public boolean saveIntermediates = true;
 
   /** Useful variable for querying if the Simulation has stopped or not. */
@@ -16239,58 +15479,58 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   //-- Public Colors. Based on java.awt.Color().
   //--
 
-  /** Blue according to {@see java.awt.Color} class. */
+  /** Blue according to {@link java.awt.Color} class. */
   public Color colorBlue = Color.blue;
 
-  /** Blue Medium according to {@see java.awt.Color} class. */
+  /** Blue Medium according to {@link java.awt.Color} class. */
   public Color colorBlueMedium = new Color(0, 0, 205);
 
-  /** Dark Green according to {@see java.awt.Color} class. */
+  /** Dark Green according to {@link java.awt.Color} class. */
   public Color colorDarkGreen = new Color(0, 100, 0);
 
-  /** Dark Orange according to {@see java.awt.Color} class. */
+  /** Dark Orange according to {@link java.awt.Color} class. */
   public Color colorDarkOrange = new Color(255, 140, 0);
 
-  /** Dim Gray according to {@see java.awt.Color} class. */
+  /** Dim Gray according to {@link java.awt.Color} class. */
   public Color colorDimGray = new Color(105, 105, 105);
 
-  /** Ivory according to {@see java.awt.Color} class. */
+  /** Ivory according to {@link java.awt.Color} class. */
   public Color colorIvory = new Color(255, 255, 240);
 
-  /** Ivory Black according to {@see java.awt.Color} class. */
+  /** Ivory Black according to {@link java.awt.Color} class. */
   public Color colorIvoryBlack = new Color(41, 36, 33);
 
-  /** Light Gray according to {@see java.awt.Color} class. */
+  /** Light Gray according to {@link java.awt.Color} class. */
   public Color colorLightGray = Color.lightGray;
 
-  /** Lime Green according to {@see java.awt.Color} class. */
+  /** Lime Green according to {@link java.awt.Color} class. */
   public Color colorLimeGreen = new Color(50, 205, 50);
 
-  /** Mint according to {@see java.awt.Color} class. */
+  /** Mint according to {@link java.awt.Color} class. */
   public Color colorMint = new Color(189, 252, 201);
 
-  /** Navy according to {@see java.awt.Color} class. */
+  /** Navy according to {@link java.awt.Color} class. */
   public Color colorNavy = new Color(0, 0, 128);
 
-  /** Purple according to {@see java.awt.Color} class. */
+  /** Purple according to {@link java.awt.Color} class. */
   public Color colorPurple = new Color(160, 32, 240);
 
-  /** Slate Gray according to {@see java.awt.Color} class. */
+  /** Slate Gray according to {@link java.awt.Color} class. */
   public Color colorSlateGray = new Color(112, 128, 144);
 
-  /** Slate Gray Dark according to {@see java.awt.Color} class. */
+  /** Slate Gray Dark according to {@link java.awt.Color} class. */
   public Color colorSlateGrayDark = new Color(47, 79, 79);
 
-  /** Ultramarine according to {@see java.awt.Color} class. */
+  /** Ultramarine according to {@link java.awt.Color} class. */
   public Color colorUltramarine = new Color(18, 10, 143);
 
-  /** Wheat according to {@see java.awt.Color} class. */
+  /** Wheat according to {@link java.awt.Color} class. */
   public Color colorWheat = new Color(245, 222, 179);
 
-  /** White according to {@see java.awt.Color} class. */
+  /** White according to {@link java.awt.Color} class. */
   public Color colorWhite = Color.white;
 
-  /** White Smoke according to {@see java.awt.Color} class. */
+  /** White Smoke according to {@link java.awt.Color} class. */
   public Color colorWhiteSmoke = new Color(245, 245, 245);
 
   //--
@@ -16301,61 +15541,61 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Default Font used in STAR-CCM+. */
   public Font fontDefault = new Font("Dialog", Font.ITALIC, 24);
 
-  /** Font used on Titles, when {@see #prettifyMe()} is used. */
+  /** Font used on Titles, when {@link #prettifyMe()} is used. */
   public Font fontTitle = new Font("SansSerif", Font.PLAIN, 18);
 
-  /** Font used everywhere else, when {@see #prettifyMe()} is used. */
+  /** Font used everywhere else, when {@link #prettifyMe()} is used. */
   public Font fontOther = new Font("SansSerif", Font.PLAIN, 14);
 
-  /** Font used in Report Annotations, when {@see #prettifyMe()} is used. */
+  /** Font used in Report Annotations, when {@link #prettifyMe()} is used. */
   //public Font fontRepAnnotations = new Font(fontAnnot, Font.ITALIC+Font.BOLD, 24);
   public Font fontRepAnnotations = new Font(fontAnnot, Font.PLAIN, 24);
 
-  /** Font used in Text Annotations, when {@see #prettifyMe()} is used. */
+  /** Font used in Text Annotations, when {@link #prettifyMe()} is used. */
   public Font fontSimpleAnnotations = fontRepAnnotations;
 
   //--
   //-- Public Dimensions
   //--
 
-  /** Dimensions of Density. Definition in {@see #updateUnits}. */
+  /** Dimensions of Density. Definition in {@link #updateUnits}. */
   public Dimensions dimDensity = new Dimensions();
 
-  /** Dimensions of Force. Definition in {@see #updateUnits}. */
+  /** Dimensions of Force. Definition in {@link #updateUnits}. */
   public Dimensions dimForce = new Dimensions();
 
-  /** Dimensions of Length. Definition in {@see #updateUnits}. */
+  /** Dimensions of Length. Definition in {@link #updateUnits}. */
   public Dimensions dimLength = new Dimensions();
 
-  /** Dimensions of Mass. Definition in {@see #updateUnits}. */
+  /** Dimensions of Mass. Definition in {@link #updateUnits}. */
   public Dimensions dimMass = new Dimensions();
 
-  /** Dimensions of Mass Flow. Definition in {@see #updateUnits}. */
+  /** Dimensions of Mass Flow. Definition in {@link #updateUnits}. */
   public Dimensions dimMassFlow = new Dimensions();
 
-  /** Dimensions of Molecular Flow. Definition in {@see #updateUnits}. */
+  /** Dimensions of Molecular Flow. Definition in {@link #updateUnits}. */
   public Dimensions dimMolFlow = new Dimensions();
 
-  /** Dimensions of Pressure. Definition in {@see #updateUnits}. */
+  /** Dimensions of Pressure. Definition in {@link #updateUnits}. */
   public Dimensions dimPress = new Dimensions();
 
-  /** Dimensions of Time. Definition in {@see #updateUnits}. */
+  /** Dimensions of Time. Definition in {@link #updateUnits}. */
   public Dimensions dimTime = new Dimensions();
 
-  /** Dimensions of Velocity. Definition in {@see #updateUnits}. */
+  /** Dimensions of Velocity. Definition in {@link #updateUnits}. */
   public Dimensions dimVel = new Dimensions();
 
-  /** Dimensions of Viscosity. Definition in {@see #updateUnits}. */
+  /** Dimensions of Viscosity. Definition in {@link #updateUnits}. */
   public Dimensions dimVisc = new Dimensions();
 
-  /** Dimensions of Volumetric Flow. Definition in {@see #updateUnits}. */
+  /** Dimensions of Volumetric Flow. Definition in {@link #updateUnits}. */
   public Dimensions dimVolFlow = new Dimensions();
 
   //--
   //-- Public doubles
   //--
 
-  /** Directed Mesh O-Grid Factor, when using {@see #createMeshOperation_DM_Pipe}. Change with care.
+  /** Directed Mesh O-Grid Factor, when using {@link #createMeshOperation_DM_Pipe}. Change with care.
    * Default = 1.0/1.10.
    */
   public double dmOGF = 1. / 1.10;
@@ -16369,13 +15609,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   //-- Public double[]s
   //--
 
-  /** Useful predefined variable for storing Camera Settings. See {@see #createCamView} for more. */
+  /** Useful predefined variable for storing Camera Settings. See {@link #createCamView} for more. */
   public double[] camFocalPoint = {0., 0., 0.};
 
-  /** Useful predefined variable for storing Camera Settings. See {@see #createCamView} for more. */
+  /** Useful predefined variable for storing Camera Settings. See {@link #createCamView} for more. */
   public double[] camPosition = {0., 0., 0.};
 
-  /** Useful predefined variable for storing Camera Settings. See {@see #createCamView} for more. */
+  /** Useful predefined variable for storing Camera Settings. See {@link #createCamView} for more. */
   public double[] camViewUp = {0., 0., 0.};
 
   /** Useful predefined variable for storing Coordinates. */
@@ -16390,10 +15630,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Useful predefined variable for storing Coordinates. */
   public double[] coord4 = {0., 0., 0.};
 
-  /** Good variable when using with {@see #evalLinearRegression}. */
+  /** Good variable when using with {@link #evalLinearRegression}. */
   public double[] xx = new double[] {};
 
-  /** Good variable when using with {@see #evalLinearRegression}. */
+  /** Good variable when using with {@link #evalLinearRegression}. */
   public double[] yy = new double[] {};
 
   //--
@@ -16403,10 +15643,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** A path containing CAD files. */
   public File cadPath = null;
 
-  /** A path containing DBS files according {@see java.io.File} definition. */
+  /** A path containing DBS files according {@link java.io.File} definition. */
   public File dbsPath = null;
 
-  /** Current simulation File according {@see java.io.File} definition. */
+  /** Current simulation File according {@link java.io.File} definition. */
   public File simFile = null;
 
   //--
@@ -16420,33 +15660,33 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   public int defPicResY = 720;
 
   /** Directed Mesh Construction points subdivisions in O-Grid, when using
-   *    {@see #createMeshOperation_DM_Pipe}. Change with care. Default = 0. */
+   *    {@link #createMeshOperation_DM_Pipe}. Change with care. Default = 0. */
   public int dmDiv = 0;
 
-  /** Directed Mesh Smooths in Patch mesh, when using {@see #createMeshOperation_DM_Pipe}. Default = 0. */
+  /** Directed Mesh Smooths in Patch mesh, when using {@link #createMeshOperation_DM_Pipe}. Default = 0. */
   public int dmSmooths = 0;
 
   /**
    * Macro Utils variable for setting the default Tesselation method. Current options are:
-   * {@see #TESSELATION_VERY_COARSE}, {@see #TESSELATION_COARSE}, {@see #TESSELATION_MEDIUM},
-   * {@see #TESSELATION_FINE} or {@see #TESSELATION_VERY_FINE}.
+   * {@link #TESSELATION_VERY_COARSE}, {@link #TESSELATION_COARSE}, {@link #TESSELATION_MEDIUM},
+   * {@link #TESSELATION_FINE} or {@link #TESSELATION_VERY_FINE}.
    * <p>
-   * Default is {@see #TESSELATION_MEDIUM}.
+   * Default is {@link #TESSELATION_MEDIUM}.
    */
   public int defTessOpt = TESSELATION_MEDIUM;
 
   /** Default reading X column in a CSV when performing GCI calculations with
-   *    {@see #calcGCI}. Default = 0. */
+   *    {@link #calcGCI}. Default = 0. */
   public int gciCsvReadColX = 0;
 
   /** Default reading Y column in a CSV when performing GCI calculations with
-   *    {@see #calcGCI}. Default = 1. */
+   *    {@link #calcGCI}. Default = 1. */
   public int gciCsvReadColY = 1;
 
-  /** Macro Utils variable for controlling current frame number. Use with {@see #postFlyOverAndSavePics}. */
+  /** Macro Utils variable for controlling current frame number. Use with {@link #postFlyOverAndSavePics}. */
   public int postCurFrame = 0;
 
-  /** Macro Utils variable for controlling the number of wanted frames. Use with {@see #postFlyOverAndSavePics}. */
+  /** Macro Utils variable for controlling the number of wanted frames. Use with {@link #postFlyOverAndSavePics}. */
   public int postFrames = 0;
 
   //--
@@ -16468,7 +15708,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Target Feature Curve Relative Size. Default = 100%.*/
   public double featCurveMeshTgt = 100;
 
-  /** Mesh Base Reference Size in default units. See {@see #defUnitLength}.*/
+  /** Mesh Base Reference Size in default units. See {@link #defUnitLength}.*/
   public double mshBaseSize = 3.0;
 
   /** Mesh Growth Factor for Tets/Polys. Default = 1.0 */
@@ -16480,7 +15720,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Number of Points in Gap when using Mesh Proximity. */
   public double mshProximityPointsInGap = 2.0;
 
-  /** Search floor in default units for Mesh Proximity. See {@see #defUnitLength}. */
+  /** Search floor in default units for Mesh Proximity. See {@link #defUnitLength}. */
   public double mshProximitySearchFloor = 0.0;
 
   /** Volume Mesh Quality Threshold. Default = 0.4 */
@@ -16501,7 +15741,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Maximum Trimmer Relative Size. Default = 10000%. */
   public double mshTrimmerMaxCelSize = 10000;
 
-  /** Trimmer Volume Growth Rate when meshing in Parts. Default is {@see #TRIMMER_GROWTH_RATE_FAST}. */
+  /** Trimmer Volume Growth Rate when meshing in Parts. Default is {@link #TRIMMER_GROWTH_RATE_FAST}. */
   public int mshTrimmerGrowthRate = TRIMMER_GROWTH_RATE_FAST;
 
   /** Surface Wrapper Feature Angle. Default = 30deg. */
@@ -16541,7 +15781,7 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Gravity vector defined as double. {0, -Y, 0} in m/s^2. Change if needed. */
   public double[] gravity = {0., -9.81, 0.};
 
-  /** Initial Pressure value in default units. See {@see #defUnitPress}. */
+  /** Initial Pressure value in default units. See {@link #defUnitPress}. */
   public double p0 = 0.0;
 
   /** Initial Turbulent Intensity for RANS Models. Default = 0.05. */
@@ -16550,10 +15790,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Initial Turbulent Viscosity Ratio for RANS Models. Default = 10. */
   public double tvr0 = 10.0;
 
-  /** Initial Velocity Scale for RANS Turbulence Models in default units. See {@see #defUnitVel}. */
+  /** Initial Velocity Scale for RANS Turbulence Models in default units. See {@link #defUnitVel}. */
   public double tvs0 = 0.5;
 
-  /** Initial Velocity Array in default units. See {@see #defUnitVel}. */
+  /** Initial Velocity Array in default units. See {@link #defUnitVel}. */
   public double[] v0 = {0., 0., 0.};
 
   /** Minimum clipping Temperature in default units. */
@@ -16562,10 +15802,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Maximum clipping Temperature in default units. */
   public double clipMaxT = 3000;
 
-  /** Density of Air in default units. See {@see #defUnitDen} */
+  /** Density of Air in default units. See {@link #defUnitDen} */
   public double denAir = 1.18415;
 
-  /** Density of Water in default units. See {@see #defUnitDen} */
+  /** Density of Water in default units. See {@link #defUnitDen} */
   public double denWater = 997.561;
 
   /** Initial Temperature value for Fluids in default units. */
@@ -16574,16 +15814,16 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Initial Temperature value for Solids in default units. */
   public double solidsT0 = 60.;
 
-  /** Reference Altitude array of values in default units. See {@see #defUnitLength}. */
+  /** Reference Altitude array of values in default units. See {@link #defUnitLength}. */
   public double[] refAlt = new double[] {0, 0, 0};
 
-  /** Reference Density value in default units. See {@see #defUnitDen}. */
+  /** Reference Density value in default units. See {@link #defUnitDen}. */
   public double refDen = denAir;
 
-  /** Reference Pressure value in default units. See {@see #defUnitPress}. */
+  /** Reference Pressure value in default units. See {@link #defUnitPress}. */
   public double refP = 101325.;
 
-  /** Reference Temperature value in default units. See {@see #defUnitTemp}. */
+  /** Reference Temperature value in default units. See {@link #defUnitTemp}. */
   public double refT = fluidT0;
 
   /** Radiation Emissivity. Default = 0.8. */
@@ -16598,10 +15838,10 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Radiation Patch Proportion of Faces. Default = 100%. */
   public double radPatchProp = 100.;
 
-  /** Viscosity of Air in default units. See {@see #defUnitVisc} */
+  /** Viscosity of Air in default units. See {@link #defUnitVisc} */
   public double viscAir = 1.85508E-5;
 
-  /** Viscosity of Water in default units. See {@see #defUnitVisc} */
+  /** Viscosity of Water in default units. See {@link #defUnitVisc} */
   public double viscWater = 8.8871E-4;
 
   //--
@@ -16636,8 +15876,14 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Default 1000 Maximum Iterations. */
   public final int maxIter0 = 1000;
 
+  /** Default Maximum Turbulent Viscosity Ratio. Default = 1e5. */
+  public final double maxTVR0 = 1e5;
+
   /** Default URF for Velocity. Default = 0.7. */
   public final double urfVel0 = 0.7;
+
+  /** Default URF for PPDF Combustion. Default = 0.8. */
+  public final double urfPPDFComb0 = 0.8;
 
   /** Default URF for Pressure. Default = 0.3. */
   public final double urfP0 = 0.3;
@@ -16715,8 +15961,11 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Grid Sequencing Initialization Courant number for the Coupled Solver. Default = 5.0 */
   public double gsiCFL = 5.0;
 
-  /** Maximum Iterations. Default {@see #maxIter0}. */
+  /** Maximum Iterations. Default {@link #maxIter0}. */
   public int maxIter = maxIter0;
+
+  /** Maximum Turbulent Viscosity Ratio. Default {@link #maxTVR0}. */
+  public double maxTVR = maxTVR0;
 
   /** Ramp the Under Relaxation Factor for Courant? */
   public boolean rampCFL = false;
@@ -16736,42 +15985,45 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Maximum Inner Iterations when using Unsteady. */
   public int trnInnerIter = 15;
 
-  /** Maximum Physical time when using Unsteady. See {@see #defUnitTime}. */
+  /** Maximum Physical time when using Unsteady. See {@link #defUnitTime}. */
   public double trnMaxTime = 10.;
 
-  /** Physical time step when using Unsteady. See {@see #defUnitTime}. */
+  /** Physical time step when using Unsteady. See {@link #defUnitTime}. */
   public double trnTimestep = 0.001;
 
   /** URF for Energy. Use this value for changing both Fluid and Solid URFs simultaneously.
-   *    Otherwise, use {@see #urfFluidEnrgy} and/or {@see #urfSolidEnrgy} individually.
+   *    Otherwise, use {@link #urfFluidEnrgy} and/or {@link #urfSolidEnrgy} individually.
    *    Default = 0 (unused). */
   public double urfEnergy = 0.;
 
-  /** URF for Fluid Energy. Default: {@see #urfFluidEnrgy0}. */
+  /** URF for Fluid Energy. Default: {@link #urfFluidEnrgy0}. */
   public double urfFluidEnrgy = urfFluidEnrgy0;
 
-  /** URF for Granular Temperature. Default: {@see #urfGranTemp0}. */
+  /** URF for Granular Temperature. Default: {@link #urfGranTemp0}. */
   public double urfGranTemp = urfGranTemp0;
 
-  /** URF for K-Epsilon. Default: {@see #urfKEps0}. */
+  /** URF for K-Epsilon. Default: {@link #urfKEps0}. */
   public double urfKEps = urfKEps0;
 
   /** URF for K-Epsilon Turbulent Viscosity. Default: 1.0. */
   public double urfKEpsTurbVisc = 1.0;
 
-  /** URF for K-Omega. Default: {@see #urfKEps0}. */
+  /** URF for K-Omega. Default: {@link #urfKEps0}. */
   public double urfKOmega = urfKEps0;
 
   /** URF for K-Omega Turbulent Viscosity. Default: 1.0. */
   public double urfKOmegaTurbVisc = 1.0;
 
-  /** URF for Phase Couple Velocity. Default: {@see #urfPhsCplVel0}. */
+  /** URF for Phase Couple Velocity. Default: {@link #urfPhsCplVel0}. */
   public double urfPhsCplVel = urfPhsCplVel0;
 
-  /** URF for Pressure. Default: {@see #urfP0}. */
+  /** URF for Pressure. Default: {@link #urfP0}. */
   public double urfP = urfP0;
 
-  /** URF for Reynolds Stress. Default: {@see #urfRS0}. */
+  /** URF for PPDF Combustion. Default: {@link #urfPPDFComb0}. */
+  public double urfPPDFComb = urfPPDFComb0;
+
+  /** URF for Reynolds Stress. Default: {@link #urfRS0}. */
   public double urfRS = urfRS0;
 
   /** URF for Reynolds Stress Turbulent Viscosity. Default: 1.0. */
@@ -16813,19 +16065,19 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Final Iteration for Ramping URF in Solid Energy. */
   public int urfRampSldIterEnd = 1000;
 
-  /** URF for Solid Energy. Default: {@see #urfSolidEnrgy0}. */
+  /** URF for Solid Energy. Default: {@link #urfSolidEnrgy0}. */
   public double urfSolidEnrgy = urfSolidEnrgy0;
 
-  /** URF for Species. Default: {@see #urfSpecies0}. */
+  /** URF for Species. Default: {@link #urfSpecies0}. */
   public double urfSpecies = urfSpecies0;
 
-  /** URF for Velocity. Default: {@see #urfVel0}. */
+  /** URF for Velocity. Default: {@link #urfVel0}. */
   public double urfVel = urfVel0;
 
-  /** URF for Volume Fraction. Default: {@see #urfKEps0}. */
+  /** URF for Volume Fraction. Default: {@link #urfKEps0}. */
   public double urfVolFrac = urfVolFrac0;
 
-  /** URF for VOF. Default: {@see #urfVOF0}. */
+  /** URF for VOF. Default: {@link #urfVOF0}. */
   public double urfVOF = urfVOF0;
 
   /** VOF Sharpening Factor. */
@@ -16928,13 +16180,13 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   /** Useful name for a Boundary Condition. */
   public String outlet = bcOutlet;
 
-  /** Simulation title. It is used when saving. See {@see #saveSim}. */
+  /** Simulation title. It is used when saving. See {@link #saveSim}. */
   public String simTitle = null;
 
   /** Full Simulation path with file and extension. E.g.: <i>/home/user/mySimFile.sim</i>. */
   public String simFullPath = null;
 
-  /** Simulation path. It is used when saving. See {@see #saveSim}. */
+  /** Simulation path. It is used when saving. See {@link #saveSim}. */
   public String simPath = null;
 
   /** Just strings. Useful somewhere. */
@@ -16950,46 +16202,46 @@ public PhysicsContinuum createPhysics_WaterSteadySegregatedIncompressibleKEps2Ly
   //-- Public Units
   //--
 
-  /** Default unit of Acceleration, when using Macro Utils. Default is {@see #unit_mps2}. */
+  /** Default unit of Acceleration, when using Macro Utils. Default is {@link #unit_mps2}. */
   public Units defUnitAccel = null;
 
-  /** Default unit of Angle, when using Macro Utils. Default is {@see #unit_deg}. */
+  /** Default unit of Angle, when using Macro Utils. Default is {@link #unit_deg}. */
   public Units defUnitAngle = null;
 
-  /** Default unit of Area, when using Macro Utils. Default is {@see #unit_m2}. */
+  /** Default unit of Area, when using Macro Utils. Default is {@link #unit_m2}. */
   public Units defUnitArea = null;
 
-  /** Default unit of Density, when using Macro Utils. Default is {@see #unit_kgpm3}. */
+  /** Default unit of Density, when using Macro Utils. Default is {@link #unit_kgpm3}. */
   public Units defUnitDen = null;
 
-  /** Default unit of Force, when using Macro Utils. Default is {@see #unit_N}. */
+  /** Default unit of Force, when using Macro Utils. Default is {@link #unit_N}. */
   public Units defUnitForce = null;
 
-  /** Default unit of Heat Transfer Coefficient, when using Macro Utils. Default is {@see #unit_Wpm2K}. */
+  /** Default unit of Heat Transfer Coefficient, when using Macro Utils. Default is {@link #unit_Wpm2K}. */
   public Units defUnitHTC = null;
 
-  /** Default unit of Length, when using Macro Utils. Default is {@see #unit_mm}. */
+  /** Default unit of Length, when using Macro Utils. Default is {@link #unit_mm}. */
   public Units defUnitLength = null;
 
-  /** Default unit of Mass Flow Rate, when using Macro Utils. Default is {@see #unit_kgps}. */
+  /** Default unit of Mass Flow Rate, when using Macro Utils. Default is {@link #unit_kgps}. */
   public Units defUnitMFR = null;
 
-  /** Default unit of Pressure, when using Macro Utils. Default is {@see #unit_Pa}. */
+  /** Default unit of Pressure, when using Macro Utils. Default is {@link #unit_Pa}. */
   public Units defUnitPress = null;
 
-  /** Default unit of Temperature, when using Macro Utils. Default is {@see #unit_C}. */
+  /** Default unit of Temperature, when using Macro Utils. Default is {@link #unit_C}. */
   public Units defUnitTemp = null;
 
-  /** Default unit of Time, when using Macro Utils. Default is {@see #unit_s}. */
+  /** Default unit of Time, when using Macro Utils. Default is {@link #unit_s}. */
   public Units defUnitTime = null;
 
-  /** Default unit of Velocity, when using Macro Utils. Default is {@see #unit_mps}. */
+  /** Default unit of Velocity, when using Macro Utils. Default is {@link #unit_mps}. */
   public Units defUnitVel = null;
 
-  /** Default unit of Viscosity, when using Macro Utils. Default is {@see #unit_Pa_s}. */
+  /** Default unit of Viscosity, when using Macro Utils. Default is {@link #unit_Pa_s}. */
   public Units defUnitVisc = null;
 
-  /** Default unit of Volume, when using Macro Utils. Default is {@see #unit_m3}. */
+  /** Default unit of Volume, when using Macro Utils. Default is {@link #unit_m3}. */
   public Units defUnitVolume = null;
 
   /** Celsius unit (Temperature). */

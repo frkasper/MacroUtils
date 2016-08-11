@@ -3,6 +3,10 @@ import macroutils.*;
 /**
  * Simple Demo of a 3D laminar isothermal flow in a pipe.
  * 
+ * This Demo was modified in Macro Utils v3.3 and it works best when using the 
+ * Generalized Cylinder Mesher which (to date) is still not available as Parts 
+ * Based Meshing in STAR-CCM+.
+ * 
  * Geometry:
  *                                       L  
  *      +---------------------------------------------------------------+
@@ -51,13 +55,14 @@ public class Demo1_Flow_In_a_Pipe extends MacroUtils {
     mshSrfSizeMin = 75.;
     prismsRelSizeHeight = 30;
     //-- 
-    createMeshContinua_PolyOnly();
+    geometryParts.add(getGeometryPart(cadBody.getPresentationName()));
+    createMeshOperation_AutomatedMesh(geometryParts, getMeshers(true, false, POLY, false), "My Mesh");
+    createPhysicsContinua(_3D, _STEADY, _LIQUID, _SEGREGATED, _INCOMPRESSIBLE, _ISOTHERMAL, _LAMINAR, false, false, false);
     createPhysics_WaterSteadySegregatedIncompressibleLaminarIsothermal();
     setSolverAggressiveURFs();
     //-- 
     setBC_VelocityMagnitudeInlet(getBoundary(bcInlet), 0.1, 0., 0., 0.);
     setBC_PressureOutlet(getBoundary(bcOutlet), 0., 0., 0., 0.);
-    setMeshGeneralizedCylinderExtrusion_Constant(getBoundary(bcWall), 60);
     //-- 
     genVolumeMesh();
   }

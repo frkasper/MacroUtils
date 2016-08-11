@@ -6,6 +6,7 @@ build.xml
 manifest.mf
 *.sim
 *.sim~
+*.simh
 *.jar
 *.stp
 *.x_b

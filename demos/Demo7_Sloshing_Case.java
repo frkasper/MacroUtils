@@ -61,9 +61,9 @@ public class Demo7_Sloshing_Case extends MacroUtils {
   }
     
   void prep2_PhysicsAndMesh() {
-    mshCont = createMeshContinua_Trimmer();
-    disablePrismLayers(mshCont);
-    disableSurfaceProximityRefinement(mshCont);
+    geometryParts.addAll(region.getPartGroup().getObjects());
+    mshOp = createMeshOperation_AutomatedMesh(geometryParts, getMeshers(true, false, TRIMMER, false), "Mesh");
+    disableSurfaceProximityRefinement(mshOp);
     physCont = createPhysics_AirWaterUnsteadySegregatedIncompressibleKEps2LyrIsothermal();
     updateSolverSettings();
     //-- 

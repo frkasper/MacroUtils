@@ -36,33 +36,39 @@ public class Demo12_Solution_History_And_Cameras extends MacroUtils {
     mshBaseSize = 5;
     prismsLayers = 4;
     prismsRelSizeHeight = 25;
-    mshCont = createMeshContinua_Trimmer();
-    disableSurfaceProximityRefinement(mshCont);
     mshSrfSizeMin = 6.25;
     mshTrimmerMaxCelSize = 100.;
     //--
     denAir = 1.0;
     viscAir = 1e-5;
-    physCont = createPhysics_FluidSteadySegregatedIncompressibleLaminarIsothermal(denAir, viscAir);
+    physCont = createPhysicsContinua(_2D, _STEADY, _GAS, _SEGREGATED, _INCOMPRESSIBLE, _ISOTHERMAL, _LAMINAR, false, false, false);
+    setMaterialProperty(physCont, "Air", varVisc, viscAir, unit_Pa_s);
+    setMaterialProperty(physCont, "Air", varDen, denAir, unit_kgpm3);
+
     //--
-    cadBody = create3DCad_Block(new double[] {-150, -75, 0}, new double[] {400, 75, mshBaseSize / 5.}, unit_mm);
+    double w = 2 * mshBaseSize;
+    cadBody = create3DCad_Block(new double[] {-150, -75, 0}, new double[] {400, 75, w}, unit_mm);
     geomPrt = getGeometryPart(cadBody.getPresentationName());
     geometryParts.add(geomPrt);
 
-    double r = 10., l = 50.;
+    double r = 10., l = 2 * w;
     defTessOpt = TESSELATION_FINE;
     cadBody2 = create3DCad_Cylinder(r, l, new double[] {0, 0, -l/2}, unit_mm, Z);
     geomPrt2 = getGeometryPart(cadBody2.getPresentationName());
     geometryParts.add(geomPrt2);
 
     mshOpPrt = meshOperationSubtractParts(geometryParts, geomPrt);
-    assignPartToRegion(mshOpPrt, false);
+    geometryParts2.add(mshOpPrt);
+    createMeshOperation_BadgeFor2D(geometryParts2, "My 2D Badging Operation");
+    region = assignPartToRegion(mshOpPrt, false);
+    autoMshOp = createMeshOperation_AutomatedMesh(geometryParts2, getMeshers(true, false, TRIMMER, true), "My Mesh");
+    geometryObjects.addAll(getPartSurfaces(mshOpPrt, cadBody.getPresentationName() + ".*"));
+    mshOpSrfCtrl = createMeshOperation_CustomSurfaceControl(autoMshOp, geometryObjects, "No Prisms", 0, 0, 0);
     
     for (Boundary b : getBoundaries(".*", false)) {
         String name = b.getPresentationName();
         if (name.matches(".*y.")) {
             setBC_FreeSlipWall(b);
-            setMeshPrismsParameters(b, 2, 1.2, 50.);
         }
         if (name.matches(".*z.")) {
             setBC_Symmetry(b);
@@ -76,11 +82,17 @@ public class Demo12_Solution_History_And_Cameras extends MacroUtils {
     }
     
     simpleBlkPrt1 = createShapePartBlock(new double[] {-5 * r, -4 * r, -l}, new double[] {200 * r, 4 * r, l}, unit_mm, "Level1");
-    createMeshVolumetricControl(mshCont, simpleBlkPrt1, "Level1", 50.);
+    geometryParts.clear();
+    geometryParts.add(simpleBlkPrt1);
+    createMeshOperation_CustomVolumetricControl(autoMshOp, geometryParts, "Level1", 50.);
     simpleBlkPrt2 = createShapePartBlock(new double[] {-3 * r, -2.5 * r, -l}, new double[] {25 * r, 2.5 * r, l}, unit_mm, "Level2");
-    createMeshVolumetricControl(mshCont, simpleBlkPrt2, "Level2", 25.);
+    geometryParts.clear();
+    geometryParts.add(simpleBlkPrt2);
+    createMeshOperation_CustomVolumetricControl(autoMshOp, geometryParts, "Level2", 25.);
     simpleBlkPrt3 = createShapePartBlock(new double[] {-0.25 * r, -1.5 * r, -l}, new double[] {4 * r, 1.5 * r, l}, unit_mm, "Level3");
-    createMeshVolumetricControl(mshCont, simpleBlkPrt3, "Level3", 12.5);
+    geometryParts.clear();
+    geometryParts.add(simpleBlkPrt2);
+    createMeshOperation_CustomVolumetricControl(autoMshOp, geometryParts, "Level3", 12.5);
     
     genVolumeMesh();
   }
@@ -129,7 +141,7 @@ public class Demo12_Solution_History_And_Cameras extends MacroUtils {
   
   void postSS() {    
     defColormap = getColormap("flames2");
-    namedObjects.add(getBoundary(".*z0"));
+    namedObjects.add(region);
     scene = createScene_Scalar(namedObjects, getFieldFunction(varVel), unit_mps, true);
     //scene.open(true);
     saveSim(simTitle + "_SS", false);

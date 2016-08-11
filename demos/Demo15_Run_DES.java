@@ -97,7 +97,7 @@ public class Demo15_Run_DES extends MacroUtils {
     prismsRelSizeHeight = 60;
     prismsNearCoreAspRat = 0.5;
     meshers = getMeshers(true, false, POLY, true);
-    createMeshOperation_AutomatedMesh(geometryParts2, meshers).setPresentationName(meshOpName);
+    createMeshOperation_AutomatedMesh(geometryParts2, meshers, meshOpName);
     //--
     physCont = createContinua(_STEADY, _RKE_2LAYER, false);
     setSolverAggressiveURFs();

@@ -27,8 +27,6 @@ public class Demo11_Directed_Meshing extends MacroUtils {
     dmSmooths = 10;
     mshBaseSize = 10;
     prismsLayers = 2;
-    mshCont = createMeshContinua_PolyOnly();
-    enablePrismLayers(mshCont);
     //--
     cadBody = create3DCad_Block(new double[] {-x, -y, -z}, new double[] {x, y, z}, unit_mm);
     geomPrt = getGeometryPart(cadBody.getPresentationName());
@@ -58,6 +56,8 @@ public class Demo11_Directed_Meshing extends MacroUtils {
     
     mshOpPrt = meshOperationSubtractParts(geometryParts, geomPrt);
     assignPartToRegion(mshOpPrt, false);
+    geometryParts2.add(mshOpPrt);
+    createMeshOperation_AutomatedMesh(geometryParts2, getMeshers(true, false, POLY, true), "My Mesh");
     
     for (String cyl : strings) {
         region = getRegion(cyl);

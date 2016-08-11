@@ -66,7 +66,7 @@ public class Demo8_Half_Wing extends MacroUtils {
     prismsLayers = 3;
     prismsRelSizeHeight = 30;
     mshTrimmerMaxCelSize = mshSrfSizeTgt;
-    mshCont = createMeshContinua_Trimmer();
+//    mshCont = createMeshContinua_Trimmer();
     //--
     //-- How big respective to the biggest length scale (dx, dy or dz)
     double farFieldRelSize = 10; 
@@ -82,6 +82,8 @@ public class Demo8_Half_Wing extends MacroUtils {
     region = assignPartToRegion(mshOpPrt);
     region.setPresentationName(regionName);
     //--
+    geometryParts.addAll(region.getPartGroup().getObjects());
+    mshOp = createMeshOperation_AutomatedMesh(geometryParts, getMeshers(true, false, TRIMMER, true), "Mesh");
     //-- Volumetric Controls
     blkCorner1 = new double[] {-.1, -30, -100};
     blkCorner2 = new double[] {4, 30, 100};
@@ -95,10 +97,18 @@ public class Demo8_Half_Wing extends MacroUtils {
     blkCorner1 = new double[] {-.1, -.25, -3};
     blkCorner2 = new double[] {0.0625, .5, 0.125};
     simpleBlkPrt3 = createShapePartBlock(getPartSurfaces(geomPrt), blkCorner1, blkCorner2, "VC4");
-    createMeshVolumetricControl(mshCont, simpleBlkPrt, "VC1", 16 * 100.);
-    createMeshVolumetricControl(mshCont, simpleBlkPrt1, "VC2", new double[] {800, 400, 1600});
-    createMeshVolumetricControl(mshCont, simpleBlkPrt2, "VC3", new double[] {400, 100, 400});
-    createMeshVolumetricControl(mshCont, simpleBlkPrt3, "VC4", new double[] {200, 25, 200});
+    geometryParts.clear();
+    geometryParts.add(simpleBlkPrt);
+    createMeshOperation_CustomVolumetricControl(mshOp, geometryParts, "VC1", 16 * 100.);
+    geometryParts.clear();
+    geometryParts.add(simpleBlkPrt1);
+    createMeshOperation_CustomVolumetricControl(mshOp, geometryParts, "VC2", 0, new double[] {800, 400, 1600});
+    geometryParts.clear();
+    geometryParts.add(simpleBlkPrt2);
+    createMeshOperation_CustomVolumetricControl(mshOp, geometryParts, "VC3", 0, new double[] {400, 100, 400});
+    geometryParts.clear();
+    geometryParts.add(simpleBlkPrt3);
+    createMeshOperation_CustomVolumetricControl(mshOp, geometryParts, "VC4", 0, new double[] {200, 25, 200});
     //-- 
     //-- Create Physics Continua and convert to Coupled Solver
     enableCQR = true;
@@ -119,14 +129,14 @@ public class Demo8_Half_Wing extends MacroUtils {
     //-- 
     //-- Trail
     bdry = getBoundary(".*" + bcTrail + ".*");
-    setMeshSurfaceSizes(bdry, mshSrfSizeMin, mshSrfSizeMin);
-    createMeshWakeRefinement(mshCont, bdry, 250, flowDirection, new double[] {0, mshSrfSizeMin, 100});
+    mshOpSrfCtrl = createMeshOperation_CustomSurfaceControl(mshOp, getGeometryObjects(bdry), "Control Trail", mshSrfSizeMin, mshSrfSizeMin);
+    enableTrimmerWakeRefinement(mshOpSrfCtrl, 250, 5, flowDirection, 25, new double[] {25, mshSrfSizeMin, 25}, TRIMMER_GROWTH_RATE_MEDIUM);
     //-- Airfoil
     bdry = getBoundary(".*" + bcAirfoil + ".*");
-    setMeshSurfaceSizes(bdry, mshSrfSizeMin, 4 * mshSrfSizeMin);
+    mshOpSrfCtrl = createMeshOperation_CustomSurfaceControl(mshOp, getGeometryObjects(bdry), "Control Airfoil", mshSrfSizeMin, 4 * mshSrfSizeMin);
     //-- Wing
     bdry = getBoundary(".*" + bcWing + ".*");
-    setMeshSurfaceSizes(bdry, mshSrfSizeMin, 200.);
+    mshOpSrfCtrl = createMeshOperation_CustomSurfaceControl(mshOp, getGeometryObjects(bdry), "Control Wing", mshSrfSizeMin, 200.);
     //-- Symmetry
     bdry2 = getBoundary(".*" + bcSym + ".*");
     setBC_Symmetry(bdry2);

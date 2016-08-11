@@ -53,9 +53,9 @@ public class Demo13_Streamlines extends MacroUtils {
     prismsRelSizeHeight = 40;
     prismsStretching = 1.2;
     meshers = getMeshers(true, true, POLY, true);
-    createMeshOperation_AutomatedMesh(geometryParts2, meshers);
+    createMeshOperation_AutomatedMesh(geometryParts2, meshers, "My Mesh");
     //--
-    physCont = createPhysics_AirSteadySegregatedIdealGasKEps2Lyr();
+    physCont = createPhysicsContinua(_3D, _STEADY, _GAS, _SEGREGATED, _IDEAL_GAS, _THERMAL, _RKE_2LAYER, false, false, false);
     //--
     setBC_VelocityMagnitudeInlet(getBoundary(".*" + bcInlet), 3, 20, 0.05, 10);
     setBC_PressureOutlet(getBoundary(".*" + bcOutlet), 0, 21, 0.05, 10);
