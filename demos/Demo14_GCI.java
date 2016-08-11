@@ -25,7 +25,7 @@ import star.flow.*;
 public class Demo14_GCI extends MacroUtils {
     
   final double R = 25;                  //-- Pipe Radius in mm
-  final double L = R / 4;               //-- Pipe length in mm
+  final double L = R / 2;               //-- Pipe length in mm
   final double rho = 1000.;             //-- Density in kg/m^3
   final double mu = 0.001;              //-- Viscosity in Pa.s
 
@@ -79,7 +79,7 @@ public class Demo14_GCI extends MacroUtils {
     //-- Small trick to make prisms disappear in those boundaries.
     setBC_Symmetry(bdry1);
     setBC_Symmetry(bdry2);
-    setMeshGeneralizedCylinderExtrusion_Constant(bdry3, 3);
+    setMeshGeneralizedCylinderExtrusion_Constant(bdry3, 5);
     //--
     DirectBoundaryInterface dbi = createDirectInterfacePair(bdry1, bdry2);
     dbi.getTopology().setSelected(InterfaceConfigurationOption.PERIODIC);

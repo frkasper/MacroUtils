@@ -143,7 +143,8 @@ public class Demo12_Solution_History_And_Cameras extends MacroUtils {
     //--
     solHist = getSolutionHistory(".*");
     recSolView = (RecordedSolutionView) createSolutionView(solHist);
-    scene.applyRepresentation(recSolView.getRepresentation());
+    getDisplayer(scene, ".*").setRepresentation(recSolView.getRepresentation());
+    printAction("Saving Pictures in several camera views...");
     postFlyOverAndSavePics(scene, vv1, null, 5 * fps, recSolView);
     postFlyOverAndSavePics(scene, vv1, vv2, 4 * fps, recSolView);
     postFlyOverAndSavePics(scene, null, null, 4 * fps, recSolView);

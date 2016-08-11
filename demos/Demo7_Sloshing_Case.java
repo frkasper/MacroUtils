@@ -76,13 +76,13 @@ public class Demo7_Sloshing_Case extends MacroUtils {
   }
   
   void prep3_MotionAndPost() {
-    createFieldFunction("Amplitude", "($Time <= 4) ? 0.01 : 0");
-    createFieldFunction("dt", "($Time <= 5) ? 0.00125 : 0.0025");
+    createFieldFunction("Amplitude", "($Time <= 4) ? 0.01 : 0", null);
+    createFieldFunction("dt", "($Time <= 5) ? 0.00125 : 0.0025", null);
     setSolverPhysicalTimestep("$dt");
-    createFieldFunction("Period", "0.5");   
-    createFieldFunction("Omega", 2 * Math.PI + " / $Period");
-    ff = createFieldFunction("MotionVel", "-$Amplitude * $Omega * sin($Omega * ($Time - 0.25 * $Period))");
-    ff2 = createFieldFunction("MotionDispl", "$Amplitude * cos($Omega * ($Time - 0.25 * $Period))");
+    createFieldFunction("Period", "0.5", null);   
+    createFieldFunction("Omega", 2 * Math.PI + " / $Period", null);
+    ff = createFieldFunction("MotionVel", "-$Amplitude * $Omega * sin($Omega * ($Time - 0.25 * $Period))", null);
+    ff2 = createFieldFunction("MotionDispl", "$Amplitude * cos($Omega * ($Time - 0.25 * $Period))", null);
     createMotion_Translation("[$MotionVel, 0, 0]", region);
     //-- Some cool Reports/Plots
     createReports_Unsteady();

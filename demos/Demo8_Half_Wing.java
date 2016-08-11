@@ -101,6 +101,7 @@ public class Demo8_Half_Wing extends MacroUtils {
     createMeshVolumetricControl(mshCont, simpleBlkPrt3, "VC4", new double[] {200, 25, 200});
     //-- 
     //-- Create Physics Continua and convert to Coupled Solver
+    enableCQR = true;
     refT = 22.;
     physCont = createPhysics_AirSteadySegregatedIdealGasSA_AllWall();
     CFL = 150;
@@ -114,7 +115,7 @@ public class Demo8_Half_Wing extends MacroUtils {
     //-- 
     //-- Free Stream
     bdry = getBoundary(".*" + regionName + ".*");
-    setBC_FreeStream(bdry, flowDirection, 0.0288, refT, ti0, tvr0);
+    setBC_FreeStream(bdry, flowDirection, 0.0288, 0., refT, ti0, tvr0);
     //-- 
     //-- Trail
     bdry = getBoundary(".*" + bcTrail + ".*");
