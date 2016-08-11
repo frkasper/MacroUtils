@@ -31,7 +31,7 @@ public class Demo10_Colormaps extends MacroUtils {
     
     defUnitLength = unit_mm;
     mshBaseSize = 10;
-    createMeshContinua_PolyOnly();
+    createMeshOperation_AutomatedMesh(getAllGeometryParts(), getMeshers(true, false, POLY, false), "My Mesh");
     genVolumeMesh();
     
     namedObjects.addAll(getAllBoundaries());

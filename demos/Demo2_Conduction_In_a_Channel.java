@@ -39,6 +39,7 @@ public class Demo2_Conduction_In_a_Channel extends MacroUtils {
   void prep1_createPart() {
     defCamView = readCameraView("myCam|5.003809e-01,1.413476e-02,4.204865e-03|-1.256561e+00,7.844162e-01,1.422375e+00|2.630476e-01,9.462717e-01,-1.880847e-01|2.280761e-01|1");
     cadBody = create3DCad_Block(coord0, new double[] {length, height, depth}, unit_mm);
+    geometryParts.add(getGeometryPart(".*"));
   }
   
   void prep2_createRegion() {
@@ -55,10 +56,8 @@ public class Demo2_Conduction_In_a_Channel extends MacroUtils {
     mshTrimmerMaxCelSize = 100;
     urfSolidEnrgy = 1.0;
     //-- 
-    mshCont = createMeshContinua_Trimmer();
-    disablePrismLayers(mshCont);
-    disableSurfaceProximityRefinement(mshCont);
-    createPhysics_SteelSteadySegregated();
+    autoMshOp = createMeshOperation_AutomatedMesh(geometryParts, getMeshers(true, false, TRIMMER, false), "My Mesh");
+    physCont = createPhysicsContinua(_3D, _STEADY, _SOLID, _SEGREGATED, _INCOMPRESSIBLE, _THERMAL, _NOT_APPLICABLE, false, false, false);
     updateSolverSettings();
     //-- 
     bdry = getBoundary(bcHot);

@@ -70,9 +70,9 @@ public class Demo3_Backward_Facing_Step extends MacroUtils {
     prismsLayers = 3;
     prismsRelSizeHeight = 50;
     //-- 
-    mshCont = createMeshContinua_Trimmer();
-    disableSurfaceProximityRefinement(mshCont);
-    setMeshTrimmerSizeToPrismThicknessRatio(mshCont, 2.0);
+    geometryParts2.addAll(region.getPartGroup().getObjects());
+    mshOp = createMeshOperation_AutomatedMesh(geometryParts2, getMeshers(true, false, TRIMMER, true), "Mesh");
+    disableSurfaceProximityRefinement(mshOp);
     createPhysics_AirSteadySegregatedIncompressibleKEps2LyrIsothermal();
     setSolverAggressiveURFs();
     //-- 

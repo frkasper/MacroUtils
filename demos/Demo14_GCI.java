@@ -3,12 +3,17 @@ import java.io.*;
 import java.util.*;
 import star.common.*;
 import star.flow.*;
+import star.meshing.AutoMeshOperation;
 
 /**
  * Laminar fully developed flow in a pipe (Poiseuille flow).
  * 
  * This Demo shows how Grid Convergence Index can be calculated in STAR-CCM+ 
  * using a periodic flow modeling strategy.
+ * 
+ * This Demo was modified in Macro Utils v3.3 and it works best when using the 
+ * Generalized Cylinder Mesher which (to date) is still not available as Parts 
+ * Based Meshing in STAR-CCM+.
  * 
  * 
  * Geometry:
@@ -55,8 +60,7 @@ public class Demo14_GCI extends MacroUtils {
     prismsLayers = 3;
     prismsRelSizeHeight = 40;
     prismsNearCoreAspRat = 0.5;
-    mshCont = createMeshContinua_PolyOnly();
-    enableGeneralizedCylinderModel(mshCont);
+    autoMshOp = createMeshOperation_AutomatedMesh(geometryParts, getMeshers(true, false, POLY, true), "My Mesh");    
     //--
     urfVel = 0.95;
     urfP = 0.15;
@@ -64,7 +68,7 @@ public class Demo14_GCI extends MacroUtils {
     physCont = createPhysicsContinua(_3D, _STEADY, _LIQUID, _SEGREGATED, _INCOMPRESSIBLE, _ISOTHERMAL, _LAMINAR, false, false, true);
     setMaterialProperty(physCont, "H2O", varDen, rho, unit_kgpm3);
     setMaterialProperty(physCont, "H2O", varVisc, mu, unit_Pa_s);
-    setInitialCondition_Velocity(physCont, 0, 0, 0.1);
+    setInitialCondition(physCont, varVel, new double[] {0, 0, 0.1}, unit_mps);
     //--
     ff1 = createFieldFunction("r", "sqrt(pow($$Position[0], 2) + pow($$Position[1], 2))", dimLength);
     ff2 = createFieldFunction("dPdL", "1", null);
@@ -79,7 +83,6 @@ public class Demo14_GCI extends MacroUtils {
     //-- Small trick to make prisms disappear in those boundaries.
     setBC_Symmetry(bdry1);
     setBC_Symmetry(bdry2);
-    setMeshGeneralizedCylinderExtrusion_Constant(bdry3, 5);
     //--
     DirectBoundaryInterface dbi = createDirectInterfacePair(bdry1, bdry2);
     dbi.getTopology().setSelected(InterfaceConfigurationOption.PERIODIC);
@@ -97,12 +100,12 @@ public class Demo14_GCI extends MacroUtils {
     ArrayList<String> grids = new ArrayList();
     prettifyMe();
     setMonitorsNormalizationOFF();
-    mshCont = getMeshContinua(".*");
     openAllPlots();
     while (true) {
         //--
         double baseSize = baseSize0 / Math.pow(gridRefFactor, gridN-1);
-        setMeshBaseSize(mshCont, baseSize, defUnitLength);
+        autoMshOp = (AutoMeshOperation) getMeshOperation(".*");
+        setMeshBaseSize(autoMshOp, baseSize, defUnitLength);
         sayLoud("Solving " + getGridNumber(gridN) + " for base size " + baseSize + defUnitLength.getPresentationName());
         genVolumeMesh();
         //--
