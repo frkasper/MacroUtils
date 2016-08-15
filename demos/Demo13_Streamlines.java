@@ -1,271 +1,325 @@
 import macroutils.*;
+import macroutils.templates.*;
+import star.common.*;
 import star.vis.*;
 
 /**
- * Turbulent flow with Ideal Gas. This Demo shows how to do more advanced post processing 
- * using macros in STAR-CCM+.
- * 
+ * Turbulent flow with Ideal Gas. This Demo shows how to do more advanced post processing using macros in STAR-CCM+.
+ *
  * @since Macro Utils v3.0.
  * @author Fabio Kasper
-*/
-public class Demo13_Streamlines extends MacroUtils {
+ */
+public class Demo13_Streamlines extends StarMacro {
 
-  public void execute() {
+    public void execute() {
 
-    _initUtils();
-    simTitle = "Demo13_Streamlines";
-    //--
-    pre();
-    solve();
-    post();
-    _finalize();
-    
-  }
-  
-  void pre() {
-    vv1 = readCameraView("cam1|2.234138e-03,-5.793002e-04,3.969814e-02|2.234138e-03,-5.793002e-04,3.269352e-01|0.000000e+00,1.000000e+00,0.000000e+00|7.498392e-02|0");
-    vv2 = readCameraView("cam2|2.873504e-04,3.784037e-03,3.752940e-02|2.873504e-04,3.784037e-03,2.115639e-01|0.000000e+00,1.000000e+00,0.000000e+00|4.543212e-02|0");
-    defCamView = vv1;
-    if (hasValidVolumeMesh()) {
-        sayLoud("Volume Mesh Found. Skipping Prep");
-        return;
+        initMacro();
+
+        pre();
+
+        solve();
+
+        post();
+
+        mu.saveSim();
+
     }
-    double r1 = 40.;
-    double r2 = 20.;
-    double l1 = 4 * r1;
-    cadBody = create3DCad_Cylinder(r1, l1, new double[] {-0.5 * l1, 0, 0}, unit_mm, X, "CylMain");
-    geometryParts.add(getGeometryPart(cadBody.getPresentationName()));
-    cadBody = create3DCad_Cylinder(r2, 2 * r1, new double[] {-0.45 * l1 + r2, -2 * r1, 0}, unit_mm, Y, "CylIn");
-    geomPrt = getGeometryPart(cadBody.getPresentationName());
-    getPartSurface(geomPrt, "y0").setPresentationName(bcInlet);
-    geometryParts.add(geomPrt);
-    cadBody = create3DCad_Cylinder(r2, 2 * r1, new double[] {0.45 * l1 - r2, 0, 0}, unit_mm, Y, "CylOut");
-    geomPrt = getGeometryPart(cadBody.getPresentationName());
-    getPartSurface(geomPrt, "y1").setPresentationName(bcOutlet);
-    geometryParts.add(geomPrt);
-    //-- Unite bodies
-    mshOp = createMeshOperation_Unite(geometryParts);
-    geometryParts2.add(getGeometryPart(mshOp.getPresentationName()));
-    region = assignPartToRegion(getGeometryPart(mshOp.getPresentationName()));
-    //--
-    mshBaseSize = r2 / 5;
-    prismsLayers = 1;
-    prismsRelSizeHeight = 40;
-    prismsStretching = 1.2;
-    meshers = getMeshers(true, true, POLY, true);
-    createMeshOperation_AutomatedMesh(geometryParts2, meshers, "My Mesh");
-    //--
-    physCont = createPhysicsContinua(_3D, _STEADY, _GAS, _SEGREGATED, _IDEAL_GAS, _THERMAL, _RKE_2LAYER, false, false, false);
-    //--
-    setBC_VelocityMagnitudeInlet(getBoundary(".*" + bcInlet), 3, 20, 0.05, 10);
-    setBC_PressureOutlet(getBoundary(".*" + bcOutlet), 0, 21, 0.05, 10);
-    //--
-    genVolumeMesh();
-    createScene_Mesh();
-  }
-  
-  void solve() {
-    if (hasSolution()) {
-        sayLoud("Solution Found. Skipping Solve");
-        return;
+
+    void initMacro() {
+        sim = getActiveSimulation();
+        mu = new MacroUtils(sim);
+        ud = mu.userDeclarations;
+        ud.simTitle = "Demo13_Streamlines";
+        ud.vv1 = mu.io.read.cameraView("cam1|2.234138e-03,-5.793002e-04,3.969814e-02|2.234138e-03,-5.793002e-04,3.269352e-01|0.000000e+00,1.000000e+00,0.000000e+00|7.498392e-02|0", true);
+        ud.vv2 = mu.io.read.cameraView("cam2|2.873504e-04,3.784037e-03,3.752940e-02|2.873504e-04,3.784037e-03,2.115639e-01|0.000000e+00,1.000000e+00,0.000000e+00|4.543212e-02|0", true);
+        ud.defCamView = ud.vv1;
     }
-    maxIter = 200;
-    setSolverAggressiveURFs();
-    runCase(true);
-    //saveSim(simTitle + "_SS", false);
-  }
-  
-  void post() {
-    namedObjects.addAll(getAllBoundaries());
-    namedObjects2.add(getBoundary(".*" + bcInlet));
-    //--
-    //-- One can make it all in a single Scenes. 
-    scene = createScene_Scalar(namedObjects, getFieldFunction(varP), unit_Pa, true);
-    scene.getAxes().setAxesVisible(false);
-    sd1 = (ScalarDisplayer) getDisplayer(scene, ".*");
-    sd1.setOpacity(0);
-    sd1.getLegend().setVisible(false);
-    
-    pd1 = (PartDisplayer) createSceneDisplayer(scene, "Geometry", namedObjects);
-    pd1.setOpacity(1);
-    pd1.setColorMode(1);
-    pd1.setDisplayerColorColor(colorLightGray);
-    pd1.setRepresentation(queryGeometryRepresentation());
-    pd2 = (PartDisplayer) createSceneDisplayer(scene, "Mesh", namedObjects);
-    pd2.setOpacity(0);
 
-    postFlyOverAndSavePics(scene, null, null, act1);
-    postFlyOverAndSavePics(scene, null, null, act2);
-    updateDeltaAngle(spr);
-    startSpinning();
-    postFlyOverAndSavePics(scene, null, null, act3);
-    postFlyOverAndSavePics(scene, null, null, act4);
-    stopSpinning();
-    postFlyOverAndSavePics(scene, null, null, act5);
-    //--
-    //-- Animated Streamlines
-    postStreamlinesTubesWidth = 0.0005;
-    std = createSceneDisplayer_Streamline(scene, namedObjects2, true);
-    std.getScalarDisplayQuantity().setRange(new double[] {0, 3.0});
-    std.getAnimationManager().setMode(1);
-    updateDeltaAngle(3 * spr);                  //-- This time it will take 3x longer the spin.
-    int preSpin = 8 * fps;
-    int frames = preSpin + 1 * spr * fps;       //-- spr is updated along with delta Angle.
-    ad = scene.getAnimationDirector();
-    ad.setFramesPerSecond(fps);
-    StreamAnimationSettings sas = std.getAnimationManager().getSettings();
-    sas.setCycleTime(0.75 * frames / fps);      //-- Adjust the coefficient to get the speed right. Smaller is faster.
-    sas.setTracerDelay(1.0);
-    sas.setTailTime(0.2);
-    sas.setHeadSize(0.0001);
-    ad.setIsPlaying(true);
-    ad.start();
-    ad.pause();
-    postFlyOverAndSavePics(scene, null, null, preSpin);
-    startSpinning();
-    postFlyOverAndSavePics(scene, null, null, frames - preSpin);
-    ad.stop(true);
-  }
-
-  @Override
-  public void postFlyOverAndSavePics_prePrintPicture() {
-    super.postFlyOverAndSavePics_prePrintPicture(); 
-    double fadeIn = 1, fadeOut = 1;
-
-    if (postCurFrame >= act1 && postCurFrame <= acts12) {
-        if (postCurFrame == act1) {
-            sayLoud("Act2 -- Fade Out & In events");
+    void pre() {
+        if (mu.check.has.volumeMesh()) {
+            return;
         }
-        xx = new double[] {act1, act1 + 0.5 * fps};         //-- Transition in half second
-        yy = new double[] {1.0, 0.0};
-        fadeOut = evalLinearRegression(xx, yy, postCurFrame, false);
-        pd1.setOpacity(fadeOut);
+        double r1 = 40.;
+        double r2 = 20.;
+        double l1 = 4 * r1;
+        ud.cadPrt = mu.add.geometry.cylinder3DCAD(r1, l1, new double[]{-0.5 * l1, 0, 0},
+                ud.unit_mm, StaticDeclarations.Axis.X);
+        ud.cadPrt.setPresentationName("CylMain");
+        ud.geometryParts.add(ud.cadPrt);
+        ud.cadPrt = mu.add.geometry.cylinder3DCAD(r2, 2 * r1, new double[]{-0.45 * l1 + r2, -2 * r1, 0},
+                ud.unit_mm, StaticDeclarations.Axis.Y);
+        ud.cadPrt.setPresentationName("CylIn");
+        mu.get.partSurfaces.byREGEX(ud.cadPrt, "y0", true).setPresentationName(ud.bcInlet);
+        ud.geometryParts.add(ud.cadPrt);
+        ud.cadPrt = mu.add.geometry.cylinder3DCAD(r2, 2 * r1, new double[]{0.45 * l1 - r2, 0, 0},
+                ud.unit_mm, StaticDeclarations.Axis.Y);
+        ud.cadPrt.setPresentationName("CylOut");
+        mu.get.partSurfaces.byREGEX(ud.cadPrt, "y1", true).setPresentationName(ud.bcOutlet);
+        ud.geometryParts.add(ud.cadPrt);
+        //-- Unite bodies
+        ud.mshOpPrt = mu.add.meshOperation.unite(ud.geometryParts);
+        ud.geometryParts2.add(ud.mshOpPrt);
+        ud.region = mu.add.region.fromPart(ud.mshOpPrt,
+                StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
+                StaticDeclarations.InterfaceMode.CONTACT,
+                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
         //--
-        xx = new double[] {xx[1] - 1, xx[1] + 0.5 * fps - 1};
-        yy = new double[] {0.0, 1.0};
-        fadeIn = evalLinearRegression(xx, yy, postCurFrame, false);
-        pd2.setOpacity(fadeIn);
-    }
-        
-    if (postCurFrame >= acts12 && postCurFrame <= acts13) {
-        if (postCurFrame == acts12) {
-            sayLoud("Act3 -- Spinning");
-        }
-    }
-        
-    if (postCurFrame >= acts13 && postCurFrame <= acts14) {
-        if (postCurFrame == acts13) {
-            sayLoud("Act4 -- Spinning & Change to Scalar Scene");
-        }
-        xx = new double[] {acts13, acts13 + 0.5 * fps};             //-- Transition in half second
-        yy = new double[] {1.0, 0.0};
-        fadeOut = evalLinearRegression(xx, yy, postCurFrame, false);
-        pd2.setOpacity(fadeOut);
+        ud.mshBaseSize = r2 / 5;
+        ud.prismsLayers = 1;
+        ud.prismsRelSizeHeight = 40;
+        ud.prismsStretching = 1.2;
+        ud.autoMshOp = mu.add.meshOperation.automatedMesh(ud.geometryParts2,
+                StaticDeclarations.Meshers.SURFACE_REMESHER,
+                StaticDeclarations.Meshers.POLY_MESHER,
+                StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
+        ud.autoMshOp.setPresentationName("My Mesh");
         //--
-        xx = new double[] {xx[1] - 2, xx[1] + 0.5 * fps - 2};
-        yy = new double[] {0.0, 1.0};
-        fadeIn = evalLinearRegression(xx, yy, postCurFrame, false);
-        if (fadeIn > 0.8) {
-            sd1.getLegend().setVisible(true);
-        }
-        sd1.setOpacity(fadeIn);
-    }
-        
-    if (postCurFrame >= acts14 && postCurFrame <= acts15) {
-        if (postCurFrame == acts14) {
-            sayLoud("Act5 -- Stop Spinning & Change back to Geometry");
-        }
-        xx = new double[] {acts15 - fps, acts15 - 0.5 * fps};       //-- Transition in half second
-        yy = new double[] {1.0, 0.0};
-        fadeOut = evalLinearRegression(xx, yy, postCurFrame, false);
-        sd1.setOpacity(fadeOut);
+        ud.physCont = mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL,
+                StaticDeclarations.Time.STEADY, StaticDeclarations.Material.GAS,
+                StaticDeclarations.Solver.SEGREGATED, StaticDeclarations.Density.IDEAL_GAS,
+                StaticDeclarations.Energy.THERMAL, StaticDeclarations.Viscous.RKE_HIGH_YPLUS);
         //--
-        if (fadeOut >= 0.6) {
-            fadeIn = 0.0;
+        mu.set.boundary.asVelocityInlet(mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true), 3.0, 20.0, 0.05, 10.0);
+        mu.set.boundary.asPressureOutlet(mu.get.boundaries.byREGEX(".*" + ud.bcOutlet, true), 0.0, 21.0, 0.05, 10.0);
+        //--
+        mu.update.volumeMesh();
+        ud.scene = mu.add.scene.mesh();
+    }
+
+    void solve() {
+        if (mu.check.has.solution()) {
+            return;
+        }
+        ud.maxIter = 200;
+        mu.set.solver.aggressiveURFs();
+        mu.run();
+        mu.saveSim(ud.simTitle + "_SS");
+    }
+
+    void post() {
+        ud.namedObjects.addAll(mu.get.boundaries.all(true));
+        //--
+        //-- One can make it all in a single Scenes.
+        ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.P.getVar(), true);
+        ud.scene = mu.add.scene.scalar(ud.namedObjects, ud.ff, ud.unit_Pa, true);
+        ud.scene.getAxes().setAxesVisible(false);
+
+        scd = (ScalarDisplayer) mu.get.scenes.displayerByREGEX(ud.scene, "Scalar", true);
+        scd.setOpacity(0);
+        scd.getLegend().setVisible(false);
+
+        pd1 = mu.add.scene.displayer_Geometry(ud.scene);
+        pd1.setOpacity(1);
+        pd1.setColorMode(1);
+
+        pd2 = (PartDisplayer) mu.add.scene.displayer_Geometry(ud.scene);
+        pd2.copyProperties(pd1);
+        pd2.setMesh(true);
+        pd2.setPresentationName("Mesh");
+        pd2.setOpacity(0);
+
+        ud.namedObjects2.add(mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true));
+        ud.namedObjects2.addAll(mu.get.regions.all(true));
+        ud.postStreamlinesTubesWidth = 0.0005;
+        std = mu.add.scene.displayer_Streamline(ud.scene, ud.namedObjects2, true);
+        mu.templates.prettify.all();
+        std.getScalarDisplayQuantity().setRange(new double[]{0, 3.0});
+        std.getAnimationManager().setMode(1);
+        std.setLegendPosition(scd.getLegend().getPositionCoordinate());
+        std.setVisibilityOverrideMode(2);
+        //--
+        //-- Animated Part and Scalar Displayers
+        TemplatePostOverride tpo = new TemplatePostOverride(mu);
+        tpo.flyOver(ud.scene, null, null, act1);
+        tpo.flyOver(ud.scene, null, null, act2);
+        updateDeltaAngle(spr);
+        startSpinning();
+        tpo.flyOver(ud.scene, null, null, act3);
+        tpo.flyOver(ud.scene, null, null, act4);
+        stopSpinning();
+        tpo.flyOver(ud.scene, null, null, act5);
+        //--
+        //-- Animated Streamline Displayer
+        std.setVisibilityOverrideMode(0);
+        //-- This time the spin will take 3x longer.
+        updateDeltaAngle(3 * spr);
+        int preSpin = 8 * fps;
+        //-- spr is updated along with delta Angle.
+        int frames = preSpin + 1 * spr * fps;
+        ad = ud.scene.getAnimationDirector();
+        ad.setFramesPerSecond(fps);
+        StreamAnimationSettings sas = std.getAnimationManager().getSettings();
+        //-- Adjust the coefficient to get the speed right. Smaller is faster.
+        sas.setCycleTime(0.75 * frames / fps);
+        sas.setTracerDelay(1.0);
+        sas.setTailTime(0.2);
+        sas.setHeadSize(0.0001);
+        ad.setIsPlaying(true);
+        ad.start();
+        ad.pause();
+        tpo.flyOver(ud.scene, null, null, preSpin);
+        startSpinning();
+        tpo.flyOver(ud.scene, null, null, frames - preSpin);
+        ad.stop(true);
+    }
+
+    class TemplatePostOverride extends TemplatePost {
+
+        public TemplatePostOverride(MacroUtils m) {
+            super(m);
+            this.updateInstances();
+        }
+
+        @Override
+        public void flyOver_prePrintPicture() {
+            super.flyOver_prePrintPicture();
+            double fadeIn = 1, fadeOut = 1;
+            double[] xx = {}, yy = {};
+
+            if (getCurrentFrame() >= act1 && getCurrentFrame() <= acts12) {
+                if (getCurrentFrame() == act1) {
+                    mu.io.say.loud("Act2 -- Fade Out & In events");
+                }
+                //-- Transition in half second
+                xx = new double[]{act1, act1 + 0.5 * fps};
+                yy = new double[]{1.0, 0.0};
+                fadeOut = mu.get.info.linearRegression(xx, yy, getCurrentFrame(), true, false);
+                pd1.setOpacity(fadeOut);
+                //--
+                xx = new double[]{xx[1] - 1, xx[1] + 0.5 * fps - 1};
+                yy = new double[]{0.0, 1.0};
+                fadeIn = mu.get.info.linearRegression(xx, yy, getCurrentFrame(), true, false);
+                pd2.setOpacity(fadeIn);
+            }
+
+            if (getCurrentFrame() >= acts12 && getCurrentFrame() <= acts13) {
+                if (getCurrentFrame() == acts12) {
+                    mu.io.say.loud("Act3 -- Spinning");
+                }
+            }
+
+            if (getCurrentFrame() >= acts13 && getCurrentFrame() <= acts14) {
+                if (getCurrentFrame() == acts13) {
+                    mu.io.say.loud("Act4 -- Spinning & Change to Scalar Scene");
+                }
+                //-- Transition in half second
+                xx = new double[]{acts13, acts13 + 0.5 * fps};
+                yy = new double[]{1.0, 0.0};
+                fadeOut = mu.get.info.linearRegression(xx, yy, getCurrentFrame(), true, false);
+                pd2.setOpacity(fadeOut);
+                //--
+                xx = new double[]{xx[1] - 2, xx[1] + 0.5 * fps - 2};
+                yy = new double[]{0.0, 1.0};
+                fadeIn = mu.get.info.linearRegression(xx, yy, getCurrentFrame(), true, false);
+                if (fadeIn > 0.8) {
+                    scd.getLegend().setVisible(true);
+                }
+                scd.setOpacity(fadeIn);
+            }
+
+            if (getCurrentFrame() >= acts14 && getCurrentFrame() <= acts15) {
+                if (getCurrentFrame() == acts14) {
+                    mu.io.say.loud("Act5 -- Stop Spinning & Change back to Geometry");
+                }
+                //-- Transition in half second
+                xx = new double[]{acts15 - fps, acts15 - 0.5 * fps};
+                yy = new double[]{1.0, 0.0};
+                fadeOut = mu.get.info.linearRegression(xx, yy, getCurrentFrame(), true, false);
+                scd.setOpacity(fadeOut);
+                //--
+                if (fadeOut >= 0.6) {
+                    fadeIn = 0.0;
+                } else {
+                    scd.getLegend().setVisible(false);
+                    fadeIn = 0.1;
+                }
+                pd1.setOpacity(fadeIn);
+            }
+
+            if (getCurrentFrame() >= acts15) {
+                ad.step(1);
+            }
+
+            updateSpinAngle();
+
+        }
+
+        @Override
+        public void flyOver_postPrintPicture() {
+            super.flyOver_postPrintPicture();
+            spinAngleOld += deltaAngle * getNumberOfFrames();
+            spinAngle = spinAngleOld;
+        }
+
+    }
+
+    void startSpinning() {
+        mu.io.say.msg("Spinning Started...");
+        isSpinning = true;
+        spinAngle = 0.;
+        spinAngleOld = 0.;
+        String trName = "Spinner";
+        if (sim.getTransformManager().has(trName)) {
+            st = (SimpleTransform) mu.get.objects.transform(trName, true);
         } else {
-            sd1.getLegend().setVisible(false);
-            fadeIn = 0.1;
+            st = mu.add.tools.transform_Simple(StaticDeclarations.COORD0, new double[]{0, -1, 0}, 0, null, null);
+            st.setPresentationName(trName);
         }
-        pd1.setOpacity(fadeIn);
+        mu.set.scene.transform(pd1, st, true);
+        mu.set.scene.transform(pd2, st, true);
+        mu.set.scene.transform(scd, st, true);
+        mu.set.scene.transform(std, st, true);
     }
 
-    if (postCurFrame >= acts15) {
-        ad.step(1);
+    void stopSpinning() {
+        mu.io.say.msg("Spinning Stopped at angle: " + spinAngle);
+        isSpinning = false;
+        mu.reset.transform(pd1);
+        mu.reset.transform(pd2);
+        mu.reset.transform(scd);
+        mu.reset.transform(std);
     }
-    
-    updateSpinAngle();
-    
-  }
 
-  @Override
-  public void postFlyOverAndSavePics_postPrintPicture() {
-    super.postFlyOverAndSavePics_postPrintPicture(); 
-    spinAngleOld += deltaAngle * postFrames;
-    spinAngle = spinAngleOld;
-  }
-  
-  void startSpinning() {
-    say("Spinning Started...");
-    isSpinning = true;
-    spinAngle = 0.;
-    spinAngleOld = 0.;
-    String trName = "Spinner";
-    if (sim.getTransformManager().has(trName)) {
-        st = (SimpleTransform) getVisTransform(trName);
-    } else {
-        st = createVisTransform_Simple(coord0, new double[] {0, -1, 0}, 0, null, null, trName);
+    void updateDeltaAngle(int x) {
+        deltaAngle = 360. / (x * fps);
+        spr = x;
     }
-    setVisTransform(pd1, st);
-    setVisTransform(pd2, st);
-    setVisTransform(sd1, st);
-    setVisTransform(std, st);
-  }
-  
-  void stopSpinning() {
-    say("Spinning Stopped at angle: " + spinAngle);
-    isSpinning = false;
-    resetVisTransform(pd1);
-    resetVisTransform(pd2);
-    resetVisTransform(sd1);
-    resetVisTransform(std);
-  }
 
-  void updateDeltaAngle(int x) {
-    deltaAngle = 360. / (x * fps);
-    spr = x;
-  }
-  
-  void updateSpinAngle() {
-    if (!isSpinning) {
-        return;
+    void updateSpinAngle() {
+        if (!isSpinning) {
+            return;
+        }
+        spinAngle += deltaAngle;
+        mu.io.say.msg("Spin Angle Updated: " + spinAngle, debug);
+        st.getRotationAngleQuantity().setValue(spinAngle);
     }
-    spinAngle += deltaAngle;
-    say("Spin Angle Updated: " + spinAngle, debug);
-    st.getRotationAngleQuantity().setValue(spinAngle);
-  }
-  
-  AnimationDirector ad = null;
-  PartDisplayer pd1, pd2;
-  SimpleTransform st;
-  ScalarDisplayer sd1;
-  StreamDisplayer std;
-  
-  int fps = 36;                     //-- Frames per second
-  int spr = 6;                      //-- Seconds per revolution when spinning
-  int act1 = 2 * fps;               //-- First act: 2 seconds == 72 pictures (frames)
-  int act2 = 2 * fps;               //-- Second act...
-  int act3 = 1 * spr * fps;         //-- Third act... == 1 revolution == 6 seconds
-  int act4 = 1 * spr * fps;         //-- Fourth act...
-  int act5 = 1 * fps;
-  
-  int acts12 = act1 + act2;
-  int acts13 = acts12 + act3;       //-- Acts 1 to 3
-  int acts14 = acts13 + act4;       //-- Acts 1 to 4, etc...
-  int acts15 = acts14 + act5;
 
-  boolean debug = false;
-  boolean isSpinning = false;
-  double deltaAngle;
-  double spinAngle, spinAngleOld;
-  
+    private MacroUtils mu;
+    private UserDeclarations ud;
+
+    AnimationDirector ad = null;
+    PartDisplayer pd1, pd2;
+    Simulation sim;
+    SimpleTransform st;
+    ScalarDisplayer scd;
+    StreamDisplayer std;
+
+    int fps = 36;                     //-- Frames per second
+    int spr = 6;                      //-- Seconds per revolution when spinning
+    int act1 = 2 * fps;               //-- First act: 2 seconds == 72 pictures (frames)
+    int act2 = 2 * fps;               //-- Second act...
+    int act3 = 1 * spr * fps;         //-- Third act... == 1 revolution == 6 seconds
+    int act4 = 1 * spr * fps;         //-- Fourth act...
+    int act5 = 1 * fps;
+
+    int acts12 = act1 + act2;
+    int acts13 = acts12 + act3;       //-- Acts 1 to 3
+    int acts14 = acts13 + act4;       //-- Acts 1 to 4, etc...
+    int acts15 = acts14 + act5;
+
+    boolean debug = false;
+    boolean isSpinning = false;
+    double deltaAngle;
+    double spinAngle, spinAngleOld;
+
 }

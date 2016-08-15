@@ -1,17 +1,18 @@
 import macroutils.*;
+import star.common.*;
 import star.vis.*;
 
-public class Demo6c_Read_Camera_Views extends MacroUtils {
+public class Demo6c_Read_Camera_Views extends StarMacro {
 
-  public void execute() {
-    _initUtils();
-    readCameraViews("myCameras.txt");
-    scene = getScene(".*");
-    for (VisView vv : getCameraViews(".*")) {
-        setSceneCameraView(scene, vv);
-        sleep(1000);   // Wait one second.
-        //hardCopyPicture(scene, "pic " + vv.getPresentationName(), 1280, 720);
+    public void execute() {
+        MacroUtils mu = new MacroUtils(getActiveSimulation());
+        mu.io.read.cameraViews("myCameras.txt");
+        Scene scene = mu.get.scenes.byREGEX(".*", true);
+        for (VisView vv : mu.get.cameras.all(true)) {
+            mu.set.scene.cameraView(scene, vv, true);
+            mu.io.sleep(1000);   // Wait one second.
+            mu.io.write.picture(scene, "pic " + vv.getPresentationName(), 1280, 720, true);
+        }
     }
-  }
-  
+
 }

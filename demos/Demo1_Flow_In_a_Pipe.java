@@ -1,82 +1,96 @@
 import macroutils.*;
-  
+import star.common.*;
+
 /**
  * Simple Demo of a 3D laminar isothermal flow in a pipe.
- * 
- * This Demo was modified in Macro Utils v3.3 and it works best when using the 
- * Generalized Cylinder Mesher which (to date) is still not available as Parts 
- * Based Meshing in STAR-CCM+.
- * 
+ *
  * Geometry:
- *                                       L  
+ *                                       L
  *      +---------------------------------------------------------------+
  *      |                                                               |
  *    r * O(0,0,0)                                                      |
  *      |                                                               |
  *      +---------------------------------------------------------------+
- * 
+ *
  * @since Macro Utils v2b.
  * @author Fabio Kasper
  */
+public class Demo1_Flow_In_a_Pipe extends StarMacro {
 
-public class Demo1_Flow_In_a_Pipe extends MacroUtils {
+    private final double length = 500;
+    private final double radius = 20;
 
-  private final double length = 500;
-  private final double radius = 20;
-    
-  public void execute() {
-    _initUtils();
-    simTitle = "Demo1_Cylinder";
-    prep1_createPart();
-    prep2_createRegion();
-    prep3_BCsAndMesh();
-    prep4_setPost();
-    runCase(true);
-    _finalize();
-  }
-  
-  void prep1_createPart() {
-    defCamView = readCameraView("myCam|2.498938e-01,-1.450833e-02,-2.222717e-02|2.498938e-01,-1.450833e-02,9.690091e-01|0.000000e+00,1.000000e+00,0.000000e+00|1.463440e-01|1");
-    defTessOpt = TESSELATION_FINE;
-    cadBody = create3DCad_Cylinder(radius, length, coord0, unit_mm, X);
-  }
-  
-  void prep2_createRegion() {
-    getPartSurface("x0").setPresentationName(bcInlet);
-    getPartSurface("x1").setPresentationName(bcOutlet);
-    getPartSurface("Def.*").setPresentationName(bcWall);
-    region = assignAllPartsToRegion();
-  }
-    
-  void prep3_BCsAndMesh() {
-    //-- Mesh settings
-    mshBaseSize = radius / 8;
-    prismsLayers = 3;
-    mshSrfSizeMin = 75.;
-    prismsRelSizeHeight = 30;
-    //-- 
-    geometryParts.add(getGeometryPart(cadBody.getPresentationName()));
-    createMeshOperation_AutomatedMesh(geometryParts, getMeshers(true, false, POLY, false), "My Mesh");
-    createPhysicsContinua(_3D, _STEADY, _LIQUID, _SEGREGATED, _INCOMPRESSIBLE, _ISOTHERMAL, _LAMINAR, false, false, false);
-    createPhysics_WaterSteadySegregatedIncompressibleLaminarIsothermal();
-    setSolverAggressiveURFs();
-    //-- 
-    setBC_VelocityMagnitudeInlet(getBoundary(bcInlet), 0.1, 0., 0., 0.);
-    setBC_PressureOutlet(getBoundary(bcOutlet), 0., 0., 0., 0.);
-    //-- 
-    genVolumeMesh();
-  }
-  
-  void prep4_setPost() {
-    //-- Contour Plot
-    plane = createSectionPlaneZ(coord0, "Plane Z");
-    namedObjects.add(plane);
-    createScene_Scalar(namedObjects, getFieldFunction(varVel), defUnitVel, true);
-    //-- Stopping Criteria
-    bdry = getBoundary(bcInlet);
-    createReportMassFlowAverage(bdry, "Pressure Inlet", getFieldFunction(varP), unit_Pa);
-    createStoppingCriteria(repMon, "Asymptotic", 0.001, 50);
-    openAllPlotsAndScenes();
-  }
-  
+    public void execute() {
+        initMacro();
+        prep1_createPart();
+        prep2_createRegion();
+        prep3_BCsAndMesh();
+        prep4_setPost();
+        mu.run();
+        mu.saveSim();
+    }
+
+    void initMacro() {
+        mu = new MacroUtils(getActiveSimulation());
+        ud = mu.userDeclarations;
+        ud.simTitle = "Demo1_Cylinder";
+    }
+
+    void prep1_createPart() {
+        ud.defCamView = mu.io.read.cameraView("myCam|2.498938e-01,-1.450833e-02,-2.222717e-02|2.498938e-01,-1.450833e-02,9.690091e-01|0.000000e+00,1.000000e+00,0.000000e+00|1.463440e-01|1", true);
+        ud.defTessOpt = StaticDeclarations.Tessellation.FINE;
+        ud.cadPrt = mu.add.geometry.cylinder3DCAD(radius, length, StaticDeclarations.COORD0,
+                ud.unit_mm, StaticDeclarations.Axis.X);
+    }
+
+    void prep2_createRegion() {
+        mu.get.partSurfaces.byREGEX("x0", true).setPresentationName(ud.bcInlet);
+        mu.get.partSurfaces.byREGEX("x1", true).setPresentationName(ud.bcOutlet);
+        mu.get.partSurfaces.byREGEX("Def.*", true).setPresentationName(ud.bcWall);
+        ud.region = mu.add.region.fromAll(true);
+    }
+
+    void prep3_BCsAndMesh() {
+        //-- Mesh settings
+        ud.mshBaseSize = radius / 8;
+        ud.prismsLayers = 3;
+        ud.mshSrfSizeMin = 75.;
+        ud.prismsRelSizeHeight = 30;
+        //--
+        ud.geometryParts.add(mu.get.geometries.byREGEX(ud.cadPrt.getPresentationName(), true));
+        ud.mshOp = mu.add.meshOperation.automatedMesh(ud.geometryParts,
+                StaticDeclarations.Meshers.SURFACE_REMESHER,
+                StaticDeclarations.Meshers.POLY_MESHER,
+                StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
+        ud.mshOp.setPresentationName("My Mesh");
+        mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL, StaticDeclarations.Time.STEADY,
+                StaticDeclarations.Material.LIQUID, StaticDeclarations.Solver.SEGREGATED,
+                StaticDeclarations.Density.INCOMPRESSIBLE, StaticDeclarations.Energy.ISOTHERMAL,
+                StaticDeclarations.Viscous.LAMINAR);
+        mu.set.solver.aggressiveURFs();
+        //--
+        mu.set.boundary.asVelocityInlet(mu.get.boundaries.byREGEX(ud.bcInlet, true), 0.1, 0., 0., 0.);
+        mu.set.boundary.asPressureOutlet(mu.get.boundaries.byREGEX(ud.bcOutlet, true), 0., 0., 0., 0.);
+        //--
+        mu.update.volumeMesh();
+    }
+
+    void prep4_setPost() {
+        //-- Contour Plot
+        ud.plane = mu.add.derivedPart.sectionPlaneZ(StaticDeclarations.COORD0);
+        ud.namedObjects.add(ud.plane);
+        ud.ff1 = mu.get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), true);
+        mu.add.scene.scalar(ud.namedObjects, ud.ff1, ud.defUnitVel, true);
+        //-- Stopping Criteria
+        ud.bdry = mu.get.boundaries.byREGEX(ud.bcInlet, true);
+        ud.ff2 = mu.get.objects.fieldFunction(StaticDeclarations.Vars.P.getVar(), true);
+        ud.rep = mu.add.report.massFlowAverage(ud.bdry, "Pressure Inlet", ud.ff2, ud.unit_Pa, true);
+        ud.repMon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
+        mu.add.solver.stoppingCriteria(ud.repMon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 50);
+        mu.open.all();
+    }
+
+    private MacroUtils mu;
+    private UserDeclarations ud;
+
 }
