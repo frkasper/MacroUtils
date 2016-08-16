@@ -1,10 +1,10 @@
 import macroutils.*;
+import star.common.*;
 
-public class Demo6b_Write_Camera_Views extends MacroUtils {
+public class Demo6b_Write_Camera_Views extends StarMacro {
 
-  public void execute() {
-    _initUtils();
-    writeCameraViews("myCameras.txt");
-  }
-  
+    public void execute() {
+        new MacroUtils(getActiveSimulation()).io.write.cameraViews("myCameras.txt");
+    }
+
 }

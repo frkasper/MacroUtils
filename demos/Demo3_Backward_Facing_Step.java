@@ -1,8 +1,9 @@
 import macroutils.*;
+import star.common.*;
 
 /**
  * Simple pseudo 2D Demo of the classic Backward Facing Step test case.
- * 
+ *
  * Geometry in XY plane:
  *                                         L_t
  *      +---------------------------------------------------------------+
@@ -11,102 +12,122 @@ import macroutils.*;
  *                  |                                                   |
  *      * O(0,0,0)  +---------------------------------------------------+
  *                                         L_c
- * 
+ *
  * @since Macro Utils v2b.
  * @author Fabio Kasper
  */
-public class Demo3_Backward_Facing_Step extends MacroUtils {
+public class Demo3_Backward_Facing_Step extends StarMacro {
 
-  private final double L_t = 700;
-  private final double L_c = 500;
-  private final double h = 50;
-  private final double H = 100;
-  private final double depth = 0.25;
-  private final double Re_h = 189;                   //-- Reynolds Number f(h)
-    
-  public void execute() {
-    _initUtils();
-    simTitle = "Demo3_BackwardFacingStep";
-    prep1_createParts();
-    prep2_BCsAndMesh();
-    prep3_setPost();
-    runCase(true);
-    _finalize();
-  }
-  
-  void prep1_createParts() {
-    coord1 = new double[] {L_t, H, depth};
-    cadBody1 = create3DCad_Block(coord0, coord1, unit_mm, "Block1");
-    cadPrt1 = getCadPart(cadBody1);
-    getPartSurface(cadPrt1, "x0").setPresentationName(bcInlet);
-    getPartSurface(cadPrt1, "x1").setPresentationName(bcOutlet);
-    getPartSurface(cadPrt1, "y1").setPresentationName(bcTop);
-    getPartSurface(cadPrt1, "y0").setPresentationName(bcBottom);
-    combinePartSurfaces(getPartSurfaces(cadPrt1, "z.*")).setPresentationName(bcSym);
-    //--
-    coord2 = new double[] {L_t - L_c, H - h, depth};
-    cadBody2 = create3DCad_Block(coord0, coord2, unit_mm, "Block2");
-    cadPrt2 = getCadPart(cadBody2);
-    getPartSurface(cadPrt2, "x1").setPresentationName(bcStep);
-    getPartSurface(cadPrt2, "y1").setPresentationName(bcStep);
-    combinePartSurfaces(getPartSurfaces(cadPrt2, bcStep + ".*")).setPresentationName(bcStep);
-    //--
-    geometryParts.add(cadPrt1);
-    geometryParts.add(cadPrt2);
-    //-- 
-    //-- Mesh Operations
-    mshOpPrt = meshOperationSubtractParts(geometryParts, cadPrt1);
-    mshOpPrt.setPresentationName(regionName);
-    //-- 
-    region = assignPartToRegion(mshOpPrt);
-  }
-  
-  void prep2_BCsAndMesh() {
-    //-- Mesh settings
-    mshBaseSize = depth * 10.;
-    mshSrfSizeMin = 100;
-    mshSrfSizeTgt = 100;
-    mshTrimmerMaxCelSize = 100;
-    prismsLayers = 3;
-    prismsRelSizeHeight = 50;
-    //-- 
-    geometryParts2.addAll(region.getPartGroup().getObjects());
-    mshOp = createMeshOperation_AutomatedMesh(geometryParts2, getMeshers(true, false, TRIMMER, true), "Mesh");
-    disableSurfaceProximityRefinement(mshOp);
-    createPhysics_AirSteadySegregatedIncompressibleKEps2LyrIsothermal();
-    setSolverAggressiveURFs();
-    //-- 
-    bdry = getBoundary(".*" + bcInlet);
-    double vel = Re_h * 1.855e-5 / (1.184 * h * defUnitLength.getConversion());
-    setBC_VelocityMagnitudeInlet(bdry, vel, 0, 0.01, 1);
-    //-- 
-    bdry = getBoundary(".*" + bcOutlet);
-    setBC_PressureOutlet(bdry, 0., 0., 0.01, 1);
-    //-- 
-    setBC_Symmetry(getBoundary(".*" + bcSym));
-    //-- 
-    genVolumeMesh();
-  }
-  
-  void prep3_setPost() {
-    defCamView = readCameraView("myCam|3.502958e-01,3.866198e-02,-8.724052e-04|3.502958e-01,3.866198e-02,1.366150e+00|0.000000e+00,1.000000e+00,0.000000e+00|1.986988e-01|1");
-    //-- Stopping Criteria
-    bdry = getBoundary(".*" + bcInlet);
-    createReportMassFlowAverage(bdry, "P_in", getFieldFunction(varP), defUnitPress);
-    createStoppingCriteria(repMon, "Asymptotic", 1e-5, 50);
-    updEvent1 = createUpdateEvent_Iteration(1, 10);
-    setUpdateEvent(repMon, updEvent1);
-    //-- Contour Plot
-    namedObjects.add(getBoundary(".*" + bcSym));
-    scene1 = createScene_Scalar(namedObjects, getFieldFunction("Turb.*Visc.*Ratio"), unit_Dimensionless, true);
-    scene2 = createScene_Vector(namedObjects, true);
-    updEvent2 = createUpdateEvent_Iteration(10, 0);
-    setUpdateEvent(scene1, updEvent2);
-    setUpdateEvent(scene2, updEvent2);
-    openAllPlotsAndScenes();
-  }
-  
-  private String bcStep = "step";
-  private String regionName = "Channel";
-  
+    private final double L_t = 700;
+    private final double L_c = 500;
+    private final double h = 50;
+    private final double H = 100;
+    private final double depth = 0.25;
+    private final double Re_h = 189;            //-- Reynolds Number f(h)
+
+    public void execute() {
+        initMacro();
+        prep1_createParts();
+        prep2_BCsAndMesh();
+        prep3_setPost();
+        mu.run();
+        mu.saveSim();
+    }
+
+    void initMacro() {
+        mu = new MacroUtils(getActiveSimulation());
+        ud = mu.userDeclarations;
+        ud.simTitle = "Demo3_BackwardFacingStep";
+    }
+
+    void prep1_createParts() {
+        ud.coord1 = new double[]{L_t, H, depth};
+        ud.cadPrt1 = mu.add.geometry.block3DCAD(StaticDeclarations.COORD0, ud.coord1, ud.unit_mm);
+        ud.cadPrt1.setPresentationName("Block1");
+        mu.get.partSurfaces.byREGEX(ud.cadPrt1, "x0", true).setPresentationName(ud.bcInlet);
+        mu.get.partSurfaces.byREGEX(ud.cadPrt1, "x1", true).setPresentationName(ud.bcOutlet);
+        mu.get.partSurfaces.byREGEX(ud.cadPrt1, "y1", true).setPresentationName(ud.bcTop);
+        mu.get.partSurfaces.byREGEX(ud.cadPrt1, "y0", true).setPresentationName(ud.bcBottom);
+        mu.set.geometry.combinePartSurfaces(mu.get.partSurfaces.allByREGEX(ud.cadPrt1, "z.*", true),
+                true).setPresentationName(ud.bcSym);
+        //--
+        ud.coord2 = new double[]{L_t - L_c, H - h, depth};
+        ud.cadPrt2 = mu.add.geometry.block3DCAD(StaticDeclarations.COORD0, ud.coord2, ud.unit_mm);
+        ud.cadPrt2.setPresentationName("Block2");
+        mu.set.geometry.combinePartSurfaces(mu.get.partSurfaces.allByREGEX(ud.cadPrt2, "x1|y1", true),
+                true).setPresentationName(bcStep);
+        //--
+        ud.geometryParts.add(ud.cadPrt1);
+        ud.geometryParts.add(ud.cadPrt2);
+        //--
+        //-- Mesh Operations
+        ud.mshOpPrt = mu.add.meshOperation.subtract(ud.geometryParts, ud.cadPrt1);
+        ud.mshOpPrt.setPresentationName(regionName);
+        //--
+        ud.region = mu.add.region.fromPart(ud.mshOpPrt,
+                StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
+                StaticDeclarations.InterfaceMode.CONTACT,
+                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+    }
+
+    void prep2_BCsAndMesh() {
+        //-- Mesh settings
+        ud.mshBaseSize = depth * 10.;
+        ud.mshSrfSizeMin = 100;
+        ud.mshSrfSizeTgt = 100;
+        ud.mshTrimmerMaxCelSize = 100;
+        ud.prismsLayers = 3;
+        ud.prismsRelSizeHeight = 50;
+        //--
+        ud.geometryParts2.addAll(ud.region.getPartGroup().getObjects());
+        ud.mshOp = mu.add.meshOperation.automatedMesh(ud.geometryParts2,
+                StaticDeclarations.Meshers.SURFACE_REMESHER,
+                StaticDeclarations.Meshers.TRIMMER_MESHER,
+                StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
+        ud.mshOp.setPresentationName("My Mesh");
+        mu.disable.surfaceProximityRefinement(ud.mshOp);
+        mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL, StaticDeclarations.Time.STEADY,
+                StaticDeclarations.Material.GAS, StaticDeclarations.Solver.SEGREGATED,
+                StaticDeclarations.Density.INCOMPRESSIBLE, StaticDeclarations.Energy.ISOTHERMAL,
+                StaticDeclarations.Viscous.RKE_2LAYER);
+        mu.set.solver.aggressiveURFs();
+        //--
+        ud.bdry1 = mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true);
+        double vel = Re_h * 1.855e-5 / (1.184 * h * ud.defUnitLength.getConversion());
+        mu.set.boundary.asVelocityInlet(ud.bdry1, vel, 0, 0.01, 1);
+        //--
+        ud.bdry = mu.get.boundaries.byREGEX(".*" + ud.bcOutlet, true);
+        mu.set.boundary.asPressureOutlet(ud.bdry, 0, 0, 0.01, 1);
+        //--
+        ud.bdry = mu.get.boundaries.byREGEX(".*" + ud.bcSym, true);
+        mu.set.boundary.asSymmetry(ud.bdry);
+        //--
+        mu.update.volumeMesh();
+    }
+
+    void prep3_setPost() {
+        ud.defCamView = mu.io.read.cameraView("myCam|3.502958e-01,3.866198e-02,-8.724052e-04|3.502958e-01,3.866198e-02,1.366150e+00|0.000000e+00,1.000000e+00,0.000000e+00|1.986988e-01|1", true);
+        //-- Stopping Criteria
+        ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.P.getVar(), true);
+        ud.rep = mu.add.report.massFlowAverage(ud.bdry1, "P_in", ud.ff, ud.defUnitPress, true);
+        ud.repMon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
+        mu.add.solver.stoppingCriteria(ud.repMon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 1e-5, 50);
+        ud.updEvent1 = mu.add.tools.updateEvent_Iteration(1, 10);
+        mu.set.object.updateEvent(ud.repMon, ud.updEvent1, true);
+        //-- Contour Plot
+        ud.namedObjects.add(mu.get.boundaries.byREGEX(".*" + ud.bcSym, true));
+        ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.TVR.getVar(), true);
+        ud.scene1 = mu.add.scene.scalar(ud.namedObjects, ud.ff, ud.unit_Dimensionless, true);
+        ud.scene2 = mu.add.scene.vector(ud.namedObjects, true);
+        ud.updEvent2 = mu.add.tools.updateEvent_Iteration(10, 0);
+        mu.set.object.updateEvent(ud.scene1, ud.updEvent2, true);
+        mu.set.object.updateEvent(ud.scene2, ud.updEvent2, true);
+        mu.open.all();
+    }
+
+    final private String bcStep = "step";
+    final private String regionName = "Channel";
+    private MacroUtils mu;
+    private UserDeclarations ud;
+
 }

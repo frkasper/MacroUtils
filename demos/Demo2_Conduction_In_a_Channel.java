@@ -1,88 +1,106 @@
 import macroutils.*;
+import star.common.*;
 import star.vis.*;
 
 /**
  * Simple Demo of a 3D conduction in a channel.
- * 
+ *
  * Geometry:
- *          
+ *
  *         +---------------------------------------------------------------+
  *      D /                                                               /|
  *       /                               L                               / |
  *      +---------------------------------------------------------------+  |
  *      |                                                               |  +
- *    H |                                                               | / 
+ *    H |                                                               | /
  *      |                                                               |/
  *      *---------------------------------------------------------------+
  *      O(0,0,0)
- * 
+ *
  * @since Macro Utils v2b.
  * @author Fabio Kasper
  */
-public class Demo2_Conduction_In_a_Channel extends MacroUtils {
+public class Demo2_Conduction_In_a_Channel extends StarMacro {
 
-  private final double length = 1000;
-  private final double height = 100;
-  private final double depth = 50;
-    
-  public void execute() {
-    _initUtils();
-    simTitle = "Demo2_Channel";
-    prep1_createPart();
-    prep2_createRegion();
-    prep3_BCsAndMesh();
-    prep4_setPost();
-    runCase(true);
-    _finalize();
-  }
-  
-  void prep1_createPart() {
-    defCamView = readCameraView("myCam|5.003809e-01,1.413476e-02,4.204865e-03|-1.256561e+00,7.844162e-01,1.422375e+00|2.630476e-01,9.462717e-01,-1.880847e-01|2.280761e-01|1");
-    cadBody = create3DCad_Block(coord0, new double[] {length, height, depth}, unit_mm);
-    geometryParts.add(getGeometryPart(".*"));
-  }
-  
-  void prep2_createRegion() {
-    getPartSurface("x0").setPresentationName(bcHot);
-    getPartSurface("x1").setPresentationName(bcCold);
-    combinePartSurfaces(getPartSurfaces("y.*")).setPresentationName(bcWall);
-    combinePartSurfaces(getPartSurfaces("z.*")).setPresentationName(bcSym);
-    region = assignAllPartsToRegion();
-  }
-    
-  void prep3_BCsAndMesh() {
-    //-- Physics/Mesh settings
-    mshBaseSize = depth / 5;
-    mshTrimmerMaxCelSize = 100;
-    urfSolidEnrgy = 1.0;
-    //-- 
-    autoMshOp = createMeshOperation_AutomatedMesh(geometryParts, getMeshers(true, false, TRIMMER, false), "My Mesh");
-    physCont = createPhysicsContinua(_3D, _STEADY, _SOLID, _SEGREGATED, _INCOMPRESSIBLE, _THERMAL, _NOT_APPLICABLE, false, false, false);
-    updateSolverSettings();
-    //-- 
-    bdry = getBoundary(bcHot);
-    setBC_ConvectionWall(bdry, 50., 50);
-    //-- 
-    bdry = getBoundary(bcCold);
-    setBC_ConvectionWall(bdry, 20., 15);
-    //-- 
-    setBC_Symmetry(getBoundary(bcSym));
-    //-- 
-    genVolumeMesh();
-  }
-  
-  void prep4_setPost() {
-    //-- Stopping Criteria
-    createReportVolumeAverage(getRegion(".*"), varT, getFieldFunction(varT), defUnitTemp);
-    createStoppingCriteria(repMon, "Asymptotic", 0.001, 50);
-    //-- Contour Plot
-    namedObjects.addAll(getAllBoundaries());
-    scene = createScene_Scalar(namedObjects, getFieldFunction(varT), defUnitTemp, true);
-    ScalarDisplayer sd = (ScalarDisplayer) getDisplayer(scene, ".*");
-    sd.setDisplayMeshBoolean(true);
-    updEvent = createUpdateEvent_Iteration(50, 0);
-    setUpdateEvent(scene, updEvent);
-    openAllPlotsAndScenes();
-  }
-  
+    private final double length = 1000;
+    private final double height = 100;
+    private final double depth = 50;
+
+    public void execute() {
+        initMacro();
+        prep1_createPart();
+        prep2_createRegion();
+        prep3_BCsAndMesh();
+        prep4_setPost();
+        mu.run();
+        mu.saveSim();
+    }
+
+    void initMacro() {
+        mu = new MacroUtils(getActiveSimulation());
+        ud = mu.userDeclarations;
+        ud.simTitle = "Demo2_Channel";
+    }
+
+    void prep1_createPart() {
+        ud.defCamView = mu.io.read.cameraView("myCam|5.003809e-01,1.413476e-02,4.204865e-03|-1.256561e+00,7.844162e-01,1.422375e+00|2.630476e-01,9.462717e-01,-1.880847e-01|2.280761e-01|1", true);
+        ud.cadPrt = mu.add.geometry.block3DCAD(StaticDeclarations.COORD0, new double[]{length, height, depth}, ud.unit_mm);
+        ud.cadPrt.setPresentationName("Channel");
+        ud.geometryParts.add(mu.get.geometries.byREGEX(".*", true));
+    }
+
+    void prep2_createRegion() {
+        mu.get.partSurfaces.byREGEX("x0", true).setPresentationName(ud.bcHot);
+        mu.get.partSurfaces.byREGEX("x1", true).setPresentationName(ud.bcCold);
+        mu.set.geometry.combinePartSurfaces(mu.get.partSurfaces.allByREGEX("y.*", true),
+                true).setPresentationName(ud.bcWall);
+        mu.set.geometry.combinePartSurfaces(mu.get.partSurfaces.allByREGEX("z.*", true),
+                true).setPresentationName(ud.bcSym);
+        ud.region = mu.add.region.fromAll(true);
+    }
+
+    void prep3_BCsAndMesh() {
+        //-- Physics/Mesh settings
+        ud.mshBaseSize = depth / 5;
+        ud.mshTrimmerMaxCelSize = 100;
+        ud.urfSolidEnrgy = 1.0;
+        //--
+        ud.autoMshOp = mu.add.meshOperation.automatedMesh(ud.geometryParts, StaticDeclarations.Meshers.TRIMMER_MESHER);
+        ud.autoMshOp.setPresentationName("My Mesh");
+        ud.physCont = mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL,
+                StaticDeclarations.Time.STEADY, StaticDeclarations.Material.SOLID,
+                StaticDeclarations.Solver.SEGREGATED, StaticDeclarations.Density.INCOMPRESSIBLE,
+                StaticDeclarations.Energy.THERMAL, StaticDeclarations.Viscous.NOT_APPLICABLE);
+        mu.update.solverSettings();
+        //--
+        ud.bdry = mu.get.boundaries.byREGEX(ud.bcHot, true);
+        mu.set.boundary.asConvectionWall(ud.bdry, 50., 50.);
+        ud.bdry = mu.get.boundaries.byREGEX(ud.bcCold, true);
+        mu.set.boundary.asConvectionWall(ud.bdry, 20., 15.);
+        ud.bdry = mu.get.boundaries.byREGEX(ud.bcSym, true);
+        mu.set.boundary.asSymmetry(ud.bdry);
+        //--
+        mu.update.volumeMesh();
+    }
+
+    void prep4_setPost() {
+        //-- Stopping Criteria
+        ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.T.getVar(), true);
+        ud.rep = mu.add.report.volumeAverage(mu.get.regions.all(false), StaticDeclarations.Vars.T.getVar(),
+                ud.ff, ud.defUnitTemp, true);
+        ud.repMon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
+        mu.add.solver.stoppingCriteria(ud.repMon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 50);
+        //-- Contour Plot
+        ud.namedObjects.addAll(mu.get.boundaries.all(true));
+        Scene scn = mu.add.scene.scalar(ud.namedObjects, ud.ff, ud.defUnitTemp, true);
+        ScalarDisplayer sd = (ScalarDisplayer) mu.get.scenes.displayerByREGEX(scn, ".*", true);
+        sd.setDisplayMeshBoolean(true);
+        ud.updEvent = mu.add.tools.updateEvent_Iteration(50, 0);
+        mu.set.scene.updateEvent(scn, ud.updEvent);
+        mu.open.all();
+    }
+
+    private MacroUtils mu;
+    private UserDeclarations ud;
+
 }
