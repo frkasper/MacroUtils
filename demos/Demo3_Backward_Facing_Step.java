@@ -75,7 +75,7 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
         ud.mshBaseSize = depth * 10.;
         ud.mshSrfSizeMin = 100;
         ud.mshSrfSizeTgt = 100;
-        ud.mshTrimmerMaxCelSize = 100;
+        ud.mshTrimmerMaxCellSize = 100;
         ud.prismsLayers = 3;
         ud.prismsRelSizeHeight = 50;
         //--

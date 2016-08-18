@@ -43,7 +43,7 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
         ud.prismsLayers = 4;
         ud.prismsRelSizeHeight = 25;
         ud.mshSrfSizeMin = 6.25;
-        ud.mshTrimmerMaxCelSize = 100.;
+        ud.mshTrimmerMaxCellSize = 100.;
         //--
         ud.denAir = 1.0;
         ud.viscAir = 1e-5;

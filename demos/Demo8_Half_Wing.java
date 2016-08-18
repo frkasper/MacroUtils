@@ -40,7 +40,7 @@ public class Demo8_Half_Wing extends StarMacro {
         ud.mshSrfGrowthRate = 1.15;
         ud.prismsLayers = 3;
         ud.prismsRelSizeHeight = 30;
-        ud.mshTrimmerMaxCelSize = ud.mshSrfSizeTgt;
+        ud.mshTrimmerMaxCellSize = ud.mshSrfSizeTgt;
         //--
         updateGlobalObjects();
     }

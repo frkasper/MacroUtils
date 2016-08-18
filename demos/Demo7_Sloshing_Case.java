@@ -48,7 +48,7 @@ public class Demo7_Sloshing_Case extends StarMacro {
         //-- Physics/Solver/Mesh settings
         ud.mshBaseSize = 2.;
         W = ud.mshBaseSize;
-        ud.mshTrimmerMaxCelSize = 100;
+        ud.mshTrimmerMaxCellSize = 100;
         ud.trnInnerIter = 6;
         ud.trnTimestep = 0.01;
         ud.trnMaxTime = 8.;

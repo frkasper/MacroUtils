@@ -523,7 +523,7 @@ public class UserDeclarations {
     /**
      * Maximum Trimmer Relative Size. Default = 10000%.
      */
-    public double mshTrimmerMaxCelSize = 10000;
+    public double mshTrimmerMaxCellSize = 10000;
 
     /**
      * Trimmer Volume Growth Rate when meshing. Default is {@link StaticDeclarations.GrowthRate#MEDIUM}.
