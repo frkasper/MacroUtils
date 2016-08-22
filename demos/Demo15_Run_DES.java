@@ -134,7 +134,7 @@ public class Demo15_Run_DES extends StarMacro {
                 StaticDeclarations.Solver.SEGREGATED, StaticDeclarations.Density.IDEAL_GAS,
                 StaticDeclarations.Energy.THERMAL, StaticDeclarations.Viscous.RKE_2LAYER);
         mu.set.physics.materialProperty(ud.physCont, "Air", StaticDeclarations.Vars.VISC, mu_g, ud.unit_Pa_s);
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         //--
         ud.bdry = mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true);
         mu.set.boundary.asVelocityInlet(ud.bdry, 1.0, 20.0, 0.05, 10.0);
@@ -174,7 +174,7 @@ public class Demo15_Run_DES extends StarMacro {
         mu.update.volumeMesh();
         ud.trnTimestep = dtDES;
         ud.trn2ndOrder = true;
-        ud.trnInnerIter = 5;
+        ud.trnInnerIter = 6;
         ud.trnMaxTime = maxTime;
         ud.physCont = mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL,
                 StaticDeclarations.Time.IMPLICIT_UNSTEADY, StaticDeclarations.Material.GAS,
@@ -182,7 +182,7 @@ public class Demo15_Run_DES extends StarMacro {
                 StaticDeclarations.Energy.THERMAL, StaticDeclarations.Viscous.DES_SST_KW_IDDES);
         mu.set.physics.materialProperty(ud.physCont, "Air", StaticDeclarations.Vars.VISC, mu_g, ud.unit_Pa_s);
         ud.region.setPhysicsContinuum(ud.physCont);
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         //-- Activate Synthetic Eddy Generation at Inlet if desired (at a higher CPU cost).
         ud.bdry = mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true);
         mu.enable.syntheticEddyMethod(mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true));

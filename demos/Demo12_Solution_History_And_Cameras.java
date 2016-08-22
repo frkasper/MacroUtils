@@ -132,7 +132,7 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
         }
         pre();
         ud.maxIter = 100;
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         mu.run();
         postSS();
     }
@@ -150,7 +150,7 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
         ud.trnTimestep = 0.005;
         ud.trnMaxTime = 12.;
         mu.enable.implicitUnsteady(ud.physCont);
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         mu.templates.post.unsteadyReports();
         mu.disable.residualMonitorsNormalization();
         ud.rep1 = mu.add.report.force(mu.get.boundaries.allByREGEX("Cyl.*", false), "Fx", new double[]{1, 0, 0}, true);
