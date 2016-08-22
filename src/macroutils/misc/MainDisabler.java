@@ -85,7 +85,7 @@ public class MainDisabler {
             scmc.getGeometryObjects().setObjects(ago);
             scmc.setPresentationName(String.format("Prism Layers on %s", r.getPresentationName()));
             prismsLayers(scmc, false);
-            _tmpl.print.created(scmc, true);
+            _io.say.created(scmc, true);
         }
     }
 
@@ -151,7 +151,7 @@ public class MainDisabler {
             pcmc.setPresentationName(String.format("Thin Layers on %s", r.getPresentationName()));
             PartsCustomizeThinMesh pctm = pcmc.getCustomConditions().get(PartsCustomizeThinMesh.class);
             pctm.getCustomThinOptions().setSelected(PartsCustomThinOption.Type.DISABLE);
-            _tmpl.print.created(pcmc, true);
+            _io.say.created(pcmc, true);
         }
     }
 

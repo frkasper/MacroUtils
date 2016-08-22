@@ -47,7 +47,7 @@ public class GetCameras {
      */
     public ArrayList<VisView> all(boolean vo) {
         ArrayList<VisView> avv = new ArrayList(_sim.getViewManager().getObjects());
-        _tmpl.print.getAll("Camera Views", new ArrayList(avv), vo);
+        _io.say.objects(avv, "Getting all Camera Views", vo);
         return avv;
     }
 
@@ -63,24 +63,14 @@ public class GetCameras {
     }
 
     /**
-     * Gets a Camera View by its Presentation Name.
+     * Gets the Camera View that matches the REGEX search pattern.
      *
-     * @param name given camera name.
-     * @return The VisView. Null if nothing is found.
-     */
-    public VisView byName(String name) {
-        return byName(name, true);
-    }
-
-    /**
-     * Gets a Camera View by its Presentation Name.
-     *
-     * @param name given camera name.
+     * @param regexPatt given Regular Expression (REGEX) pattern.
      * @param vo given verbose option. False will not print anything.
-     * @return The Unit. Null if nothing is found.
+     * @return The VisView.
      */
-    public VisView byName(String name, boolean vo) {
-        return (VisView) _get.objects.byName(name, "Camera View", new ArrayList(all(false)), vo);
+    public VisView byREGEX(String regexPatt, boolean vo) {
+        return (VisView) _get.objects.allByREGEX(regexPatt, "Camera View", new ArrayList(all(false)), vo).get(0);
     }
 
     /**
@@ -111,8 +101,8 @@ public class GetCameras {
             v.setPosition(dv2);
             DoubleVector dv3 = _getIncrement(v1.getViewUp(), v2.getViewUp(), i, nSteps);
             v.setViewUp(dv3);
-            double ps = _getIncrement(v1.getParallelScale(), v2.getParallelScale(), i, nSteps);
-            v.setParallelScale(ps);
+            double ps = _getIncrement(v1.getParallelScale().getValue(), v2.getParallelScale().getValue(), i, nSteps);
+            v.getParallelScale().setValue(ps);
             av.add(v);
         }
         av.add(0, v1);
@@ -189,7 +179,7 @@ public class GetCameras {
             _f.clear();
             for (int i = 0; i < avv.size(); i++) {
                 _x.add((double) i * n_delta);
-                _f.add(avv.get(i).getParallelScale());
+                _f.add(avv.get(i).getParallelScale().getValue());
             }
             double[][] splPS = _get.info.spline(_x, _f);
             double newPS = _get.info.splineValue(splPS, k);

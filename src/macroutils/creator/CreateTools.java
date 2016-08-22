@@ -51,7 +51,7 @@ public class CreateTools {
         ev.setMonitor(pm);
         ev.setSampleFrequency(freq);
         ev.setStartCount(start);
-        _tmpl.print.created(ev, true);
+        _io.say.created(ev, true);
         return ev;
     }
 
@@ -62,7 +62,7 @@ public class CreateTools {
         ev.setMonitor(pm);
         ev.getRangeOption().setSelected(_getOperator(opt));
         ev.getRangeQuantity().setValue(range);
-        _tmpl.print.created(ev, true);
+        _io.say.created(ev, true);
         _io.say.ok(true);
         return ev;
     }
@@ -124,7 +124,7 @@ public class CreateTools {
             return (ReportAnnotation) _sim.getAnnotationManager().getObject(r.getPresentationName());
         }
         ReportAnnotation ra = _sim.getAnnotationManager().createReportAnnotation(r);
-        _tmpl.print.created(ra, true);
+        _io.say.created(ra, true);
         return ra;
     }
 
@@ -144,7 +144,7 @@ public class CreateTools {
         c.setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength, new DoubleVector(org));
         ccsys.setBasis0(new DoubleVector(b1));
         ccsys.setBasis1(new DoubleVector(b2));
-        _tmpl.print.created(ccsys, true);
+        _io.say.created(ccsys, true);
         return ccsys;
     }
 
@@ -166,7 +166,7 @@ public class CreateTools {
         }
         if (ac.size() < 2) {
             _io.say.msg("Please provide at least two colors.");
-            _tmpl.print.gotNull("Creating a Colormap", true);
+            _io.say.msg("Returning NULL.");
             return null;
         }
         if (ad == null) {
@@ -188,7 +188,7 @@ public class CreateTools {
         ColorMap cm = new ColorMap(dvC, dvO, cs.getValue());
         ult.setColorMap(cm);
         ult.setPresentationName(name);
-        _tmpl.print.created(ult, true);
+        _io.say.created(ult, true);
         return ult;
     }
 
@@ -203,23 +203,22 @@ public class CreateTools {
      */
     public FieldFunction fieldFunction(String name, String def, Dimensions dim, FieldFunctionTypeOption.Type type) {
         _io.say.action("Creating a Field Function", true);
-        _io.say.msg(true, "Type: %s.", type);
         FieldFunction ff = _get.objects.fieldFunction(name, false);
         if (ff != null) {
             _io.say.msg(true, "\"%s\" already exists...", name);
             return ff;
         }
-        _io.say.object(ff, true);
-        _io.say.msg(true, "Definition: \"%s\"", def);
         UserFieldFunction uff = _sim.getFieldFunctionManager().createFieldFunction();
         uff.setPresentationName(name);
         uff.setFunctionName(name.replaceAll("( |\\(|\\)|)", ""));
         uff.setDefinition(def);
         uff.getTypeOption().setSelected(type);
-        if (!(dim == null | dim == _ud.dimDimensionless)) {
+        _io.say.value("Type", uff.getTypeOption().getSelectedElement().getPresentationName(), true, true);
+        _io.say.value("Definition", uff.getDefinition(), true, true);
+        if (dim != null || dim != _ud.dimDimensionless) {
             uff.setDimensions(dim);
         }
-        _tmpl.print.created(uff, true);
+        _io.say.created(uff, true);
         return uff;
     }
 
@@ -237,7 +236,7 @@ public class CreateTools {
         TranslatingMotion tm = _sim.get(MotionManager.class).createMotion(TranslatingMotion.class, name);
         tm.getTranslationVelocity().setDefinition(def);
         tm.getTranslationVelocity().setUnits(_ud.defUnitVel);
-        _tmpl.print.created(tm, true);
+        _io.say.created(tm, true);
         return tm;
     }
 
@@ -279,7 +278,7 @@ public class CreateTools {
         _set.object.physicalQuantity(st.getRotationAngleQuantity(), angle, null, _ud.defUnitAngle, "Angle", true);
         _io.say.value("Translation", tc.getValue(), tc.getUnits0(), true);
         _io.say.value("Scale", st.getScale(), true);
-        _tmpl.print.created(st, true);
+        _io.say.created(st, true);
         return st;
     }
 
@@ -292,7 +291,7 @@ public class CreateTools {
     public FileTable table(String filename) {
         _io.say.action("Creating a File Table", true);
         FileTable ft = (FileTable) _sim.getTableManager().createFromFile(new File(_ud.simPath, filename).toString());
-        _tmpl.print.created(ft, true);
+        _io.say.created(ft, true);
         return ft;
     }
 
@@ -329,7 +328,7 @@ public class CreateTools {
         _createUE_Type("Logic");
         LogicUpdateEvent lue = _sim.getUpdateEventManager().createUpdateEvent(LogicUpdateEvent.class);
         lue.getLogicOption().setSelected(_getLogic(opt));
-        _tmpl.print.created(lue, true);
+        _io.say.created(lue, true);
         return lue;
     }
 
@@ -347,7 +346,7 @@ public class CreateTools {
             _io.say.msg("Adding: " + ue.getPresentationName());
             updateEvent_Logic(lue, ue, opt);
         }
-        _tmpl.print.created(lue, true);
+        _io.say.created(lue, true);
         return lue;
     }
 
@@ -365,7 +364,7 @@ public class CreateTools {
         lue.getLogicOption().setSelected(_getLogic(opt));
         u.copyProperties(ue);
         u.setPresentationName(ue.getPresentationName());
-        _tmpl.print.created(u, true);
+        _io.say.created(u, true);
     }
 
     /**

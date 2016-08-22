@@ -30,7 +30,7 @@ public class GetRegions {
      */
     public ArrayList<Region> all(boolean vo) {
         ArrayList<Region> ar = new ArrayList(_sim.getRegionManager().getRegions());
-        _tmpl.print.getAll("Regions", new ArrayList(ar), vo);
+        _io.say.objects(ar, "Getting all Regions", vo);
         return ar;
     }
 
@@ -42,7 +42,7 @@ public class GetRegions {
      * @return An ArrayList of Regions.
      */
     public ArrayList<Region> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Regions", new ArrayList(all(false)), true));
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Regions", new ArrayList(all(false)), vo));
     }
 
     /**
@@ -53,7 +53,7 @@ public class GetRegions {
      * @return The Region.
      */
     public Region byREGEX(String regexPatt, boolean vo) {
-        return (Region) _get.objects.allByREGEX(regexPatt, "Region", new ArrayList(all(false)), true).get(0);
+        return (Region) _get.objects.allByREGEX(regexPatt, "Region", new ArrayList(all(false)), vo).get(0);
     }
 
     /**
@@ -61,7 +61,7 @@ public class GetRegions {
      */
     public void updateInstances() {
         _get = _mu.get;
-        _tmpl = _mu.templates;
+        _io = _mu.io;
     }
 
     //--
@@ -70,6 +70,6 @@ public class GetRegions {
     private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.io.MainIO _io = null;
 
 }

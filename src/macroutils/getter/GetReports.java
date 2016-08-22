@@ -31,7 +31,7 @@ public class GetReports {
      */
     public ArrayList<Report> all(boolean vo) {
         ArrayList<Report> ar = new ArrayList(_sim.getReportManager().getObjects());
-        _tmpl.print.getAll("Reports", new ArrayList(ar), vo);
+        _io.say.objects(ar, "Getting all Reports", vo);
         return ar;
     }
 
@@ -43,7 +43,7 @@ public class GetReports {
      * @return An ArrayList of Reports.
      */
     public ArrayList<Report> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Reports", new ArrayList(all(false)), true));
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Reports", new ArrayList(all(false)), vo));
     }
 
     /**
@@ -54,15 +54,15 @@ public class GetReports {
      * @return The Report.
      */
     public Report byREGEX(String regexPatt, boolean vo) {
-        return (Report) _get.objects.allByREGEX(regexPatt, "Report", new ArrayList(all(false)), true).get(0);
+        return (Report) _get.objects.allByREGEX(regexPatt, "Report", new ArrayList(all(false)), vo).get(0);
     }
 
     /**
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _tmpl = _mu.templates;
         _get = _mu.get;
+        _io = _mu.io;
     }
 
     //--
@@ -71,6 +71,6 @@ public class GetReports {
     private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.io.MainIO _io = null;
 
 }

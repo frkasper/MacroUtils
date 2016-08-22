@@ -32,7 +32,7 @@ public class SetScenes {
      */
     public void background(Scene scn, Color color, boolean vo) {
         _io.say.action("Setting Solid Background Color", vo);
-        _tmpl.print.doing("Setting Solid Background Color on Scene", scn, vo);
+        _io.say.value("Setting Solid Background Color on Scene", scn.getPresentationName(), true, vo);
         scn.setBackgroundColorMode(0);
         scn.getSolidBackgroundColor().setColorColor(color);
         _io.say.ok(vo);
@@ -49,9 +49,9 @@ public class SetScenes {
         if (vv == null) {
             return;
         }
-        _tmpl.print.doing("Applying Camera View", vv, vo);
         scn.getCurrentView().setInput(new CameraStateInput(vv), vv.getCoordinateSystem(), true);
         scn.getCurrentView().setProjectionMode(vv.getProjectionMode());
+        _io.say.value("Camera View set to", vv.getPresentationName(), true, vo);
     }
 
     /**
@@ -62,8 +62,7 @@ public class SetScenes {
      * @param vo given verbose option. False will not print anything.
      */
     public void displayer(Displayer d, Color color, boolean vo) {
-        _tmpl.print.doing("Setting a Solid Color on Displayer", d, vo);
-        _io.say.object(d, vo);
+        _io.say.value("Setting a Solid Color on Displayer", d.getPresentationName(), true, vo);
         if (!(d instanceof PartDisplayer)) {
             _io.say.msg("Not a PartDisplayer.", vo);
             return;

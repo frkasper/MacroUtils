@@ -141,6 +141,16 @@ public class CheckIs {
     }
 
     /**
+     * Is this a Fluid Region?
+     *
+     * @param r given Region.
+     * @return True or False.
+     */
+    public boolean fluid(Region r) {
+        return r.getRegionType() instanceof FluidRegion;
+    }
+
+    /**
      * Is this a Histogram Plot?
      *
      * @param sp given Plot.

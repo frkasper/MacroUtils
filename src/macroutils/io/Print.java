@@ -60,14 +60,14 @@ public class Print {
     }
 
     /**
-     * Prints a text action within a fancy frame followed by the STAR-CCM+ object information.
+     * Prints an Action followed by the Object name.
      *
-     * @param text message to be printed.
-     * @param cso given STAR-CCM+ Client Server Object.
+     * @param something some action to be printed.
+     * @param cso given STAR-CCM+ ClientServerObject.
      * @param vo given verbose option. False will not print anything.
      */
-    public void action(String text, ClientServerObject cso, boolean vo) {
-        action(text, vo);
+    public void action(String something, ClientServerObject cso, boolean vo) {
+        action(something, vo);
         object(cso, vo);
     }
 
@@ -79,11 +79,11 @@ public class Print {
      */
     public void camera(VisView cam, boolean vo) {
         msg("Camera Overview: " + cam.getPresentationName(), vo);
-        msg("   Focal Point: " + _get.strings.withinTheBrackets(cam.getFocalPoint().toString()), vo);
-        msg("   Position: " + _get.strings.withinTheBrackets(cam.getPosition().toString()), vo);
-        msg("   View Up: " + _get.strings.withinTheBrackets(cam.getViewUp().toString()), vo);
-        msg("   Parallel Scale: " + cam.getParallelScale(), vo);
-        msg("   Projection Mode: " + cam.getProjectionMode(), vo);
+        value("  - Focal Point", cam.getFocalPoint(), vo);
+        value("  - Position", cam.getPosition(), vo);
+        value("  - View Up", cam.getViewUp(), vo);
+        value("  - Parallel Scale", cam.getParallelScale().getValue(), vo);
+        value("  - Projection Mode", cam.getProjectionMode(), vo);
         msg("", vo);
     }
 
@@ -99,6 +99,17 @@ public class Print {
         msg(true, fmt, "Cell Count", _get.mesh.fvr().getCellCount());
         msg(true, fmt, "Face Count", _get.mesh.fvr().getInteriorFaceCount());
         msg(true, fmt, "Vertex Count", _get.mesh.fvr().getVertexCount());
+    }
+
+    /**
+     * Prints that something has been created followed by an "Ok" message.
+     *
+     * @param cso given ClientServerObject.
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void created(ClientServerObject cso, boolean vo) {
+        value("Created " + _get.strings.parentName(cso), cso.getPresentationName(), true, vo);
+        ok(vo);
     }
 
     /**
@@ -281,6 +292,26 @@ public class Print {
         msg("OK!\n", vo);
     }
 
+//    /**
+//     * Prints an overview of the STAR-CCM+ object, if applicable.
+//     * 
+//     * @param cso given ClientServerObject.
+//     */
+//    public void overview(ClientServerObject cso) {
+//        _printOverview(cso);
+//    }
+//    
+    /**
+     * Prints something with percentage values.
+     *
+     * @param what given String of what will be print.
+     * @param val given percentage value.
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void percentage(String what, double val, boolean vo) {
+        value(what, String.format("%g%%", val), false, vo);
+    }
+
     /**
      * Prints the Scalar name and its Units, if applicable.
      *
@@ -337,6 +368,7 @@ public class Print {
     public void updateInstances() {
         _chk = _mu.check;
         _get = _mu.get;
+        _ud = _mu.userDeclarations;
     }
 
     /**
@@ -457,6 +489,7 @@ public class Print {
     private boolean _dbg = false;
     private Simulation _sim = null;
     private MacroUtils _mu = null;
+    private macroutils.UserDeclarations _ud = null;
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
 

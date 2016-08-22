@@ -38,7 +38,7 @@ public class GetPlots {
      */
     public ArrayList<StarPlot> all(boolean vo) {
         ArrayList<StarPlot> as = new ArrayList(_sim.getPlotManager().getObjects());
-        _tmpl.print.getAll("Plots", new ArrayList(as), vo);
+        _io.say.objects(as, "Getting all Plots", vo);
         return as;
     }
 
@@ -50,7 +50,7 @@ public class GetPlots {
      * @return An ArrayList of StarPlots.
      */
     public ArrayList<StarPlot> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Plots", new ArrayList(all(false)), true));
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Plots", new ArrayList(all(false)), vo));
     }
 
     /**
@@ -89,7 +89,7 @@ public class GetPlots {
      */
     public void updateInstances() {
         _get = _mu.get;
-        _tmpl = _mu.templates;
+        _io = _mu.io;
     }
 
     //--
@@ -98,6 +98,6 @@ public class GetPlots {
     private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.io.MainIO _io = null;
 
 }

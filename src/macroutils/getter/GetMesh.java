@@ -62,7 +62,7 @@ public class GetMesh {
     public CustomMeshControl customControl(MeshOperation mo, String regexPatt) {
         if (!_chk.is.autoMeshOperation(mo)) {
             _checkGotNull(null, "Custom Mesh Control", true);
-            _tmpl.print.gotNull(true);
+            _io.say.msg("Returning NULL!");
             return null;
         }
         AutoMeshOperation amo = (AutoMeshOperation) mo;
@@ -153,6 +153,7 @@ public class GetMesh {
         _io.say.action("Getting the Target Relative Size", vo);
         _io.say.object(amo, vo);
         RelativeSize rs = amo.getDefaultValues().get(PartsTargetSurfaceSize.class).getRelativeSize();
+        //-- Check later. Really need to cast variable?
         if (_chk.is.surfaceWrapperOperation(amo)) {
             SurfaceWrapperAutoMeshOperation swamo = (SurfaceWrapperAutoMeshOperation) amo;
             rs = swamo.getDefaultValues().get(PartsTargetSurfaceSize.class).getRelativeSize();

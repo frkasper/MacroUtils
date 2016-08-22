@@ -388,7 +388,7 @@ public class CreatePhysicsContinua {
         vpp.setMethod(FunctionVectorProfileMethod.class);
         vpp.getMethod(FunctionVectorProfileMethod.class).setFieldFunction(fvw.getVelocityFF());
         //--
-        _tmpl.print.created(fvw, true);
+        _io.say.created(fvw, true);
         return fvw;
     }
 
@@ -425,7 +425,7 @@ public class CreatePhysicsContinua {
         _set.physics.gravity(_pc, _ud.gravity);
         _pc.setPresentationName(_getPCName());
         _io.say.msg("");
-        _tmpl.print.created(_pc, true);
+        _io.say.created(_pc, true);
         _upd.allUnits(false);
         _set.solver.settings();
         return _pc;

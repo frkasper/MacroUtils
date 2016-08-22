@@ -37,7 +37,7 @@ public class Read {
         _io.say.msg("Camera string: " + cam, vo);
         String[] props = cam.split("\\" + StaticDeclarations.CAM_SPLIT_CHAR_FIELDS);
         _io.say.msgDebug("Props: " + _get.strings.fromArray(props));
-        VisView vv0 = _get.cameras.byName(props[0], false);
+        VisView vv0 = _get.cameras.byREGEX(props[0], false);
         if (vv0 != null) {
             _io.say.msg("Already exists. Skipping...", vo);
             return vv0;
@@ -55,25 +55,25 @@ public class Read {
             switch (i) {
                 case 1:
                     vv1.setFocalPoint(dv);
-                    _io.say.msg("Focal Point read: " + dv.toString());
+                    _io.say.value("Focal Point read", dv, true);
                     break;
                 case 2:
                     vv1.setPosition(dv);
-                    _io.say.msg("Position read: " + dv.toString());
+                    _io.say.value("Position read", dv, true);
                     break;
                 case 3:
                     vv1.setViewUp(dv);
-                    _io.say.msg("View Up read: " + dv.toString());
+                    _io.say.value("View Up read", dv, true);
                     break;
             }
         }
         double ps = Double.valueOf(props[4]);
-        vv1.setParallelScale(ps);
-        _io.say.msg("Parallel Scale read: " + ps);
+        vv1.getParallelScale().setValue(ps);
+        _io.say.value("Parallel Scale read", ps, true);
         try {
             int pm = Integer.parseInt(props[5]);
             vv1.setProjectionMode(pm);
-            _io.say.msg("Projection Mode read: " + pm);
+            _io.say.value("Projection Mode read", pm, true);
         } catch (Exception e) {
             _io.say.msg("Could not read Projection Mode. Error parsing it or value not found.");
         }

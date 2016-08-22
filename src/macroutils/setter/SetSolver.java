@@ -56,19 +56,147 @@ public class SetSolver {
         return StaticDeclarations.Order.FIRST_ORDER;
     }
 
-    private CoupledImplicitSolver _getCIS() {
-        return _sim.getSolverManager().getSolver(CoupledImplicitSolver.class);
+    private ImplicitUnsteadySolver _getImplicitUnsteadySolver() {
+        return (ImplicitUnsteadySolver) _get.solver.byClass(ImplicitUnsteadySolver.class);
     }
 
-    private ImplicitUnsteadySolver _getIUS() {
-        return (ImplicitUnsteadySolver) _get.solver.byClass(ImplicitUnsteadySolver.class);
+    private ArrayList<Region> _getRegionsWithPhysicsContinua() {
+        ArrayList<Region> ar = new ArrayList();
+        for (Region r : _get.regions.all(false)) {
+            if (r.getPhysicsContinuum() == null) {
+                continue;
+            }
+            ar.add(r);
+        }
+        return ar;
     }
 
     private ScalarPhysicalQuantity _getTimeStep() {
         if (_chk.has.PISO()) {
             return ((PisoUnsteadySolver) _get.solver.byClass(PisoUnsteadySolver.class)).getTimeStep();
         }
-        return _getIUS().getTimeStep();
+        return _getImplicitUnsteadySolver().getTimeStep();
+    }
+
+    private boolean _hasDES() {
+        for (Region r : _getRegionsWithPhysicsContinua()) {
+            if (_chk.is.DES(r.getPhysicsContinuum())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean _hasLES() {
+        for (Region r : _getRegionsWithPhysicsContinua()) {
+            if (_chk.is.LES(r.getPhysicsContinuum())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean _isImplicitUnsteady(boolean vo) {
+        if (_chk.is.implicitUnsteady()) {
+            return true;
+        }
+        _io.say.msg("Case is not Implicit Unsteady.", vo);
+        return false;
+    }
+
+    private boolean _isUnsteady(boolean vo) {
+        if (_chk.is.unsteady()) {
+            return true;
+        }
+        _io.say.msg("Case is not Unsteady.", vo);
+        return false;
+    }
+
+    private void _updateIterations() {
+        if (!_chk.is.unsteady()) {
+            maxIterations(_ud.maxIter, false);
+            return;
+        }
+        _get.solver.stoppingCriteria_MaxIterations().setIsUsed(false);
+        _get.solver.stoppingCriteria_AbortFile().setInnerIterationCriterion(false);
+        _io.say.msg(true, "Maximum Iterations Stopping Criteria disabled.");
+        _io.say.msg(true, "ABORT file Inner Iteration Criteria disabled.");
+        maxInnerIterations(_ud.trnInnerIter, false);
+        timestep(_ud.trnTimestep, null, false);
+        _set.solver.maxPhysicalTime(_ud.trnMaxTime, _ud.defUnitTime, false);
+    }
+
+    private void _updateURFs() {
+        _updateURFs_EMP();
+        _updateURFs_SegregatedSolver();
+        _updateURFs_OtherSolvers();
+    }
+
+    private void _updateURFs_EMP() {
+        if (!_chk.has.EMP()) {
+            return;
+        }
+        Solver s = _get.solver.byClass(SegregatedMultiPhaseSolver.class);
+        SegregatedMultiPhaseSolver emps = (SegregatedMultiPhaseSolver) s;
+        MultiPhaseVelocitySolver empv = emps.getVelocitySolver();
+        MultiPhasePressureSolver empp = emps.getPressureSolver();
+        empv.setUrf(_ud.urfPhsCplVel);
+        empp.setUrf(_ud.urfP);
+        _io.say.value("URF Phase Couple Velocity", empv.getUrf(), true);
+        _io.say.value("URF Pressure", empp.getUrf(), true);
+    }
+
+    private void _updateURFs_OtherSolvers() {
+        for (Solver s : _sim.getSolverManager().getObjects()) {
+            double urf = 0.8;
+            if (s instanceof GranularTemperatureTransportSolver) {
+                urf = _ud.urfGranTemp;
+            } else if (s instanceof KeTurbSolver) {
+                urf = _ud.urfKEps;
+            } else if (s instanceof KwTurbSolver) {
+                urf = _ud.urfKOmega;
+            } else if (s instanceof PpdfCombustionSolver) {
+                urf = _ud.urfPPDFComb;
+            } else if (s instanceof RsTurbSolver) {
+                urf = _ud.urfRS;
+            } else if (s instanceof SegregatedSpeciesSolver) {
+                urf = _ud.urfSpecies;
+            } else if (s instanceof SegregatedVofSolver) {
+                urf = _ud.urfVOF;
+            } else if (s instanceof VolumeFractionSolver) {
+                urf = _ud.urfVolFrac;
+            } else if (s instanceof RsTurbViscositySolver) {
+                urf = _ud.urfRSTurbVisc;
+            } else if (s instanceof KeTurbViscositySolver) {
+                urf = _ud.urfKEpsTurbVisc;
+            } else if (s instanceof KwTurbViscositySolver) {
+                urf = _ud.urfKOmegaTurbVisc;
+            }
+            if (s instanceof TurbViscositySolver) {
+                TurbViscositySolver tvs = (TurbViscositySolver) s;
+                tvs.setViscosityUrf(urf);
+                _io.say.value("URF Turbulence Viscosity", tvs.getViscosityUrf(), true);
+                tvs.setMaxTvr(_ud.maxTVR);
+                _io.say.value("Maximum Turbulence Viscosity Ratio", tvs.getMaxTvr(), true);
+                continue;
+            }
+            if (!(s instanceof ScalarSolverBase)) {
+                continue;
+            }
+            ScalarSolverBase ssb = (ScalarSolverBase) s;
+            ssb.setUrf(urf);
+            _io.say.value("URF " + ssb.getPresentationName(), ssb.getUrf(), true);
+        }
+    }
+
+    private void _updateURFs_SegregatedSolver() {
+        CFL(_ud.CFL, false);
+        urfSegregatedFlow(_ud.urfVel, _ud.urfP, false);
+        if (_ud.urfEnergy > 0.) {
+            _io.say.msg("Using the same Energy URF for both Fluids and Solids...");
+            _ud.urfFluidEnrgy = _ud.urfSolidEnrgy = _ud.urfEnergy;
+        }
+        urfSegregatedEnergy(_ud.urfFluidEnrgy, _ud.urfSolidEnrgy, false);
     }
 
     /**
@@ -79,8 +207,8 @@ public class SetSolver {
      * is respected. Fluctuations or divergence may occur otherwise.
      * </ul>
      */
-    public void aggressiveURFs() {
-        _io.say.msg("Setting Aggressive Under-Relaxation Factors...");
+    public void aggressiveSettings() {
+        _io.say.action("Setting Aggressive Solver Settings", true);
         _ud.urfSolidEnrgy = 1.0;
         _ud.urfFluidEnrgy = _ud.urfVel = _ud.urfKEps = _ud.urfKOmega = 0.9;
         _ud.urfP = 0.1;
@@ -90,10 +218,14 @@ public class SetSolver {
         if (_chk.has.VOF()) {
             _ud.urfVel = 0.8;
         }
-//    if (_chk.has.LES()) {
-//        _ud.urfVel = _ud.urfEnergy = _ud.urfKEps = _ud.urfKOmega = _ud.urfP = _ud.urfVOF = 1.0;
-//    }
-        settings();
+        if (_hasLES()) {
+            _ud.urfP = 0.8;
+        } else if (_hasDES()) {
+            _ud.urfP = 0.6;
+        }
+        _updateURFs();
+        _updateIterations();
+        _io.say.ok(true);
     }
 
     /**
@@ -103,19 +235,15 @@ public class SetSolver {
      * @param vo given verbose option. False will not print anything.
      */
     public void CFL(double cfl, boolean vo) {
-        CFL(cfl, vo, false);
-    }
-
-    private void CFL(double cfl, boolean vo, boolean vo2) {
         _io.say.action("Setting CFL for the Coupled Solver", vo);
-        _io.say.msg(vo, "CFL: %g.", cfl);
         if (!_chk.has.coupledImplicit()) {
             _io.say.msg(vo, "Not a Coupled Solver simulation.");
             return;
         }
-        _getCIS().setCFL(cfl);
+        CoupledImplicitSolver cis = _sim.getSolverManager().getSolver(CoupledImplicitSolver.class);
+        cis.setCFL(cfl);
+        _io.say.value("CFL Number", cis.getCFL(), true);
         _io.say.ok(vo);
-        _io.say.msg(vo2, "CFL: %g.", _ud.CFL);
     }
 
     /**
@@ -139,14 +267,13 @@ public class SetSolver {
                 break;
             case ALL_BUT_STRATEGIC:
                 for (Solver s : as) {
-                    boolean b1 = s instanceof ImplicitUnsteadySolver;
-                    boolean b2 = s instanceof SixDofSolver;
-                    boolean b3 = s instanceof DofMotionSolver;
-                    boolean b4 = s instanceof WallDistanceSolver;
-                    boolean b5 = s instanceof DampingBoundaryDistanceSolver;
-                    boolean b6 = s instanceof PartitioningSolver;
-                    boolean b7 = s instanceof OneDSolver;
-                    if (b1 || b2 || b3 || b4 || b5 || b6 || b7) {
+                    if (s instanceof ImplicitUnsteadySolver
+                            || s instanceof SixDofSolver
+                            || s instanceof DofMotionSolver
+                            || s instanceof WallDistanceSolver
+                            || s instanceof VofWaveZoneDistanceSolver
+                            || s instanceof PartitioningSolver
+                            || s instanceof OneDSolver) {
                         continue;
                     }
                     _freeze(s, opt);
@@ -189,8 +316,12 @@ public class SetSolver {
      */
     public void maxInnerIterations(int n, boolean vo) {
         _io.say.action("Setting Maximum Number of Inner Iterations", vo);
-        _io.say.msg(vo, "Max Inner Iterations: %d.", n);
-        _get.solver.stoppingCriteria_MaxInnerIterations().setMaximumNumberInnerIterations(n);
+        if (!_isImplicitUnsteady(vo)) {
+            return;
+        }
+        InnerIterationStoppingCriterion iisc = _get.solver.stoppingCriteria_MaxInnerIterations();
+        iisc.setMaximumNumberInnerIterations(n);
+        _io.say.msg(true, "Maximum Number of Inner Iterations: %d.", iisc.getMaximumNumberInnerIterations());
         _io.say.ok(vo);
     }
 
@@ -202,9 +333,10 @@ public class SetSolver {
      */
     public void maxIterations(int n, boolean vo) {
         _io.say.action("Setting Maximum Number of Iterations", vo);
-        _io.say.msg(vo, "Max Iterations: %d.", n);
-        _ud.maxIter = n;
-        _get.solver.stoppingCriteria_MaxIterations().setMaximumNumberSteps(n);
+        StepStoppingCriterion ssc= _get.solver.stoppingCriteria_MaxIterations();
+        ssc.setMaximumNumberSteps(n);
+        _io.say.value("Maximum Iterations", ssc.getMaximumNumberSteps(), true);
+        _ud.maxIter = ssc.getMaximumNumberSteps();
         _io.say.ok(vo);
     }
 
@@ -217,8 +349,11 @@ public class SetSolver {
      */
     public void maxPhysicalTime(double maxTime, Units u, boolean vo) {
         _io.say.action("Setting Maximum Physical Timestep", vo);
-        PhysicalTimeStoppingCriterion sc = _get.solver.stoppingCriteria_MaxTime();
-        _set.object.physicalQuantity(sc.getMaximumTime(), maxTime, null, u, "Maximum Physical Time", vo);
+        if (!_isUnsteady(vo)) {
+            return;
+        }
+        PhysicalTimeStoppingCriterion ptsc = _get.solver.stoppingCriteria_MaxTime();
+        _set.object.physicalQuantity(ptsc.getMaximumTime(), maxTime, null, u, "Maximum Physical Time", true);
         _io.say.ok(vo);
     }
 
@@ -234,7 +369,7 @@ public class SetSolver {
             return;
         }
         _io.say.action("Setting Time Discretization Order", vo);
-        TimeDiscretizationOption tdo = _getIUS().getTimeDiscretizationOption();
+        TimeDiscretizationOption tdo = _getImplicitUnsteadySolver().getTimeDiscretizationOption();
         switch (order) {
             case FIRST_ORDER:
                 tdo.setSelected(TimeDiscretizationOption.Type.FIRST_ORDER);
@@ -243,7 +378,7 @@ public class SetSolver {
                 tdo.setSelected(TimeDiscretizationOption.Type.SECOND_ORDER);
                 break;
         }
-        _io.say.msg(vo, "Time Discretization: %s.", order.toString());
+        _io.say.value("Time Discretization", order.toString(), true, true);
         _io.say.ok(vo);
     }
 
@@ -267,11 +402,10 @@ public class SetSolver {
 
     private void timestep(double val, String def, boolean vo) {
         _io.say.action("Setting Physical Timestep", vo);
-        if (!_chk.is.unsteady()) {
-            _tmpl.print.nothingChanged("Case is not Unsteady.", vo);
+        if (!_isImplicitUnsteady(vo)) {
             return;
         }
-        _set.object.physicalQuantity(_getTimeStep(), val, def, _ud.defUnitTime, "Timestep", vo);
+        _set.object.physicalQuantity(_getTimeStep(), val, def, _ud.defUnitTime, "Timestep", true);
         _io.say.ok(vo);
         //-- Time Discretization.
         timeDiscretization(_getOrder(), vo);
@@ -281,79 +415,13 @@ public class SetSolver {
      * Sets/Updates all Solver Settings. E.g.: Relaxation Factors.
      */
     public void settings() {
-        settings(true);
-    }
-
-    private void settings(boolean vo) {
         if (_sim.getSolverManager().isEmpty()) {
             return;
         }
-        _io.say.action("Updating Solver Settings", vo);
-        if (_chk.is.unsteady()) {
-            _get.solver.stoppingCriteria_MaxIterations().setIsUsed(false);
-            _get.solver.stoppingCriteria_AbortFile().setInnerIterationCriterion(false);
-            if (_chk.is.implicitUnsteady()) {
-                maxInnerIterations(_ud.trnInnerIter, false);
-                timestep(_ud.trnTimestep, null, false);
-                _io.say.msg(vo, "Time Discretization: %s.", _getOrder().toString());
-                _io.say.msg(vo, "Maximum Inner Iterations: %d.", _ud.trnInnerIter);
-                _io.say.msg(vo, "Physical Timestep: %g %s", _ud.trnTimestep, _ud.defUnitTime.toString());
-            }
-            _set.solver.maxPhysicalTime(_ud.trnMaxTime, _ud.defUnitTime, false);
-            _io.say.msg(vo, "Maximum Physical Time: %g %s", _ud.trnMaxTime, _ud.defUnitTime.toString());
-        } else {
-            maxIterations(_ud.maxIter, false);
-            _io.say.msg(vo, "Maximum Number of Iterations: %d", _ud.maxIter);
-        }
-        CFL(_ud.CFL, false, vo);
-        urfSegregatedFlow(_ud.urfVel, _ud.urfP, false, true);
-        if (_ud.urfEnergy > 0.) {
-            _io.say.msg("Using the same Energy URF for both Fluids and Solids...");
-            _ud.urfFluidEnrgy = _ud.urfSolidEnrgy = _ud.urfEnergy;
-        }
-        urfSegregatedEnergy(_ud.urfFluidEnrgy, _ud.urfSolidEnrgy, false, true);
-        if (_chk.has.EMP()) {
-            Solver s = _get.solver.byClass(SegregatedMultiPhaseSolver.class);
-            SegregatedMultiPhaseSolver emps = (SegregatedMultiPhaseSolver) s;
-            MultiPhaseVelocitySolver empv = emps.getVelocitySolver();
-            MultiPhasePressureSolver empp = emps.getPressureSolver();
-            empv.setUrf(_ud.urfPhsCplVel);
-            empp.setUrf(_ud.urfP);
-            _io.say.msg(vo, "URF Phase Couple Velocity: %g", _ud.urfPhsCplVel);
-            _io.say.msg(vo, "URF Pressure: %g", _ud.urfP);
-        }
-        settings(GranularTemperatureTransportSolver.class, "Granular Temperature", _ud.urfGranTemp, vo);
-        settings(KeTurbSolver.class, "K-Epsilon Turbulence", _ud.urfKEps, vo);
-        settings(KeTurbViscositySolver.class, "K-Epsilon Turbulent Viscosity", _ud.urfKEpsTurbVisc, vo);
-        settings(KwTurbSolver.class, "K-Omega Turbulence", _ud.urfKOmega, vo);
-        settings(KwTurbViscositySolver.class, "K-Omega Turbulent Viscosity", _ud.urfKOmegaTurbVisc, vo);
-        settings(PpdfCombustionSolver.class, "PPDF Combustion", _ud.urfPPDFComb, vo);
-        settings(RsTurbSolver.class, "Reynolds Stress Turbulence", _ud.urfRS, vo);
-        settings(RsTurbViscositySolver.class, "Reynolds Stress Turbulent Viscosity", _ud.urfRSTurbVisc, vo);
-        settings(SegregatedSpeciesSolver.class, "Segregated Species", _ud.urfSpecies, vo);
-        settings(SegregatedVofSolver.class, "Segregated VOF", _ud.urfVOF, vo);
-        settings(VolumeFractionSolver.class, "Volume Fraction", _ud.urfVolFrac, vo);
-        _io.say.ok(vo);
-    }
-
-    private void settings(Class cl, String hasStr, double val, boolean vo) {
-        Solver slv = _get.solver.byClass(cl);
-        boolean b1 = slv == null;
-        boolean b2 = !_sim.getSolverManager().has(hasStr);
-        if (b1 || b2) {
-            return;
-        }
-        if (hasStr.endsWith("Turbulent Viscosity")) {
-            _io.say.msg(vo, "URF %s: %g", hasStr, val);
-            _io.say.msg(vo, "Maximum Ratio: %g", _ud.maxTVR);
-            TurbViscositySolver tvs = (TurbViscositySolver) slv;
-            tvs.setViscosityUrf(val);
-            tvs.setMaxTvr(_ud.maxTVR);
-            return;
-        }
-        ScalarSolverBase ssb = (ScalarSolverBase) slv;
-        _io.say.msg(vo, "URF %s: %g", hasStr, val);
-        ssb.setUrf(val);
+        _io.say.action("Updating Solver Settings", true);
+        _updateIterations();
+        _updateURFs();
+        _io.say.ok(true);
     }
 
     /**
@@ -364,10 +432,6 @@ public class SetSolver {
      * @param vo given verbose option. False will not print anything.
      */
     public void urfSegregatedEnergy(double urfFld, double urfSld, boolean vo) {
-        urfSegregatedEnergy(urfFld, urfSld, vo, false);
-    }
-
-    private void urfSegregatedEnergy(double urfFld, double urfSld, boolean vo, boolean vo2) {
         _io.say.action("Setting URFs for the Segregated Energy Solver", vo);
         if (!_chk.has.segregatedEnergy()) {
             _io.say.msg(vo, "Not a Segregated Energy simulation.");
@@ -376,11 +440,9 @@ public class SetSolver {
         SegregatedEnergySolver ses = ((SegregatedEnergySolver) _get.solver.byClass(SegregatedEnergySolver.class));
         ses.setFluidUrf(urfFld);
         ses.setSolidUrf(urfSld);
-        _io.say.msg(vo, "URF Fluid Energy: %g.", ses.getFluidUrf());
-        _io.say.msg(vo, "URF Solid Energy: %g.", ses.getSolidUrf());
+        _io.say.value("URF Fluid Energy", ses.getFluidUrf(), true);
+        _io.say.value("URF Solid Energy", ses.getSolidUrf(), true);
         _io.say.ok(vo);
-        _io.say.msg(vo2, "URF Fluid Energy: %g.", ses.getFluidUrf());
-        _io.say.msg(vo2, "URF Solid Energy: %g.", ses.getSolidUrf());
     }
 
     /**
@@ -391,10 +453,6 @@ public class SetSolver {
      * @param vo given verbose option. False will not print anything.
      */
     public void urfSegregatedFlow(double urfVel, double urfP, boolean vo) {
-        urfSegregatedFlow(urfVel, urfP, vo, false);
-    }
-
-    private void urfSegregatedFlow(double urfVel, double urfP, boolean vo, boolean vo2) {
         _io.say.action("Setting URFs for the Segregated Flow Solver", vo);
         if (!_chk.has.segregatedFlow()) {
             _io.say.msg(vo, "Not a Segregated Flow simulation.");
@@ -405,11 +463,9 @@ public class SetSolver {
         PressureSolver ps = sfs.getPressureSolver();
         vs.setUrf(urfVel);
         ps.setUrf(urfP);
-        _io.say.msg(vo, "URF Velocity: %g.", vs.getUrf());
-        _io.say.msg(vo, "URF Pressure: %g.", ps.getUrf());
+        _io.say.value("URF Velocity", vs.getUrf(), true);
+        _io.say.value("URF Pressure", ps.getUrf(), true);
         _io.say.ok(vo);
-        _io.say.msg(vo2, "URF Velocity: %g.", vs.getUrf());
-        _io.say.msg(vo2, "URF Pressure: %g.", ps.getUrf());
     }
 
     /**

@@ -23,6 +23,11 @@ public class GetScenes {
         _sim = m.getSimulation();
     }
 
+    private void _gotNull(String what, Displayer d, boolean vo) {
+        _io.say.value(what, d.getPresentationName(), true, vo);
+        _io.say.msg("Nothing found. Returning NULL!", vo);
+    }
+    
     /**
      * Gets all Scenes available in the model.
      *
@@ -31,7 +36,7 @@ public class GetScenes {
      */
     public ArrayList<Scene> all(boolean vo) {
         ArrayList<Scene> as = new ArrayList(_sim.getSceneManager().getScenes());
-        _tmpl.print.getAll("Scenes", new ArrayList(as), vo);
+        _io.say.objects(as, "Getting all Scenes", vo);
         return as;
     }
 
@@ -57,7 +62,7 @@ public class GetScenes {
         for (Scene scn : all(false)) {
             ad.addAll(scn.getDisplayerManager().getObjects());
         }
-        _tmpl.print.getAll("Displayers", new ArrayList(ad), vo);
+        _io.say.objects(ad, "Getting all Displayers", vo);
         return ad;
     }
 
@@ -71,7 +76,7 @@ public class GetScenes {
     public ArrayList<Displayer> allDisplayers(Scene scn, boolean vo) {
         String sn = scn.getPresentationName();
         ArrayList<Displayer> ad = new ArrayList(scn.getDisplayerManager().getObjects());
-        _tmpl.print.getAll(String.format("Displayers from Scene \"%s\"", sn), new ArrayList(ad), vo);
+        _io.say.objects(ad, String.format("Getting all Displayers from Scene \"%s\"", scn.getPresentationName()), vo);
         return ad;
     }
 
@@ -107,8 +112,7 @@ public class GetScenes {
      * @return The Scene. Null if nothing is found.
      */
     public Displayer displayerByREGEX(Scene scn, String regexPatt, boolean vo) {
-        return (Displayer) _get.objects.byREGEX(regexPatt, "Scene",
-                new ArrayList(allDisplayers(scn, false)), vo);
+        return (Displayer) _get.objects.byREGEX(regexPatt, "Scene", new ArrayList(allDisplayers(scn, false)), vo);
     }
 
     /**
@@ -126,7 +130,7 @@ public class GetScenes {
         } else if (_chk.is.vector(d)) {
             return ((VectorDisplayer) d).getLegend();
         }
-        _tmpl.print.gotNull(String.format("Legend on Displayer \"%s\"", d.getPresentationName()), vo);
+        _gotNull("Legend on Displayer", d, vo);
         return null;
     }
 
@@ -143,8 +147,7 @@ public class GetScenes {
         } else if (_chk.is.streamline(d)) {
             return ((StreamDisplayer) d).getScalarDisplayQuantity();
         }
-        _tmpl.print.gotNull(String.format("ScalarDisplayQuantity on Displayer \"%s\"", d.getPresentationName()),
-                vo);
+        _gotNull("ScalarDisplayQuantity on Displayer", d, vo);
         return null;
     }
 
@@ -153,8 +156,8 @@ public class GetScenes {
      */
     public void updateInstances() {
         _chk = _mu.check;
-        _tmpl = _mu.templates;
         _get = _mu.get;
+        _io = _mu.io;
     }
 
     //--
@@ -164,6 +167,6 @@ public class GetScenes {
     private MacroUtils _mu = null;
     private MainGetter _get = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.io.MainIO _io = null;
 
 }

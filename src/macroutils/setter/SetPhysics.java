@@ -91,7 +91,7 @@ public class SetPhysics {
         _io.say.action("Setting Gravity", true);
         _io.say.object(pc, true);
         if (!pc.getReferenceValues().has("Gravity")) {
-            _io.say.msg("Physics do not have a Gravity model.");
+            _io.say.msg("Physics does not have a Gravity model.");
             return;
         }
         pc.getReferenceValues().get(Gravity.class).setConstant(vals);

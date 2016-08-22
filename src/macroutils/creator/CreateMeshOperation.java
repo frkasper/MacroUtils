@@ -247,7 +247,7 @@ public class CreateMeshOperation {
         }
         AutoMeshOperation amo = (AutoMeshOperation) mo;
         SurfaceCustomMeshControl scmc = amo.getCustomMeshControls().createSurfaceControl();
-        _tmpl.print.created(scmc, vo);
+        _io.say.created(scmc, vo);
         return scmc;
     }
 
@@ -321,14 +321,17 @@ public class CreateMeshOperation {
             DualAutoMesher dam = ((DualAutoMesher) amo.getMeshers().getObject("Polyhedral Mesher"));
             dam.setTetOptimizeCycles(_ud.mshOptCycles);
             dam.setTetQualityThreshold(_ud.mshQualityThreshold);
+            _io.say.value("Optimization Cycles", dam.getTetOptimizeCycles(), true);
+            _io.say.value("Quality Threshold", dam.getTetQualityThreshold(), true);
+            
         }
         if (_chk.has.trimmerMesher(amo)) {
             star.trimmer.PartsGrowthRateOption.Type t = _ud.mshTrimmerGrowthRate.getType();
             amodv.get(PartsSimpleTemplateGrowthRate.class).getGrowthRateOption().setSelected(t);
-            amodv.get(MaximumCellSize.class).getRelativeSize().setPercentage(_ud.mshTrimmerMaxCelSize);
+            _io.say.value("Growth Rate Type", t.getPresentationName(), true, true);
+            _set.mesh.maxCellSize(amo, _ud.mshTrimmerMaxCellSize, false);
         }
-        _tmpl.print.baseMeshParameters(amo, true);
-        _tmpl.print.created(amo, true);
+        _io.say.created(amo, true);
     }
 
     /**
@@ -366,7 +369,7 @@ public class CreateMeshOperation {
         _io.say.objects(agp, "Geometry Parts", true);
         PrepareFor2dOperation p2d = (PrepareFor2dOperation) _getMOM().createPrepareFor2dOperation(agp);
         p2d.execute();
-        _tmpl.print.created(p2d, true);
+        _io.say.created(p2d, true);
         return p2d;
     }
 
@@ -452,7 +455,7 @@ public class CreateMeshOperation {
         DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(_getNOV1(dmpc), "Constant");
         dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
         dmo.execute();
-        _tmpl.print.created(dmo, true);
+        _io.say.created(dmo, true);
         return dmo;
     }
 
@@ -525,7 +528,7 @@ public class CreateMeshOperation {
             ImprintPartSurfaces ips = ipo.getImprintValuesManager().get(ImprintPartSurfaces.class);
             ips.getPartSurfacesOption().setSelected(ImprintPartSurfacesOption.Type.USE_INPUT);
         }
-        _tmpl.print.created(ipo, true);
+        _io.say.created(ipo, true);
         return ipo;
     }
 
@@ -565,7 +568,7 @@ public class CreateMeshOperation {
         SurfaceCustomMeshControl scmc2 = _createSC(mo, false);
         scmc2.setPresentationName(scmc.getPresentationName());
         scmc2.copyProperties(scmc);
-        _tmpl.print.created(scmc2, true);
+        _io.say.created(scmc2, true);
         return scmc2;
     }
 
@@ -586,7 +589,7 @@ public class CreateMeshOperation {
         SurfaceCustomMeshControl scmc = _createSC(mo, false);
         scmc.getGeometryObjects().setObjects(ago);
         _set.mesh.surfaceSizes(scmc, min, tgt, true);
-        _tmpl.print.created(scmc, true);
+        _io.say.created(scmc, true);
         return scmc;
     }
 
@@ -615,7 +618,6 @@ public class CreateMeshOperation {
             _io.say.msg(true, "Prism Layers DISABLED.");
         } else {
             pcpm.getCustomPrismOptions().setSelected(PartsCustomPrismsOption.Type.CUSTOMIZE);
-            _tmpl.print.prismsParameters(numLayers, stretch, relSize, true);
             CustomPrismValuesManager cpvm = scmc.getCustomValues().get(CustomPrismValuesManager.class);
             if (numLayers > 0) {
                 pcpm.getCustomPrismControls().setCustomizeNumLayers(true);
@@ -636,7 +638,7 @@ public class CreateMeshOperation {
                 pcpm.getCustomPrismControls().setCustomizeTotalThickness(false);
             }
         }
-        _tmpl.print.created(scmc, true);
+        _io.say.created(scmc, true);
         return scmc;
     }
 
@@ -652,20 +654,17 @@ public class CreateMeshOperation {
         _io.say.objects(agp, "Geometry Parts", true);
         AutoMeshOperation amo = _getMOM().createSurfaceWrapperAutoMeshOperation(agp, name);
         SurfaceWrapperAutoMeshOperation swamo = (SurfaceWrapperAutoMeshOperation) amo;
+        AutoMeshDefaultValuesManager amdvm = swamo.getDefaultValues();
         _set.mesh.baseSize(swamo, _ud.mshBaseSize, _ud.defUnitLength, false);
         _set.mesh.surfaceSizes(swamo, _ud.mshSrfSizeMin, _ud.mshSrfSizeTgt, false);
-        _tmpl.print.baseMeshParameters(swamo, true);
-        AutoMeshDefaultValuesManager amdvm = swamo.getDefaultValues();
-        SurfaceCurvatureNumPts scnp = amdvm.get(SurfaceCurvature.class).getSurfaceCurvatureNumPts();
+        _set.mesh.surfaceCurvature(amdvm.get(SurfaceCurvature.class), _ud.mshSrfCurvNumPoints, false);
         GlobalVolumeOfInterestOption gvio = amdvm.get(GlobalVolumeOfInterest.class).getVolumeOfInterestOption();
         GeometricFeatureAngle gfa = amdvm.get(GeometricFeatureAngle.class);
-        scnp.setNumPointsAroundCircle(_ud.mshSrfCurvNumPoints);
         gvio.setSelected(GlobalVolumeOfInterestOption.Type.LARGEST_INTERNAL);
         gfa.setGeometricFeatureAngle(_ud.mshWrapperFeatureAngle);
-        _io.say.value("Surface Curvature", scnp.getNumPointsAroundCircle(), true);
-        _io.say.msg(true, "Volume of Interest: %s.", gvio.getSelectedElement().getPresentationName());
-        _io.say.value("Wrapper Feature Angle", gfa.getGeometricFeatureAngle(), _ud.unit_deg, true);
-        _tmpl.print.created(swamo, true);
+        _io.say.value("Volume of Interest", gvio.getSelectedElement().getPresentationName(), true, true);
+        _io.say.value("Geometric Feature Angle", gfa.getGeometricFeatureAngle(), true);
+        _io.say.created(swamo, true);
         return swamo;
     }
 
@@ -754,7 +753,7 @@ public class CreateMeshOperation {
                 tas.getRelativeZSize().setPercentage(relSizes[2]);
             }
         }
-        _tmpl.print.created(vcmc, true);
+        _io.say.created(vcmc, true);
         return vcmc;
     }
 

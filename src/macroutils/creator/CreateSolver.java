@@ -39,21 +39,35 @@ public class CreateSolver {
         File simhf = new File(_ud.simPath, _ud.simTitle + ".simh");
         SolutionHistory sh = _sim.get(SolutionHistoryManager.class).createForFile(simhf.toString(), false);
         sh.getRegions().setObjects(ano);
-        ArrayList<FieldFunction> vff = new ArrayList();
-        ArrayList<FieldFunction> sff = new ArrayList();
+////-- As a vector is not working. Check later.
+////    sh.getFunctions().clear();
+////    for (FieldFunction ff : aff) {
+////        if (_chk.is.vector(ff)) {
+////            sh.getFunctions().add(ff.getMagnitudeFunction());
+////            continue;
+////        }
+////        sh.getFunctions().add(ff);
+////    }
+        Vector<FieldFunction> vff = new Vector();
         for (FieldFunction ff : aff) {
             if (_chk.is.vector(ff)) {
-                vff.add(ff);
-            } else {
-                sff.add(ff);
+                vff.add(ff.getMagnitudeFunction());
+                continue;
             }
+            vff.add(ff);
         }
-        sh.setVectors(new Vector(vff));
-        sh.setScalars(new Vector(sff));
-        _io.say.objects(new ArrayList(sh.getScalars()), "Scalar Functions", true);
-        _io.say.objects(new ArrayList(sh.getVectors()), "Vector Functions", true);
+        sh.setFunctions(vff);
+        for (NamedObject no : ano) {
+            if (no instanceof Region) {
+                sh.getRegions().add(no);
+                continue;
+            }
+            sh.getInputs().add(no);
+        }
+        _io.say.objects(new ArrayList(sh.getFunctions()), "Functions", true);
         _io.say.objects(new ArrayList(sh.getRegions().getParts()), "Regions", true);
-        _tmpl.print.created(sh, true);
+        _io.say.objects(new ArrayList(sh.getInputs().getParts()), "Inputs", true);
+        _io.say.created(sh, true);
         return sh;
     }
 
@@ -71,7 +85,7 @@ public class CreateSolver {
             return svm.getSolutionView(sh.getPresentationName());
         }
         RecordedSolutionView rsv = sh.createRecordedSolutionView();
-        _tmpl.print.created(rsv, true);
+        _io.say.created(rsv, true);
         return rsv;
     }
 
@@ -133,7 +147,7 @@ public class CreateSolver {
         }
         isc.getLogicalOption().setSelected(SolverStoppingCriterionLogicalOption.Type.AND);
         isc.setPresentationName(String.format("%s - %s", type.getVar(), mon.getPresentationName()));
-        _tmpl.print.created(ssc, true);
+        _io.say.created(ssc, true);
         return ssc;
     }
 

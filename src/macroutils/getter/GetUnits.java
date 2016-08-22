@@ -47,11 +47,11 @@ public class GetUnits {
         _io.print.msg(vo, "Getting Unit by exact match: \"%s\"", name);
         for (Units u : um.getObjects()) {
             if (_get.strings.fromUnit(u).equals(name) || u.getDescription().equals(name)) {
-                _io.print.msg("Got: " + _get.strings.fromUnit(u), vo);
+                _io.say.value("Found", _get.strings.fromUnit(u), true, vo);
                 return u;
             }
         }
-        _tmpl.print.gotNull(vo);
+        _io.say.msg("Nothing found. Returning NULL!", vo);
         return null;
     }
 

@@ -43,7 +43,7 @@ public class GetParts {
      * @return An ArrayList of Parts.
      */
     public ArrayList<Part> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Parts", new ArrayList(all(false)), true));
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Parts", new ArrayList(all(false)), vo));
     }
 
     /**

@@ -110,7 +110,7 @@ public class CreateScene {
 
     private void _createdDisplayer(Displayer d, boolean vo) {
         d.setPresentationName(d.getPresentationName().split(" ")[0]);
-        _tmpl.print.created(d, vo);
+        _io.say.created(d, vo);
     }
 
     private Scene _createScene(StaticDeclarations.Scene type, ArrayList<NamedObject> ano,
@@ -163,8 +163,8 @@ public class CreateScene {
         _set.scene.cameraView(scn, _ud.defCamView, vo);
         //--
         //-- Automatic camera assignment based on Scene name.
-        _set.scene.cameraView(scn, _get.cameras.byName(scn.getPresentationName(), false), false);
-        _tmpl.print.created(scn, vo);
+        _set.scene.cameraView(scn, _get.cameras.byREGEX(scn.getPresentationName(), false), false);
+        _io.say.created(scn, vo);
     }
 
     private ArrayList<NamedObject> _getGeometryNOs() {
@@ -198,7 +198,13 @@ public class CreateScene {
         ((PartDisplayer) scn.getCreatorDisplayer()).initialize();
         scn.initializeAndWait();
         scn.resetCamera();
+        _get.objects.hardcopyProperties(scn, false).setUseCurrentResolution(false);
         scn.setDepthPeel(false);
+        //-- Check later. Transparency.
+//    if (_chk.is.windows()) {
+//        //-- Issues were found in some Linux machines.
+//        scn.setDepthPeel(true);
+//    }
         ((FixedAspectAnnotationProp) scn.getAnnotationPropManager().getAnnotationProp("Logo")).setLocation(1);
         return scn;
     }

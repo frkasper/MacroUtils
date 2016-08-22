@@ -20,7 +20,6 @@ public class MainTemplates {
         geometry = new TemplateGeometry(m);
         prettify = new TemplatePrettifier(m);
         post = new TemplatePost(m);
-        print = new TemplatePrint(m);
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
     }
 
@@ -32,7 +31,6 @@ public class MainTemplates {
         geometry.updateInstances();
         prettify.updateInstances();
         post.updateInstances();
-        print.updateInstances();
         _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
     }
 
@@ -56,10 +54,5 @@ public class MainTemplates {
      * This class is responsible for creating useful postprocessing objects in general.
      */
     public TemplatePost post = null;
-
-    /**
-     * This class is responsible for some print-type (output) templates.
-     */
-    public TemplatePrint print = null;
 
 }

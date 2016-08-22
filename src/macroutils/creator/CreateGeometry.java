@@ -70,7 +70,7 @@ public class CreateGeometry {
         sbp.getCorner1().setCoordinate(u, u, u, new DoubleVector(coord1));
         sbp.getCorner2().setCoordinate(u, u, u, new DoubleVector(coord2));
         sbp.getTessellationDensityOption().setSelected(_ud.defTessOpt.getType());
-        _tmpl.print.created(sbp, true);
+        _io.say.created(sbp, true);
         return sbp;
     }
 

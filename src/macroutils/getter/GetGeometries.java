@@ -45,8 +45,7 @@ public class GetGeometries {
      * @return The Geometry Part.
      */
     public GeometryPart byREGEX(String regexPatt, boolean vo) {
-        return (GeometryPart) _get.objects.allByREGEX(regexPatt, "Geometry Part",
-                new ArrayList(all(false)), true).get(0);
+        return (GeometryPart) _get.objects.allByREGEX(regexPatt, "Geometry Part", new ArrayList(all(false)), vo).get(0);
     }
 
     /**

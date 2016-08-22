@@ -74,7 +74,7 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Surfaces", new ArrayList(all(false)), true));
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Surfaces", new ArrayList(all(false)), vo));
     }
 
     /**
@@ -87,8 +87,8 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Surfaces",
-                new ArrayList(gp.getPartSurfaces()), true));
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Surfaces", 
+                new ArrayList(gp.getPartSurfaces()), vo));
     }
 
     private PartSurface byArea(ArrayList<PartSurface> aps, RangeOpts opt) {

@@ -100,7 +100,7 @@ public class MainUpdater {
         _ud.unit_lpmin = _add.units.custom("l/min", "liter per minute", 0.001 / 60, _ud.dimVolFlow, vo);
         _ud.unit_lps = _add.units.custom("l/s", "liter per second", 0.001, _ud.dimVolFlow, vo);
         _ud.unit_m3ph = _add.units.custom("m^3/h", "cubic meter per hour", 1. / 3600, _ud.dimVolFlow, vo);
-        _tmpl.print.ok(vo);
+        _io.say.ok(vo);
     }
 
     private Units defaultUnit(Units u1, Units u2, String descr, boolean vo) {
@@ -173,7 +173,7 @@ public class MainUpdater {
         _ud.defUnitVel = defaultUnit(_ud.defUnitVel, _ud.unit_mps, "Velocity", vo);
         _ud.defUnitVisc = defaultUnit(_ud.defUnitVisc, _ud.unit_Pa_s, "Viscosity", vo);
         _ud.defUnitVolume = defaultUnit(_ud.defUnitVolume, _ud.unit_m3, "Volume", vo);
-        _tmpl.print.ok(vo);
+        _io.say.ok(vo);
     }
 
     private Units queryUnit(String unitString, boolean vo) {
