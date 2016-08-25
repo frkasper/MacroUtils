@@ -11,9 +11,9 @@ import star.kwturb.*;
  * Runs the SST K-Omega DES model with IDDES formulation on a square channel under Re_L ~ 10k.
  *
  * Notes:
- *    - If machine power is available (e.g.: >= 16 cores) run this macro in batch mode with a
- *      mesh size of 1mm and using a R8 version of STAR-CCM+ (full double precision).
- *    - Residence time is around 0.1s. This macro will solve for 5 flows through.
+ *    - For a mesh size of 2mm the simulation takes roughly 5 hours in 12 cores running in double precision (R8);
+ *    - If machine power is available run this macro with a mesh size of 1mm while adjusting timestep;
+ *    - Residence time is around 0.1s. This macro will solve for 5 flows through;
  *    - Some inlet values are taken from a table ran in fully developed flow condition (periodic).
  *
  *

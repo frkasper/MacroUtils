@@ -162,14 +162,14 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
         ud.updEvent = mu.add.tools.updateEvent_Logic(new UpdateEvent[]{ud.updEvent1, ud.updEvent2},
                 StaticDeclarations.Logic.AND);
         ud.namedObjects.add(ud.region);
-        ud.fieldFunctions.add(ud.ff);
+        ud.fieldFunctions.add(ud.ff.getMagnitudeFunction());
         ud.solHist = mu.add.solver.solutionHistory(ud.namedObjects, ud.fieldFunctions);
         //--
         //-- Set Update Events
         mu.set.object.updateEvent(mu.get.monitors.fromReport(ud.rep1, true), ud.updEvent, true);
         mu.set.object.updateEvent(mu.get.monitors.fromReport(ud.rep2, true), ud.updEvent, true);
         mu.set.object.updateEvent(ud.solHist, ud.updEvent, true);
-        //-- 
+        //--
         mu.run();
         mu.saveSim(ud.simTitle + "_TRN");
     }
