@@ -26,19 +26,103 @@ public class SetObjects {
         _mu = m;
     }
 
-    private void _setSPQ(ScalarPhysicalQuantity spq, double val, Units u, String text, boolean vo) {
-        physicalQuantity(spq, val, null, u, text, vo);
+    public void _setSP(ScalarProfile sp, double val, Units u, String def) {
+        if (sp == null) {
+            return;
+        }
+        sp.setMethod(ConstantScalarProfileMethod.class);
+        ScalarPhysicalQuantity spq = sp.getMethod(ConstantScalarProfileMethod.class).getQuantity();
+        _setSPQ(spq, val, u, sp.getPresentationName(), def, true);
+    }
+
+    private void _setSPQ(ScalarPhysicalQuantity spq, double val, Units u, String text, String def, boolean vo) {
+        spq.setValue(val);
+        String s = String.valueOf(spq.getRawValue());
+        if (def != null) {
+            spq.setDefinition(def);
+            _io.say.value(text, spq.getDefinition(), true, vo);
+            return;
+        }
+        if (u != null) {
+            spq.setUnits(u);
+        }
+        _io.say.value(text, s, u, vo);
+    }
+
+    private void _setVPQ(VectorPhysicalQuantity vpq, double[] vals, Units u, String text, String def, boolean vo) {
+        if (text == null) {
+            text = vpq.getParent().getParent().getPresentationName();
+        }
+        if (u != null) {
+            vpq.setUnits(u);
+        }
+        if (def == null) {
+            vpq.setConstant(vals);
+            _io.say.value(text, _get.strings.fromArray(vals), vpq.getUnits(), vo);
+        } else {
+            vpq.setDefinition(def);
+            _io.say.value(text, vpq.getDefinition(), true, vo);
+        }
     }
 
     private void _setUE(StarUpdate su, UpdateEvent ue) {
+        if ((su.getParent() instanceof Scene) || (su.getParent() instanceof AutoSave)) {
+            _setWorkAround(su, ue);
+            return;
+        }
         su.getUpdateModeOption().setSelected(StarUpdateModeOption.Type.EVENT);
         su.getEventUpdateFrequency().setUpdateEvent(ue);
+    }
+
+    private void _setWorkAround(StarUpdate su, UpdateEvent ue) {
+        //-- Check later.
+        // Workaround for the error below found in v11.04.
+        //    error: Server Error
+        //    expression: _starUpdate
+        //    file: Monitor.cpp
+        //    line: 331
+        // StarUpdate unexpectedly missing.
+        // Command: RunSimulation
+        su.setEnabled(true);
+        String sn = su.getParent().getPresentationName();
+        _io.say.value("Workaround on Update Event", sn, true, true);
+        String s2 = "  - Reverted to \"%s\" Update Mode.";
+        String s3 = "  - Not reverted. Risk of StarUpdate error.";
+        if (ue instanceof FrequencyMonitorUpdateEvent) {
+            FrequencyMonitorUpdateEvent fmue = (FrequencyMonitorUpdateEvent) ue;
+            if (fmue.getMonitor() instanceof IterationMonitor) {
+                su.getUpdateModeOption().setSelected(StarUpdateModeOption.Type.ITERATION);
+                IterationUpdateFrequency iuf = su.getIterationUpdateFrequency();
+                iuf.setIterations(fmue.getSampleFrequency());
+                iuf.setStart(fmue.getStartCount());
+                _io.say.msg(true, s2, iuf.getBeanDisplayName());
+            } else if (fmue.getMonitor() instanceof PhysicalTimeMonitor) {
+                su.getUpdateModeOption().setSelected(StarUpdateModeOption.Type.TIMESTEP);
+                TimeStepUpdateFrequency tuf = su.getTimeStepUpdateFrequency();
+                tuf.setTimeSteps(fmue.getSampleFrequency());
+                tuf.setStart(fmue.getStartCount());
+                _io.say.msg(true, s2, tuf.getBeanDisplayName());
+            } else {
+                _io.say.msg(true, s3);
+            }
+        } else if (ue instanceof DeltaMonitorUpdateEvent) {
+            DeltaMonitorUpdateEvent dmue = (DeltaMonitorUpdateEvent) ue;
+            if (dmue.getMonitor() instanceof PhysicalTimeMonitor) {
+                su.getUpdateModeOption().setSelected(StarUpdateModeOption.Type.DELTATIME);
+                DeltaTimeUpdateFrequency dtuf = su.getDeltaTimeUpdateFrequency();
+                dtuf.setDeltaTimeInput(dmue.getDeltaThresholdInput());
+                _io.say.msg(true, s2, dtuf.getBeanDisplayName());
+            }
+        } else {
+            _io.say.msg(true, s3);
+        }
     }
 
     private void _setWU(WindowUpdate wu, String pp, int resx, int resy) {
         wu.setSaveAnimation(true);
         wu.setAnimationFilePath(new File(_ud.simPath, pp));
         wu.setAnimationFilenameBase("pic");
+        wu.getHardcopyProperties().setUseCurrentResolution(false);
         wu.getHardcopyProperties().setOutputWidth(resx);
         wu.getHardcopyProperties().setOutputHeight(resy);
     }
@@ -47,9 +131,9 @@ public class SetObjects {
         _io.say.action("Setting Pressure Coefficient Field Function", vo);
         FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.PC.getVar(), false);
         PressureCoefficientFunction pcp = (PressureCoefficientFunction) ff;
-        _setSPQ(pcp.getReferenceDensity(), refDen, _ud.defUnitDen, "Reference Density", vo);
-        _setSPQ(pcp.getReferencePressure(), refP, _ud.defUnitPress, "Reference Pressure", vo);
-        _setSPQ(pcp.getReferenceVelocity(), refVel, _ud.defUnitVel, "Reference Velocity", vo);
+        _setSPQ(pcp.getReferenceDensity(), refDen, _ud.defUnitDen, "Reference Density", null, vo);
+        _setSPQ(pcp.getReferencePressure(), refP, _ud.defUnitPress, "Reference Pressure", null, vo);
+        _setSPQ(pcp.getReferenceVelocity(), refVel, _ud.defUnitVel, "Reference Velocity", null, vo);
         _io.say.ok(vo);
     }
 
@@ -61,12 +145,17 @@ public class SetObjects {
      * @param u given Units.
      */
     public void profile(ScalarProfile sp, double val, Units u) {
-        if (sp == null) {
-            return;
-        }
-        sp.setMethod(ConstantScalarProfileMethod.class);
-        ScalarPhysicalQuantity spq = sp.getMethod(ConstantScalarProfileMethod.class).getQuantity();
-        physicalQuantity(spq, val, null, u, sp.getPresentationName(), true);
+        _setSP(sp, val, u, null);
+    }
+
+    /**
+     * Sets a constant Scalar Profile for a STAR-CCM+ object based on a definition.
+     *
+     * @param sp given ScalarProfile.
+     * @param def given definition.
+     */
+    public void profile(ScalarProfile sp, String def) {
+        _setSP(sp, 0, null, def);
     }
 
     /**
@@ -82,38 +171,38 @@ public class SetObjects {
         }
         vp.setMethod(ConstantVectorProfileMethod.class);
         VectorPhysicalQuantity vpq = vp.getMethod(ConstantVectorProfileMethod.class).getQuantity();
-        physicalQuantity(vpq, vals, u, null, true);
+        _setVPQ(vpq, vals, u, null, null, true);
     }
 
     /**
-     * Sets a Scalar Physical Quantities with this method, if applicable. It will also print something like: "Text:
+     * Sets a Constant Scalar Physical Quantities with this method, if applicable. It will also print something like: "Text:
      * value unit" in the output.
      *
      * @param spq given ScalarPhysicalQuantity object.
      * @param val given value.
-     * @param def given definition. <b>null</b> to ignore.
      * @param u given Units
      * @param text given text. <b>null</b> to ignore.
      * @param vo given verbose option. False will not print anything.
      */
-    public void physicalQuantity(ScalarPhysicalQuantity spq, double val, String def, Units u, String text, boolean vo) {
-        String s = Double.toString(val);
-        if (def == null) {
-            spq.setValue(val);
-        } else {
-            spq.setDefinition(def);
-            s = def;
-        }
-        _io.say.msgDebug("physicalQuantity():");
-        _io.say.msgDebug("  - val: %g", val);
-        _io.say.msgDebug("  - def: %s", def);
-        _io.say.msgDebug("  - Units: %s", _get.strings.fromUnit(u));
-        _io.say.value(text, s, u, vo);
-        spq.setUnits(u);
+    public void physicalQuantity(ScalarPhysicalQuantity spq, double val, Units u, String text, boolean vo) {
+        _setSPQ(spq, val, u, text, null, vo);
     }
 
     /**
-     * Sets a constant Vector Physical Quantities with this method, if applicable. It will also print something like:
+     * Sets a Definition for a Scalar Physical Quantities with this method, if applicable. It will also print something
+     * like: "Text: value unit" in the output.
+     *
+     * @param spq given ScalarPhysicalQuantity object.
+     * @param def given definition.
+     * @param text given text. <b>null</b> to ignore.
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void physicalQuantity(ScalarPhysicalQuantity spq, String def, String text, boolean vo) {
+        _setSPQ(spq, 0.0, null, text, def, vo);
+    }
+
+    /**
+     * Sets a Constant Vector Physical Quantities with this method, if applicable. It will also print something like:
      * "Text: val1, val2, val3 unit".
      *
      * @param vpq given VectorPhysicalQuantity object.
@@ -123,14 +212,20 @@ public class SetObjects {
      * @param vo given verbose option. False will not print anything.
      */
     public void physicalQuantity(VectorPhysicalQuantity vpq, double[] vals, Units u, String text, boolean vo) {
-        vpq.setConstant(vals);
-        if (u != null) {
-            vpq.setUnits(u);
-        }
-        if (text == null) {
-            text = vpq.getParent().getParent().getPresentationName();
-        }
-        _io.say.value(text, _get.strings.fromArray(vals), u, vo);
+        _setVPQ(vpq, vals, u, text, null, vo);
+    }
+
+    /**
+     * Sets a Definition for the Vector Physical Quantities with this method, if applicable. It will also print
+     * something like: "Text: val1, val2, val3".
+     *
+     * @param vpq given VectorPhysicalQuantity object.
+     * @param def given definition.
+     * @param text given text. <b>null</b> to use its name as in the GUI.
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void physicalQuantity(VectorPhysicalQuantity vpq, String def, String text, boolean vo) {
+        _setVPQ(vpq, StaticDeclarations.COORD0, null, text, def, vo);
     }
 
     /**

@@ -51,7 +51,7 @@ public class CreateTools {
         ev.setMonitor(pm);
         ev.setSampleFrequency(freq);
         ev.setStartCount(start);
-        _tmpl.print.created(ev, true);
+        _io.say.created(ev, true);
         return ev;
     }
 
@@ -62,14 +62,14 @@ public class CreateTools {
         ev.setMonitor(pm);
         ev.getRangeOption().setSelected(_getOperator(opt));
         ev.getRangeQuantity().setValue(range);
-        _tmpl.print.created(ev, true);
+        _io.say.created(ev, true);
         _io.say.ok(true);
         return ev;
     }
 
     private void _createUE_Type(String type) {
         _io.say.action("Creating an Update Event", true);
-        _io.say.msg(true, "Type: \"%s\".", type);
+        _io.say.value("Type", type, true, true);
     }
 
     private ArrayList<Double> _getArrayList(int n, double val) {
@@ -90,7 +90,7 @@ public class CreateTools {
                 uelo = UpdateEventLogicOption.Type.XOR;
                 break;
         }
-        _io.say.msg(true, "Logic type: \"%s\".", opt.toString());
+        _io.say.value("Logic type", opt.toString(), true, true);
         return uelo;
     }
 
@@ -103,10 +103,10 @@ public class CreateTools {
             case LESS_THAN_OR_EQUALS:
                 break;
             default:
-                _io.say.msg(true, "Invalid operator: \"%s\".", opt.toString());
+                _io.say.value("Invalid operator", opt.toString(), true, true);
                 return null;
         }
-        _io.say.msg(true, "Operator type: \"%s\".", opt.toString());
+        _io.say.value("Operator type", opt.toString(), true, true);
         return uero;
     }
 
@@ -120,11 +120,11 @@ public class CreateTools {
         Report r = _add.report.expression("Time", _ud.unit_s, _ud.dimTime, "$Time", false);
         _io.say.action("Creating a Time Report Annotation", true);
         if (_sim.getAnnotationManager().has(r.getPresentationName())) {
-            _io.say.msg(true, "\"%s\" Report Annotation already exists...", r.getPresentationName());
+            _io.say.value("Report Annotation already exists", r.getPresentationName(), true, true);
             return (ReportAnnotation) _sim.getAnnotationManager().getObject(r.getPresentationName());
         }
         ReportAnnotation ra = _sim.getAnnotationManager().createReportAnnotation(r);
-        _tmpl.print.created(ra, true);
+        _io.say.created(ra, true);
         return ra;
     }
 
@@ -144,7 +144,7 @@ public class CreateTools {
         c.setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength, new DoubleVector(org));
         ccsys.setBasis0(new DoubleVector(b1));
         ccsys.setBasis1(new DoubleVector(b2));
-        _tmpl.print.created(ccsys, true);
+        _io.say.created(ccsys, true);
         return ccsys;
     }
 
@@ -161,20 +161,20 @@ public class CreateTools {
             StaticDeclarations.ColorSpace cs) {
         _io.say.action("Creating a Colormap", true);
         if (_sim.get(LookupTableManager.class).has(name)) {
-            _io.say.msg(true, "Colormap already exists: \"%s\".", name);
+            _io.say.value("Colormap already exists", name, true, true);
             return _sim.get(LookupTableManager.class).getObject(name);
         }
         if (ac.size() < 2) {
             _io.say.msg("Please provide at least two colors.");
-            _tmpl.print.gotNull("Creating a Colormap", true);
+            _io.say.msg("Returning NULL.");
             return null;
         }
         if (ad == null) {
             ad = _getArrayList(ac.size(), 1.0);
         }
-        _io.say.msg(true, "Colors: %s", ac.toString());
-        _io.say.msg(true, "Opacities: %s", _get.strings.withinTheBrackets(ad.toString()));
-        _io.say.msg(true, "Color Space: \"%s\".", cs.toString());
+        _io.say.value("Colors", ac.toString(), true, true);
+        _io.say.value("Opacities", _get.strings.withinTheBrackets(ad.toString()), true, true);
+        _io.say.value("Color Space", cs.toString(), true, true);
         UserLookupTable ult = _sim.get(LookupTableManager.class).createLookupTable();
         DoubleVector dvC = new DoubleVector();
         DoubleVector dvO = new DoubleVector();
@@ -188,7 +188,7 @@ public class CreateTools {
         ColorMap cm = new ColorMap(dvC, dvO, cs.getValue());
         ult.setColorMap(cm);
         ult.setPresentationName(name);
-        _tmpl.print.created(ult, true);
+        _io.say.created(ult, true);
         return ult;
     }
 
@@ -203,23 +203,22 @@ public class CreateTools {
      */
     public FieldFunction fieldFunction(String name, String def, Dimensions dim, FieldFunctionTypeOption.Type type) {
         _io.say.action("Creating a Field Function", true);
-        _io.say.msg(true, "Type: %s.", type);
         FieldFunction ff = _get.objects.fieldFunction(name, false);
         if (ff != null) {
-            _io.say.msg(true, "\"%s\" already exists...", name);
+            _io.say.value("Field Function already exists", name, true, true);
             return ff;
         }
-        _io.say.object(ff, true);
-        _io.say.msg(true, "Definition: \"%s\"", def);
         UserFieldFunction uff = _sim.getFieldFunctionManager().createFieldFunction();
         uff.setPresentationName(name);
         uff.setFunctionName(name.replaceAll("( |\\(|\\)|)", ""));
         uff.setDefinition(def);
         uff.getTypeOption().setSelected(type);
-        if (!(dim == null | dim == _ud.dimDimensionless)) {
+        _io.say.value("Type", uff.getTypeOption().getSelectedElement().getPresentationName(), true, true);
+        _io.say.value("Definition", uff.getDefinition(), true, true);
+        if (dim != null || dim != _ud.dimDimensionless) {
             uff.setDimensions(dim);
         }
-        _tmpl.print.created(uff, true);
+        _io.say.created(uff, true);
         return uff;
     }
 
@@ -227,17 +226,15 @@ public class CreateTools {
      * Creates a Translation Motion with the Translation Velocity given in default units. See
      * {@link UserDeclarations#defUnitVel}.
      *
-     * @param def given 3-components Motion definition. E.g.: [1, 0, 0].
+     * @param def given 3-components Motion definition as String. E.g.: "[1, 0, 0]".
      * @param name given name.
      * @return The TranslatingMotion.
      */
     public TranslatingMotion motion_Translation(String def, String name) {
         _io.say.action("Creating a Translation Motion", true);
-        _io.say.msg(true, "Definition: \"%s\".", def);
         TranslatingMotion tm = _sim.get(MotionManager.class).createMotion(TranslatingMotion.class, name);
-        tm.getTranslationVelocity().setDefinition(def);
-        tm.getTranslationVelocity().setUnits(_ud.defUnitVel);
-        _tmpl.print.created(tm, true);
+        _set.object.physicalQuantity(tm.getTranslationVelocity(), def, null, true);
+        _io.say.created(tm, true);
         return tm;
     }
 
@@ -276,10 +273,10 @@ public class CreateTools {
         }
         _io.say.value("Origin", roi.getValue(), roi.getUnits0(), true);
         _io.say.value("Rotation Axis", rac.getValue(), rac.getUnits0(), true);
-        _set.object.physicalQuantity(st.getRotationAngleQuantity(), angle, null, _ud.defUnitAngle, "Angle", true);
+        _set.object.physicalQuantity(st.getRotationAngleQuantity(), angle, _ud.defUnitAngle, "Angle", true);
         _io.say.value("Translation", tc.getValue(), tc.getUnits0(), true);
         _io.say.value("Scale", st.getScale(), true);
-        _tmpl.print.created(st, true);
+        _io.say.created(st, true);
         return st;
     }
 
@@ -292,7 +289,7 @@ public class CreateTools {
     public FileTable table(String filename) {
         _io.say.action("Creating a File Table", true);
         FileTable ft = (FileTable) _sim.getTableManager().createFromFile(new File(_ud.simPath, filename).toString());
-        _tmpl.print.created(ft, true);
+        _io.say.created(ft, true);
         return ft;
     }
 
@@ -329,7 +326,7 @@ public class CreateTools {
         _createUE_Type("Logic");
         LogicUpdateEvent lue = _sim.getUpdateEventManager().createUpdateEvent(LogicUpdateEvent.class);
         lue.getLogicOption().setSelected(_getLogic(opt));
-        _tmpl.print.created(lue, true);
+        _io.say.created(lue, true);
         return lue;
     }
 
@@ -347,7 +344,7 @@ public class CreateTools {
             _io.say.msg("Adding: " + ue.getPresentationName());
             updateEvent_Logic(lue, ue, opt);
         }
-        _tmpl.print.created(lue, true);
+        _io.say.created(lue, true);
         return lue;
     }
 
@@ -360,12 +357,13 @@ public class CreateTools {
      */
     public void updateEvent_Logic(LogicUpdateEvent lue, UpdateEvent ue, StaticDeclarations.Logic opt) {
         _io.say.action("Adding an Update Event to a Logic Update Event", true);
-        _io.say.msg(true, "From: %s. To: %s.", ue.getPresentationName(), lue.getPresentationName());
+        _io.say.value("From", ue.getPresentationName(), true, true);
+        _io.say.value("To", lue.getPresentationName(), true, true);
         UpdateEvent u = lue.getUpdateEventManager().createUpdateEvent(ue.getClass());
         lue.getLogicOption().setSelected(_getLogic(opt));
         u.copyProperties(ue);
         u.setPresentationName(ue.getPresentationName());
-        _tmpl.print.created(u, true);
+        _io.say.created(u, true);
     }
 
     /**

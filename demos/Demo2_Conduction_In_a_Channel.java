@@ -62,7 +62,7 @@ public class Demo2_Conduction_In_a_Channel extends StarMacro {
     void prep3_BCsAndMesh() {
         //-- Physics/Mesh settings
         ud.mshBaseSize = depth / 5;
-        ud.mshTrimmerMaxCelSize = 100;
+        ud.mshTrimmerMaxCellSize = 100;
         ud.urfSolidEnrgy = 1.0;
         //--
         ud.autoMshOp = mu.add.meshOperation.automatedMesh(ud.geometryParts, StaticDeclarations.Meshers.TRIMMER_MESHER);

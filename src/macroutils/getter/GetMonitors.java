@@ -40,7 +40,7 @@ public class GetMonitors {
                 ar.add((ReportMonitor) m);
             }
         }
-        _tmpl.print.getAll("Monitors", new ArrayList(ar), vo);
+        _io.say.objects(ar, "Getting all Report Monitors", vo);
         return ar;
     }
 
@@ -52,7 +52,7 @@ public class GetMonitors {
      * @return An ArrayList of Monitors.
      */
     public ArrayList<ReportMonitor> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Monitors", new ArrayList(all(false)), true));
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Monitors", new ArrayList(all(false)), vo));
     }
 
     /**
@@ -63,7 +63,7 @@ public class GetMonitors {
      * @return The ReportMonitor.
      */
     public ReportMonitor byREGEX(String regexPatt, boolean vo) {
-        return (ReportMonitor) _get.objects.allByREGEX(regexPatt, "Monitor", new ArrayList(all(false)), true).get(0);
+        return (ReportMonitor) _get.objects.allByREGEX(regexPatt, "Monitor", new ArrayList(all(false)), vo).get(0);
     }
 
     /**
@@ -77,11 +77,11 @@ public class GetMonitors {
         _io.say.action("Getting a Monitor from a Report", vo);
         for (ReportMonitor rm : all(false)) {
             if (rm.getReport() == rep) {
-                _tmpl.print.got(rm, vo);
+                _io.say.value("Found", rm.getPresentationName(), true, vo);
                 return rm;
             }
         }
-        _tmpl.print.gotNull(vo);
+        _io.say.msg("Nothing found. Returning NULL!");
         return null;
     }
 

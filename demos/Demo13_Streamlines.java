@@ -91,7 +91,7 @@ public class Demo13_Streamlines extends StarMacro {
             return;
         }
         ud.maxIter = 200;
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         mu.run();
         mu.saveSim(ud.simTitle + "_SS");
     }

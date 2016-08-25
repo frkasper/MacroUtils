@@ -245,7 +245,6 @@ public class CreatePhysicsContinua {
                 break;
             case EXPLICIT_UNSTEADY:
                 _pc.enable(ExplicitUnsteadyModel.class);
-                _set.solver.lowNumericalDissipation(_pc, false);
                 _s.add("Explicit Unsteady");
                 break;
             default:
@@ -260,7 +259,6 @@ public class CreatePhysicsContinua {
         switch (visc) {
             case INVISCID:
                 _pc.enable(InviscidModel.class);
-                _set.solver.lowNumericalDissipation(_pc, false);
                 _s.add("Inviscid");
                 break;
             case LAMINAR:
@@ -368,9 +366,9 @@ public class CreatePhysicsContinua {
             }
         }
         _set.object.physicalQuantity(fvw.getLightFluidDensity(), Math.min(dens.get(0), dens.get(1)),
-                null, _ud.unit_kgpm3, "Light Fluid Density", true);
+                _ud.unit_kgpm3, "Light Fluid Density", true);
         _set.object.physicalQuantity(fvw.getHeavyFluidDensity(), Math.max(dens.get(0), dens.get(1)),
-                null, _ud.unit_kgpm3, "Heavy Fluid Density", true);
+                _ud.unit_kgpm3, "Heavy Fluid Density", true);
         //--
         //-- Apply Wave Initial Conditions
         InitialPressureProfile ipp = pc.getInitialConditions().get(InitialPressureProfile.class);
@@ -388,7 +386,7 @@ public class CreatePhysicsContinua {
         vpp.setMethod(FunctionVectorProfileMethod.class);
         vpp.getMethod(FunctionVectorProfileMethod.class).setFieldFunction(fvw.getVelocityFF());
         //--
-        _tmpl.print.created(fvw, true);
+        _io.say.created(fvw, true);
         return fvw;
     }
 
@@ -420,12 +418,16 @@ public class CreatePhysicsContinua {
         if (!_isOK) {
             return null;
         }
+        if (time.equals(StaticDeclarations.Time.EXPLICIT_UNSTEADY)) {
+            _set.solver.lowNumericalDissipation(_pc, false);
+            _set.solver.spaceDiscretization(_pc, FlowUpwindOption.Type.MUSCL_3RD_ORDER, false);
+        }
         //--
         _set.physics.initialConditions(_pc);
         _set.physics.gravity(_pc, _ud.gravity);
         _pc.setPresentationName(_getPCName());
         _io.say.msg("");
-        _tmpl.print.created(_pc, true);
+        _io.say.created(_pc, true);
         _upd.allUnits(false);
         _set.solver.settings();
         return _pc;

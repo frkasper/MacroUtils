@@ -48,7 +48,7 @@ public class Demo7_Sloshing_Case extends StarMacro {
         //-- Physics/Solver/Mesh settings
         ud.mshBaseSize = 2.;
         W = ud.mshBaseSize;
-        ud.mshTrimmerMaxCelSize = 100;
+        ud.mshTrimmerMaxCellSize = 100;
         ud.trnInnerIter = 6;
         ud.trnTimestep = 0.01;
         ud.trnMaxTime = 8.;
@@ -75,7 +75,7 @@ public class Demo7_Sloshing_Case extends StarMacro {
                 StaticDeclarations.Solver.SEGREGATED, StaticDeclarations.Density.INCOMPRESSIBLE,
                 StaticDeclarations.Energy.ISOTHERMAL, StaticDeclarations.Viscous.RKE_HIGH_YPLUS);
         ud.physCont.getModelManager().getModel(SegregatedVofModel.class).setSharpeningFactor(0.1);
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         //--
         mu.add.physicsContinua.createWave(ud.physCont, new double[]{0, 0.5 * L, 0}, new double[]{0, 1, 0},
                 StaticDeclarations.COORD0, StaticDeclarations.COORD0);

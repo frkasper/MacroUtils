@@ -75,7 +75,7 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
         ud.mshBaseSize = depth * 10.;
         ud.mshSrfSizeMin = 100;
         ud.mshSrfSizeTgt = 100;
-        ud.mshTrimmerMaxCelSize = 100;
+        ud.mshTrimmerMaxCellSize = 100;
         ud.prismsLayers = 3;
         ud.prismsRelSizeHeight = 50;
         //--
@@ -90,7 +90,7 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
                 StaticDeclarations.Material.GAS, StaticDeclarations.Solver.SEGREGATED,
                 StaticDeclarations.Density.INCOMPRESSIBLE, StaticDeclarations.Energy.ISOTHERMAL,
                 StaticDeclarations.Viscous.RKE_2LAYER);
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         //--
         ud.bdry1 = mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true);
         double vel = Re_h * 1.855e-5 / (1.184 * h * ud.defUnitLength.getConversion());

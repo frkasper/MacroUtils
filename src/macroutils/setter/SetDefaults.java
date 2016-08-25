@@ -22,7 +22,7 @@ public class SetDefaults {
 
     private void _setting(String what, String opt) {
         _io.say.action(String.format("Setting Default %s", what), true);
-        _io.say.msg(true, "%s: \"%s\".", what, opt);
+        _io.say.value(what, opt, true, true);
         _io.say.ok(true);
     }
 

@@ -11,9 +11,9 @@ import star.kwturb.*;
  * Runs the SST K-Omega DES model with IDDES formulation on a square channel under Re_L ~ 10k.
  *
  * Notes:
- *    - If machine power is available (e.g.: >= 16 cores) run this macro in batch mode with a
- *      mesh size of 1mm and using a R8 version of STAR-CCM+ (full double precision).
- *    - Residence time is around 0.1s. This macro will solve for 5 flows through.
+ *    - For a mesh size of 2mm the simulation takes roughly 5 hours in 12 cores running in double precision (R8);
+ *    - If machine power is available run this macro with a mesh size of 1mm while adjusting timestep;
+ *    - Residence time is around 0.1s. This macro will solve for 5 flows through;
  *    - Some inlet values are taken from a table ran in fully developed flow condition (periodic).
  *
  *
@@ -134,7 +134,7 @@ public class Demo15_Run_DES extends StarMacro {
                 StaticDeclarations.Solver.SEGREGATED, StaticDeclarations.Density.IDEAL_GAS,
                 StaticDeclarations.Energy.THERMAL, StaticDeclarations.Viscous.RKE_2LAYER);
         mu.set.physics.materialProperty(ud.physCont, "Air", StaticDeclarations.Vars.VISC, mu_g, ud.unit_Pa_s);
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         //--
         ud.bdry = mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true);
         mu.set.boundary.asVelocityInlet(ud.bdry, 1.0, 20.0, 0.05, 10.0);
@@ -174,7 +174,7 @@ public class Demo15_Run_DES extends StarMacro {
         mu.update.volumeMesh();
         ud.trnTimestep = dtDES;
         ud.trn2ndOrder = true;
-        ud.trnInnerIter = 5;
+        ud.trnInnerIter = 6;
         ud.trnMaxTime = maxTime;
         ud.physCont = mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL,
                 StaticDeclarations.Time.IMPLICIT_UNSTEADY, StaticDeclarations.Material.GAS,
@@ -182,7 +182,7 @@ public class Demo15_Run_DES extends StarMacro {
                 StaticDeclarations.Energy.THERMAL, StaticDeclarations.Viscous.DES_SST_KW_IDDES);
         mu.set.physics.materialProperty(ud.physCont, "Air", StaticDeclarations.Vars.VISC, mu_g, ud.unit_Pa_s);
         ud.region.setPhysicsContinuum(ud.physCont);
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         //-- Activate Synthetic Eddy Generation at Inlet if desired (at a higher CPU cost).
         ud.bdry = mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true);
         mu.enable.syntheticEddyMethod(mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true));

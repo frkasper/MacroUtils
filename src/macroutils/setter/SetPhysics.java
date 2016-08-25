@@ -55,7 +55,7 @@ public class SetPhysics {
                 clz = DynamicViscosityProperty.class;
                 break;
             default:
-                _io.say.msg(true, "Invalid variable for material property: \"%s\".", var.getVar());
+                _io.say.value("Invalid variable for material property", var.getVar(), true, true);
                 break;
         }
         if (model.getClass().getName().matches(".*SingleComponentGasModel$")) {
@@ -91,7 +91,7 @@ public class SetPhysics {
         _io.say.action("Setting Gravity", true);
         _io.say.object(pc, true);
         if (!pc.getReferenceValues().has("Gravity")) {
-            _io.say.msg("Physics do not have a Gravity model.");
+            _io.say.msg("Physics does not have a Gravity model.");
             return;
         }
         pc.getReferenceValues().get(Gravity.class).setConstant(vals);
@@ -147,8 +147,12 @@ public class SetPhysics {
      */
     public void initialConditions(PhysicsContinuum pc) {
         _io.say.action("Setting Initial Conditions", true);
+        Units uT = _ud.defUnitTemp;
+        if (_ud.t0 == 300.0) {
+            uT = _ud.unit_K;
+        }
         initialCondition(pc, StaticDeclarations.Vars.P.getVar(), _ud.p0, _ud.defUnitPress, false);
-        initialCondition(pc, StaticDeclarations.Vars.STATIC_T.getVar(), _ud.refT, _ud.defUnitTemp, false);
+        initialCondition(pc, StaticDeclarations.Vars.STATIC_T.getVar(), _ud.t0, uT, false);
         initialCondition(pc, StaticDeclarations.Vars.TI.getVar(), _ud.ti0, _ud.unit_Dimensionless, false);
         initialCondition(pc, StaticDeclarations.Vars.TVR.getVar(), _ud.tvr0, _ud.unit_Dimensionless, false);
         initialCondition(pc, StaticDeclarations.Vars.TVS.getVar(), _ud.tvs0, _ud.defUnitVel, false);
@@ -170,8 +174,8 @@ public class SetPhysics {
     public void materialProperty(PhysicsContinuum pc, String matName, StaticDeclarations.Vars matProp,
             double val, Units u) {
         _io.say.action("Setting Material Property", true);
-        _io.say.msg(true, "Material Name: \"%s\".", matName);
-        _set.object.physicalQuantity(_getCMPM(_getMM(pc), matProp).getQuantity(), val, null, u, matProp.getVar(), true);
+        _io.say.value("Material Name", matName, true, true);
+        _set.object.physicalQuantity(_getCMPM(_getMM(pc), matProp).getQuantity(), val, u, matProp.getVar(), true);
         _io.say.ok(true);
     }
 

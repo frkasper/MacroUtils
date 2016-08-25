@@ -23,6 +23,28 @@ public class MainUpdater {
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
     }
 
+    private Units _updDefUnit(Units u1, Units u2, String descr, boolean vo) {
+        String defDescr = _get.strings.fromUnit(u2);
+        Units defUnit = u1;
+        if (u1 instanceof Units) {
+            defDescr = _get.strings.fromUnit(u1);
+        } else {
+            defUnit = u2;
+        }
+        _io.print.value("Default Unit " + descr, "[" + defDescr + "]", false, vo);
+        return defUnit;
+    }
+
+    private Units _updUnit(String unitString, boolean vo) {
+        Units u = _get.units.byName(unitString, false);
+        if (u != null) {
+            _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Unit read", unitString, u.getDescription());
+            return u;
+        }
+        _io.print.value("Unit not read", unitString, true, vo);
+        return null;
+    }
+
     /**
      * Updates all units in memory. This method is called automatically by MacroUtils.
      *
@@ -100,19 +122,7 @@ public class MainUpdater {
         _ud.unit_lpmin = _add.units.custom("l/min", "liter per minute", 0.001 / 60, _ud.dimVolFlow, vo);
         _ud.unit_lps = _add.units.custom("l/s", "liter per second", 0.001, _ud.dimVolFlow, vo);
         _ud.unit_m3ph = _add.units.custom("m^3/h", "cubic meter per hour", 1. / 3600, _ud.dimVolFlow, vo);
-        _tmpl.print.ok(vo);
-    }
-
-    private Units defaultUnit(Units u1, Units u2, String descr, boolean vo) {
-        String defDescr = _get.strings.fromUnit(u2);
-        Units defUnit = u1;
-        if (u1 instanceof Units) {
-            defDescr = _get.strings.fromUnit(u1);
-        } else {
-            defUnit = u2;
-        }
-        _io.print.msg(vo, "Default Unit %s: %s", descr, defDescr);
-        return defUnit;
+        _io.say.ok(vo);
     }
 
     /**
@@ -125,65 +135,55 @@ public class MainUpdater {
         //--
         //-- Default units shipped with STAR-CCM+.
         //--
-        _ud.unit_atm = queryUnit("atm", vo);
-        _ud.unit_bar = queryUnit("bar", vo);
-        _ud.unit_C = queryUnit("C", vo);
-        _ud.unit_deg = queryUnit("deg", vo);
-        _ud.unit_Dimensionless = queryUnit("", vo);
-        _ud.unit_F = queryUnit("F", vo);
-        _ud.unit_K = queryUnit("K", vo);
-        _ud.unit_gal = queryUnit("gal", vo);
-        _ud.unit_kg = queryUnit("kg", vo);
-        _ud.unit_h = queryUnit("hr", vo);
-        _ud.unit_m = queryUnit("m", vo);
-        _ud.unit_m2 = queryUnit("m^2", vo);
-        _ud.unit_m3 = queryUnit("m^3", vo);
-        _ud.unit_min = queryUnit("min", vo);
-        _ud.unit_mm = queryUnit("mm", vo);
-        _ud.unit_mm2 = queryUnit("mm^2", vo);
-        _ud.unit_mm3 = queryUnit("mm^3", vo);
-        _ud.unit_N = queryUnit("N", vo);
-        _ud.unit_kph = queryUnit("kph", vo);
-        _ud.unit_kgpm3 = queryUnit("kg/m^3", vo);
-        _ud.unit_kgps = queryUnit("kg/s", vo);
-        _ud.unit_kmol = queryUnit("kmol", vo);
-        _ud.unit_mps = queryUnit("m/s", vo);
-        _ud.unit_mps2 = queryUnit("m/s^2", vo);
-        _ud.unit_rpm = queryUnit("rpm", vo);
-        _ud.unit_Pa = queryUnit("Pa", vo);
-        _ud.unit_Pa_s = queryUnit("Pa-s", vo);
-        _ud.unit_radps = queryUnit("radian/s", vo);
-        _ud.unit_s = queryUnit("s", vo);
-        _ud.unit_W = queryUnit("W", vo);
-        _ud.unit_Wpm2K = queryUnit("W/m^2-K", vo);
+        _ud.unit_atm = _updUnit("atm", vo);
+        _ud.unit_bar = _updUnit("bar", vo);
+        _ud.unit_C = _updUnit("C", vo);
+        _ud.unit_deg = _updUnit("deg", vo);
+        _ud.unit_Dimensionless = _updUnit("", vo);
+        _ud.unit_F = _updUnit("F", vo);
+        _ud.unit_K = _updUnit("K", vo);
+        _ud.unit_gal = _updUnit("gal", vo);
+        _ud.unit_kg = _updUnit("kg", vo);
+        _ud.unit_h = _updUnit("hr", vo);
+        _ud.unit_m = _updUnit("m", vo);
+        _ud.unit_m2 = _updUnit("m^2", vo);
+        _ud.unit_m3 = _updUnit("m^3", vo);
+        _ud.unit_min = _updUnit("min", vo);
+        _ud.unit_mm = _updUnit("mm", vo);
+        _ud.unit_mm2 = _updUnit("mm^2", vo);
+        _ud.unit_mm3 = _updUnit("mm^3", vo);
+        _ud.unit_N = _updUnit("N", vo);
+        _ud.unit_kph = _updUnit("kph", vo);
+        _ud.unit_kgpm3 = _updUnit("kg/m^3", vo);
+        _ud.unit_kgps = _updUnit("kg/s", vo);
+        _ud.unit_kmol = _updUnit("kmol", vo);
+        _ud.unit_mps = _updUnit("m/s", vo);
+        _ud.unit_mps2 = _updUnit("m/s^2", vo);
+        _ud.unit_rpm = _updUnit("rpm", vo);
+        _ud.unit_Pa = _updUnit("Pa", vo);
+        _ud.unit_Pa_s = _updUnit("Pa-s", vo);
+        _ud.unit_radps = _updUnit("radian/s", vo);
+        _ud.unit_s = _updUnit("s", vo);
+        _ud.unit_W = _updUnit("W", vo);
+        _ud.unit_Wpm2K = _updUnit("W/m^2-K", vo);
         //--
         //-- Default units to be used with MacroUtils.
         //--
-        _ud.defUnitAccel = defaultUnit(_ud.defUnitAccel, _ud.unit_mps2, "Acceleration", vo);
-        _ud.defUnitAngle = defaultUnit(_ud.defUnitAngle, _ud.unit_deg, "Angle", vo);
-        _ud.defUnitArea = defaultUnit(_ud.defUnitArea, _ud.unit_m2, "Area", vo);
-        _ud.defUnitDen = defaultUnit(_ud.defUnitDen, _ud.unit_kgpm3, "Density", vo);
-        _ud.defUnitForce = defaultUnit(_ud.defUnitForce, _ud.unit_N, "Force", vo);
-        _ud.defUnitHTC = defaultUnit(_ud.defUnitHTC, _ud.unit_Wpm2K, "Heat Transfer Coefficient", vo);
-        _ud.defUnitLength = defaultUnit(_ud.defUnitLength, _ud.unit_mm, "Length", vo);
-        _ud.defUnitMFR = defaultUnit(_ud.defUnitMFR, _ud.unit_kgps, "Mass Flow Rate", vo);
-        _ud.defUnitPress = defaultUnit(_ud.defUnitPress, _ud.unit_Pa, "Pressure", vo);
-        _ud.defUnitTemp = defaultUnit(_ud.defUnitTemp, _ud.unit_C, "Temperature", vo);
-        _ud.defUnitTime = defaultUnit(_ud.defUnitTime, _ud.unit_s, "Time", vo);
-        _ud.defUnitVel = defaultUnit(_ud.defUnitVel, _ud.unit_mps, "Velocity", vo);
-        _ud.defUnitVisc = defaultUnit(_ud.defUnitVisc, _ud.unit_Pa_s, "Viscosity", vo);
-        _ud.defUnitVolume = defaultUnit(_ud.defUnitVolume, _ud.unit_m3, "Volume", vo);
-        _tmpl.print.ok(vo);
-    }
-
-    private Units queryUnit(String unitString, boolean vo) {
-        Units u = _get.units.byName(unitString, false);
-        if (u != null) {
-            _io.print.msg(vo, _uf, "Unit read", unitString, u.getDescription());
-            return u;
-        }
-        _io.print.msg(vo, _uf, "Unit not read", unitString, "");
-        return null;
+        _ud.defUnitAccel = _updDefUnit(_ud.defUnitAccel, _ud.unit_mps2, "Acceleration", vo);
+        _ud.defUnitAngle = _updDefUnit(_ud.defUnitAngle, _ud.unit_deg, "Angle", vo);
+        _ud.defUnitArea = _updDefUnit(_ud.defUnitArea, _ud.unit_m2, "Area", vo);
+        _ud.defUnitDen = _updDefUnit(_ud.defUnitDen, _ud.unit_kgpm3, "Density", vo);
+        _ud.defUnitForce = _updDefUnit(_ud.defUnitForce, _ud.unit_N, "Force", vo);
+        _ud.defUnitHTC = _updDefUnit(_ud.defUnitHTC, _ud.unit_Wpm2K, "Heat Transfer Coefficient", vo);
+        _ud.defUnitLength = _updDefUnit(_ud.defUnitLength, _ud.unit_mm, "Length", vo);
+        _ud.defUnitMFR = _updDefUnit(_ud.defUnitMFR, _ud.unit_kgps, "Mass Flow Rate", vo);
+        _ud.defUnitPress = _updDefUnit(_ud.defUnitPress, _ud.unit_Pa, "Pressure", vo);
+        _ud.defUnitTemp = _updDefUnit(_ud.defUnitTemp, _ud.unit_C, "Temperature", vo);
+        _ud.defUnitTime = _updDefUnit(_ud.defUnitTime, _ud.unit_s, "Time", vo);
+        _ud.defUnitVel = _updDefUnit(_ud.defUnitVel, _ud.unit_mps, "Velocity", vo);
+        _ud.defUnitVisc = _updDefUnit(_ud.defUnitVisc, _ud.unit_Pa_s, "Viscosity", vo);
+        _ud.defUnitVolume = _updDefUnit(_ud.defUnitVolume, _ud.unit_m3, "Volume", vo);
+        _io.say.ok(vo);
     }
 
     /**
@@ -224,7 +224,6 @@ public class MainUpdater {
         _add = _mu.add;
         _get = _mu.get;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
         _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
     }
@@ -232,8 +231,6 @@ public class MainUpdater {
     //--
     //-- Variables declaration area.
     //--
-    private final String _uf = StaticDeclarations.UNIT_FMT;
-
     private Simulation _sim = null;
     private MacroUtils _mu = null;
     private macroutils.creator.MainCreator _add = null;
@@ -241,6 +238,5 @@ public class MainUpdater {
     private macroutils.getter.MainGetter _get = null;
     private macroutils.setter.MainSetter _set = null;
     private macroutils.io.MainIO _io = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
 
 }

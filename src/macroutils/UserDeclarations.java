@@ -68,9 +68,14 @@ public class UserDeclarations {
     public double[] gravity = {0., -9.81, 0.};
 
     /**
-     * Initial Pressure value in default units. See {@link #defUnitPress}.
+     * Initial Pressure value in default units. See {@link #defUnitPress}. Default is 0Pa.
      */
     public double p0 = 0.0;
+
+    /**
+     * Initial Temperature value in default units. See {@link #defUnitTemp}. Default is 300K.
+     */
+    public double t0 = 300.0;
 
     /**
      * Initial Turbulent Intensity for RANS Models. Default = 0.05.
@@ -113,16 +118,6 @@ public class UserDeclarations {
     public double denWater = 997.561;
 
     /**
-     * Initial Temperature value for Fluids in default units.
-     */
-    public double fluidT0 = 22.;
-
-    /**
-     * Initial Temperature value for Solids in default units.
-     */
-    public double solidsT0 = 60.;
-
-    /**
      * Reference Altitude array of values in default units. See {@link #defUnitLength}.
      */
     public double[] refAlt = new double[]{0, 0, 0};
@@ -133,14 +128,14 @@ public class UserDeclarations {
     public double refDen = denAir;
 
     /**
-     * Reference Pressure value in default units. See {@link #defUnitPress}.
+     * Reference Pressure value in default units. See {@link #defUnitPress}. Default is 101325Pa.
      */
     public double refP = 101325.;
 
     /**
      * Reference Temperature value in default units. See {@link #defUnitTemp}.
      */
-    public double refT = fluidT0;
+    public double refT = t0;
 
     /**
      * Radiation Emissivity. Default = 0.8.
@@ -523,7 +518,7 @@ public class UserDeclarations {
     /**
      * Maximum Trimmer Relative Size. Default = 10000%.
      */
-    public double mshTrimmerMaxCelSize = 10000;
+    public double mshTrimmerMaxCellSize = 10000;
 
     /**
      * Trimmer Volume Growth Rate when meshing. Default is {@link StaticDeclarations.GrowthRate#MEDIUM}.

@@ -29,7 +29,7 @@ public class CreateReport {
 
     private Report _checkHasIt(String name, boolean vo) {
         if (_sim.getReportManager().has(name)) {
-            _io.say.msg(vo, "Skipping... Report already exists: \"%s\".", name);
+            _io.say.value("Skipping... Report already exists", name, true, vo);
             return _sim.getReportManager().getReport(name);
         }
         return null;
@@ -49,7 +49,7 @@ public class CreateReport {
     }
 
     private void _setSPQ(ScalarPhysicalQuantity spq, double val, Units u, String text, boolean vo) {
-        _set.object.physicalQuantity(spq, val, null, u, text, vo);
+        _set.object.physicalQuantity(spq, val, u, text, vo);
     }
 
     private void _setTitle(Axis axis, String title) {
@@ -81,7 +81,7 @@ public class CreateReport {
         _io.say.msg(vo, "%s == %s (%s)", name, def, _getString(u));
         _io.say.unit(u, vo);
         _io.say.dimension(dim, vo);
-        _tmpl.print.created(er, vo);
+        _io.say.created(er, vo);
         return er;
     }
 
@@ -109,7 +109,7 @@ public class CreateReport {
         _io.say.objects(ab, "Boundaries", vo);
         _io.say.unit(fr.getUnits(), vo);
         monitorAndPlot(fr, null, String.format("Force (%s)", _getString(fr.getUnits())), vo);
-        _tmpl.print.created(fr, vo);
+        _io.say.created(fr, vo);
         return fr;
     }
 
@@ -147,7 +147,7 @@ public class CreateReport {
         //-- Pressure Coefficient update. Will use refP = 0.
         _set.object.fieldFunctionPressureCoefficient(refDen, 0., refVel, vo);
         monitorAndPlot(fcr, null, String.format("Force Coefficient", _getString(fcr.getUnits())), vo);
-        _tmpl.print.created(fcr, vo);
+        _io.say.created(fcr, vo);
         return fcr;
     }
 
@@ -168,15 +168,15 @@ public class CreateReport {
         }
         FrontalAreaReport far = (FrontalAreaReport) _createReport(FrontalAreaReport.class, name);
         _io.say.objects(ab, "Boundaries", vo);
-        _io.say.msg(vo, "View Up: %s.", _get.strings.fromArray(viewUp));
-        _io.say.msg(vo, "Flow Direction: %s.", _get.strings.fromArray(direction));
+        _io.say.value("View Up", new DoubleVector(viewUp), vo);
+        _io.say.value("Flow Direction", new DoubleVector(direction), vo);
         far.getViewUpCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
                 new DoubleVector(viewUp));
         far.getNormalCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
                 new DoubleVector(direction));
         far.getParts().setObjects(ab);
         far.setUnits(_ud.defUnitArea);
-        _tmpl.print.created(far, vo);
+        _io.say.created(far, vo);
         return far;
     }
 
@@ -199,8 +199,8 @@ public class CreateReport {
         Cartesian2DAxisManager cam = (Cartesian2DAxisManager) mp.getAxisManager();
         _setTitle(cam.getAxis("Bottom Axis"), xl);
         _setTitle(cam.getAxis("Left Axis"), yl);
-        _tmpl.print.created(rm, vo);
-        _tmpl.print.created(mp, vo);
+        _io.say.created(rm, vo);
+        _io.say.created(mp, vo);
         return rm;
     }
 
@@ -222,12 +222,12 @@ public class CreateReport {
         _io.say.objects(ar, "Regions", vo);
         _io.say.scalar(ff, u, vo);
         MassAverageReport mar = (MassAverageReport) _createReport(MassAverageReport.class, name);
-        mar.setScalar(ff);
+        mar.setFieldFunction(ff);
         mar.setUnits(u);
         mar.getParts().setObjects(ar);
         monitorAndPlot(mar, null, String.format("Mass Average of %s (%s)", ff.getPresentationName(),
                 _getString(u)), vo);
-        _tmpl.print.created(mar, vo);
+        _io.say.created(mar, vo);
         return mar;
     }
 
@@ -264,7 +264,7 @@ public class CreateReport {
         mfr.setUnits(u);
         mfr.getParts().setObjects(ab);
         monitorAndPlot(mfr, null, String.format("Mass Flow (%s)", _getString(u)), vo);
-        _tmpl.print.created(mfr, vo);
+        _io.say.created(mfr, vo);
         return mfr;
     }
 
@@ -301,12 +301,12 @@ public class CreateReport {
         _io.say.objects(ab, "Boundaries", vo);
         _io.say.scalar(ff, u, vo);
         MassFlowAverageReport mfa = (MassFlowAverageReport) _createReport(MassFlowAverageReport.class, name);
-        mfa.setScalar(ff);
+        mfa.setFieldFunction(ff);
         mfa.setUnits(u);
         mfa.getParts().setObjects(ab);
         monitorAndPlot(mfa, null, String.format("Mass Flow Average of %s (%s)", ff.getPresentationName(),
                 _getString(u)), vo);
-        _tmpl.print.created(mfa, vo);
+        _io.say.created(mfa, vo);
         return mfa;
     }
 
@@ -342,11 +342,11 @@ public class CreateReport {
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         MaxReport mr = (MaxReport) _createReport(MaxReport.class, name);
-        mr.setScalar(ff);
+        mr.setFieldFunction(ff);
         mr.setUnits(u);
         mr.getParts().setObjects(ano);
         monitorAndPlot(mr, null, String.format("Maximum of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _tmpl.print.created(mr, vo);
+        _io.say.created(mr, vo);
         return mr;
     }
 
@@ -382,11 +382,11 @@ public class CreateReport {
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         MinReport mr = (MinReport) _createReport(MinReport.class, name);
-        mr.setScalar(ff);
+        mr.setFieldFunction(ff);
         mr.setUnits(u);
         mr.getParts().setObjects(ano);
         monitorAndPlot(mr, null, String.format("Minimum of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _tmpl.print.created(mr, vo);
+        _io.say.created(mr, vo);
         return mr;
     }
 
@@ -405,15 +405,15 @@ public class CreateReport {
         if (_checkHasIt(name, false) != null) {
             return (PressureDropReport) _checkHasIt(name, vo);
         }
-        _io.say.msg(vo, "High Pressure: \"%s\".", b1.getPresentationName());
-        _io.say.msg(vo, "Low Pressure: \"%s\".", b2.getPresentationName());
+        _io.say.value("High Pressure", b1.getPresentationName(), true, vo);
+        _io.say.value("Low Pressure", b2.getPresentationName(), true, vo);
         _io.say.unit(u, vo);
         PressureDropReport pdr = (PressureDropReport) _createReport(PressureDropReport.class, name);
         pdr.getParts().setObjects(b1);
         pdr.getLowPressureParts().setObjects(b2);
         pdr.setUnits(u);
         monitorAndPlot(pdr, null, "Pressure Drop", vo);
-        _tmpl.print.created(pdr, vo);
+        _io.say.created(pdr, vo);
         return pdr;
     }
 
@@ -435,12 +435,12 @@ public class CreateReport {
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         SumReport mr = (SumReport) _createReport(SumReport.class, name);
-        mr.setScalar(ff);
+        mr.setFieldFunction(ff);
         mr.setUnits(u);
         mr.getParts().setObjects(ano);
         monitorAndPlot(mr, null,
                 String.format("Sum of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _tmpl.print.created(mr, vo);
+        _io.say.created(mr, vo);
         return mr;
     }
 
@@ -463,12 +463,12 @@ public class CreateReport {
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         AreaAverageReport aar = (AreaAverageReport) _createReport(AreaAverageReport.class, name);
-        aar.setScalar(ff);
+        aar.setFieldFunction(ff);
         aar.setUnits(u);
         aar.getParts().setObjects(ano);
         monitorAndPlot(aar, null,
                 String.format("Surface Average of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _tmpl.print.created(aar, vo);
+        _io.say.created(aar, vo);
         return aar;
     }
 
@@ -491,12 +491,12 @@ public class CreateReport {
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         SurfaceIntegralReport sir = (SurfaceIntegralReport) _createReport(SurfaceIntegralReport.class, name);
-        sir.setScalar(ff);
+        sir.setFieldFunction(ff);
         sir.setUnits(u);
         sir.getParts().setObjects(ano);
         monitorAndPlot(sir, null, String.format("Surface Integral of %s (%s)", ff.getPresentationName(),
                 _getString(u)), vo);
-        _tmpl.print.created(sir, vo);
+        _io.say.created(sir, vo);
         return sir;
     }
 
@@ -519,12 +519,12 @@ public class CreateReport {
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         SurfaceUniformityReport sur = (SurfaceUniformityReport) _createReport(SurfaceUniformityReport.class, name);
-        sur.setScalar(ff);
+        sur.setFieldFunction(ff);
         sur.setUnits(u);
         sur.getParts().setObjects(ano);
         monitorAndPlot(sur, null,
                 String.format("Surface Uniformity of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _tmpl.print.created(sur, vo);
+        _io.say.created(sur, vo);
         return sur;
     }
 
@@ -557,12 +557,12 @@ public class CreateReport {
         _io.say.objects(ar, "Regions", vo);
         _io.say.scalar(ff, u, vo);
         VolumeAverageReport var = (VolumeAverageReport) _createReport(VolumeAverageReport.class, name);
-        var.setScalar(ff);
+        var.setFieldFunction(ff);
         var.setUnits(u);
         var.getParts().setObjects(ar);
         monitorAndPlot(var, null,
                 String.format("Volume Average of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _tmpl.print.created(var, vo);
+        _io.say.created(var, vo);
         return var;
     }
 

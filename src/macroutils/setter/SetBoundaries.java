@@ -25,6 +25,10 @@ public class SetBoundaries {
         _sim = m.getSimulation();
     }
 
+    private ScalarProfile _getSP(Boundary b, StaticDeclarations.Vars var) {
+        return _get.objects.scalarProfile(b.getValues(), var.getVar(), false);
+    }
+
     private void _setEnergyWall(Boundary b, WallThermalOption.Type wtoType, String wallEnrgy) {
         _io.say.action(String.format("Setting BC as %s...", wallEnrgy), b, true);
         b.setBoundaryType(WallBoundary.class);
@@ -36,7 +40,7 @@ public class SetBoundaries {
         b.setBoundaryType(clz);
     }
 
-    private void _setVal(Boundary b, StaticDeclarations.Vars var, double val) {
+    private void _setValues(Boundary b, StaticDeclarations.Vars var, double val) {
         Units u = _ud.unit_Dimensionless;
         String vn = var.getVar();
         _io.say.msgDebug("values():");
@@ -50,21 +54,22 @@ public class SetBoundaries {
         } else if (vn.contains("Pressure")) {
             u = _ud.defUnitPress;
             _io.say.msgDebug("  - Contains Pressure");
+        } else if (var.equals(StaticDeclarations.Vars.HTC)) {
+            u = _ud.defUnitHTC;
         }
         _io.say.msgDebug("  - Units: %s", _get.strings.fromUnit(u));
-        _values(b, vn, val, u, true, false);
+        _setValues(b, vn, val, u, true, false);
     }
 
-    private void _values(Boundary b, String name, double val, Units u, boolean vo, boolean prtAct) {
-        _values(b, name, val, null, u, vo, prtAct);
+    private void _setValues(Boundary b, String name, double val, Units u, boolean vo, boolean prtAct) {
+        _setValues(b, name, val, null, u, vo, prtAct);
     }
 
-    private void _values(Boundary b, String name, double[] vals, Units u, boolean vo, boolean prtAct) {
-        _values(b, name, 0.0, vals, u, vo, prtAct);
+    private void _setValues(Boundary b, String name, double[] vals, Units u, boolean vo, boolean prtAct) {
+        _setValues(b, name, 0.0, vals, u, vo, prtAct);
     }
 
-    private void _values(Boundary b, String name, double val, double[] vals, Units u, boolean vo,
-            boolean prtAct) {
+    private void _setValues(Boundary b, String name, double val, double[] vals, Units u, boolean vo, boolean prtAct) {
         if (!b.getValues().has(name)) {
             _io.say.msgDebug("b.getValues().has() no \"%s\"", name);
             return;
@@ -89,8 +94,8 @@ public class SetBoundaries {
      */
     public void asConvectionWall(Boundary b, double T, double htc) {
         _setEnergyWall(b, WallThermalOption.Type.CONVECTION, "Convection Wall");
-        _setVal(b, StaticDeclarations.Vars.AMBIENT_T, T);
-        _setVal(b, StaticDeclarations.Vars.HTC, htc);
+        _setValues(b, StaticDeclarations.Vars.AMBIENT_T, T);
+        _setValues(b, StaticDeclarations.Vars.HTC, htc);
         _io.say.ok(true);
     }
 
@@ -118,12 +123,12 @@ public class SetBoundaries {
      */
     public void asFreeStream(Boundary b, double[] dir, double mach, double P, double T, double ti, double tvr) {
         _setType(b, FreeStreamBoundary.class, "Free Stream");
-        _values(b, "Flow Direction", dir, _ud.unit_Dimensionless, true, false);
-        _setVal(b, StaticDeclarations.Vars.MACH, mach);
-        _setVal(b, StaticDeclarations.Vars.P, P);
-        _setVal(b, StaticDeclarations.Vars.STATIC_T, T);
-        _setVal(b, StaticDeclarations.Vars.TI, ti);
-        _setVal(b, StaticDeclarations.Vars.TVR, tvr);
+        _setValues(b, "Flow Direction", dir, _ud.unit_Dimensionless, true, false);
+        _setValues(b, StaticDeclarations.Vars.MACH, mach);
+        _setValues(b, StaticDeclarations.Vars.P, P);
+        _setValues(b, StaticDeclarations.Vars.STATIC_T, T);
+        _setValues(b, StaticDeclarations.Vars.TI, ti);
+        _setValues(b, StaticDeclarations.Vars.TVR, tvr);
         _io.say.ok(true);
     }
 
@@ -138,10 +143,10 @@ public class SetBoundaries {
      */
     public void asPressureOutlet(Boundary b, double P, double T, double ti, double tvr) {
         _setType(b, PressureBoundary.class, "Pressure Outlet");
-        _setVal(b, StaticDeclarations.Vars.P, P);
-        _setVal(b, StaticDeclarations.Vars.STATIC_T, T);
-        _setVal(b, StaticDeclarations.Vars.TI, ti);
-        _setVal(b, StaticDeclarations.Vars.TVR, tvr);
+        _setValues(b, StaticDeclarations.Vars.P, P);
+        _setValues(b, StaticDeclarations.Vars.STATIC_T, T);
+        _setValues(b, StaticDeclarations.Vars.TI, ti);
+        _setValues(b, StaticDeclarations.Vars.TVR, tvr);
         _io.say.ok(true);
     }
 
@@ -166,10 +171,10 @@ public class SetBoundaries {
      */
     public void asVelocityInlet(Boundary b, double vel, double T, double ti, double tvr) {
         _setType(b, InletBoundary.class, "Velocity Inlet");
-        _setVal(b, StaticDeclarations.Vars.VEL_MAG, vel);
-        _setVal(b, StaticDeclarations.Vars.STATIC_T, T);
-        _setVal(b, StaticDeclarations.Vars.TI, ti);
-        _setVal(b, StaticDeclarations.Vars.TVR, tvr);
+        _setValues(b, StaticDeclarations.Vars.VEL_MAG, vel);
+        _setValues(b, StaticDeclarations.Vars.STATIC_T, T);
+        _setValues(b, StaticDeclarations.Vars.TI, ti);
+        _setValues(b, StaticDeclarations.Vars.TVR, tvr);
         _io.say.ok(true);
     }
 
@@ -210,6 +215,19 @@ public class SetBoundaries {
     }
 
     /**
+     * Applies a definition to a value in a Boundary.
+     *
+     * @param b given Boundary.
+     * @param var given predefined variable defined in {@link StaticDeclarations} class.
+     * @param def given definition.
+     */
+    public void definition(Boundary b, StaticDeclarations.Vars var, String def) {
+        _io.say.action("Setting a Boundary Definition", b, true);
+        _set.object.profile(_getSP(b, var), def);
+        _io.say.ok(true);
+    }
+
+    /**
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
@@ -221,17 +239,15 @@ public class SetBoundaries {
     }
 
     /**
-     * Applies a Physics Value to a Boundary.
-     *
-     * <b>Note:</b> Current method is limited to Constant Scalar values only, i.e., no formulas or definitions.
+     * Applies a Physics Value to a Boundary using a constant given value.
      *
      * @param b given Boundary.
-     * @param name given Physics Values. E.g.: Pressure, Temperature, etc...
+     * @param var given predefined variable defined in {@link StaticDeclarations} class.
      * @param val given value.
      * @param u given Units.
      */
-    public void values(Boundary b, String name, double val, Units u) {
-        _values(b, name, val, u, true, true);
+    public void values(Boundary b, StaticDeclarations.Vars var, double val, Units u) {
+        _setValues(b, var.getVar(), val, u, true, true);
     }
 
     /**

@@ -83,7 +83,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         ud.mshSrfSizeMin = 12.5;
         ud.mshSrfCurvNumPoints = 48;
         ud.mshTrimmerGrowthRate = StaticDeclarations.GrowthRate.MEDIUM;
-        ud.mshTrimmerMaxCelSize = 8 * ud.mshSrfSizeTgt;
+        ud.mshTrimmerMaxCellSize = 8 * ud.mshSrfSizeTgt;
         ud.wrapMshOp = mu.add.meshOperation.surfaceWrapper(mu.get.geometries.all(true), wrapName);
         mu.set.mesh.baseSize(ud.wrapMshOp, 0.6 * ud.mshBaseSize, ud.unit_mm, true);
         ud.geometryObjects2.add(ud.cadPrt);

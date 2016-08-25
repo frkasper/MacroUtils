@@ -51,7 +51,7 @@ public class CreateDerivedPart {
         ImplicitPart ip = _sim.getPartManager().createImplicitPart(where, vecOrient, vecOrigin, 0, 1, vecOffsets);
         PlaneSection ps = (PlaneSection) ip;
         ps.getOriginCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength, vecOrigin);
-        _tmpl.print.created(ps, true);
+        _io.say.created(ps, true);
         return ps;
     }
 
@@ -64,7 +64,7 @@ public class CreateDerivedPart {
     public CellSurfacePart cellSurface(ArrayList<NamedObject> ano) {
         _creating(ano, "Cell Surface");
         CellSurfacePart c = _sim.getPartManager().createCellSurfacePart(new Vector(ano));
-        _tmpl.print.created(c, true);
+        _io.say.created(c, true);
         return c;
     }
 
@@ -83,7 +83,7 @@ public class CreateDerivedPart {
         fmm.setObjects(ano);
         fmm.setFieldFunction(ff);
         _set.object.updateEvent(fmm, ue, true);
-        _tmpl.print.created(fmm, true);
+        _io.say.created(fmm, true);
         return fmm;
     }
 
@@ -101,8 +101,8 @@ public class CreateDerivedPart {
         _io.say.object(ff, true);
         IsoPart ip = _sim.getPartManager().createIsoPart(new NeoObjectVector(ano.toArray()), ff);
         ip.setMode(0);
-        _set.object.physicalQuantity(ip.getSingleIsoValue().getValueQuantity(), val, null, u, "Iso Value", true);
-        _tmpl.print.created(ip, true);
+        _set.object.physicalQuantity(ip.getSingleIsoValue().getValueQuantity(), val, u, "Iso Value", true);
+        _io.say.created(ip, true);
         return ip;
     }
 
@@ -118,7 +118,7 @@ public class CreateDerivedPart {
         PointPart pp = _sim.getPartManager().createPointPart(new NeoObjectVector(ano.toArray()), new DoubleVector(c));
         pp.getPointCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
                 new DoubleVector(c));
-        _tmpl.print.created(pp, true);
+        _io.say.created(pp, true);
         return pp;
     }
 
@@ -195,8 +195,8 @@ public class CreateDerivedPart {
             } else if ((no instanceof Boundary) || (no instanceof PartSurface)) {
                 a2d.add(no);
             } else {
-                _io.say.warning(true, "Object is not 3D or 2D to be used for Streamline: \"%s\".",
-                        no.getBeanDisplayName());
+                _io.say.value("Warning! Object is not 3D or 2D to be used for Streamline",
+                        no.getBeanDisplayName(), true, true);
             }
         }
         return streamline_PartSeed(a3d, a2d);
@@ -218,7 +218,7 @@ public class CreateDerivedPart {
                 new NeoObjectVector(anoSP.toArray()), ff,
                 _ud.postStreamlineResolution, _ud.postStreamlineResolution, 0);
         _io.say.object(sp.getFieldFunction(), true);
-        _tmpl.print.created(sp, true);
+        _io.say.created(sp, true);
         return sp;
     }
 

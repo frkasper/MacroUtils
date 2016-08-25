@@ -67,7 +67,7 @@ public class Demo1_Flow_In_a_Pipe extends StarMacro {
                 StaticDeclarations.Material.LIQUID, StaticDeclarations.Solver.SEGREGATED,
                 StaticDeclarations.Density.INCOMPRESSIBLE, StaticDeclarations.Energy.ISOTHERMAL,
                 StaticDeclarations.Viscous.LAMINAR);
-        mu.set.solver.aggressiveURFs();
+        mu.set.solver.aggressiveSettings();
         //--
         mu.set.boundary.asVelocityInlet(mu.get.boundaries.byREGEX(ud.bcInlet, true), 0.1, 0., 0., 0.);
         mu.set.boundary.asPressureOutlet(mu.get.boundaries.byREGEX(ud.bcOutlet, true), 0., 0., 0., 0.);

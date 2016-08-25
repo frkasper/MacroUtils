@@ -25,6 +25,10 @@ public class GetObjects {
         _sim = m.getSimulation();
     }
 
+    private ArrayList<NamedObject> _getFFs() {
+        return new ArrayList(_sim.getFieldFunctionManager().getObjects());
+    }
+
     /**
      * Gets a STAR-CCM+ NamedObject by using a REGEX search pattern.
      *
@@ -36,21 +40,32 @@ public class GetObjects {
      */
     public ArrayList<NamedObject> allByREGEX(String regexPatt, String what, ArrayList<NamedObject> ano, boolean vo) {
         ArrayList<NamedObject> arr = new ArrayList();
-        _tmpl.print.getByREGEX(what, regexPatt, vo);
+        _io.print.msg(vo, "Getting %s by REGEX search pattern: \"%s\".", what, regexPatt);
         if (ano.isEmpty()) {
-            _tmpl.print.isEmpty(vo);
+            _io.print.msg(vo, "Input ArrayList is empty.");
         } else {
             for (NamedObject no : ano) {
-                if (!no.getPresentationName().matches(regexPatt)) {
+                String name = no.getPresentationName();
+                boolean hasMatch = name.matches(regexPatt);
+                if ((no instanceof FieldFunction) && !hasMatch) {
+                    name = ((FieldFunction) no).getFunctionName();
+                    hasMatch = name.matches(regexPatt);
+                }
+                if (!hasMatch) {
                     continue;
                 }
-                _io.say.msg(vo, "  - Match: \"%s\"", no.getPresentationName(), vo);
+                _io.say.msg(vo, "  - Match: \"%s\"", name, vo);
                 arr.add(no);
             }
-            _io.say.msg(vo, "Found %d items.", arr.size());
+            String s = "";
+            if (arr.size() > 1) {
+                s = "s";
+            }
+            _io.say.msg(vo, "Found %d item%s.", arr.size(), s);
         }
         if (arr.isEmpty()) {
-            return new ArrayList(arrayList(null));
+            _io.print.msg(vo, "Returning an ArrayList with a null value inside.");
+            arr.add(null);
         }
         return arr;
     }
@@ -78,43 +93,6 @@ public class GetObjects {
     }
 
     /**
-     * Gets a STAR-CCM+ NamedObject by matching its Presentation Name.
-     *
-     * @param name given object name.
-     * @param ano given ArrayList of NamedObjects.
-     * @param vo given verbose option. False will not print anything.
-     * @return The NamedObject. Null if nothing is found.
-     */
-    public NamedObject byName(String name, ArrayList<NamedObject> ano, boolean vo) {
-        String s = ano.get(0).getParent().getBeanDisplayName();
-        return byName(name, s, ano, vo);
-    }
-
-    /**
-     * Gets a STAR-CCM+ NamedObject by matching its Presentation Name.
-     *
-     * @param name given object name.
-     * @param ano given ArrayList of NamedObjects.
-     * @param what what kind of object? E.g: Plane, Report, Scene, etc...
-     * @param vo given verbose option. False will not print anything.
-     * @return The NamedObject. Null if nothing is found.
-     */
-    public NamedObject byName(String name, String what, ArrayList<NamedObject> ano, boolean vo) {
-        _tmpl.print.getByName(what, name, vo);
-        if (ano.isEmpty()) {
-            _tmpl.print.gotNull(vo);
-        } else {
-            for (NamedObject no : ano) {
-                if (no.getPresentationName().equals(name)) {
-                    _tmpl.print.gotByName(no, vo);
-                    return no;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
      * Gets a STAR-CCM+ NamedObject by using a REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
@@ -137,18 +115,7 @@ public class GetObjects {
      * @return The NamedObject. Null if nothing is found.
      */
     public NamedObject byREGEX(String regexPatt, String what, ArrayList<NamedObject> ano, boolean vo) {
-        _tmpl.print.getByREGEX(what, regexPatt, vo);
-        if (ano.isEmpty()) {
-            _tmpl.print.gotNull(vo);
-        } else {
-            for (NamedObject no : ano) {
-                if (no.getPresentationName().matches(regexPatt)) {
-                    _tmpl.print.gotByREGEX(what, no, vo);
-                    return no;
-                }
-            }
-        }
-        return null;
+        return allByREGEX(regexPatt, what, ano, vo).get(0);
     }
 
     /**
@@ -197,35 +164,23 @@ public class GetObjects {
      * @return The FieldFunction.
      */
     public FieldFunction fieldFunction(String regexPatt, boolean vo) {
-        _tmpl.print.getByREGEX("Field Function", regexPatt, vo);
-        for (FieldFunction ff : _sim.getFieldFunctionManager().getObjects()) {
-            if (ff.getFunctionName().matches(regexPatt)) {
-                _io.say.msg(vo, "Got by REGEX: \"%s\".", ff.getFunctionName());
-                return ff;
-            }
-            if (ff.getPresentationName().matches(regexPatt)) {
-                _io.say.msg(vo, "Got by REGEX: \"%s\".", ff.getPresentationName());
-                return ff;
-            }
-        }
-        _io.say.msg("Got NULL.", vo);
-        return null;
+        return (FieldFunction) allByREGEX(regexPatt, "Field Function", _getFFs(), vo).get(0);
     }
 
     /**
-     * Gets a Field Function based on the ones defined in {@link StaticDeclarations} class.
+     * Gets a Field Function based on the strings previously defined.
      *
-     * @param var given predefined variable enum.
+     * @param var given predefined variable defined in {@link StaticDeclarations} class.
      * @return The FieldFunction.
      */
     public FieldFunction fieldFunction(StaticDeclarations.Vars var) {
         FieldFunction ff = fieldFunction(var.getVar(), false);
-        _io.say.msg(true, "Asked for Field Function: \"%s\".", var.getVar());
+        _io.say.value("Asked for Field Function", var.getVar(), true, true);
         if (ff == null) {
             _io.say.msg(true, "Returning NULL.");
             return null;
         }
-        _io.say.msg(true, "Returning: \"%s\".", ff.getPresentationName());
+        _io.say.value("Returning", ff.getPresentationName(), true, true);
         if (var.equals(StaticDeclarations.Vars.VEL_MAG)) {
             return ff.getMagnitudeFunction();
         }
@@ -241,21 +196,7 @@ public class GetObjects {
      * @return An ArrayList of FieldFunctions.
      */
     public ArrayList<FieldFunction> fieldFunctions(String regexPatt, boolean vo) {
-        _tmpl.print.getByREGEX("Field Functions", regexPatt, vo);
-        ArrayList<FieldFunction> af = new ArrayList();
-        for (FieldFunction ff : _sim.getFieldFunctionManager().getObjects()) {
-            if (ff.getFunctionName().matches(regexPatt)) {
-                _io.say.msg(vo, "   - Found: \"%s\".", ff.getFunctionName());
-                af.add(ff);
-                continue;
-            }
-            if (ff.getPresentationName().matches(regexPatt)) {
-                _io.say.msg(vo, "   - Found: \"%s\".", ff.getPresentationName());
-                af.add(ff);
-            }
-        }
-        _io.say.msg(vo, "Field Functions found: %d", af.size());
-        return af;
+        return new ArrayList(allByREGEX(regexPatt, "Field Functions", _getFFs(), vo));
     }
 
     /**
@@ -333,7 +274,6 @@ public class GetObjects {
     public void updateInstances() {
         _get = _mu.get;
         _io = _mu.io;
-        _tmpl = _mu.templates;
     }
 
     //--
@@ -343,6 +283,5 @@ public class GetObjects {
     private MacroUtils _mu = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
 
 }

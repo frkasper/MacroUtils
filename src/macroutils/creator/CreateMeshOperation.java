@@ -226,8 +226,8 @@ public class CreateMeshOperation {
         return pcInt;
     }
 
-    private DirectedMeshOperation _createDMO(PartSurface src, PartSurface tgt, boolean vo) {
-        _io.say.object(src.getPart(), vo);
+    private DirectedMeshOperation _createDMO(PartSurface src, PartSurface tgt) {
+        _io.say.object(src.getPart(), true);
         if (!_chk.is.directedMeshable(src, tgt)) {
             return null;
         }
@@ -247,7 +247,7 @@ public class CreateMeshOperation {
         }
         AutoMeshOperation amo = (AutoMeshOperation) mo;
         SurfaceCustomMeshControl scmc = amo.getCustomMeshControls().createSurfaceControl();
-        _tmpl.print.created(scmc, vo);
+        _io.say.created(scmc, vo);
         return scmc;
     }
 
@@ -321,14 +321,21 @@ public class CreateMeshOperation {
             DualAutoMesher dam = ((DualAutoMesher) amo.getMeshers().getObject("Polyhedral Mesher"));
             dam.setTetOptimizeCycles(_ud.mshOptCycles);
             dam.setTetQualityThreshold(_ud.mshQualityThreshold);
+            _io.say.value("Optimization Cycles", dam.getTetOptimizeCycles(), true);
+            _io.say.value("Quality Threshold", dam.getTetQualityThreshold(), true);
         }
         if (_chk.has.trimmerMesher(amo)) {
             star.trimmer.PartsGrowthRateOption.Type t = _ud.mshTrimmerGrowthRate.getType();
             amodv.get(PartsSimpleTemplateGrowthRate.class).getGrowthRateOption().setSelected(t);
-            amodv.get(MaximumCellSize.class).getRelativeSize().setPercentage(_ud.mshTrimmerMaxCelSize);
+            _io.say.value("Growth Rate Type", t.getPresentationName(), true, true);
+            _set.mesh.maxCellSize(amo, _ud.mshTrimmerMaxCellSize, false);
         }
-        _tmpl.print.baseMeshParameters(amo, true);
-        _tmpl.print.created(amo, true);
+        _io.say.created(amo, true);
+    }
+
+    private void _setRelativeSize(String what, RelativeSize rs, double perc) {
+        rs.setPercentage(perc);
+        _io.say.percentage(what, rs.getPercentage(), true);
     }
 
     /**
@@ -366,7 +373,7 @@ public class CreateMeshOperation {
         _io.say.objects(agp, "Geometry Parts", true);
         PrepareFor2dOperation p2d = (PrepareFor2dOperation) _getMOM().createPrepareFor2dOperation(agp);
         p2d.execute();
-        _tmpl.print.created(p2d, true);
+        _io.say.created(p2d, true);
         return p2d;
     }
 
@@ -392,9 +399,89 @@ public class CreateMeshOperation {
         PartsContactPreventionSetManager pcpsm = swamo.getContactPreventionSet();
         PartsOneGroupContactPreventionSet cp = pcpsm.createPartsOneGroupContactPreventionSet();
         cp.getPartSurfaceGroup().setObjects(ago);
-        _set.object.physicalQuantity(cp.getFloor(), val, null, u, "Search Floor", true);
+        _set.object.physicalQuantity(cp.getFloor(), val, u, "Search Floor", true);
         _io.say.ok(true);
         return cp;
+    }
+
+    /**
+     * Creates a Directed Mesh Operation in a squared Channel.
+     *
+     * @param src given Source Part Surface.
+     * @param tgt given Target Part Surface.
+     * @param nX given number of points in X-direction.
+     * @param nY given number of points in Y-direction.
+     * @param nZ given number of points in Z-direction.
+     * @return The Directed Mesh Operation.
+     */
+    public DirectedMeshOperation directedMeshing_Channel(PartSurface src, PartSurface tgt, int nX, int nY, int nZ) {
+        _io.say.action("Creating a Directed Mesh Operation in a Channel", true);
+        DirectedMeshOperation dmo = _createDMO(src, tgt);
+        int isX = 0, isY = 0, isZ = 0;
+        int nP1 = 2, nP2 = 2, nVol = 2;
+        PatchCurve pcX = null, pcY = null, pcZ = null, pc1 = null, pc2 = null;
+        //--
+        String pn = src.getPart().getPresentationName();
+        DirectedMeshPartCollectionManager dmpcm = dmo.getGuidedMeshPartCollectionManager();
+        DirectedMeshPartCollection dmpc = ((DirectedMeshPartCollection) dmpcm.getObject(pn));
+        NeoObjectVector srcPSs = new NeoObjectVector(new Object[]{src});
+        NeoObjectVector tgtPSs = new NeoObjectVector(new Object[]{tgt});
+        dmo.getGuidedSurfaceMeshBaseManager().validateConfigurationForPatchMeshCreation(dmpc, srcPSs, tgtPSs);
+        //--
+        DirectedPatchSourceMesh patchMsh = dmo.getGuidedSurfaceMeshBaseManager().createPatchSourceMesh(srcPSs, dmpc);
+        NeoProperty np = patchMsh.autopopulateFeatureEdges();
+        ArrayList<PatchCurve> pcs = _getPCs(patchMsh);
+        //--
+        double err = 0.05;
+        for (PatchCurve p : pcs) {
+            DoubleVector pts = p.getPoints();
+            if (_get.info.relativeError(pts.get(0), pts.get(3), true) <= err) {
+                isX += 1;
+                pcX = p;
+                _io.say.msg(p.getPresentationName() + " is on X plane.");
+            }
+            if (_get.info.relativeError(pts.get(1), pts.get(4), true) <= err) {
+                isY += 1;
+                pcY = p;
+                _io.say.msg(p.getPresentationName() + " is on Y plane.");
+            }
+            if (_get.info.relativeError(pts.get(2), pts.get(5), true) <= err) {
+                isZ += 1;
+                pcZ = p;
+                _io.say.msg(p.getPresentationName() + " is on Z plane.");
+            }
+        }
+        //_io.say.msg("X = %d; Y = %d; Z = %d.", isX, isY, isZ);
+        //--
+        if (isX == 4) {
+            nVol = nX;
+            pc1 = pcY;
+            nP2 = nY;
+            pc2 = pcZ;
+            nP1 = nZ;
+        } else if (isY == 4) {
+            nVol = nY;
+            pc1 = pcX;
+            nP2 = nX;
+            pc2 = pcZ;
+            nP1 = nZ;
+        } else if (isZ == 4) {
+            nVol = nZ;
+            pc1 = pcX;
+            nP2 = nX;
+            pc2 = pcY;
+            nP1 = nY;
+        }
+        //--
+        patchMsh.defineMeshPatchCurve(pc1, pc1.getStretchingFunction(), 0., 0., nP1, false, false);
+        patchMsh.defineMeshPatchCurve(pc2, pc2.getStretchingFunction(), 0., 0., nP2, false, false);
+        //--
+        DirectedMeshDistributionManager dmdm = dmo.getDirectedMeshDistributionManager();
+        DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(_getNOV1(dmpc), "Constant");
+        dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
+        dmo.execute();
+        _io.say.created(dmo, true);
+        return dmo;
     }
 
     /**
@@ -413,46 +500,46 @@ public class CreateMeshOperation {
             double rR, CoordinateSystem c) {
         _io.say.action("Creating a Directed Mesh Operation in a Pipe", true);
         if (!_chk.is.cylindricalCSYS(c)) {
-            _io.say.msg(true, "Not a Cylindrical Coordinate System: \"%s\".", c.getPresentationName());
+            _io.say.value("Warning! Not a Cylindrical Coordinate System", c.getPresentationName(), true, true);
             _io.say.msg("Directed Mesh not created.");
             return null;
         }
-        DirectedMeshOperation dmo = _createDMO(src, tgt, true);
+        DirectedMeshOperation dmo = _createDMO(src, tgt);
         CylindricalCoordinateSystem ccs = (CylindricalCoordinateSystem) c;
-
+        //--
         String s = src.getPart().getPresentationName();
         DirectedMeshPartCollection dmpc = dmo.getGuidedMeshPartCollectionManager().getObject(s);
         NeoObjectVector srcPSs = new NeoObjectVector(new Object[]{src});
         NeoObjectVector tgtPSs = new NeoObjectVector(new Object[]{tgt});
         dmo.getGuidedSurfaceMeshBaseManager().validateConfigurationForPatchMeshCreation(dmpc, srcPSs, tgtPSs);
-
+        //--
         DirectedPatchSourceMesh patchMsh = dmo.getGuidedSurfaceMeshBaseManager().createPatchSourceMesh(srcPSs, dmpc);
         NeoProperty np = patchMsh.autopopulateFeatureEdges();
         //_io.say.msg("NeoProperty np = patchMsh.autopopulateFeatureEdges();");
         //_io.say.msg(np.getHashtable().toString());
-
+        //--
         boolean isBackwards = _createDM_Pipe_buildExternalPatchCurves(patchMsh, ccs, false);
         if (isBackwards) {
             _createDM_Pipe_buildExternalPatchCurves(patchMsh, ccs, isBackwards);
         }
         ArrayList<PatchCurve> pcExts = _getPCs(patchMsh);
         PatchCurve pcInt = _createDM_Pipe_buildInternalPatchCurves(patchMsh, ccs, rR, isBackwards);
-
+        //--
         if (pcInt == null) {
             return null;
         }
-
+        //--
         patchMsh.defineMeshMultiplePatchCurves(_getNOV2(pcExts), nT, false);
         patchMsh.defineMeshMultiplePatchCurves(_getNOV1(pcInt), nR, false);
         if (_ud.dmSmooths > 0) {
             patchMsh.smoothPatchPolygonMesh(_ud.dmSmooths, 0.25, false);
         }
-
+        //--
         DirectedMeshDistributionManager dmdm = dmo.getDirectedMeshDistributionManager();
         DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(_getNOV1(dmpc), "Constant");
         dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
         dmo.execute();
-        _tmpl.print.created(dmo, true);
+        _io.say.created(dmo, true);
         return dmo;
     }
 
@@ -512,11 +599,11 @@ public class CreateMeshOperation {
         ImprintPartsOperation ipo = (ImprintPartsOperation) mo;
         ipo.getMergeImprintMethod().setSelected(it);
         ipo.getResultingMeshType().setSelected(mt);
-        _io.say.msg(true, "Imprint Method: \"%s\".",
-                ipo.getMergeImprintMethod().getSelectedElement().getPresentationName());
-        _io.say.msg(true, "Resulting Mesh: \"%s\".",
-                ipo.getResultingMeshType().getSelectedElement().getPresentationName());
-        _set.object.physicalQuantity(ipo.getTolerance(), tol, null, _ud.defUnitLength, "Tolerance", true);
+        _io.say.value("Imprint Method",
+                ipo.getMergeImprintMethod().getSelectedElement().getPresentationName(), true, true);
+        _io.say.value("Resulting Mesh",
+                ipo.getResultingMeshType().getSelectedElement().getPresentationName(), true, true);
+        _set.object.physicalQuantity(ipo.getTolerance(), tol, _ud.defUnitLength, "Tolerance", true);
         if (it == ImprintMergeImprintMethodOption.Type.CAD_IMPRINT) {
             CadTessellationOption cto = ipo.getImprintValuesManager().get(CadTessellationOption.class);
             cto.getTessellationDensityOption().setSelected(_ud.defTessOpt.getType());
@@ -525,7 +612,7 @@ public class CreateMeshOperation {
             ImprintPartSurfaces ips = ipo.getImprintValuesManager().get(ImprintPartSurfaces.class);
             ips.getPartSurfacesOption().setSelected(ImprintPartSurfacesOption.Type.USE_INPUT);
         }
-        _tmpl.print.created(ipo, true);
+        _io.say.created(ipo, true);
         return ipo;
     }
 
@@ -561,11 +648,11 @@ public class CreateMeshOperation {
         _io.say.action("Creating a Custom Surface Mesh Control", true);
         _io.say.object(scmc, true);
         _io.say.object(mo, true);
-        _io.say.msg(true, "Copying \"%s\" from \"%s\"...", scmc.getPresentationName(), mo.getPresentationName());
         SurfaceCustomMeshControl scmc2 = _createSC(mo, false);
         scmc2.setPresentationName(scmc.getPresentationName());
         scmc2.copyProperties(scmc);
-        _tmpl.print.created(scmc2, true);
+        _io.say.msg("Properties copied succesfully.");
+        _io.say.created(scmc2, true);
         return scmc2;
     }
 
@@ -586,7 +673,7 @@ public class CreateMeshOperation {
         SurfaceCustomMeshControl scmc = _createSC(mo, false);
         scmc.getGeometryObjects().setObjects(ago);
         _set.mesh.surfaceSizes(scmc, min, tgt, true);
-        _tmpl.print.created(scmc, true);
+        _io.say.created(scmc, true);
         return scmc;
     }
 
@@ -612,10 +699,9 @@ public class CreateMeshOperation {
         PartsCustomizePrismMesh pcpm = scmc.getCustomConditions().get(PartsCustomizePrismMesh.class);
         if (numLayers + stretch + relSize == 0.0) {
             _dis.prismsLayers(scmc, false);
-            _io.say.msg(true, "Prism Layers DISABLED.");
+            _io.say.msg("Prism Layers DISABLED.");
         } else {
             pcpm.getCustomPrismOptions().setSelected(PartsCustomPrismsOption.Type.CUSTOMIZE);
-            _tmpl.print.prismsParameters(numLayers, stretch, relSize, true);
             CustomPrismValuesManager cpvm = scmc.getCustomValues().get(CustomPrismValuesManager.class);
             if (numLayers > 0) {
                 pcpm.getCustomPrismControls().setCustomizeNumLayers(true);
@@ -636,7 +722,7 @@ public class CreateMeshOperation {
                 pcpm.getCustomPrismControls().setCustomizeTotalThickness(false);
             }
         }
-        _tmpl.print.created(scmc, true);
+        _io.say.created(scmc, true);
         return scmc;
     }
 
@@ -652,20 +738,17 @@ public class CreateMeshOperation {
         _io.say.objects(agp, "Geometry Parts", true);
         AutoMeshOperation amo = _getMOM().createSurfaceWrapperAutoMeshOperation(agp, name);
         SurfaceWrapperAutoMeshOperation swamo = (SurfaceWrapperAutoMeshOperation) amo;
+        AutoMeshDefaultValuesManager amdvm = swamo.getDefaultValues();
         _set.mesh.baseSize(swamo, _ud.mshBaseSize, _ud.defUnitLength, false);
         _set.mesh.surfaceSizes(swamo, _ud.mshSrfSizeMin, _ud.mshSrfSizeTgt, false);
-        _tmpl.print.baseMeshParameters(swamo, true);
-        AutoMeshDefaultValuesManager amdvm = swamo.getDefaultValues();
-        SurfaceCurvatureNumPts scnp = amdvm.get(SurfaceCurvature.class).getSurfaceCurvatureNumPts();
+        _set.mesh.surfaceCurvature(amdvm.get(SurfaceCurvature.class), _ud.mshSrfCurvNumPoints, false);
         GlobalVolumeOfInterestOption gvio = amdvm.get(GlobalVolumeOfInterest.class).getVolumeOfInterestOption();
         GeometricFeatureAngle gfa = amdvm.get(GeometricFeatureAngle.class);
-        scnp.setNumPointsAroundCircle(_ud.mshSrfCurvNumPoints);
         gvio.setSelected(GlobalVolumeOfInterestOption.Type.LARGEST_INTERNAL);
         gfa.setGeometricFeatureAngle(_ud.mshWrapperFeatureAngle);
-        _io.say.value("Surface Curvature", scnp.getNumPointsAroundCircle(), true);
-        _io.say.msg(true, "Volume of Interest: %s.", gvio.getSelectedElement().getPresentationName());
-        _io.say.value("Wrapper Feature Angle", gfa.getGeometricFeatureAngle(), _ud.unit_deg, true);
-        _tmpl.print.created(swamo, true);
+        _io.say.value("Volume of Interest", gvio.getSelectedElement().getPresentationName(), true, true);
+        _io.say.value("Geometric Feature Angle", gfa.getGeometricFeatureAngle(), true);
+        _io.say.created(swamo, true);
         return swamo;
     }
 
@@ -688,7 +771,6 @@ public class CreateMeshOperation {
         _dis = _mu.disable;
         _get = _mu.get;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
@@ -734,27 +816,24 @@ public class CreateMeshOperation {
             vccc.get(VolumeControlTrimmerSizeOption.class).setTrimmerAnisotropicSizeOption(true);
             TrimmerAnisotropicSize tas = vcmc.getCustomValues().get(TrimmerAnisotropicSize.class);
             if (relSize > 0) {
-                _io.say.msg(true, "Isotropic Relative Size (%%): %g.", relSize);
                 vccc.get(VolumeControlTrimmerSizeOption.class).setVolumeControlBaseSizeOption(true);
-                vcmc.getCustomValues().get(VolumeControlSize.class).getRelativeSize().setPercentage(relSize);
+                _setRelativeSize("Isotropic Relative Size",
+                        vcmc.getCustomValues().get(VolumeControlSize.class).getRelativeSize(), relSize);
             }
             if (relSizes[0] > 0) {
-                _io.say.msg(true, "Relative Size X (%%): %g.", relSizes[0]);
                 tas.setXSize(true);
-                tas.getRelativeXSize().setPercentage(relSizes[0]);
+                _setRelativeSize("Relative Size X", tas.getRelativeXSize(), relSizes[0]);
             }
             if (relSizes[1] > 0) {
-                _io.say.msg(true, "Relative Size Y (%%): %g.", relSizes[1]);
                 tas.setYSize(true);
-                tas.getRelativeYSize().setPercentage(relSizes[1]);
+                _setRelativeSize("Relative Size Y", tas.getRelativeYSize(), relSizes[1]);
             }
             if (relSizes[2] > 0) {
-                _io.say.msg(true, "Relative Size Z (%%): %g.", relSizes[2]);
                 tas.setZSize(true);
-                tas.getRelativeZSize().setPercentage(relSizes[2]);
+                _setRelativeSize("Relative Size Z", tas.getRelativeZSize(), relSizes[2]);
             }
         }
-        _tmpl.print.created(vcmc, true);
+        _io.say.created(vcmc, true);
         return vcmc;
     }
 
@@ -769,6 +848,5 @@ public class CreateMeshOperation {
     private macroutils.getter.MainGetter _get = null;
     private macroutils.misc.MainDisabler _dis = null;
     private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
 
 }

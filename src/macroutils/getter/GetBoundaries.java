@@ -45,7 +45,7 @@ public class GetBoundaries {
      * @return An ArrayList of Boundaries.
      */
     public ArrayList<Boundary> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Boundaries", new ArrayList(all(false)), true));
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Boundaries", new ArrayList(all(false)), vo));
     }
 
     /**

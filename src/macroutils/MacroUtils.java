@@ -17,14 +17,14 @@ import star.common.*;
  * <p>
  * <b>Requires:</b>
  * <ul>
- * <li> STAR-CCM+ v11.02 libraries. <u>It may not run in other versions</u>;
- * <li> If one is compiling through NetBeans, please do against JDK 6 or 7 Source/Binary format;
- * <li> Compiling against JDK 8 will present runtime issues for STAR-CCM+ v11.02.
+ * <li> STAR-CCM+ v11.04 libraries. <u>It may not run in other versions</u>;
+ * <li> If one is compiling through NetBeans 8 or higher, please do it against JDK 7 Source/Binary format.
+ * <li> Compiling against JDK 8 will present runtime issues for STAR-CCM+ v11.04;
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v11.02, August 11, 2016.
+ * @version v11.04, August 25, 2016.
  */
 public final class MacroUtils {
 
@@ -41,7 +41,7 @@ public final class MacroUtils {
     }
 
     private String _getMacroUtilsVersion() {
-        return "MacroUtils version 11.02 build 1";
+        return "MacroUtils version 11.04 build 1";
     }
 
     /**
@@ -90,9 +90,9 @@ public final class MacroUtils {
         userDeclarations.simPath = _sim.getSessionDir();
         userDeclarations.cadPath = new File(userDeclarations.simPath, "CAD");
         userDeclarations.dbsPath = new File(userDeclarations.simPath, "DBS");
-        io.say.msg(true, "Simulation Name: \"%s\".", userDeclarations.simTitle);
-        io.say.msg(true, "Simulation File: \"%s\".", userDeclarations.simFile.toString());
-        io.say.msg(true, "Simulation Path: \"%s\".", userDeclarations.simPath);
+        io.say.value("Simulation Name", userDeclarations.simTitle, true, true);
+        io.say.value("Simulation File", userDeclarations.simFile.toString(), true, true);
+        io.say.value("Simulation Path", userDeclarations.simPath, true, true);
         userDeclarations.csys0 = _sim.getCoordinateSystemManager().getLabCoordinateSystem();
         userDeclarations.lab0 = (LabCoordinateSystem) userDeclarations.csys0;
         userDeclarations.defColormap = get.objects.colormap(StaticDeclarations.Colormaps.BLUE_RED_BALANCED);
@@ -224,9 +224,8 @@ public final class MacroUtils {
     }
 
     private void saveSim(String name, boolean vo) {
-        String newName = name + ".sim";
-        io.say.action(String.format("Saving: \"%s\"", newName), vo);
-        _sim.saveState(new File(userDeclarations.simPath, newName).toString());
+        io.say.action(String.format("Saving Simulation File"), vo);
+        _sim.saveState(new File(userDeclarations.simPath, name + ".sim").toString());
         io.say.ok(vo);
     }
 

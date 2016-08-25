@@ -34,10 +34,10 @@ public class Read {
      */
     public VisView cameraView(String cam, boolean vo) {
         _io.say.action("Reading a Camera View", vo);
-        _io.say.msg("Camera string: " + cam, vo);
+        _io.say.value("Camera string", cam, true, vo);
         String[] props = cam.split("\\" + StaticDeclarations.CAM_SPLIT_CHAR_FIELDS);
         _io.say.msgDebug("Props: " + _get.strings.fromArray(props));
-        VisView vv0 = _get.cameras.byName(props[0], false);
+        VisView vv0 = _get.cameras.byREGEX(props[0], false);
         if (vv0 != null) {
             _io.say.msg("Already exists. Skipping...", vo);
             return vv0;
@@ -55,28 +55,29 @@ public class Read {
             switch (i) {
                 case 1:
                     vv1.setFocalPoint(dv);
-                    _io.say.msg("Focal Point read: " + dv.toString());
+                    _io.say.value("Focal Point read", dv, true);
                     break;
                 case 2:
                     vv1.setPosition(dv);
-                    _io.say.msg("Position read: " + dv.toString());
+                    _io.say.value("Position read", dv, true);
                     break;
                 case 3:
                     vv1.setViewUp(dv);
-                    _io.say.msg("View Up read: " + dv.toString());
+                    _io.say.value("View Up read", dv, true);
                     break;
             }
         }
         double ps = Double.valueOf(props[4]);
-        vv1.setParallelScale(ps);
-        _io.say.msg("Parallel Scale read: " + ps);
+        vv1.getParallelScale().setValue(ps);
+        _io.say.value("Parallel Scale read", ps, true);
+        int pm = 1;
         try {
-            int pm = Integer.parseInt(props[5]);
-            vv1.setProjectionMode(pm);
-            _io.say.msg("Projection Mode read: " + pm);
+            pm = Integer.parseInt(props[5]);
+            _io.say.value("Projection Mode read", pm, true);
         } catch (Exception e) {
-            _io.say.msg("Could not read Projection Mode. Error parsing it or value not found.");
+            _io.say.msg("Could not read Projection Mode. Using Parallel.");
         }
+        vv1.setProjectionMode(pm);
         _io.say.camera(vv1, vo);
         return vv1;
     }
@@ -92,7 +93,7 @@ public class Read {
         _io.say.action("Reading Camera Views", true);
         File camFile = new File(_ud.simPath, filename);
         String camData = data(camFile, false);
-        _io.say.msg(true, "Camera File: \"%s\".", camFile.getAbsolutePath());
+        _io.say.value("Camera File", camFile.getAbsolutePath(), true, true);
         String[] cams = camData.split("\n");
         for (int i = 0; i < cams.length; i++) {
             _io.say.msg(true, "Processing Camera View: %d...", i + 1);
@@ -129,7 +130,7 @@ public class Read {
             }
         } catch (IOException ex) {
             _io.say.msg(vo, ex.getMessage());
-            _io.say.msg(vo, "Unable to read from file: \"%s\".", f.toString());
+            _io.say.value("Unable to read from file", f.toString(), true, vo);
         }
         _io.say.ok(vo);
         return contents.toString();

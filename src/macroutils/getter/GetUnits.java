@@ -44,14 +44,14 @@ public class GetUnits {
         if (name.equals(_unitDimensionless)) {
             return um.getObject(_unitDimensionless);
         }
-        _io.print.msg(vo, "Getting Unit by exact match: \"%s\"", name);
+        _io.print.value("Getting Unit by exact match", name, true, vo);
         for (Units u : um.getObjects()) {
             if (_get.strings.fromUnit(u).equals(name) || u.getDescription().equals(name)) {
-                _io.print.msg("Got: " + _get.strings.fromUnit(u), vo);
+                _io.say.value("Found", _get.strings.fromUnit(u), true, vo);
                 return u;
             }
         }
-        _tmpl.print.gotNull(vo);
+        _io.say.msg("Nothing found. Returning NULL!", vo);
         return null;
     }
 

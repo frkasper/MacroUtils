@@ -47,7 +47,7 @@ public class CreateUnits {
     public Units custom(String name, String desc, double conv, Dimensions dim, boolean vo) {
         Units u = _get.units.byName(name, false);
         if (u == null) {
-            _io.print.msg(vo, _uf, "Creating Unit", name, desc);
+            _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Creating Unit", name, desc);
             UserUnits uu = _sim.getUnitsManager().createUnits("Units");
             uu.setPresentationName(name);
             uu.setDescription(desc);
@@ -55,7 +55,7 @@ public class CreateUnits {
             uu.setDimensions(dim);
             return uu;
         }
-        _io.print.msg(vo, _uf, "Unit already exists", name, u.getDescription());
+        _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Unit already exists", name, u.getDescription());
         return u;
     }
 
@@ -70,8 +70,6 @@ public class CreateUnits {
     //--
     //-- Variables declaration area.
     //--
-    private final String _uf = StaticDeclarations.UNIT_FMT;
-
     private MacroUtils _mu = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
