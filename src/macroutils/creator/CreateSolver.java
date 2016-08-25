@@ -39,24 +39,7 @@ public class CreateSolver {
         File simhf = new File(_ud.simPath, _ud.simTitle + ".simh");
         SolutionHistory sh = _sim.get(SolutionHistoryManager.class).createForFile(simhf.toString(), false);
         sh.getRegions().setObjects(ano);
-////-- As a vector is not working. Check later.
-////    sh.getFunctions().clear();
-////    for (FieldFunction ff : aff) {
-////        if (_chk.is.vector(ff)) {
-////            sh.getFunctions().add(ff.getMagnitudeFunction());
-////            continue;
-////        }
-////        sh.getFunctions().add(ff);
-////    }
-        Vector<FieldFunction> vff = new Vector();
-        for (FieldFunction ff : aff) {
-            if (_chk.is.vector(ff)) {
-                vff.add(ff.getMagnitudeFunction());
-                continue;
-            }
-            vff.add(ff);
-        }
-        sh.setFunctions(vff);
+        sh.setFunctions(new Vector(aff));
         for (NamedObject no : ano) {
             if (no instanceof Region) {
                 sh.getRegions().add(no);
@@ -117,19 +100,19 @@ public class CreateSolver {
             case ASYMPTOTIC:
                 misco.setSelected(MonitorIterationStoppingCriterionOption.Type.ASYMPTOTIC);
                 sca = (MonitorIterationStoppingCriterionAsymptoticType) isc.getCriterionType();
-                _set.object.physicalQuantity(sca.getMaxWidth(), val, null, u, type.getVar(), true);
+                _set.object.physicalQuantity(sca.getMaxWidth(), val, u, type.getVar(), true);
                 _io.say.msg(true, "Number of Samples: %d.", samples);
                 sca.setNumberSamples(samples);
                 break;
             case MAX:
                 misco.setSelected(MonitorIterationStoppingCriterionOption.Type.MAXIMUM);
                 scmax = (MonitorIterationStoppingCriterionMaxLimitType) isc.getCriterionType();
-                _set.object.physicalQuantity(scmax.getLimit(), val, null, u, type.getVar(), true);
+                _set.object.physicalQuantity(scmax.getLimit(), val, u, type.getVar(), true);
                 break;
             case MIN:
                 misco.setSelected(MonitorIterationStoppingCriterionOption.Type.MINIMUM);
                 scmin = (MonitorIterationStoppingCriterionMinLimitType) isc.getCriterionType();
-                _set.object.physicalQuantity(scmin.getLimit(), val, null, u, type.getVar(), true);
+                _set.object.physicalQuantity(scmin.getLimit(), val, u, type.getVar(), true);
                 break;
             case MIN_INNER:
                 scm.remove(isc);
@@ -142,7 +125,7 @@ public class CreateSolver {
             case STDEV:
                 misco.setSelected(MonitorIterationStoppingCriterionOption.Type.STANDARD_DEVIATION);
                 scsd = (MonitorIterationStoppingCriterionStandardDeviationType) misct;
-                _set.object.physicalQuantity(scsd.getStandardDeviation(), val, null, u, "Standard Deviation", true);
+                _set.object.physicalQuantity(scsd.getStandardDeviation(), val, u, "Standard Deviation", true);
                 break;
         }
         isc.getLogicalOption().setSelected(SolverStoppingCriterionLogicalOption.Type.AND);

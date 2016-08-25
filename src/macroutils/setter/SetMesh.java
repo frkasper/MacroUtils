@@ -32,12 +32,12 @@ public class SetMesh {
         rs.setPercentage(perc);
         _io.say.percentage(what, rs.getPercentage(), true);
     }
-    
+
     private void _settingPrisms(ClientServerObject cso, boolean vo) {
         _io.say.action("Setting Prism Layers", vo);
         _io.say.object(cso, vo);
     }
-    
+
     /**
      * Sets the mesh Base Size for a Mesh Operation, if applicable.
      *
@@ -53,13 +53,13 @@ public class SetMesh {
             _io.say.msg("Mesh Operation does not have a Base Size.");
             return;
         }
-        _set.object.physicalQuantity(bs, val, null, u, "Base Size", true);
+        _set.object.physicalQuantity(bs, val, u, "Base Size", true);
         _io.say.ok(vo);
     }
 
     /**
-     * Sets the maximum cell size. 
-     * 
+     * Sets the maximum cell size.
+     *
      * @param amo given AutoMeshOperation.
      * @param val given value.
      * @param vo given verbose option. False will only print necessary data.
@@ -74,10 +74,10 @@ public class SetMesh {
         _setRS(amo.getDefaultValues().get(MaximumCellSize.class).getRelativeSize(), "Maximum Cell Size", val);
         _io.say.ok(vo);
     }
-    
+
     /**
-     * Sets the number of Prism Layers. 
-     * 
+     * Sets the number of Prism Layers.
+     *
      * @param npl given NumPrismLayers.
      * @param n given number of layers.
      * @param vo given verbose option. False will only print necessary data.
@@ -88,10 +88,10 @@ public class SetMesh {
         _io.say.value("Number of Prism Layers", npl.getNumLayers(), true);
         _io.say.ok(vo);
     }
-    
+
     /**
      * Sets the Prism Layer Stretching.
-     * 
+     *
      * @param pls given PrismLayerStretching.
      * @param val given value.
      * @param vo given verbose option. False will only print necessary data.
@@ -102,10 +102,10 @@ public class SetMesh {
         _io.say.value("Prism Layer Stretching", pls.getStretching(), true);
         _io.say.ok(vo);
     }
-    
+
     /**
      * Sets the Prism Layer Total Thickness.
-     * 
+     *
      * @param pt given PrismThickness.
      * @param val given value.
      * @param vo given verbose option. False will only print necessary data.
@@ -116,7 +116,7 @@ public class SetMesh {
         _io.say.percentage("Prism Layer Total Thickness", pt.getRelativeSize().getPercentage(), true);
         _io.say.ok(vo);
     }
-    
+
     /**
      * Sets Default Prism Mesh parameters for a Mesh Operation.
      *
@@ -224,7 +224,7 @@ public class SetMesh {
         _io.say.action("Setting Surface Proximity", (NamedObject) sp.getParent().getParent(), vo);
         sp.setNumPointsInGap(np);
         _io.say.value("Number of Points in Gap", sp.getNumPointsInGap(), true);
-        _set.object.physicalQuantity(sp.getFloor(), sf, null, _ud.defUnitLength, "Proximity Search Floor", true);
+        _set.object.physicalQuantity(sp.getFloor(), sf, _ud.defUnitLength, "Proximity Search Floor", true);
         _io.say.ok(vo);
     }
 

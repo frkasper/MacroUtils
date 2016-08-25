@@ -24,7 +24,7 @@ import star.common.*;
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v11.04, August 22, 2016.
+ * @version v11.04, August 25, 2016.
  */
 public final class MacroUtils {
 
@@ -90,9 +90,9 @@ public final class MacroUtils {
         userDeclarations.simPath = _sim.getSessionDir();
         userDeclarations.cadPath = new File(userDeclarations.simPath, "CAD");
         userDeclarations.dbsPath = new File(userDeclarations.simPath, "DBS");
-        io.say.msg(true, "Simulation Name: \"%s\".", userDeclarations.simTitle);
-        io.say.msg(true, "Simulation File: \"%s\".", userDeclarations.simFile.toString());
-        io.say.msg(true, "Simulation Path: \"%s\".", userDeclarations.simPath);
+        io.say.value("Simulation Name", userDeclarations.simTitle, true, true);
+        io.say.value("Simulation File", userDeclarations.simFile.toString(), true, true);
+        io.say.value("Simulation Path", userDeclarations.simPath, true, true);
         userDeclarations.csys0 = _sim.getCoordinateSystemManager().getLabCoordinateSystem();
         userDeclarations.lab0 = (LabCoordinateSystem) userDeclarations.csys0;
         userDeclarations.defColormap = get.objects.colormap(StaticDeclarations.Colormaps.BLUE_RED_BALANCED);
@@ -224,9 +224,8 @@ public final class MacroUtils {
     }
 
     private void saveSim(String name, boolean vo) {
-        String newName = name + ".sim";
-        io.say.action(String.format("Saving: \"%s\"", newName), vo);
-        _sim.saveState(new File(userDeclarations.simPath, newName).toString());
+        io.say.action(String.format("Saving Simulation File"), vo);
+        _sim.saveState(new File(userDeclarations.simPath, name + ".sim").toString());
         io.say.ok(vo);
     }
 

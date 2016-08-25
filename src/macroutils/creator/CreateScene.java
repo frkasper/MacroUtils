@@ -97,7 +97,7 @@ public class CreateScene {
         VectorDisplayer vd = _getDM(scn).createVectorDisplayer("Vector");
         vd.initialize();
         if (!_chk.is.vector(ff)) {
-            _io.say.msg(true, "Field Function is not a Vector. Type is \"%s\".", ff.getType().getSelected().name());
+            _io.say.value("Field Function is not a Vector. Type", ff.getType().getSelected().name(), true, true);
         }
         vd.getVectorDisplayQuantity().setFieldFunction(ff);
         if (u != null) {
@@ -146,7 +146,7 @@ public class CreateScene {
     private void _creatingAnnot(Scene scn, String what, String fmt) {
         _io.say.action(String.format("Creating a %s in a Scene", what), true);
         _io.say.object(scn, true);
-        _io.say.string(fmt, true);
+        _io.say.value("Format", fmt, false, true);
     }
 
     private void _creatingDisplayer(Displayer d, ArrayList<NamedObject> ano,
@@ -192,7 +192,7 @@ public class CreateScene {
 
     private Scene _initScene(StaticDeclarations.Scene type, boolean vo) {
         _io.say.action("Creating a Scene", vo);
-        _io.say.msg(vo, "Type: \"%s\".", type.getType());
+        _io.say.value("Type", type.getType(), true, vo);
         Scene scn = _sim.getSceneManager().createScene();
         scn.setPresentationName(type.getType());
         ((PartDisplayer) scn.getCreatorDisplayer()).initialize();
@@ -200,11 +200,6 @@ public class CreateScene {
         scn.resetCamera();
         _get.objects.hardcopyProperties(scn, false).setUseCurrentResolution(false);
         scn.setDepthPeel(false);
-        //-- Check later. Transparency.
-//    if (_chk.is.windows()) {
-//        //-- Issues were found in some Linux machines.
-//        scn.setDepthPeel(true);
-//    }
         ((FixedAspectAnnotationProp) scn.getAnnotationPropManager().getAnnotationProp("Logo")).setLocation(1);
         return scn;
     }
@@ -264,7 +259,7 @@ public class CreateScene {
     public FixedAspectAnnotationProp annotation(Scene scn, String text, double height, double[] pos) {
         _io.say.action("Creating a Simple Annotation text in a Scene", true);
         _io.say.object(scn, true);
-        _io.say.string(text, true);
+        _io.say.value("String", text, true, true);
         String ns = text.replace(" ", "");
         if (_sim.getAnnotationManager().has(ns)) {
             _io.say.msg(true, "Annotation already exists...");

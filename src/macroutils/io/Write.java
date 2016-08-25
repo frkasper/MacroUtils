@@ -63,7 +63,7 @@ public class Write {
             _io.say.msg(true, "Picture not written.");
             return;
         }
-        _io.say.msg(true, "Written: \"%s\"", f.getName());
+        _io.say.value("Written", f.getName(), true, true);
         _io.say.ok(vo);
     }
 
@@ -101,7 +101,7 @@ public class Write {
     public void data(File f, ArrayList<String> als, boolean vo) {
         _io.say.action("Writing Data", true);
         _io.say.msg(vo, "Writing %d lines to a file...", als.size());
-        _io.say.msg(vo, "File: \"%s\".", f.getAbsolutePath());
+        _io.say.value("File", f.getAbsolutePath(), true, vo);
         BufferedWriter fileWriter = null;
         try {
             if (f.exists()) {

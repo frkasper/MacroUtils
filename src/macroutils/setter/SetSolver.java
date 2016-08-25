@@ -6,6 +6,7 @@ import star.combustion.*;
 import star.common.*;
 import star.cosimulation.onedcoupling.*;
 import star.coupledflow.*;
+import star.flow.*;
 import star.keturb.*;
 import star.kwturb.*;
 import star.metrics.*;
@@ -49,13 +50,6 @@ public class SetSolver {
         }
     }
 
-    private StaticDeclarations.Order _getOrder() {
-        if (_ud.trn2ndOrder) {
-            return StaticDeclarations.Order.SECOND_ORDER;
-        }
-        return StaticDeclarations.Order.FIRST_ORDER;
-    }
-
     private ImplicitUnsteadySolver _getImplicitUnsteadySolver() {
         return (ImplicitUnsteadySolver) _get.solver.byClass(ImplicitUnsteadySolver.class);
     }
@@ -76,6 +70,20 @@ public class SetSolver {
             return ((PisoUnsteadySolver) _get.solver.byClass(PisoUnsteadySolver.class)).getTimeStep();
         }
         return _getImplicitUnsteadySolver().getTimeStep();
+    }
+
+    private FlowUpwindOption _getFlowUpwindOption(PhysicsContinuum pc) {
+        for (Model m : pc.getModelManager().getObjects()) {
+            if (m instanceof CoupledFlowModel) {
+                return ((CoupledFlowModel) m).getUpwindOption();
+            }
+            if (m instanceof SegregatedFlowModel) {
+                return ((SegregatedFlowModel) m).getUpwindOption();
+            }
+        }
+        _io.say.object(pc, true);
+        _io.say.msg("Warning! Has no Space Discretization option.");
+        return null;
     }
 
     private boolean _hasDES() {
@@ -112,6 +120,25 @@ public class SetSolver {
         return false;
     }
 
+    private void _setTimestep(double val, String def, boolean vo) {
+        _io.say.action("Setting Physical Timestep", vo);
+        if (!_isImplicitUnsteady(vo)) {
+            return;
+        }
+        if (def != null) {
+            _set.object.physicalQuantity(_getTimeStep(), def, "Timestep", true);
+        } else {
+            _set.object.physicalQuantity(_getTimeStep(), val, _ud.defUnitTime, "Timestep", true);
+        }
+        _io.say.ok(vo);
+        //-- Time Discretization.
+        if (_ud.trn2ndOrder) {
+            timeDiscretization(TimeDiscretizationOption.Type.SECOND_ORDER, vo);
+        } else {
+            timeDiscretization(TimeDiscretizationOption.Type.FIRST_ORDER, vo);
+        }
+    }
+
     private void _updateIterations() {
         if (!_chk.is.unsteady()) {
             maxIterations(_ud.maxIter, false);
@@ -122,7 +149,7 @@ public class SetSolver {
         _io.say.msg(true, "Maximum Iterations Stopping Criteria disabled.");
         _io.say.msg(true, "ABORT file Inner Iteration Criteria disabled.");
         maxInnerIterations(_ud.trnInnerIter, false);
-        timestep(_ud.trnTimestep, null, false);
+        _setTimestep(_ud.trnTimestep, null, false);
         _set.solver.maxPhysicalTime(_ud.trnMaxTime, _ud.defUnitTime, false);
     }
 
@@ -209,7 +236,7 @@ public class SetSolver {
      */
     public void aggressiveSettings() {
         _io.say.action("Setting Aggressive Solver Settings", true);
-        _ud.urfSolidEnrgy = 1.0;
+        _ud.urfSolidEnrgy = 0.9999;
         _ud.urfFluidEnrgy = _ud.urfVel = _ud.urfKEps = _ud.urfKOmega = 0.9;
         _ud.urfP = 0.1;
         if (_chk.is.unsteady()) {
@@ -301,10 +328,9 @@ public class SetSolver {
         gm.getLimiterMethodOption().setSelected(LimiterMethodOption.Type.MINMOD);
         gm.setUseTVBGradientLimiting(true);
         gm.setAcceptableFieldVariationFactor(0.1);
-        _io.say.msg(vo, "Limiter Method: \"%s\".",
-                gm.getLimiterMethodOption().getSelectedElement().getPresentationName());
-        _io.say.msg(vo, "TVB Gradient Limiter: \"ON\".");
-        _io.say.msg(vo, "Acceptable Field Variation: %g.", gm.getAcceptableFieldVariationFactor());
+        _io.say.value("Limiter", gm.getLimiterMethodOption().getSelectedElement().getPresentationName(), true, true);
+        _io.say.value("TVB Gradient Limiter", "ON", true, true);
+        _io.say.value("Aceptable Field Variation", gm.getAcceptableFieldVariationFactor(), true);
         _io.say.ok(vo);
     }
 
@@ -312,7 +338,7 @@ public class SetSolver {
      * Sets the maximum number of inner iterations for an Implicit Unsteady simulation.
      *
      * @param n given number of inner iterations.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo given verbose option. False will only print necessary data.
      */
     public void maxInnerIterations(int n, boolean vo) {
         _io.say.action("Setting Maximum Number of Inner Iterations", vo);
@@ -321,7 +347,7 @@ public class SetSolver {
         }
         InnerIterationStoppingCriterion iisc = _get.solver.stoppingCriteria_MaxInnerIterations();
         iisc.setMaximumNumberInnerIterations(n);
-        _io.say.msg(true, "Maximum Number of Inner Iterations: %d.", iisc.getMaximumNumberInnerIterations());
+        _io.say.value("Maximum Number of Inner Iterations", iisc.getMaximumNumberInnerIterations(), true);
         _io.say.ok(vo);
     }
 
@@ -329,7 +355,7 @@ public class SetSolver {
      * Set the maximum number of iterations in the simulation.
      *
      * @param n given number of iterations.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo given verbose option. False will only print necessary data.
      */
     public void maxIterations(int n, boolean vo) {
         _io.say.action("Setting Maximum Number of Iterations", vo);
@@ -345,7 +371,7 @@ public class SetSolver {
      *
      * @param maxTime given maximum physical time.
      * @param u given Units.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo given verbose option. False will only print necessary data.
      */
     public void maxPhysicalTime(double maxTime, Units u, boolean vo) {
         _io.say.action("Setting Maximum Physical Timestep", vo);
@@ -353,31 +379,43 @@ public class SetSolver {
             return;
         }
         PhysicalTimeStoppingCriterion ptsc = _get.solver.stoppingCriteria_MaxTime();
-        _set.object.physicalQuantity(ptsc.getMaximumTime(), maxTime, null, u, "Maximum Physical Time", true);
+        _set.object.physicalQuantity(ptsc.getMaximumTime(), maxTime, u, "Maximum Physical Time", true);
+        _io.say.ok(vo);
+    }
+
+    /**
+     * Sets the discretization discretization scheme that is used for evaluating face values for convection and
+     * diffusion fluxes.
+     *
+     * @param pc given PhysicsContinuum.
+     * @param order given discretization scheme, if applicable.
+     * @param vo given verbose option. False will only print necessary data.
+     */
+    public void spaceDiscretization(PhysicsContinuum pc, FlowUpwindOption.Type order, boolean vo) {
+        _io.say.action("Setting Discretization Scheme", vo);
+        FlowUpwindOption fuo = _getFlowUpwindOption(pc);
+        if (fuo == null) {
+            return;
+        }
+        fuo.setSelected(order);
+        _io.say.value("Discretization Scheme", fuo.getSelectedElement().getPresentationName(), true, true);
         _io.say.ok(vo);
     }
 
     /**
      * Sets the discretization order for the Unsteady solver.
      *
-     * @param order given discretization order. See {@link StaticDeclarations.Order}.
-     * @param vo given verbose option. False will not print anything.
+     * @param order given time discretization order.
+     * @param vo given verbose option. False will only print necessary data.
      */
-    public void timeDiscretization(StaticDeclarations.Order order, boolean vo) {
+    public void timeDiscretization(TimeDiscretizationOption.Type order, boolean vo) {
         if (_chk.has.PISO()) {
             //-- PISO has no discretization order option.
             return;
         }
         _io.say.action("Setting Time Discretization Order", vo);
         TimeDiscretizationOption tdo = _getImplicitUnsteadySolver().getTimeDiscretizationOption();
-        switch (order) {
-            case FIRST_ORDER:
-                tdo.setSelected(TimeDiscretizationOption.Type.FIRST_ORDER);
-                break;
-            case SECOND_ORDER:
-                tdo.setSelected(TimeDiscretizationOption.Type.SECOND_ORDER);
-                break;
-        }
+        tdo.setSelected(order);
         _io.say.value("Time Discretization", order.toString(), true, true);
         _io.say.ok(vo);
     }
@@ -388,7 +426,7 @@ public class SetSolver {
      * @param val given value in default Units. See {@link UserDeclarations#defUnitTime}.
      */
     public void timestep(double val) {
-        timestep(val, null, true);
+        _setTimestep(val, null, true);
     }
 
     /**
@@ -397,18 +435,7 @@ public class SetSolver {
      * @param def given timestep definition. The Unit will be reverted to SI (s).
      */
     public void timestep(String def) {
-        timestep(0, def, true);
-    }
-
-    private void timestep(double val, String def, boolean vo) {
-        _io.say.action("Setting Physical Timestep", vo);
-        if (!_isImplicitUnsteady(vo)) {
-            return;
-        }
-        _set.object.physicalQuantity(_getTimeStep(), val, def, _ud.defUnitTime, "Timestep", true);
-        _io.say.ok(vo);
-        //-- Time Discretization.
-        timeDiscretization(_getOrder(), vo);
+        _setTimestep(0, def, true);
     }
 
     /**

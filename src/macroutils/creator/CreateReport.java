@@ -29,7 +29,7 @@ public class CreateReport {
 
     private Report _checkHasIt(String name, boolean vo) {
         if (_sim.getReportManager().has(name)) {
-            _io.say.msg(vo, "Skipping... Report already exists: \"%s\".", name);
+            _io.say.value("Skipping... Report already exists", name, true, vo);
             return _sim.getReportManager().getReport(name);
         }
         return null;
@@ -49,7 +49,7 @@ public class CreateReport {
     }
 
     private void _setSPQ(ScalarPhysicalQuantity spq, double val, Units u, String text, boolean vo) {
-        _set.object.physicalQuantity(spq, val, null, u, text, vo);
+        _set.object.physicalQuantity(spq, val, u, text, vo);
     }
 
     private void _setTitle(Axis axis, String title) {
@@ -168,8 +168,8 @@ public class CreateReport {
         }
         FrontalAreaReport far = (FrontalAreaReport) _createReport(FrontalAreaReport.class, name);
         _io.say.objects(ab, "Boundaries", vo);
-        _io.say.msg(vo, "View Up: %s.", _get.strings.fromArray(viewUp));
-        _io.say.msg(vo, "Flow Direction: %s.", _get.strings.fromArray(direction));
+        _io.say.value("View Up", new DoubleVector(viewUp), vo);
+        _io.say.value("Flow Direction", new DoubleVector(direction), vo);
         far.getViewUpCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
                 new DoubleVector(viewUp));
         far.getNormalCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
@@ -405,8 +405,8 @@ public class CreateReport {
         if (_checkHasIt(name, false) != null) {
             return (PressureDropReport) _checkHasIt(name, vo);
         }
-        _io.say.msg(vo, "High Pressure: \"%s\".", b1.getPresentationName());
-        _io.say.msg(vo, "Low Pressure: \"%s\".", b2.getPresentationName());
+        _io.say.value("High Pressure", b1.getPresentationName(), true, vo);
+        _io.say.value("Low Pressure", b2.getPresentationName(), true, vo);
         _io.say.unit(u, vo);
         PressureDropReport pdr = (PressureDropReport) _createReport(PressureDropReport.class, name);
         pdr.getParts().setObjects(b1);

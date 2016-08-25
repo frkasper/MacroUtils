@@ -152,13 +152,7 @@ public class GetMesh {
     public RelativeSize targetRelativeSize(AutoMeshOperation amo, boolean vo) {
         _io.say.action("Getting the Target Relative Size", vo);
         _io.say.object(amo, vo);
-        RelativeSize rs = amo.getDefaultValues().get(PartsTargetSurfaceSize.class).getRelativeSize();
-        //-- Check later. Really need to cast variable?
-        if (_chk.is.surfaceWrapperOperation(amo)) {
-            SurfaceWrapperAutoMeshOperation swamo = (SurfaceWrapperAutoMeshOperation) amo;
-            rs = swamo.getDefaultValues().get(PartsTargetSurfaceSize.class).getRelativeSize();
-        }
-        return rs;
+        return amo.getDefaultValues().get(PartsTargetSurfaceSize.class).getRelativeSize();
     }
 
     /**

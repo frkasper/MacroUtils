@@ -29,7 +29,7 @@ public class MainOpener {
     }
 
     private void _opening(ClientServerObject cso, boolean vo) {
-        _io.say.msg(vo, "Opening: \"%s\"...", cso.getPresentationName());
+        _io.say.value("Opening", cso.getPresentationName(), true, vo);
     }
 
     /**

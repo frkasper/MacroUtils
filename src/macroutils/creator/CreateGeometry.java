@@ -134,7 +134,7 @@ public class CreateGeometry {
      * @param part given CAD file with extension. E.g.: "CAD\\machine.prt"
      */
     public void importPart(String part) {
-        importPart(new File(_ud.simPath, part), true);
+        importPart(new File(_ud.simPath, part));
     }
 
     /**
@@ -143,24 +143,19 @@ public class CreateGeometry {
      * @param cadFile given File in {@link java.io.File} format.
      */
     public void importPart(File cadFile) {
-        importPart(cadFile, true);
-    }
-
-    private void importPart(File cadFile, boolean vo) {
-        _io.say.action("Importing CAD Part", vo);
-        _io.say.msg(vo, "File: \"%s\".", cadFile.toString());
+        _io.say.action("Importing CAD Part", true);
+        _io.say.value("File", cadFile.toString(), true, true);
         if (!cadFile.exists()) {
-            _io.say.msg("File not found!", vo);
+            _io.say.msg("File not found!");
         }
         String sfn = cadFile.toString();
         PartImportManager pim = _sim.get(PartImportManager.class);
         if (_get.strings.fileExtension(sfn).toLowerCase().equals("dbs")) {
             pim.importDbsPart(sfn, "OneSurfacePerPatch", "OnePartPerFile", true, _ud.unit_m, 1);
         } else {
-            pim.importCadPart(sfn, "SharpEdges",
-                    _ud.mshSharpEdgeAngle, _ud.defTessOpt.getValue(), false, false);
+            pim.importCadPart(sfn, "SharpEdges", _ud.mshSharpEdgeAngle, _ud.defTessOpt.getValue(), false, false);
         }
-        _io.say.ok(vo);
+        _io.say.ok(true);
     }
 
     /**
@@ -199,7 +194,7 @@ public class CreateGeometry {
         LabCoordinateSystem labCSYS = _sim.getCoordinateSystemManager().getLabCoordinateSystem();
         ssp.setCoordinateSystem(labCSYS);
         ssp.getOrigin().setCoordinate(u, u, u, new DoubleVector(coord));
-        _set.object.physicalQuantity(ssp.getRadius(), r, null, u, "Radius", true);
+        _set.object.physicalQuantity(ssp.getRadius(), r, u, "Radius", true);
         ssp.getTessellationDensityOption().setSelected(_ud.defTessOpt.getType());
         return ssp;
     }

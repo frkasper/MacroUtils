@@ -168,19 +168,19 @@ public class GetObjects {
     }
 
     /**
-     * Gets a Field Function based on the ones defined in {@link StaticDeclarations} class.
+     * Gets a Field Function based on the strings previously defined.
      *
-     * @param var given predefined variable enum.
+     * @param var given predefined variable defined in {@link StaticDeclarations} class.
      * @return The FieldFunction.
      */
     public FieldFunction fieldFunction(StaticDeclarations.Vars var) {
         FieldFunction ff = fieldFunction(var.getVar(), false);
-        _io.say.msg(true, "Asked for Field Function: \"%s\".", var.getVar());
+        _io.say.value("Asked for Field Function", var.getVar(), true, true);
         if (ff == null) {
             _io.say.msg(true, "Returning NULL.");
             return null;
         }
-        _io.say.msg(true, "Returning: \"%s\".", ff.getPresentationName());
+        _io.say.value("Returning", ff.getPresentationName(), true, true);
         if (var.equals(StaticDeclarations.Vars.VEL_MAG)) {
             return ff.getMagnitudeFunction();
         }

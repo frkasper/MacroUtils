@@ -35,7 +35,7 @@ public class MainIO {
      */
     public File createFolder(String fld) {
         File f = new File(_ud.simPath, fld);
-        say.msg(true, "Creating a Folder: \"%s\".", f.toString());
+        say.value("Creating a Folder", f.toString(), true, true);
         if (f.exists()) {
             say.msg(true, "Already exists.");
         } else if (f.mkdir()) {

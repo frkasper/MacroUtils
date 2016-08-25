@@ -259,7 +259,7 @@ public class Print {
             parentName = _get.strings.parentName(cso);
             csoName = cso.getPresentationName();
         }
-        msg(vo, "%s name: \"%s\".", parentName, csoName);
+        value(parentName + " name", csoName, true, vo);
     }
 
     /**
@@ -292,15 +292,6 @@ public class Print {
         msg("OK!\n", vo);
     }
 
-//    /**
-//     * Prints an overview of the STAR-CCM+ object, if applicable.
-//     * 
-//     * @param cso given ClientServerObject.
-//     */
-//    public void overview(ClientServerObject cso) {
-//        _printOverview(cso);
-//    }
-//    
     /**
      * Prints something with percentage values.
      *
@@ -343,16 +334,6 @@ public class Print {
     }
 
     /**
-     * Prints a String in the console/output.
-     *
-     * @param text given text to be displayed.
-     * @param vo given verbose option. False will not print anything.
-     */
-    public void string(String text, boolean vo) {
-        msg(vo, "String: \"%s\".", text);
-    }
-
-    /**
      * Prints the current Unit.
      *
      * @param u given Units.
@@ -368,7 +349,6 @@ public class Print {
     public void updateInstances() {
         _chk = _mu.check;
         _get = _mu.get;
-        _ud = _mu.userDeclarations;
     }
 
     /**
@@ -469,17 +449,6 @@ public class Print {
         msg(true, "STAR-CCM+ Version: %s.", _get.info.version());
     }
 
-    /**
-     * Prints a <u>Warning</u> in the console/output using formatted strings.
-     *
-     * @param vo given verbose option. False will not print anything.
-     * @param format given format using the {@link String} syntax.
-     * @param args given arguments that must be tied to the given format.
-     */
-    public void warning(boolean vo, String format, Object... args) {
-        msg("WARNING! " + _getFMT(format, args), vo);
-    }
-
     //--
     //-- Variables declaration area.
     //--
@@ -489,7 +458,6 @@ public class Print {
     private boolean _dbg = false;
     private Simulation _sim = null;
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
 

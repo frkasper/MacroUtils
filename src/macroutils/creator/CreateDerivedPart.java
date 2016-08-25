@@ -101,7 +101,7 @@ public class CreateDerivedPart {
         _io.say.object(ff, true);
         IsoPart ip = _sim.getPartManager().createIsoPart(new NeoObjectVector(ano.toArray()), ff);
         ip.setMode(0);
-        _set.object.physicalQuantity(ip.getSingleIsoValue().getValueQuantity(), val, null, u, "Iso Value", true);
+        _set.object.physicalQuantity(ip.getSingleIsoValue().getValueQuantity(), val, u, "Iso Value", true);
         _io.say.created(ip, true);
         return ip;
     }
@@ -195,8 +195,8 @@ public class CreateDerivedPart {
             } else if ((no instanceof Boundary) || (no instanceof PartSurface)) {
                 a2d.add(no);
             } else {
-                _io.say.warning(true, "Object is not 3D or 2D to be used for Streamline: \"%s\".",
-                        no.getBeanDisplayName());
+                _io.say.value("Warning! Object is not 3D or 2D to be used for Streamline",
+                        no.getBeanDisplayName(), true, true);
             }
         }
         return streamline_PartSeed(a3d, a2d);

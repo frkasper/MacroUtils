@@ -53,7 +53,7 @@ public class SetGeometry {
             ((LeafMeshPart) gp).combinePartSurfaces(aps);
         }
         PartSurface ps = aps.get(0);
-        _io.say.msg(vo, "Combined into Part Surface: \"%s\".", ps.getPresentationName());
+        _io.say.value("Combined into Part Surface", ps.getPresentationName(), true, vo);
         _io.say.ok(vo);
         return ps;
     }

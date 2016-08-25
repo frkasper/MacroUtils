@@ -59,6 +59,22 @@ public class GetInfos {
     }
 
     /**
+     * Gets the relative error between 2 numbers.
+     *
+     * @param n1 given number 1.
+     * @param n2 given number 2.
+     * @param optAbs option to have absolute relative error (without sign).
+     * @return The relative error.
+     */
+    public double relativeError(double n1, double n2, boolean optAbs) {
+        double relError = (n1 - n2) / (n2 + StaticDeclarations.SMALL_NUMBER);
+        if (optAbs) {
+            return Math.abs(relError);
+        }
+        return relError;
+    }
+
+    /**
      * Gets the spline interpolation between the set of given numbers. This method is used by {@link TemplatePost}.
      *
      * @param ax an ArrayList of independent values.

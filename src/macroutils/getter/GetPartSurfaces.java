@@ -87,7 +87,7 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Surfaces", 
+        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Surfaces",
                 new ArrayList(gp.getPartSurfaces()), vo));
     }
 
@@ -205,7 +205,7 @@ public class GetPartSurfaces {
 
     private PartSurface byRange(ArrayList<PartSurface> aps, RangeOpts opt, StaticDeclarations.Axis axis, double tol) {
         PartSurface ps = byRange(aps, opt, axis, tol * _ud.defUnitLength.getConversion(), true).get(0);
-        _io.say.msg(true, "Got Part Surface: \"%s\".", ps.getPresentationName());
+        _io.say.value("Found Part Surface", ps.getPresentationName(), true, true);
         return ps;
     }
 

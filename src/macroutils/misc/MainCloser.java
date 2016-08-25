@@ -29,7 +29,7 @@ public class MainCloser {
     }
 
     private void _closing(ClientServerObject cso, boolean vo) {
-        _io.say.msg(vo, "Closing: \"%s\"...", cso.getPresentationName());
+        _io.say.value("Closing", cso.getPresentationName(), true, vo);
     }
 
     /**

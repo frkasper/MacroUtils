@@ -25,7 +25,6 @@ import star.trimmer.*;
  * <li>{@link Meshers}</li>
  * <li>{@link Operation}</li>
  * <li>{@link Operator}</li>
- * <li>{@link Order}</li>
  * <li>{@link RegionMode}</li>
  * <li>{@link Solver}</li>
  * <li>{@link Solvers}</li>
@@ -805,26 +804,6 @@ public class StaticDeclarations {
     }
 
     /**
-     * Special MacroUtils types for discretization order w.r.t Solver parameters:
-     * <ul>
-     * <li>{@link #FIRST_ORDER}</li>
-     * <li>{@link #SECOND_ORDER}</li>
-     * </ul>
-     */
-    public static enum Order {
-
-        /**
-         * First order.
-         */
-        FIRST_ORDER,
-        /**
-         * Second order.
-         */
-        SECOND_ORDER,
-
-    }
-
-    /**
      * Special MacroUtils types when creating Regions:
      * <ul>
      * <li>{@link #ONE_PER_PART} (Preferred)</li>
@@ -1212,6 +1191,10 @@ public class StaticDeclarations {
          */
         P("Pressure"),
         /**
+         * <u>Position variable</u> name inside STAR-CCM+.
+         */
+        POS("Position"),
+        /**
          * <u>Turbulent Prandtl Number</u> variable name inside STAR-CCM+.
          */
         PRANDTL("Turbulent Prandtl Number"),
@@ -1430,6 +1413,6 @@ public class StaticDeclarations {
     /**
      * A string formatting when dealing with Units.
      */
-    public static final String UNIT_FMT = "%s: %s (%s)";
+    public static final String UNIT_FMT = "%s: [%s] \"%s\".";
 
 }

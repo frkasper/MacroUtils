@@ -226,9 +226,9 @@ public class MainEnabler {
         scmc.getCustomConditions().get(PartsTrimmerWakeRefinementOption.class).setPartsWakeRefinementOption(true);
         CustomMeshControlValueManager cmcvm = scmc.getCustomValues();
         PartsWakeRefinementValuesManager pwrvm = cmcvm.get(PartsWakeRefinementValuesManager.class);
-        _set.object.physicalQuantity(pwrvm.getDistance(), distance, null, _ud.defUnitLength, "Distance", true);
+        _set.object.physicalQuantity(pwrvm.getDistance(), distance, _ud.defUnitLength, "Distance", true);
         _set.object.physicalQuantity(pwrvm.getDirection(), dir, null, "Direction", true);
-        _set.object.physicalQuantity(pwrvm.getSpreadAngle(), angle, null, _ud.unit_deg, "Spread Angle", true);
+        _set.object.physicalQuantity(pwrvm.getSpreadAngle(), angle, _ud.unit_deg, "Spread Angle", true);
         PartsTrimmerWakeRefinementSet ptwrs = pwrvm.get(PartsTrimmerWakeRefinementSet.class);
         PartsGrowthRateOption pgro = ptwrs.getGrowthRateOption();
         pgro.setSelected(gr);
