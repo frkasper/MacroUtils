@@ -21,6 +21,7 @@ public class MainCreator {
         geometry = new CreateGeometry(m);
         meshOperation = new CreateMeshOperation(m);
         physicsContinua = new CreatePhysicsContinua(m);
+        plot = new CreatePlot(m);
         region = new CreateRegion(m);
         report = new CreateReport(m);
         solver = new CreateSolver(m);
@@ -39,6 +40,7 @@ public class MainCreator {
         geometry.updateInstances();
         meshOperation.updateInstances();
         physicsContinua.updateInstances();
+        plot.updateInstances();
         region.updateInstances();
         report.updateInstances();
         scene.updateInstances();
@@ -73,6 +75,11 @@ public class MainCreator {
      * This class is responsible for creating Physics Continuas.
      */
     public CreatePhysicsContinua physicsContinua = null;
+
+    /**
+     * This class is responsible for creating Plots.
+     */
+    public CreatePlot plot = null;
 
     /**
      * This class is responsible for creating Regions.
