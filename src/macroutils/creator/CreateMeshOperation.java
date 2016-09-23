@@ -307,16 +307,8 @@ public class CreateMeshOperation {
         _io.say.action("Creating an Automated Mesh Operation " + txt, true);
         _io.say.objects(ag, "Geometry Parts", true);
         _io.say.msg("Meshers: " + _get.strings.withinTheBrackets(amo.getMeshersCollection().toString()));
-        _set.mesh.baseSize(amo, _ud.mshBaseSize, _ud.defUnitLength, false);
-        _set.mesh.surfaceSizes(amo, _ud.mshSrfSizeMin, _ud.mshSrfSizeTgt, false);
-        _set.mesh.prisms(amo, _ud.prismsLayers, _ud.prismsStretching, _ud.prismsRelSizeHeight, false);
+        _setMeshDefaults(amo.getDefaultValues());
         _set.mesh.thinMesher(amo, _ud.thinMeshLayers, _ud.thinMeshMaxThickness, false);
-        AutoMeshDefaultValuesManager amodv = amo.getDefaultValues();
-        if (_chk.has.polyMesher(amo)) {
-            _set.mesh.surfaceCurvature(amodv.get(SurfaceCurvature.class), _ud.mshSrfCurvNumPoints, false);
-            _set.mesh.surfaceProximity(amodv.get(SurfaceProximity.class), _ud.mshProximityPointsInGap,
-                    _ud.mshProximitySearchFloor, false);
-        }
         if (_chk.has.polyMesher(amo)) {
             DualAutoMesher dam = ((DualAutoMesher) amo.getMeshers().getObject("Polyhedral Mesher"));
             dam.setTetOptimizeCycles(_ud.mshOptCycles);
@@ -324,18 +316,60 @@ public class CreateMeshOperation {
             _io.say.value("Optimization Cycles", dam.getTetOptimizeCycles(), true);
             _io.say.value("Quality Threshold", dam.getTetQualityThreshold(), true);
         }
-        if (_chk.has.trimmerMesher(amo)) {
-            star.trimmer.PartsGrowthRateOption.Type t = _ud.mshTrimmerGrowthRate.getType();
-            amodv.get(PartsSimpleTemplateGrowthRate.class).getGrowthRateOption().setSelected(t);
-            _io.say.value("Growth Rate Type", t.getPresentationName(), true, true);
-            _set.mesh.maxCellSize(amo, _ud.mshTrimmerMaxCellSize, false);
-        }
         _io.say.created(amo, true);
+    }
+
+    private void _setMeshDefaults(AutoMeshDefaultValuesManager amdvm) {
+        _set.object.physicalQuantity(amdvm.get(BaseSize.class), _ud.mshBaseSize, _ud.defUnitLength, "Base Size", true);
+        _setRelativeSize("Target Surface Size",
+                amdvm.get(PartsTargetSurfaceSize.class).getRelativeSize(), _ud.mshSrfSizeTgt);
+        if (amdvm.has("Minimum Surface Size")) {
+            _setRelativeSize("Minimum Surface Size",
+                    amdvm.get(PartsMinimumSurfaceSize.class).getRelativeSize(), _ud.mshSrfSizeMin);
+        }
+        if (amdvm.has("Number of Prism Layers")) {
+            _set.mesh.numPrismLayers(amdvm.get(NumPrismLayers.class), _ud.prismsLayers, false);
+        }
+        if (amdvm.has("Prism Layer Stretching")) {
+            _set.mesh.prismLayerStretching(amdvm.get(PrismLayerStretching.class), _ud.prismsStretching, false);
+        }
+        if (amdvm.has("Prism Layer Total Thickness")) {
+            _setRelativeSize("Prism Layer Total Thickness",
+                    amdvm.get(PrismThickness.class).getRelativeSize(), _ud.prismsRelSizeHeight);
+        }
+        if (amdvm.has("Surface Curvature")) {
+            _set.mesh.surfaceCurvature(amdvm.get(SurfaceCurvature.class), _ud.mshSrfCurvNumPoints, false);
+        }
+        if (amdvm.has("Surface Proximity")) {
+            _set.mesh.surfaceProximity(amdvm.get(SurfaceProximity.class), _ud.mshProximityPointsInGap,
+                    _ud.mshProximitySearchFloor, false);
+        }
+        if (amdvm.has("Volume Growth Rate")) {
+            star.trimmer.PartsGrowthRateOption.Type t = _ud.mshTrimmerGrowthRate.getType();
+            amdvm.get(PartsSimpleTemplateGrowthRate.class).getGrowthRateOption().setSelected(t);
+            _io.say.value("Growth Rate Type", t.getPresentationName(), true, true);
+        }
+        if (amdvm.has("Maximum Cell Size")) {
+            _setRelativeSize("Maximum Cell Size",
+                    amdvm.get(MaximumCellSize.class).getRelativeSize(), _ud.mshTrimmerMaxCellSize);
+        }
     }
 
     private void _setRelativeSize(String what, RelativeSize rs, double perc) {
         rs.setPercentage(perc);
         _io.say.percentage(what, rs.getPercentage(), true);
+    }
+
+    private void _setWorkAroundAutoSourceMesh(DirectedAutoSourceMesh dasm, GeometryPart gp) {
+        //-- Check later.
+        // Workaround for legacy limitation od Target size not being respected in 2D meshes.
+        SurfaceCustomMeshControl scmc = dasm.getCustomMeshControls().createSurfaceControl();
+        scmc.getGeometryObjects().setObjects(gp);
+        CustomMeshControlConditionManager cmccm = scmc.getCustomConditions();
+        cmccm.get(PartsTargetSurfaceSizeOption.class).setSelected(PartsTargetSurfaceSizeOption.Type.CUSTOM);
+        PartsTargetSurfaceSize ptss = scmc.getCustomValues().get(PartsTargetSurfaceSize.class);
+        ((GenericRelativeSize) ptss.getRelativeSize()).setPercentage(_ud.mshSrfSizeTgt);
+        scmc.setPresentationName("Work-Around AutoSource Mesh");
     }
 
     /**
@@ -405,6 +439,36 @@ public class CreateMeshOperation {
     }
 
     /**
+     * Creates a Directed Mesh Operation using an Automated 2D Mesh.
+     *
+     * @param src given Source Part Surface.
+     * @param tgt given Target Part Surface.
+     * @param meshers given meshers, separated by comma. See {@link StaticDeclarations} for options.
+     * @param nv given number of points in volume distribution.
+     * @return The DirectedMeshOperation.
+     */
+    public DirectedMeshOperation directedMeshing_AutoMesh(PartSurface src, PartSurface tgt, int nv,
+            StaticDeclarations.Meshers... meshers) {
+        _io.say.action("Creating a Directed Mesh Operation with an Automated 2D Mesh", true);
+        DirectedMeshOperation dmo = _createDMO(src, tgt);
+        //--
+        String pn = src.getPart().getPresentationName();
+        DirectedMeshPartCollectionManager dmpcm = dmo.getGuidedMeshPartCollectionManager();
+        DirectedMeshPartCollection dmpc = ((DirectedMeshPartCollection) dmpcm.getObject(pn));
+        DirectedSurfaceMeshBaseManager dsmbm = dmo.getGuidedSurfaceMeshBaseManager();
+        dsmbm.createAutoSourceMesh(_get.strings.meshers(meshers),_get.objects.arrayList(dmpc));
+        DirectedAutoSourceMesh dasm = (DirectedAutoSourceMesh) dsmbm.getObjects().iterator().next();
+        _setMeshDefaults(dasm.getDefaultValues());
+        _setWorkAroundAutoSourceMesh(dasm, src.getPart());
+        DirectedMeshDistributionManager dmdm = dmo.getDirectedMeshDistributionManager();
+        DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(_getNOV1(dmpc), "Constant");
+        dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nv);
+        dmo.execute();
+        _io.say.created(dmo, true);
+        return dmo;
+    }
+
+    /**
      * Creates a Directed Mesh Operation in a squared Channel.
      *
      * @param src given Source Part Surface.
@@ -412,7 +476,7 @@ public class CreateMeshOperation {
      * @param nX given number of points in X-direction.
      * @param nY given number of points in Y-direction.
      * @param nZ given number of points in Z-direction.
-     * @return The Directed Mesh Operation.
+     * @return The DirectedMeshOperation.
      */
     public DirectedMeshOperation directedMeshing_Channel(PartSurface src, PartSurface tgt, int nX, int nY, int nZ) {
         _io.say.action("Creating a Directed Mesh Operation in a Channel", true);
@@ -494,7 +558,7 @@ public class CreateMeshOperation {
      * @param nVol given number of points for the volume distribution.
      * @param rR given r/R distance for the O-Grid. E.x.: 0.5;
      * @param c given Cylindrical Coordinate System.
-     * @return The Directed Mesh Operation.
+     * @return The DirectedMeshOperation.
      */
     public DirectedMeshOperation directedMeshing_Pipe(PartSurface src, PartSurface tgt, int nT, int nR, int nVol,
             double rR, CoordinateSystem c) {
