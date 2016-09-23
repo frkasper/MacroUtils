@@ -19,6 +19,7 @@ public class MainCreator {
         _mu = m;
         derivedPart = new CreateDerivedPart(m);
         geometry = new CreateGeometry(m);
+        intrf = new CreateInterface(m);
         meshOperation = new CreateMeshOperation(m);
         physicsContinua = new CreatePhysicsContinua(m);
         plot = new CreatePlot(m);
@@ -38,6 +39,7 @@ public class MainCreator {
         _io = _mu.io;
         derivedPart.updateInstances();
         geometry.updateInstances();
+        intrf.updateInstances();
         meshOperation.updateInstances();
         physicsContinua.updateInstances();
         plot.updateInstances();
@@ -65,6 +67,11 @@ public class MainCreator {
      * This class is responsible for creating Geometries in general.
      */
     public CreateGeometry geometry = null;
+
+    /**
+     * This class is responsible for creating Interfaces in general with MacroUtils.
+     */
+    public CreateInterface intrf = null;
 
     /**
      * This class is responsible for creating Mesh Operations.
