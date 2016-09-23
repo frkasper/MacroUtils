@@ -17,6 +17,7 @@ public class MainTemplates {
      */
     public MainTemplates(MacroUtils m) {
         _mu = m;
+        gci = new TemplateGCI(m);
         geometry = new TemplateGeometry(m);
         prettify = new TemplatePrettifier(m);
         post = new TemplatePost(m);
@@ -28,6 +29,7 @@ public class MainTemplates {
      */
     public void updateInstances() {
         _io = _mu.io;
+        gci.updateInstances();
         geometry.updateInstances();
         prettify.updateInstances();
         post.updateInstances();
@@ -39,6 +41,11 @@ public class MainTemplates {
     //--
     private MacroUtils _mu = null;
     private macroutils.io.MainIO _io = null;
+
+    /**
+     * This class is responsible for assessing the Grid Convergence Index (GCI) metric.
+     */
+    public TemplateGCI gci = null;
 
     /**
      * This class is responsible for some templated geometries.
