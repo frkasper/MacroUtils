@@ -88,8 +88,8 @@ public class Demo2_Conduction_In_a_Channel extends StarMacro {
         ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.T.getVar(), true);
         ud.rep = mu.add.report.volumeAverage(mu.get.regions.all(false), StaticDeclarations.Vars.T.getVar(),
                 ud.ff, ud.defUnitTemp, true);
-        ud.repMon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
-        mu.add.solver.stoppingCriteria(ud.repMon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 50);
+        ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 50);
         //-- Contour Plot
         ud.namedObjects.addAll(mu.get.boundaries.all(true));
         Scene scn = mu.add.scene.scalar(ud.namedObjects, ud.ff, ud.defUnitTemp, true);

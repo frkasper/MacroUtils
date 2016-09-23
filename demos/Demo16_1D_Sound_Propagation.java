@@ -2,9 +2,9 @@ import macroutils.*;
 import star.common.*;
 
 /**
- * Runs a simplified sound propagation problem inside a constant cross section pipe. Boundary condition is a sinusoid
- * unity Pressure (1Pa) and the domain length is 50 wavelengths. Total time is 2 flows through. Flow is inviscid ideal
- * gas run with the coupled explicit scheme of STAR-CCM+.
+ * Runs a simplified sound propagation problem inside a constant cross section channel. Boundary condition is a
+ * sinusoid unity Pressure (1Pa) and the domain length is 50 wavelengths. Total time is 2 flows through. Flow is
+ * inviscid ideal gas run with the coupled explicit scheme of STAR-CCM+.
  *
  * @since MacroUtils v11.04.
  * @author Fabio Kasper
@@ -42,6 +42,7 @@ public class Demo16_1D_Sound_Propagation extends StarMacro {
         mu.run();
 
         mu.saveSim();
+
     }
 
     public void initializeMacro() {
@@ -64,6 +65,7 @@ public class Demo16_1D_Sound_Propagation extends StarMacro {
 
     public void post() {
         setupPlot();
+        mu.templates.prettify.all();
     }
 
     private void setupMesh() {
@@ -90,6 +92,10 @@ public class Demo16_1D_Sound_Propagation extends StarMacro {
         ud.starPlot.setPresentationName("Pressure vs Length");
         ud.updEvent = mu.add.tools.updateEvent_Iteration(10, 0);
         mu.set.object.updateEvent(ud.starPlot, ud.updEvent, true);
+        InternalDataSet ids = (InternalDataSet) mu.get.plots.datasets(ud.starPlot, true).get(0);
+        ids.getSymbolStyle().getSymbolShapeOption().setSelected(SymbolShapeOption.Type.FILLED_CIRCLE);
+        ids.getSymbolStyle().setColor(StaticDeclarations.Colors.BLACK.getColor());
+        ids.getSymbolStyle().setSize(4);
         ud.starPlot.open();
     }
 

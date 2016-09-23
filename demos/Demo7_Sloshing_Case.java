@@ -112,7 +112,7 @@ public class Demo7_Sloshing_Case extends StarMacro {
                 0, "%3.1f", new double[]{0.01, 0.5});
         ScalarDisplayer sd = (ScalarDisplayer) mu.get.scenes.displayerByREGEX(ud.scene, ".*", true);
         sd.setDisplayMeshBoolean(true);
-        sd.setFillMode(0);
+        sd.setFillMode(ScalarFillMode.NATIVE);
         //-- Change Update Frequency / Save Pictures
         ud.updEvent = mu.add.tools.updateEvent_DeltaTime(0.005, ud.unit_s, false);
         mu.set.object.updateEvent(ud.scene, ud.updEvent, true);

@@ -80,7 +80,7 @@ public class Demo15_Run_DES extends StarMacro {
         setupPostDES();
         mu.saveSim(ud.simTitle + "_DES_Ready");
         mu.run();
-        mu.io.write.all("DES");
+        mu.io.write.all(getActiveSimulation().getPresentationName());
     }
 
     void runRANS() {
@@ -91,7 +91,7 @@ public class Demo15_Run_DES extends StarMacro {
         setupPostRANS();
         mu.run();
         mu.saveSim(ud.simTitle + "_SS");
-        mu.io.write.all("SS");
+        mu.io.write.all(getActiveSimulation().getPresentationName());
     }
 
     void setupPartDisplayer(Scene scn) {

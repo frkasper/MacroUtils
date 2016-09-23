@@ -110,10 +110,10 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
         //-- Stopping Criteria
         ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.P.getVar(), true);
         ud.rep = mu.add.report.massFlowAverage(ud.bdry1, "P_in", ud.ff, ud.defUnitPress, true);
-        ud.repMon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
-        mu.add.solver.stoppingCriteria(ud.repMon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 1e-5, 50);
+        ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 1e-5, 50);
         ud.updEvent1 = mu.add.tools.updateEvent_Iteration(1, 10);
-        mu.set.object.updateEvent(ud.repMon, ud.updEvent1, true);
+        mu.set.object.updateEvent(ud.mon, ud.updEvent1, true);
         //-- Contour Plot
         ud.namedObjects.add(mu.get.boundaries.byREGEX(".*" + ud.bcSym, true));
         ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.TVR.getVar(), true);
