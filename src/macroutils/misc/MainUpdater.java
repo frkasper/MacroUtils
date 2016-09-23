@@ -23,48 +23,7 @@ public class MainUpdater {
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
     }
 
-    private Units _updDefUnit(Units u1, Units u2, String descr, boolean vo) {
-        String defDescr = _get.strings.fromUnit(u2);
-        Units defUnit = u1;
-        if (u1 instanceof Units) {
-            defDescr = _get.strings.fromUnit(u1);
-        } else {
-            defUnit = u2;
-        }
-        _io.print.value("Default Unit " + descr, "[" + defDescr + "]", false, vo);
-        return defUnit;
-    }
-
-    private Units _updUnit(String unitString, boolean vo) {
-        Units u = _get.units.byName(unitString, false);
-        if (u != null) {
-            _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Unit read", unitString, u.getDescription());
-            return u;
-        }
-        _io.print.value("Unit not read", unitString, true, vo);
-        return null;
-    }
-
-    /**
-     * Updates all units in memory. This method is called automatically by MacroUtils.
-     *
-     * @param vo given verbose option. False will not print anything.
-     */
-    public void allUnits(boolean vo) {
-        defaultUnits(vo);
-        customUnits(vo);
-    }
-
-    /**
-     * Updates the custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
-     *
-     * @param vo given verbose option. False will not print anything.
-     */
-    public void customUnits(boolean vo) {
-        if (!_mu.getIntrusiveOption()) {
-            _io.print.msgDebug("Intrusive Option is Disabled. Skipping customUnits()");
-            return;
-        }
+    private void _updateCustomUnits(boolean vo) {
         _io.print.action("Adding/Updating Custom Units", vo);
         _ud.dimDensity.setMass(1);
         _ud.dimDensity.setVolume(-1);
@@ -125,65 +84,114 @@ public class MainUpdater {
         _io.say.ok(vo);
     }
 
+    private Units _updateDefaultUnit(Units u1, Units u2, String descr, boolean vo) {
+        String defDescr = _get.strings.fromUnit(u2);
+        Units defUnit = u1;
+        if (u1 instanceof Units) {
+            defDescr = _get.strings.fromUnit(u1);
+        } else {
+            defUnit = u2;
+        }
+        _io.print.value("Default Unit " + descr, "[" + defDescr + "]", false, vo);
+        return defUnit;
+    }
+
+    private void _updateDefaultUnits(boolean vo) {
+        _io.print.action("Updating Default Units", vo);
+        //--
+        //-- Default units shipped with STAR-CCM+.
+        //--
+        _ud.unit_atm = _updateUnit("atm", vo);
+        _ud.unit_bar = _updateUnit("bar", vo);
+        _ud.unit_C = _updateUnit("C", vo);
+        _ud.unit_deg = _updateUnit("deg", vo);
+        _ud.unit_Dimensionless = _updateUnit("", vo);
+        _ud.unit_F = _updateUnit("F", vo);
+        _ud.unit_K = _updateUnit("K", vo);
+        _ud.unit_gal = _updateUnit("gal", vo);
+        _ud.unit_kg = _updateUnit("kg", vo);
+        _ud.unit_h = _updateUnit("hr", vo);
+        _ud.unit_m = _updateUnit("m", vo);
+        _ud.unit_m2 = _updateUnit("m^2", vo);
+        _ud.unit_m3 = _updateUnit("m^3", vo);
+        _ud.unit_min = _updateUnit("min", vo);
+        _ud.unit_mm = _updateUnit("mm", vo);
+        _ud.unit_mm2 = _updateUnit("mm^2", vo);
+        _ud.unit_mm3 = _updateUnit("mm^3", vo);
+        _ud.unit_N = _updateUnit("N", vo);
+        _ud.unit_kph = _updateUnit("kph", vo);
+        _ud.unit_kgpm3 = _updateUnit("kg/m^3", vo);
+        _ud.unit_kgps = _updateUnit("kg/s", vo);
+        _ud.unit_kmol = _updateUnit("kmol", vo);
+        _ud.unit_mps = _updateUnit("m/s", vo);
+        _ud.unit_mps2 = _updateUnit("m/s^2", vo);
+        _ud.unit_rpm = _updateUnit("rpm", vo);
+        _ud.unit_Pa = _updateUnit("Pa", vo);
+        _ud.unit_Pa_s = _updateUnit("Pa-s", vo);
+        _ud.unit_radps = _updateUnit("radian/s", vo);
+        _ud.unit_s = _updateUnit("s", vo);
+        _ud.unit_W = _updateUnit("W", vo);
+        _ud.unit_Wpm2K = _updateUnit("W/m^2-K", vo);
+        //--
+        //-- Default units to be used with MacroUtils.
+        //--
+        _ud.defUnitAccel = _updateDefaultUnit(_ud.defUnitAccel, _ud.unit_mps2, "Acceleration", vo);
+        _ud.defUnitAngle = _updateDefaultUnit(_ud.defUnitAngle, _ud.unit_deg, "Angle", vo);
+        _ud.defUnitArea = _updateDefaultUnit(_ud.defUnitArea, _ud.unit_m2, "Area", vo);
+        _ud.defUnitDen = _updateDefaultUnit(_ud.defUnitDen, _ud.unit_kgpm3, "Density", vo);
+        _ud.defUnitForce = _updateDefaultUnit(_ud.defUnitForce, _ud.unit_N, "Force", vo);
+        _ud.defUnitHTC = _updateDefaultUnit(_ud.defUnitHTC, _ud.unit_Wpm2K, "Heat Transfer Coefficient", vo);
+        _ud.defUnitLength = _updateDefaultUnit(_ud.defUnitLength, _ud.unit_mm, "Length", vo);
+        _ud.defUnitMFR = _updateDefaultUnit(_ud.defUnitMFR, _ud.unit_kgps, "Mass Flow Rate", vo);
+        _ud.defUnitPress = _updateDefaultUnit(_ud.defUnitPress, _ud.unit_Pa, "Pressure", vo);
+        _ud.defUnitTemp = _updateDefaultUnit(_ud.defUnitTemp, _ud.unit_C, "Temperature", vo);
+        _ud.defUnitTime = _updateDefaultUnit(_ud.defUnitTime, _ud.unit_s, "Time", vo);
+        _ud.defUnitVel = _updateDefaultUnit(_ud.defUnitVel, _ud.unit_mps, "Velocity", vo);
+        _ud.defUnitVisc = _updateDefaultUnit(_ud.defUnitVisc, _ud.unit_Pa_s, "Viscosity", vo);
+        _ud.defUnitVolume = _updateDefaultUnit(_ud.defUnitVolume, _ud.unit_m3, "Volume", vo);
+        _io.say.ok(vo);
+    }
+
+    private Units _updateUnit(String unitString, boolean vo) {
+        Units u = _get.units.byName(unitString, false);
+        if (u != null) {
+            _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Unit read", unitString, u.getDescription());
+            return u;
+        }
+        _io.print.value("Unit not read", unitString, true, vo);
+        return null;
+    }
+
+    /**
+     * Updates all units in memory. This method is called automatically by MacroUtils.
+     *
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void allUnits(boolean vo) {
+        defaultUnits(vo);
+        customUnits(vo);
+    }
+
+    /**
+     * Updates the custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
+     *
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void customUnits(boolean vo) {
+        if (!_mu.getIntrusiveOption()) {
+            _io.print.msgDebug("Intrusive Option is Disabled. Skipping customUnits()");
+            return;
+        }
+        _updateCustomUnits(vo);
+    }
+
     /**
      * Updates default units that are shipped with STAR-CCM+.
      *
      * @param vo given verbose option. False will not print anything.
      */
     public void defaultUnits(boolean vo) {
-        _io.print.action("Updating Default Units", vo);
-        //--
-        //-- Default units shipped with STAR-CCM+.
-        //--
-        _ud.unit_atm = _updUnit("atm", vo);
-        _ud.unit_bar = _updUnit("bar", vo);
-        _ud.unit_C = _updUnit("C", vo);
-        _ud.unit_deg = _updUnit("deg", vo);
-        _ud.unit_Dimensionless = _updUnit("", vo);
-        _ud.unit_F = _updUnit("F", vo);
-        _ud.unit_K = _updUnit("K", vo);
-        _ud.unit_gal = _updUnit("gal", vo);
-        _ud.unit_kg = _updUnit("kg", vo);
-        _ud.unit_h = _updUnit("hr", vo);
-        _ud.unit_m = _updUnit("m", vo);
-        _ud.unit_m2 = _updUnit("m^2", vo);
-        _ud.unit_m3 = _updUnit("m^3", vo);
-        _ud.unit_min = _updUnit("min", vo);
-        _ud.unit_mm = _updUnit("mm", vo);
-        _ud.unit_mm2 = _updUnit("mm^2", vo);
-        _ud.unit_mm3 = _updUnit("mm^3", vo);
-        _ud.unit_N = _updUnit("N", vo);
-        _ud.unit_kph = _updUnit("kph", vo);
-        _ud.unit_kgpm3 = _updUnit("kg/m^3", vo);
-        _ud.unit_kgps = _updUnit("kg/s", vo);
-        _ud.unit_kmol = _updUnit("kmol", vo);
-        _ud.unit_mps = _updUnit("m/s", vo);
-        _ud.unit_mps2 = _updUnit("m/s^2", vo);
-        _ud.unit_rpm = _updUnit("rpm", vo);
-        _ud.unit_Pa = _updUnit("Pa", vo);
-        _ud.unit_Pa_s = _updUnit("Pa-s", vo);
-        _ud.unit_radps = _updUnit("radian/s", vo);
-        _ud.unit_s = _updUnit("s", vo);
-        _ud.unit_W = _updUnit("W", vo);
-        _ud.unit_Wpm2K = _updUnit("W/m^2-K", vo);
-        //--
-        //-- Default units to be used with MacroUtils.
-        //--
-        _ud.defUnitAccel = _updDefUnit(_ud.defUnitAccel, _ud.unit_mps2, "Acceleration", vo);
-        _ud.defUnitAngle = _updDefUnit(_ud.defUnitAngle, _ud.unit_deg, "Angle", vo);
-        _ud.defUnitArea = _updDefUnit(_ud.defUnitArea, _ud.unit_m2, "Area", vo);
-        _ud.defUnitDen = _updDefUnit(_ud.defUnitDen, _ud.unit_kgpm3, "Density", vo);
-        _ud.defUnitForce = _updDefUnit(_ud.defUnitForce, _ud.unit_N, "Force", vo);
-        _ud.defUnitHTC = _updDefUnit(_ud.defUnitHTC, _ud.unit_Wpm2K, "Heat Transfer Coefficient", vo);
-        _ud.defUnitLength = _updDefUnit(_ud.defUnitLength, _ud.unit_mm, "Length", vo);
-        _ud.defUnitMFR = _updDefUnit(_ud.defUnitMFR, _ud.unit_kgps, "Mass Flow Rate", vo);
-        _ud.defUnitPress = _updDefUnit(_ud.defUnitPress, _ud.unit_Pa, "Pressure", vo);
-        _ud.defUnitTemp = _updDefUnit(_ud.defUnitTemp, _ud.unit_C, "Temperature", vo);
-        _ud.defUnitTime = _updDefUnit(_ud.defUnitTime, _ud.unit_s, "Time", vo);
-        _ud.defUnitVel = _updDefUnit(_ud.defUnitVel, _ud.unit_mps, "Velocity", vo);
-        _ud.defUnitVisc = _updDefUnit(_ud.defUnitVisc, _ud.unit_Pa_s, "Viscosity", vo);
-        _ud.defUnitVolume = _updDefUnit(_ud.defUnitVolume, _ud.unit_m3, "Volume", vo);
-        _io.say.ok(vo);
+        _updateDefaultUnits(vo);
     }
 
     /**
@@ -214,6 +222,7 @@ public class MainUpdater {
     public void volumeMesh() {
         _io.say.action("Generating Volume Mesh", true);
         _sim.get(MeshPipelineController.class).generateVolumeMesh();
+        _updateDefaultUnits(false);
     }
 
     /**

@@ -33,7 +33,7 @@ public class SetScenes {
     public void background(Scene scn, Color color, boolean vo) {
         _io.say.action("Setting Solid Background Color", vo);
         _io.say.value("Setting Solid Background Color on Scene", scn.getPresentationName(), true, vo);
-        scn.setBackgroundColorMode(0);
+        scn.setBackgroundColorMode(BackgroundColorMode.SOLID);
         scn.getSolidBackgroundColor().setColorColor(color);
         _io.say.ok(vo);
     }
@@ -50,7 +50,7 @@ public class SetScenes {
             return;
         }
         scn.getCurrentView().setInput(new CameraStateInput(vv), vv.getCoordinateSystem(), true);
-        scn.getCurrentView().setProjectionMode(vv.getProjectionMode());
+        scn.getCurrentView().setProjectionMode(vv.getProjectionModeEnum());
         _io.say.value("Camera View set to", vv.getPresentationName(), true, vo);
     }
 
@@ -68,7 +68,7 @@ public class SetScenes {
             return;
         }
         PartDisplayer pd = (PartDisplayer) d;
-        pd.setColorMode(1);
+        pd.setColorMode(PartColorMode.CONSTANT);
         pd.setDisplayerColorColor(color);
         _io.say.ok(vo);
     }

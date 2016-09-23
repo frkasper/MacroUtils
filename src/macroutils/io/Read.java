@@ -77,7 +77,7 @@ public class Read {
         } catch (Exception e) {
             _io.say.msg("Could not read Projection Mode. Using Parallel.");
         }
-        vv1.setProjectionMode(pm);
+        vv1.setProjectionMode(VisProjectionMode.PARALLEL);
         _io.say.camera(vv1, vo);
         return vv1;
     }

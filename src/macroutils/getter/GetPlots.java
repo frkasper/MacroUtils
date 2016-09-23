@@ -3,6 +3,7 @@ package macroutils.getter;
 import java.util.*;
 import macroutils.*;
 import star.common.*;
+import star.common.graph.*;
 
 /**
  * Low-level class for getting Plots with MacroUtils.
@@ -82,6 +83,27 @@ public class GetPlots {
      */
     public StarPlot byREGEX(String regexPatt, boolean vo) {
         return (StarPlot) _get.objects.byREGEX(regexPatt, "Plot", new ArrayList(all(false)), vo);
+    }
+
+    /**
+     * Gets all DataSets available in a Plot.
+     *
+     * @param sp given StarPlot.
+     * @return An ArrayList with DataSets.
+     */
+    public ArrayList<DataSet> datasets(StarPlot sp, boolean vo) {
+        _io.say.object(sp, vo);
+        ArrayList<DataSet> ads = new ArrayList(sp.getDataSetManager().getDataSets());
+        if (sp instanceof XYPlot) {
+            XYPlot xyp = (XYPlot) sp;
+            for (AxisType at : xyp.getYAxes().getObjects()) {
+                if (at instanceof YAxisType) {
+                    ads.addAll(((YAxisType) at).getDataSetManager().getDataSets());
+                }
+            }
+        }
+        _io.say.objects(ads, "Datasets", vo);
+        return ads;
     }
 
     /**

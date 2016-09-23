@@ -83,7 +83,7 @@ public class Print {
         value("  - Position", cam.getPosition(), vo);
         value("  - View Up", cam.getViewUp(), vo);
         value("  - Parallel Scale", cam.getParallelScale().getValue(), vo);
-        value("  - Projection Mode", cam.getProjectionMode(), vo);
+        value("  - Projection Mode", cam.getProjectionModeEnum().getPresentationName(), true, vo);
         msg("", vo);
     }
 

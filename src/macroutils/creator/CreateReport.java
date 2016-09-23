@@ -181,7 +181,7 @@ public class CreateReport {
     }
 
     /**
-     * Creates a Monitor and a Plot from a Report.
+     * Creates a Monitor and a Plot from a Report. Reports starting with an underscore will be skipped.
      *
      * @param r given Report.
      * @param xl given X-axis label for the Plot. NULL it will be ignored.
@@ -190,6 +190,9 @@ public class CreateReport {
      * @return The Report Monitor.
      */
     public ReportMonitor monitorAndPlot(Report r, String xl, String yl, boolean vo) {
+        if (r.getPresentationName().startsWith("_")) {
+            return null;
+        }
         ReportMonitor rm = r.createMonitor();
         MonitorPlot mp = _sim.getPlotManager().createMonitorPlot();
         rm.setPresentationName(r.getPresentationName());

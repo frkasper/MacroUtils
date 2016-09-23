@@ -399,7 +399,6 @@ public class CreateTools {
         _add = _mu.add;
         _get = _mu.get;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
@@ -412,7 +411,6 @@ public class CreateTools {
     private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
     private macroutils.io.MainIO _io = null;
 
 }

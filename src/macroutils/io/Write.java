@@ -32,6 +32,7 @@ public class Write {
 
     private void _writeObjects(String what, String prefix, ArrayList<NamedObject> ano) {
         _io.say.action(String.format("Writing %s", what), true);
+        _io.say.objects(ano, "Objects", true);
         for (NamedObject no : ano) {
             _writePic(no, String.format("%s_%s", prefix, no.getPresentationName()), _ud.picResX, _ud.picResY, false);
         }
@@ -46,21 +47,18 @@ public class Write {
         }
         _io.say.object(no, vo);
         File f = new File(_ud.picPath, String.format("%s.%s", _getNewName(name), StaticDeclarations.PIC_EXT));
+        _io.say.msgDebug("Trying to write: %s", f.toString());
         if (no instanceof Scene) {
-            try {
-                ((Scene) no).printAndWait(f, 1, resx, resy, _ud.picAntiAliasing, _ud.picTransparentBackground);
-            } catch (Exception e) {
-                _io.say.msg(vo, e.getMessage());
-            }
+            Scene scn = (Scene) no;
+            scn.open(true);
+            scn.printAndWait(f, 1, resx, resy, _ud.picAntiAliasing, _ud.picTransparentBackground);
         } else if (no instanceof StarPlot) {
-            try {
-                ((StarPlot) no).encode(f.toString(), StaticDeclarations.PIC_EXT, resx, resy);
-            } catch (Exception e) {
-                _io.say.msg(vo, e.getMessage());
-            }
+            StarPlot sp = (StarPlot) no;
+            sp.open();
+            sp.encode(f.toString(), StaticDeclarations.PIC_EXT, resx, resy, true);
         }
         if (!f.exists()) {
-            _io.say.msg(true, "Picture not written.");
+            _io.say.value("Picture not written", f.getName(), true, true);
             return;
         }
         _io.say.value("Written", f.getName(), true, true);
@@ -145,7 +143,7 @@ public class Write {
             DoubleVector pos = v.getPosition();
             DoubleVector vu = v.getViewUp();
             double ps = v.getParallelScale().getValue();
-            int pm = v.getProjectionMode();
+            int pm = v.getProjectionModeEnum().getValue();
             String cam = String.format(StaticDeclarations.CAM_FORMAT,
                     name, fp.get(0), fp.get(1), fp.get(2), pos.get(0), pos.get(1), pos.get(2),
                     vu.get(0), vu.get(1), vu.get(2), ps, pm);

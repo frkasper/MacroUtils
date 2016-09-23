@@ -138,43 +138,6 @@ public class SetObjects {
     }
 
     /**
-     * Sets a constant Scalar Profile for a STAR-CCM+ object.
-     *
-     * @param sp given ScalarProfile.
-     * @param val given constant value.
-     * @param u given Units.
-     */
-    public void profile(ScalarProfile sp, double val, Units u) {
-        _setSP(sp, val, u, null);
-    }
-
-    /**
-     * Sets a constant Scalar Profile for a STAR-CCM+ object based on a definition.
-     *
-     * @param sp given ScalarProfile.
-     * @param def given definition.
-     */
-    public void profile(ScalarProfile sp, String def) {
-        _setSP(sp, 0, null, def);
-    }
-
-    /**
-     * Sets a constant Vector Profile for a STAR-CCM+ object.
-     *
-     * @param vp given VectorProfile.
-     * @param vals given array of constant values.
-     * @param u given Units.
-     */
-    public void profile(VectorProfile vp, double[] vals, Units u) {
-        if (vp == null) {
-            return;
-        }
-        vp.setMethod(ConstantVectorProfileMethod.class);
-        VectorPhysicalQuantity vpq = vp.getMethod(ConstantVectorProfileMethod.class).getQuantity();
-        _setVPQ(vpq, vals, u, null, null, true);
-    }
-
-    /**
      * Sets a Constant Scalar Physical Quantities with this method, if applicable. It will also print something like: "Text:
      * value unit" in the output.
      *
@@ -226,6 +189,63 @@ public class SetObjects {
      */
     public void physicalQuantity(VectorPhysicalQuantity vpq, String def, String text, boolean vo) {
         _setVPQ(vpq, StaticDeclarations.COORD0, null, text, def, vo);
+    }
+
+    /**
+     * Sets the axes names for a Plot.
+     *
+     * @param sp given StarPlot.
+     * @param xName given x-axis titles.
+     * @param yName given y-axis titles.
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void plotAxesTitles(StarPlot sp, String xName, String yName, boolean vo) {
+        _io.say.action("Setting Plot Axes Titles", vo);
+        _io.say.object(sp, vo);
+        Cartesian2DAxis xax = _get.plots.axisX(sp);
+        Cartesian2DAxis yax = _get.plots.axisY(sp);
+        xax.getTitle().setText(xName);
+        yax.getTitle().setText(yName);
+        _io.say.value("X-Axis", xax.getTitle().getText(), true, true);
+        _io.say.value("Y-Axis", yax.getTitle().getText(), true, true);
+        _io.say.ok(vo);
+    }
+
+    /**
+     * Sets a constant Scalar Profile for a STAR-CCM+ object.
+     *
+     * @param sp given ScalarProfile.
+     * @param val given constant value.
+     * @param u given Units.
+     */
+    public void profile(ScalarProfile sp, double val, Units u) {
+        _setSP(sp, val, u, null);
+    }
+
+    /**
+     * Sets a constant Scalar Profile for a STAR-CCM+ object based on a definition.
+     *
+     * @param sp given ScalarProfile.
+     * @param def given definition.
+     */
+    public void profile(ScalarProfile sp, String def) {
+        _setSP(sp, 0, null, def);
+    }
+
+    /**
+     * Sets a constant Vector Profile for a STAR-CCM+ object.
+     *
+     * @param vp given VectorProfile.
+     * @param vals given array of constant values.
+     * @param u given Units.
+     */
+    public void profile(VectorProfile vp, double[] vals, Units u) {
+        if (vp == null) {
+            return;
+        }
+        vp.setMethod(ConstantVectorProfileMethod.class);
+        VectorPhysicalQuantity vpq = vp.getMethod(ConstantVectorProfileMethod.class).getQuantity();
+        _setVPQ(vpq, vals, u, null, null, true);
     }
 
     /**

@@ -1,6 +1,5 @@
 package macroutils.templates;
 
-import java.io.*;
 import java.util.*;
 import macroutils.*;
 import star.common.*;
@@ -47,8 +46,7 @@ public class TemplatePost {
             cam2 = v2.getPresentationName();
             avv.addAll(_get.cameras.inBetween_Linear(v1, v2, frames, false));
         }
-        _ud.picPath = new File(_ud.simPath, "pics_" + _ud.simTitle).toString();
-        File picFolder = _io.createFolder(_ud.picPath);
+        _ud.picPath = _io.createFolder("pics_" + _ud.simTitle).toString();
         for (int i = 0; i < frames; i++) {
             int picNumber = i + nOldFrame;
             if (rsv != null) {
@@ -63,7 +61,7 @@ public class TemplatePost {
             String picName = String.format("pic%04d_Cam_%s_to_%s.png", picNumber, cam1, cam2);
             _io.say.msgDebug("Saving: \"%s\"...", picName);
             flyOver_prePrintPicture();
-            _io.write.picture(scn, new File(picFolder, picName).toString(), _ud.picResX, _ud.picResY, false);
+            _io.write.picture(scn, picName, _ud.picResX, _ud.picResY, false);
             _currentFrame++;
         }
         flyOver_postPrintPicture();

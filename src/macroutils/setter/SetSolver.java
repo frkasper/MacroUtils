@@ -10,6 +10,7 @@ import star.flow.*;
 import star.keturb.*;
 import star.kwturb.*;
 import star.metrics.*;
+import star.mixturemultiphase.*;
 import star.multiphase.*;
 import star.rsturb.*;
 import star.segregatedenergy.*;
@@ -188,7 +189,7 @@ public class SetSolver {
                 urf = _ud.urfRS;
             } else if (s instanceof SegregatedSpeciesSolver) {
                 urf = _ud.urfSpecies;
-            } else if (s instanceof SegregatedVofSolver) {
+            } else if (s instanceof SegregatedMmpSolver) {
                 urf = _ud.urfVOF;
             } else if (s instanceof VolumeFractionSolver) {
                 urf = _ud.urfVolFrac;

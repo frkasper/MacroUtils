@@ -186,7 +186,7 @@ public class GetCameras {
             v.setFocalPoint(dvFP);
             v.setPosition(dvPos);
             v.setViewUp(dvVU);
-            v.setParallelScale(newPS);
+            v.getParallelScale().setValue(newPS);
             av.add(v);
         }
         _io.say.value("Cameras processed", av.size(), vo);

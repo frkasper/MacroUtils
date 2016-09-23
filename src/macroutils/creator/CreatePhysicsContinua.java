@@ -9,6 +9,7 @@ import star.keturb.*;
 import star.kwturb.*;
 import star.material.*;
 import star.metrics.*;
+import star.mixturemultiphase.*;
 import star.segregatedenergy.*;
 import star.segregatedflow.*;
 import star.turbulence.*;
@@ -86,7 +87,7 @@ public class CreatePhysicsContinua {
         ArrayList<Class> aclz = new ArrayList();
         aclz.add(EulerianMultiPhaseModel.class);
         aclz.add(SegregatedVofModel.class);
-        aclz.add(SegregatedVofFlowModel.class);
+        aclz.add(SegregatedVolumeFluxBasedFlowModel.class);
         aclz.add(VofWaveModel.class);
         aclz.add(GravityModel.class);
         return aclz;

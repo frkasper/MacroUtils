@@ -181,6 +181,11 @@ public class UserDeclarations {
     public Boundary bdry = null, bdry1 = null, bdry2 = null, bdry3 = null;
 
     /**
+     * A Global Boundary Interface variable. Useful somewhere.
+     */
+    public BoundaryInterface bdryIntrf = null, bdryIntrf1 = null, bdryIntrf2 = null, bdryIntrf3 = null;
+
+    /**
      * A Global 3D-CAD Body variable. Useful somewhere.
      */
     public Body cadBody = null, cadBody1 = null, cadBody2 = null, cadBody3 = null;

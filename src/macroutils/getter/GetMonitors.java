@@ -23,6 +23,16 @@ public class GetMonitors {
         _sim = m.getSimulation();
     }
 
+    private ArrayList<ReportMonitor> _getAllReportMonitors() {
+        ArrayList<ReportMonitor> ar = new ArrayList();
+        for (Monitor m : all(false)) {
+            if (m instanceof ReportMonitor) {
+                ar.add((ReportMonitor) m);
+            }
+        }
+        return ar;
+    }
+
     private Monitor _getMonitor(String name) {
         return _sim.getMonitorManager().getMonitor(name);
     }
@@ -33,14 +43,10 @@ public class GetMonitors {
      * @param vo given verbose option. False will not print anything.
      * @return An ArrayList of Monitors.
      */
-    public ArrayList<ReportMonitor> all(boolean vo) {
-        ArrayList<ReportMonitor> ar = new ArrayList();
-        for (Monitor m : _sim.getMonitorManager().getObjects()) {
-            if (m instanceof ReportMonitor) {
-                ar.add((ReportMonitor) m);
-            }
-        }
-        _io.say.objects(ar, "Getting all Report Monitors", vo);
+    public ArrayList<Monitor> all(boolean vo) {
+        ArrayList<Monitor> ar = new ArrayList();
+        ar.addAll(_sim.getMonitorManager().getObjects());
+        _io.say.objects(ar, "Getting all Monitors", vo);
         return ar;
     }
 
@@ -51,7 +57,7 @@ public class GetMonitors {
      * @param vo given verbose option. False will not print anything.
      * @return An ArrayList of Monitors.
      */
-    public ArrayList<ReportMonitor> allByREGEX(String regexPatt, boolean vo) {
+    public ArrayList<Monitor> allByREGEX(String regexPatt, boolean vo) {
         return new ArrayList(_get.objects.allByREGEX(regexPatt, "Monitors", new ArrayList(all(false)), vo));
     }
 
@@ -60,10 +66,10 @@ public class GetMonitors {
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
      * @param vo given verbose option. False will not print anything.
-     * @return The ReportMonitor.
+     * @return The Monitor.
      */
-    public ReportMonitor byREGEX(String regexPatt, boolean vo) {
-        return (ReportMonitor) _get.objects.allByREGEX(regexPatt, "Monitor", new ArrayList(all(false)), vo).get(0);
+    public Monitor byREGEX(String regexPatt, boolean vo) {
+        return (Monitor) _get.objects.allByREGEX(regexPatt, "Monitor", new ArrayList(all(false)), vo).get(0);
     }
 
     /**
@@ -75,7 +81,7 @@ public class GetMonitors {
      */
     public ReportMonitor fromReport(Report rep, boolean vo) {
         _io.say.action("Getting a Monitor from a Report", vo);
-        for (ReportMonitor rm : all(false)) {
+        for (ReportMonitor rm : _getAllReportMonitors()) {
             if (rm.getReport() == rep) {
                 _io.say.value("Found", rm.getPresentationName(), true, vo);
                 return rm;
