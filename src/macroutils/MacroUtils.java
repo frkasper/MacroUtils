@@ -24,7 +24,7 @@ import star.common.*;
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v11.06, September 23, 2016.
+ * @version v11.06, September 29, 2016.
  */
 public final class MacroUtils {
 
@@ -78,7 +78,6 @@ public final class MacroUtils {
         userDeclarations = new UserDeclarations(this);
         _updateInstances();
         _initialize_defaults();
-        update.allUnits(true);
         io.print.action(_getMacroUtilsVersion() + " initialized!", true);
     }
 
@@ -97,6 +96,8 @@ public final class MacroUtils {
         userDeclarations.csys0 = _sim.getCoordinateSystemManager().getLabCoordinateSystem();
         userDeclarations.lab0 = (LabCoordinateSystem) userDeclarations.csys0;
         userDeclarations.defColormap = get.objects.colormap(StaticDeclarations.Colormaps.BLUE_RED_BALANCED);
+        update.defaultUnits(true);
+        add.all();
     }
 
     private void _step(int n) {
@@ -255,9 +256,9 @@ public final class MacroUtils {
     //--
     //-- Variables declaration area.
     //--
-    private boolean _isInitialized = false;
     private boolean _debug = false;
     private boolean _im = false;
+    private boolean _isInitialized = false;
     private Simulation _sim = null;
 
     /**

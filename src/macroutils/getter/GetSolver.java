@@ -141,17 +141,17 @@ public class GetSolver {
      */
     public void updateInstances() {
         _chk = _mu.check;
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

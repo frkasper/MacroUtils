@@ -247,10 +247,9 @@ public class CreateDerivedPart {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
@@ -261,12 +260,11 @@ public class CreateDerivedPart {
     private final double[] _Y = new double[]{0., 1., 0.};
     private final double[] _Z = new double[]{0., 0., 1.};
 
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

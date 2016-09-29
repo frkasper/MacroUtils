@@ -22,7 +22,6 @@ public class Write {
      */
     public Write(MacroUtils m) {
         _mu = m;
-        //-- Don't remove the declaration below.
         _sim = m.getSimulation();
     }
 
@@ -190,18 +189,18 @@ public class Write {
      * This method is called automatically by {@link MainIO} class. It is internal to MacroUtils.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

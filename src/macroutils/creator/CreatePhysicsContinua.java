@@ -438,11 +438,10 @@ public class CreatePhysicsContinua {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
+        _chk = _mu.check;
         _get = _mu.get;
         _io = _mu.io;
-        _chk = _mu.check;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
         _upd = _mu.update;
     }
@@ -453,15 +452,13 @@ public class CreatePhysicsContinua {
     private ArrayList<String> _s = new ArrayList();
     private boolean _isOK = true;
     private MacroUtils _mu = null;
-    private PhysicsContinuum _pc = null;
-    private Simulation _sim = null;
-
+    private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.misc.MainUpdater _upd = null;
     private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.UserDeclarations _ud = null;
+    private PhysicsContinuum _pc = null;
+    private Simulation _sim = null;
 
 }

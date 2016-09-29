@@ -302,8 +302,8 @@ public class SetObjects {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
         _ud = _mu.userDeclarations;
     }
 
@@ -311,8 +311,8 @@ public class SetObjects {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
-    private macroutils.io.MainIO _io = null;
     private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
 
 }

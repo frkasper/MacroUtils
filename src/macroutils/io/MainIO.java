@@ -22,8 +22,8 @@ public class MainIO {
         print = new Print(m);
         read = new Read(m);
         write = new Write(m);
-        print.setDebug(debugOpt);
         say = print;
+        print.setDebug(debugOpt);
         say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
     }
 

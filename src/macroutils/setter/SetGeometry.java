@@ -122,9 +122,9 @@ public class SetGeometry {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
     }
 
     //--

@@ -283,9 +283,9 @@ public class TemplatePrettifier {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
     }
 
@@ -299,10 +299,10 @@ public class TemplatePrettifier {
     final private int _SYMBOL_SPACING = 20;
 
     private MacroUtils _mu = null;
-    private Simulation _sim = null;
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private Simulation _sim = null;
 
 }

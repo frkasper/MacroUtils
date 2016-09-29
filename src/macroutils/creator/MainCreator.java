@@ -33,10 +33,43 @@ public class MainCreator {
     }
 
     /**
+     * Adds all custom modifications created automatically by MacroUtils, such as:
+     * <ul>
+     * <li> Custom Units;
+     * <li> Global Parameters.
+     * </ul>
+     */
+    public void all() {
+        if (!_mu.getIntrusiveOption()) {
+            _io.print.msg("Intrusive Option is Disabled. Skipping...");
+            return;
+        }
+        customUnits();
+        globalParameters();
+    }
+
+    /**
+     * Adds custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
+     */
+    public void globalParameters() {
+        _add.tools.parameter_Scalar("PI", Math.PI, _ud.unit_Dimensionless);
+    }
+
+    /**
+     * Adds custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
+     */
+    public void customUnits() {
+        if (!_mu.getIntrusiveOption()) {
+            _io.print.msgDebug("Intrusive Option is Disabled. Skipping add.customUnits()");
+            return;
+        }
+        _upd.customUnits(true);
+    }
+
+    /**
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         derivedPart.updateInstances();
         geometry.updateInstances();
         intrf.updateInstances();
@@ -49,6 +82,10 @@ public class MainCreator {
         solver.updateInstances();
         tools.updateInstances();
         units.updateInstances();
+        _add = _mu.add;
+        _io = _mu.io;
+        _ud = _mu.userDeclarations;
+        _upd = _mu.update;
         _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
     }
 
@@ -56,7 +93,10 @@ public class MainCreator {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
+    private macroutils.creator.MainCreator _add = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.misc.MainUpdater _upd = null;
+    private macroutils.UserDeclarations _ud = null;
 
     /**
      * This class is responsible for creating Derived Parts.

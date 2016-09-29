@@ -24,8 +24,8 @@ public class TemplatePost {
         _sim = m.getSimulation();
     }
 
-    private void _flyOver(Scene scn, VisView v1, VisView v2,
-            int frames, ArrayList<VisView> avv, RecordedSolutionView rsv) {
+    private void _flyOver(Scene scn, VisView v1, VisView v2, int frames,
+            ArrayList<VisView> avv, RecordedSolutionView rsv) {
         _frames = frames;
         int maxState = 10000;
         if (rsv != null) {
@@ -186,10 +186,10 @@ public class TemplatePost {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _add = _mu.add;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _reset = _mu.reset;
         _set = _mu.set;
         _ud = _mu.userDeclarations;
@@ -199,14 +199,14 @@ public class TemplatePost {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private Simulation _sim = null;
-    private macroutils.creator.MainCreator _add = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
+    private macroutils.creator.MainCreator _add = null;
     private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
     private macroutils.misc.MainResetter _reset = null;
     private macroutils.setter.MainSetter _set = null;
-    private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
     /**
      * Variable for controlling current frame number.

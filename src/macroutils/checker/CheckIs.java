@@ -414,8 +414,8 @@ public class CheckIs {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private Simulation _sim = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

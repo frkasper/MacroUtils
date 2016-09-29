@@ -26,9 +26,9 @@ public class MainChecker {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         has.updateInstances();
         is.updateInstances();
+        _io = _mu.io;
         _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
     }
 

@@ -405,25 +405,25 @@ public class GetPartSurfaces {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
-
-    private enum RangeOpts {
+    private static enum RangeOpts {
 
         MIN, MAX
     }
+
+    private MacroUtils _mu = null;
+    private MainGetter _get = null;
+    private macroutils.checker.MainChecker _chk = null;
+    private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

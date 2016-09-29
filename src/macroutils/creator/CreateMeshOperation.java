@@ -362,7 +362,7 @@ public class CreateMeshOperation {
 
     private void _setWorkAroundAutoSourceMesh(DirectedAutoSourceMesh dasm, GeometryPart gp) {
         //-- Check later.
-        // Workaround for legacy limitation od Target size not being respected in 2D meshes.
+        // Workaround for legacy limitation of Target size not being respected in 2D meshes.
         SurfaceCustomMeshControl scmc = dasm.getCustomMeshControls().createSurfaceControl();
         scmc.getGeometryObjects().setObjects(gp);
         CustomMeshControlConditionManager cmccm = scmc.getCustomConditions();
@@ -830,10 +830,10 @@ public class CreateMeshOperation {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _dis = _mu.disable;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
         _ud = _mu.userDeclarations;
     }
@@ -904,13 +904,13 @@ public class CreateMeshOperation {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.io.MainIO _io = null;
     private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
     private macroutils.misc.MainDisabler _dis = null;
     private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

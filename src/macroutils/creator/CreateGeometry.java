@@ -203,22 +203,22 @@ public class CreateGeometry {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
-        _tmpl = _mu.templates;
+        _io = _mu.io;
         _set = _mu.set;
+        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
     private macroutils.setter.MainSetter _set = null;
     private macroutils.templates.MainTemplates _tmpl = null;
-    private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

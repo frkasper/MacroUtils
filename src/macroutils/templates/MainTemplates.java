@@ -28,11 +28,11 @@ public class MainTemplates {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         gci.updateInstances();
         geometry.updateInstances();
-        prettify.updateInstances();
         post.updateInstances();
+        prettify.updateInstances();
+        _io = _mu.io;
         _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
     }
 

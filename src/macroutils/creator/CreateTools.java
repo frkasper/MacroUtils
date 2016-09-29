@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.*;
 import macroutils.*;
 import macroutils.getter.*;
+import macroutils.setter.*;
 import star.base.neo.*;
 import star.base.report.*;
 import star.common.*;
@@ -53,6 +54,27 @@ public class CreateTools {
         ev.setStartCount(start);
         _io.say.created(ev, true);
         return ev;
+    }
+
+    private GlobalParameterBase _createParameter(String name, StaticDeclarations.GlobalParameter type, boolean vo) {
+        _io.say.action(String.format("Creating a %s Global Parameter", type.getType()), true);
+        GlobalParameterManager gpm = _sim.get(GlobalParameterManager.class);
+        GlobalParameterBase gpb = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
+        gpb.setPresentationName(name);
+        _io.say.created(gpb, vo);
+        return gpb;
+    }
+
+    private ScalarGlobalParameter _createParameterScalar(String name, String def, double val, Units u) {
+        ScalarGlobalParameter sgp = (ScalarGlobalParameter) _createParameter(name,
+                StaticDeclarations.GlobalParameter.SCALAR, false);
+        if (def == null) {
+            _set.object.physicalQuantity(sgp.getQuantity(), val, u, name, true);
+        } else {
+            _set.object.physicalQuantity(sgp.getQuantity(), def, name, true);
+        }
+        _io.say.created(sgp, true);
+        return sgp;
     }
 
     private RangeMonitorUpdateEvent _createRangeMonitorUE(PlotableMonitor pm, StaticDeclarations.Operator opt,
@@ -239,6 +261,39 @@ public class CreateTools {
     }
 
     /**
+     * Creates a Global Parameter.
+     *
+     * @param type given type. See {@link StaticDeclarations.GlobalParameter} for options.
+     * @param name given name.
+     * @return The GlobalParameterBase. Use {@link SetObjects#physicalQuantity} to change it.
+     */
+    public GlobalParameterBase parameter(String name, StaticDeclarations.GlobalParameter type) {
+        return _createParameter(name, type, true);
+    }
+
+    /**
+     * Creates a Scalar Global Parameter.
+     *
+     * @param name given name.
+     * @param val given value.
+     * @param u given Units
+     * @return The ScalarGlobalParameter.
+     */
+    public ScalarGlobalParameter parameter_Scalar(String name, double val, Units u) {
+        return _createParameterScalar(name, null, val, u);
+    }
+    /**
+     * Creates a Scalar Global Parameter.
+     *
+     * @param name given name.
+     * @param def given definition.
+     * @return The ScalarGlobalParameter.
+     */
+    public ScalarGlobalParameter parameter_Scalar(String name, String def) {
+        return _createParameterScalar(name, def, 0, null);
+    }
+
+    /**
      * Creates a Simple Transform for Visualization, i.e., a Vis Transform.
      * <ul>
      * <li> When providing values to Method, <b>null</b> values are ignored. Units used are
@@ -395,9 +450,9 @@ public class CreateTools {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _add = _mu.add;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
         _ud = _mu.userDeclarations;
     }
@@ -405,12 +460,12 @@ public class CreateTools {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainCreator _add = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

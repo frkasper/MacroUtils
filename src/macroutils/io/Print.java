@@ -456,9 +456,9 @@ public class Print {
     private final String _msgDbgPrefix = StaticDeclarations.MSG_DEBUG_PREFIX;
 
     private boolean _dbg = false;
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
+    private Simulation _sim = null;
 
 }

@@ -568,6 +568,41 @@ public class StaticDeclarations {
     }
 
     /**
+     * Special MacroUtils types for Global Parameters:
+     * <ul>
+     * <li>{@link #SCALAR}</li>
+     * <li>{@link #VECTOR}</li>
+     * </ul>
+     */
+    public static enum GlobalParameter {
+
+        /**
+         * A Scalar Parameter.
+         */
+        SCALAR("Scalar"),
+        /**
+         * A Vector Parameter.
+         */
+        VECTOR("Vector"),;
+
+        private final String s;
+
+        private GlobalParameter(final String s) {
+            this.s = s;
+        }
+
+        /**
+         * Gets the actual variable name.
+         *
+         * @return The variable name.
+         */
+        public String getType() {
+            return this.s;
+        }
+
+    }
+
+    /**
      * Special MacroUtils variable to select the Volume Growth Rate for the meshers:
      * <ul>
      * <li>{@link #FAST}</li>

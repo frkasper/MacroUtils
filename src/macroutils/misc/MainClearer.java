@@ -63,8 +63,8 @@ public class MainClearer {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

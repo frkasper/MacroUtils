@@ -264,9 +264,9 @@ public class MainEnabler {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
         _ud = _mu.userDeclarations;
         _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
@@ -275,12 +275,12 @@ public class MainEnabler {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

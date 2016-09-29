@@ -687,9 +687,9 @@ public class TemplateGCI {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _add = _mu.add;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
         _templ = _mu.templates;
         _ud = _mu.userDeclarations;
@@ -698,19 +698,17 @@ public class TemplateGCI {
     //--
     //-- Variables declaration area.
     //--
+    private static final double GCI_LIMIT = 10.0;       //-- 1000% error should be skipped.
+
     private int nOscillatoryConvergence = 0;
-
     private MacroUtils _mu = null;
-    private Simulation _sim = null;
     private macroutils.creator.MainCreator _add = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.templates.MainTemplates _templ = null;
-    private macroutils.setter.MainSetter _set = null;
     private macroutils.io.MainIO _io = null;
-
-    //-- 1000% error should be skipped.
-    private static final double GCI_LIMIT = 10.0;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.templates.MainTemplates _templ = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
     /**
      * Default reading X column in a CSV when performing GCI calculations with {@link #evaluate}. Default = 0.

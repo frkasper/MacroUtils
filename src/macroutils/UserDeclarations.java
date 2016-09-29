@@ -258,7 +258,12 @@ public class UserDeclarations {
     public GeometryPart geomPrt = null, geomPrt1 = null, geomPrt2 = null, geomPrt3 = null;
 
     /**
-     * A Global Interface variable. Useful somewhere.
+     * Some useful Global Variables: Global Parameters.
+     */
+    public GlobalParameterBase param = null, param1 = null, param2 = null, param3 = null;
+
+    /**
+     * Some useful Global Variables: Interfaces.
      */
     public Interface intrf = null, intrf1 = null, intrf2 = null, intrf3 = null;
 
@@ -364,6 +369,11 @@ public class UserDeclarations {
     public ReportMonitor repMon = null, repMon1 = null, repMon2 = null, repMon3 = null;
 
     /**
+     * Some useful Global Variables: Scalar Global Parameters.
+     */
+    public ScalarGlobalParameter scalParam = null, scalParam1 = null, scalParam2 = null, scalParam3 = null;
+
+    /**
      * Some useful Global Variables: Scenes.
      */
     public Scene scene = null, scene1 = null, scene2 = null, scene3 = null;
@@ -422,6 +432,11 @@ public class UserDeclarations {
      * Some useful Global Variables: Update Event.
      */
     public UpdateEvent updEvent = null, updEvent1 = null, updEvent2 = null, updEvent3 = null;
+
+    /**
+     * Some useful Global Variables: Vector Global Parameters.
+     */
+    public VectorGlobalParameter vecParam = null, vecParam1 = null, vecParam2 = null, vecParam3 = null;
 
     /**
      * Some useful Global Variables: Visualization View (Camera View).
