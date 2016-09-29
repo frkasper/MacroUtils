@@ -107,7 +107,7 @@ public class Demo16_1D_Sound_Propagation extends StarMacro {
     }
 
     private void setupRegion() {
-        ud.ff = mu.add.tools.fieldFunction("Pout", String.format("sin(2*%.8f*%g*$Time)", Math.PI, F),
+        ud.ff = mu.add.tools.fieldFunction("Pout", String.format("sin(2*$PI*%g*$Time)", F),
                 ud.dimPress, FieldFunctionTypeOption.Type.SCALAR);
         //--
         ud.region = mu.add.region.fromAll(true);

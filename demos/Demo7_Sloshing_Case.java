@@ -85,23 +85,19 @@ public class Demo7_Sloshing_Case extends StarMacro {
     }
 
     void prep3_MotionAndPost() {
+        mu.add.tools.parameter_Scalar("Period", 0.5, ud.unit_s);
+        mu.add.tools.parameter_Scalar("Omega", "2 * $PI / $Period");
         mu.add.tools.fieldFunction("Amplitude", "($Time <= 4) ? 0.01 : 0",
                 ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
-        mu.add.tools.fieldFunction("dt", "($Time <= 5) ? 0.00125 : 0.0025",
-                ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
-        mu.add.tools.fieldFunction("Period", "0.5",
-                ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
-        mu.add.tools.fieldFunction("Omega", 2 * Math.PI + " / $Period",
-                ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
-        ud.ff = mu.add.tools.fieldFunction("MotionVel", "-$Amplitude * $Omega * sin($Omega * ($Time - 0.25 * $Period))",
+        ud.ff1 = mu.add.tools.fieldFunction("MotionVel", "-$Amplitude * $Omega * sin($Omega * ($Time - 0.25 * $Period))",
                 ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
         ud.ff2 = mu.add.tools.fieldFunction("MotionDispl", "$Amplitude * cos($Omega * ($Time - 0.25 * $Period))",
                 ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
-        mu.set.solver.timestep("$dt");
+        mu.set.solver.timestep("($Time <= 5) ? 0.00125 : 0.0025");
         mu.set.region.motion(mu.add.tools.motion_Translation("[$MotionVel, 0, 0]", "Periodic Motion"), getRegion());
         //-- Some cool Reports/Plots
         mu.templates.post.unsteadyReports();
-        mu.add.report.maximum(ud.region, "MotionVel", ud.ff, ud.defUnitVel, true);
+        mu.add.report.maximum(ud.region, "MotionVel", ud.ff1, ud.defUnitVel, true);
         mu.add.report.maximum(ud.region, "MotionDispl", ud.ff2, ud.defUnitLength, true);
         //-- Scene setup
         ud.namedObjects.add(mu.get.boundaries.byREGEX(ud.bcSym, true));

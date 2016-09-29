@@ -45,7 +45,7 @@ public class Demo14_GCI extends StarMacro {
         assessGCI();
 
         mu.saveSim();
-        
+
     }
 
     public void assessGCI() {
@@ -154,10 +154,10 @@ public class Demo14_GCI extends StarMacro {
         mu.set.physics.initialCondition(ud.physCont, StaticDeclarations.Vars.VEL.getVar(),
                 new double[]{0, 0, 0.1}, ud.unit_mps);
         //--
+        mu.add.tools.parameter_Scalar("dPdL", 1.0, ud.unit_Dimensionless);
         ud.ff1 = mu.add.tools.fieldFunction("r", "sqrt(pow($$Position[0], 2) + pow($$Position[1], 2))",
                 ud.dimLength, FieldFunctionTypeOption.Type.SCALAR);
-        ud.ff2 = mu.add.tools.fieldFunction("dPdL", "1", ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
-        ud.ff3 = mu.add.tools.fieldFunction("Analytical Solution",
+        ud.ff2 = mu.add.tools.fieldFunction("Analytical Solution",
                 String.format("$dPdL / %g * (pow(%g, 2)-pow($r, 2))", 4 * visc, R / 1000.),
                 ud.dimVel, FieldFunctionTypeOption.Type.SCALAR);
     }
@@ -185,7 +185,7 @@ public class Demo14_GCI extends StarMacro {
         InternalDataSet idsA = (InternalDataSet) yxA.getDataSetManager().getDataSets().iterator().next();
         setupPlotData(idsN, SymbolShapeOption.Type.EMPTY_CIRCLE, StaticDeclarations.Colors.BLACK);
         setupPlotData(idsA, SymbolShapeOption.Type.FILLED_TRIANGLE, StaticDeclarations.Colors.DARK_GREEN);
-        yxA.getScalarFunction().setFieldFunction(ud.ff3);
+        yxA.getScalarFunction().setFieldFunction(ud.ff2);
         idsN.setSeriesName("Numerical");
         idsA.setSeriesName("Analytical");
         mu.set.object.plotAxesTitles(plot,
@@ -204,7 +204,6 @@ public class Demo14_GCI extends StarMacro {
     private UserDeclarations ud;
     private final double baseSize0 = 5;             //-- Initial Mesh Size in mm.
     private final double gridRefFactor = 2;         //-- Refinement factor between grids.
-    private final double gridSafetyFactor = 1.25;
     private final double maxGridSize = 1e7;
     private final int maxGrids = 3;
     private final String plotName = "Numerical vs Analytical Solutions";
