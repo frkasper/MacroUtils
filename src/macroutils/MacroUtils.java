@@ -71,6 +71,7 @@ public final class MacroUtils {
         enable = new MainEnabler(this);
         get = new MainGetter(this);
         open = new MainOpener(this);
+        remove = new MainRemover(this);
         reset = new MainResetter(this);
         set = new MainSetter(this);
         templates = new MainTemplates(this);
@@ -136,6 +137,7 @@ public final class MacroUtils {
             get.updateInstances();
             io.updateInstances();
             open.updateInstances();
+            remove.updateInstances();
             reset.updateInstances();
             set.updateInstances();
             templates.updateInstances();
@@ -305,6 +307,11 @@ public final class MacroUtils {
      * This is where you can find the methods for <i>opening</i> objects with MacroUtils.
      */
     public MainOpener open = null;
+
+    /**
+     * This is where you can find the methods for <i>removing</i> STAR-CCM+ objects with MacroUtils.
+     */
+    public MainRemover remove = null;
 
     /**
      * This is where you can find the methods for <i>resetting</i> variables with MacroUtils.
