@@ -17,6 +17,7 @@ public class MainTemplates {
      */
     public MainTemplates(MacroUtils m) {
         _mu = m;
+        demos = new TemplateDemos(m);
         gci = new TemplateGCI(m);
         geometry = new TemplateGeometry(m);
         prettify = new TemplatePrettifier(m);
@@ -28,6 +29,7 @@ public class MainTemplates {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
+        demos.updateInstances();
         gci.updateInstances();
         geometry.updateInstances();
         post.updateInstances();
@@ -41,6 +43,11 @@ public class MainTemplates {
     //--
     private MacroUtils _mu = null;
     private macroutils.io.MainIO _io = null;
+
+    /**
+     * This class is responsible for some templated demos.
+     */
+    public TemplateDemos demos = null;
 
     /**
      * This class is responsible for assessing the Grid Convergence Index (GCI) metric.
