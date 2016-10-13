@@ -89,6 +89,7 @@ public class GetPlots {
      * Gets all DataSets available in a Plot.
      *
      * @param sp given StarPlot.
+     * @param vo given verbose option. False will not print anything.
      * @return An ArrayList with DataSets.
      */
     public ArrayList<DataSet> datasets(StarPlot sp, boolean vo) {

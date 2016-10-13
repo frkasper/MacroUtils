@@ -2,6 +2,7 @@ package macroutils.misc;
 
 import macroutils.*;
 import star.common.*;
+import star.meshing.*;
 
 /**
  * Main class for "clearing" methods in MacroUtils.
@@ -20,6 +21,15 @@ public class MainClearer {
         _mu = m;
         _sim = m.getSimulation();
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
+    }
+
+    /**
+     * Clears all generated meshes.
+     */
+    public void meshes() {
+        _io.say.msg("Clearing Meshes...");
+        _sim.get(MeshPipelineController.class).clearGeneratedMeshes();
+        _io.say.ok(true);
     }
 
     /**

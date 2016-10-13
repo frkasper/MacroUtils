@@ -49,7 +49,7 @@ public class MainCreator {
     }
 
     /**
-     * Adds custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
+     * Adds custom Global Parameters that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
      */
     public void globalParameters() {
         _add.tools.parameter_Scalar("PI", Math.PI, _ud.unit_Dimensionless);

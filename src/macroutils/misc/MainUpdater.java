@@ -111,6 +111,7 @@ public class MainUpdater {
         _ud.unit_gal = _updateUnit("gal", vo);
         _ud.unit_kg = _updateUnit("kg", vo);
         _ud.unit_h = _updateUnit("hr", vo);
+        _ud.unit_Hz = _updateUnit("Hz", vo);
         _ud.unit_m = _updateUnit("m", vo);
         _ud.unit_m2 = _updateUnit("m^2", vo);
         _ud.unit_m3 = _updateUnit("m^3", vo);

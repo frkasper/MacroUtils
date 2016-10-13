@@ -55,6 +55,25 @@ public class GetUnits {
         return null;
     }
 
+    /**
+     * Gets the corresponding dimensions from the unit.
+     *
+     * @param u given unit.
+     * @return The Dimensions.
+     */
+    public Dimensions dimensions(Units u) {
+        if (u == null) {
+            return new Dimensions();
+        }
+        return u.getDimensions();
+    }
+
+    /**
+     * Gets the corresponding unit associated with a Monitor.
+     *
+     * @param m given Monitor.
+     * @return The Unit. Null if nothing is found.
+     */
     public Units fromMonitor(Monitor m) {
         if (m instanceof ResidualMonitor) {
             return ((ResidualMonitor) m).getMonitoredValueUnits();

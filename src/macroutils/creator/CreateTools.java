@@ -59,6 +59,10 @@ public class CreateTools {
     private GlobalParameterBase _createParameter(String name, StaticDeclarations.GlobalParameter type, boolean vo) {
         _io.say.action(String.format("Creating a %s Global Parameter", type.getType()), true);
         GlobalParameterManager gpm = _sim.get(GlobalParameterManager.class);
+        if (gpm.has(name)) {
+            _io.say.value("Skipping... Parameter already exists", name, true, vo);
+            return gpm.getObject(name);
+        }
         GlobalParameterBase gpb = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
         gpb.setPresentationName(name);
         _io.say.created(gpb, vo);
@@ -68,6 +72,7 @@ public class CreateTools {
     private ScalarGlobalParameter _createParameterScalar(String name, String def, double val, Units u) {
         ScalarGlobalParameter sgp = (ScalarGlobalParameter) _createParameter(name,
                 StaticDeclarations.GlobalParameter.SCALAR, false);
+        sgp.setDimensions(_get.units.dimensions(u));
         if (def == null) {
             _set.object.physicalQuantity(sgp.getQuantity(), val, u, name, true);
         } else {
@@ -290,7 +295,7 @@ public class CreateTools {
      * @return The ScalarGlobalParameter.
      */
     public ScalarGlobalParameter parameter_Scalar(String name, String def) {
-        return _createParameterScalar(name, def, 0, null);
+        return _createParameterScalar(name, def, 0, _ud.unit_Dimensionless);
     }
 
     /**

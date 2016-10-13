@@ -1199,6 +1199,11 @@ public class UserDeclarations {
     public Units unit_h = null;
 
     /**
+     * Hertz unit (1/Time).
+     */
+    public Units unit_Hz = null;
+
+    /**
      * Kilogram unit (Mass).
      */
     public Units unit_kg = null;
