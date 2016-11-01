@@ -20,6 +20,7 @@ public class MainTemplates {
         demos = new TemplateDemos(m);
         gci = new TemplateGCI(m);
         geometry = new TemplateGeometry(m);
+        mesh = new TemplateMesh(m);
         prettify = new TemplatePrettifier(m);
         post = new TemplatePost(m);
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
@@ -32,6 +33,7 @@ public class MainTemplates {
         demos.updateInstances();
         gci.updateInstances();
         geometry.updateInstances();
+        mesh.updateInstances();
         post.updateInstances();
         prettify.updateInstances();
         _io = _mu.io;
@@ -58,6 +60,11 @@ public class MainTemplates {
      * This class is responsible for some templated geometries.
      */
     public TemplateGeometry geometry = null;
+
+    /**
+     * This class is responsible for some templated meshes.
+     */
+    public TemplateMesh mesh = null;
 
     /**
      * This class is responsible for prettifying the simulation.
