@@ -24,6 +24,18 @@ public class GetGeometries {
         _sim = m.getSimulation();
     }
 
+    private SolidModelPart _getSolidModelPart(Body bd) {
+        for (GeometryPart gp : all(false)) {
+            if (gp instanceof SolidModelPart) {
+                SolidModelPart smp = (SolidModelPart) gp;
+                if (smp.getCadModel().equals(bd.getModel())) {
+                    return smp;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Gets all Geometry Parts from the model.
      *
@@ -56,7 +68,7 @@ public class GetGeometries {
      * @return CadPart.
      */
     public CadPart cadPart(Body bd, boolean vo) {
-        return (CadPart) byREGEX(bd.getPresentationName(), vo);
+        return (CadPart) _getSolidModelPart(bd);
     }
 
     /**
