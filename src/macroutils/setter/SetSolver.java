@@ -277,7 +277,7 @@ public class SetSolver {
     /**
      * Freezes a specific or many solvers.
      *
-     * @param slv given solvers. See {@link StaticDeclarations} for all options.
+     * @param slv given solvers. See {@link macroutils.StaticDeclarations} for all options.
      * @param opt given option.
      */
     public void freeze(StaticDeclarations.Solvers slv, boolean opt) {

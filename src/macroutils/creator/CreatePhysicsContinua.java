@@ -392,7 +392,7 @@ public class CreatePhysicsContinua {
     }
 
     /**
-     * Creates a Physics Continua based on models choices. See {@link StaticDeclarations} for all options.
+     * Creates a Physics Continua based on models choices. See {@link macroutils.StaticDeclarations} for all options.
      *
      * @param spc given Space model.
      * @param time given Time model.

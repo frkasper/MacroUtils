@@ -104,7 +104,7 @@ public class TemplateGeometry {
      * @param l given Length.
      * @param org given origin as a 3-components array with coordinates. E.g.: {0, -1, -10}.
      * @param u given Units.
-     * @param ax given extrusion direction. See {@link StaticDeclarations.Axis} for options.
+     * @param ax given extrusion direction. See {@link macroutils.StaticDeclarations.Axis} for options.
      * @param name given Cylinder name.
      * @param vo given verbose option. False will not print anything.
      * @return The Cad Body.

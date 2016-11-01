@@ -218,7 +218,7 @@ public class SetBoundaries {
      * Applies a definition to a value in a Boundary.
      *
      * @param b given Boundary.
-     * @param var given predefined variable defined in {@link StaticDeclarations} class.
+     * @param var given predefined variable defined in {@link macroutils.StaticDeclarations} class.
      * @param def given definition.
      */
     public void definition(Boundary b, StaticDeclarations.Vars var, String def) {
@@ -242,7 +242,7 @@ public class SetBoundaries {
      * Applies a Physics Value to a Boundary using a constant given value.
      *
      * @param b given Boundary.
-     * @param var given predefined variable defined in {@link StaticDeclarations} class.
+     * @param var given predefined variable defined in {@link macroutils.StaticDeclarations} class.
      * @param val given value.
      * @param u given Units.
      */

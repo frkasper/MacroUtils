@@ -681,7 +681,7 @@ public class StaticDeclarations {
         }
 
         /**
-         * Gets the actual {@link RegionManager.CreateInterfaceMode} expected by STAR-CCM+ API.
+         * Gets the actual {@link star.common.RegionManager.CreateInterfaceMode} expected by STAR-CCM+ API.
          *
          * @return The mode.
          */
@@ -975,7 +975,7 @@ public class StaticDeclarations {
         }
 
         /**
-         * Gets the actual {@link Solution.Clear} value expected by STAR-CCM+ API.
+         * Gets the actual {@link star.common.Solution.Clear} value expected by STAR-CCM+ API.
          *
          * @return The mode.
          */

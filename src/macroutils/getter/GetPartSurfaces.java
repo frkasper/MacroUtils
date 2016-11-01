@@ -213,7 +213,7 @@ public class GetPartSurfaces {
      * Gets a Part Surface based on a Geometric Range of the Part Surfaces provided.
      *
      * @param aps given ArrayList of Part Surfaces.
-     * @param axis what will be queried? See {@link StaticDeclarations.Axis} for options.
+     * @param axis what will be queried? See {@link macroutils.StaticDeclarations.Axis} for options.
      * @param tol given absolute tolerance for searching in default units ({@link UserDeclarations#defUnitLength}).
      * @return The PartSurface that has the maximum axis within the given tolerance.
      */
@@ -225,7 +225,7 @@ public class GetPartSurfaces {
      * Gets a Part Surface based on a Geometric Range of the Part Surfaces provided.
      *
      * @param aps given ArrayList of Part Surfaces.
-     * @param axis what will be queried? See {@link StaticDeclarations.Axis} for options.
+     * @param axis what will be queried? See {@link macroutils.StaticDeclarations.Axis} for options.
      * @param tol given absolute tolerance for searching in default units ({@link UserDeclarations#defUnitLength}).
      * @return The PartSurface that has the minimum axis within the given tolerance.
      */

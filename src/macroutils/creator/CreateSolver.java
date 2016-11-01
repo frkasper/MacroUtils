@@ -76,7 +76,7 @@ public class CreateSolver {
      * Creates a Stopping Criteria from a Monitor.
      *
      * @param mon given Monitor.
-     * @param type given type. Choose from {@link StaticDeclarations.StopCriteria}.
+     * @param type given type. Choose from {@link macroutils.StaticDeclarations.StopCriteria}.
      * @param val given value.
      * @param samples how many samples (or iterations)? If using Min/Max, this input is ignored.
      * @return The Stopping Criteria.

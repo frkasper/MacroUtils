@@ -39,7 +39,7 @@ public class SetDefaults {
     /**
      * Sets the default Colormap used by MacroUtils.
      *
-     * @param opt given option. See {@link StaticDeclarations.Colormaps} for options.
+     * @param opt given option. See {@link macroutils.StaticDeclarations.Colormaps} for options.
      */
     public void colormap(StaticDeclarations.Colormaps opt) {
         _setting("Colormap", opt.getName());
@@ -71,7 +71,7 @@ public class SetDefaults {
     /**
      * Sets the default Tessellation option used by MacroUtils.
      *
-     * @param opt given option. See {@link StaticDeclarations.Tessellation} for options.
+     * @param opt given option. See {@link macroutils.StaticDeclarations.Tessellation} for options.
      */
     public void tessellation(StaticDeclarations.Tessellation opt) {
         _setting("Tessellation", opt.toString());

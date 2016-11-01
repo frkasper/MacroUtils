@@ -204,7 +204,7 @@ public class MainEnabler {
      * @param angle given spread angle in degrees.
      * @param dir given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
      * @param relSizes given anisotropic 3-component relative sizes in (<b>%</b>). E.g.: {0, 25, 0}. Zeros will be
-     * ignored. Use {@link StaticDeclarations#COORD0} if convenient.
+     * ignored. Use {@link macroutils.StaticDeclarations#COORD0} if convenient.
      * @param gr given Growth Rate.
      */
     public void trimmerWakeRefinement(SurfaceCustomMeshControl scmc, double distance, double angle,

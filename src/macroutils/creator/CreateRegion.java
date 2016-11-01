@@ -40,9 +40,9 @@ public class CreateRegion {
      * Creates a single Region from the Part provided.
      *
      * @param gp given GeometryPart.
-     * @param bm given Boundary mode. See {@link StaticDeclarations.BoundaryMode} for options.
-     * @param im given Interface mode. See {@link StaticDeclarations.InterfaceMode} for options.
-     * @param fcm given Feature Curve mode. See {@link StaticDeclarations.FeatureCurveMode} for options.
+     * @param bm given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for options.
+     * @param im given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for options.
+     * @param fcm given Feature Curve mode. See {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
      * @param vo given verbose option. False will not print anything.
      * @return The Region.
      */
@@ -55,9 +55,9 @@ public class CreateRegion {
      * Creates a single Region from the Parts provided.
      *
      * @param agp given ArrayList of Geometry Parts.
-     * @param bm given Boundary mode. See {@link StaticDeclarations.BoundaryMode} for options.
-     * @param im given Interface mode. See {@link StaticDeclarations.InterfaceMode} for options.
-     * @param fcm given Feature Curve mode. See {@link StaticDeclarations.FeatureCurveMode} for options.
+     * @param bm given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for options.
+     * @param im given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for options.
+     * @param fcm given Feature Curve mode. See {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
      * @param vo given verbose option. False will not print anything.
      * @return An ArrayList of the created Regions.
      */
@@ -70,10 +70,10 @@ public class CreateRegion {
      * Creates a dedicated Region for every Part provided.
      *
      * @param agp given ArrayList of Geometry Parts.
-     * @param rm given Region mode. See {@link StaticDeclarations.RegionMode} for options.
-     * @param bm given Boundary mode. See {@link StaticDeclarations.BoundaryMode} for options.
-     * @param im given Interface mode. See {@link StaticDeclarations.InterfaceMode} for options.
-     * @param fcm given Feature Curve mode. See {@link StaticDeclarations.FeatureCurveMode} for options.
+     * @param rm given Region mode. See {@link macroutils.StaticDeclarations.RegionMode} for options.
+     * @param bm given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for options.
+     * @param im given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for options.
+     * @param fcm given Feature Curve mode. See {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
      * @param vo given verbose option. False will not print anything.
      * @return An ArrayList of the created Regions.
      */

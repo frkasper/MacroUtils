@@ -51,7 +51,7 @@ public class MainClearer {
     /**
      * This method gives you the ability to clears different areas of the Solution.
      *
-     * @param sc given option. See {@link StaticDeclarations.SolutionClear} for options.
+     * @param sc given option. See {@link macroutils.StaticDeclarations.SolutionClear} for options.
      */
     public void solution(StaticDeclarations.SolutionClear... sc) {
         _io.say.action("Clearing Solution", true);

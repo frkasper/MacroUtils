@@ -61,7 +61,7 @@ public class CreateScene {
         pd.setOutline(false);
         pd.setSurface(true);
         pd.addParts(ano);
-        _createdDisplayer(pd, vo);
+        _createdDisplayer(pd, ano, vo);
         return pd;
     }
 
@@ -74,7 +74,7 @@ public class CreateScene {
             sd.getScalarDisplayQuantity().setUnits(u);
         }
         sd.addParts(ano);
-        _createdDisplayer(sd, vo);
+        _createdDisplayer(sd, ano, vo);
         return sd;
     }
 
@@ -88,7 +88,7 @@ public class CreateScene {
         }
         //-- Here, ano is a collection of StreamPart's.
         sd.addParts(ano);
-        _createdDisplayer(sd, vo);
+        _createdDisplayer(sd, ano, vo);
         return sd;
     }
 
@@ -104,12 +104,13 @@ public class CreateScene {
             vd.getVectorDisplayQuantity().setUnits(u);
         }
         vd.addParts(ano);
-        _createdDisplayer(vd, vo);
+        _createdDisplayer(vd, ano, vo);
         return vd;
     }
 
-    private void _createdDisplayer(Displayer d, boolean vo) {
+    private void _createdDisplayer(Displayer d, ArrayList<NamedObject> ano, boolean vo) {
         d.setPresentationName(d.getPresentationName().split(" ")[0]);
+        _io.say.objects(ano, "Parts", vo);
         _io.say.created(d, vo);
     }
 
@@ -297,7 +298,7 @@ public class CreateScene {
      * Adds a new Displayer into a Scene.
      *
      * @param scn given Scene.
-     * @param dt given Displayer Type. See {@link StaticDeclarations.Displayer} for options.
+     * @param dt given Displayer Type. See {@link macroutils.StaticDeclarations.Displayer} for options.
      * @param ano given ArrayList of NamedObjects.
      * @param ff given Field Function, if applicable.
      * @param u given variable Unit, if applicable.

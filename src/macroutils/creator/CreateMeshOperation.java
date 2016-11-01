@@ -389,7 +389,7 @@ public class CreateMeshOperation {
      * Creates an Automated Mesh Mesh Operation for the given Geometry Parts.
      *
      * @param ag given ArrayList of Geometry Parts.
-     * @param meshers given meshers, separated by comma. See {@link StaticDeclarations} for options.
+     * @param meshers given meshers, separated by comma. See {@link macroutils.StaticDeclarations} for options.
      * @return The AutoMeshOperation.
      */
     public AutoMeshOperation automatedMesh(ArrayList<GeometryPart> ag, StaticDeclarations.Meshers... meshers) {
@@ -443,7 +443,7 @@ public class CreateMeshOperation {
      *
      * @param src given Source Part Surface.
      * @param tgt given Target Part Surface.
-     * @param meshers given meshers, separated by comma. See {@link StaticDeclarations} for options.
+     * @param meshers given meshers, separated by comma. See {@link macroutils.StaticDeclarations} for options.
      * @param nv given number of points in volume distribution.
      * @return The DirectedMeshOperation.
      */
@@ -456,7 +456,7 @@ public class CreateMeshOperation {
         DirectedMeshPartCollectionManager dmpcm = dmo.getGuidedMeshPartCollectionManager();
         DirectedMeshPartCollection dmpc = ((DirectedMeshPartCollection) dmpcm.getObject(pn));
         DirectedSurfaceMeshBaseManager dsmbm = dmo.getGuidedSurfaceMeshBaseManager();
-        dsmbm.createAutoSourceMesh(_get.strings.meshers(meshers),_get.objects.arrayList(dmpc));
+        dsmbm.createAutoSourceMesh(_get.strings.meshers(meshers), _get.objects.arrayList(dmpc));
         DirectedAutoSourceMesh dasm = (DirectedAutoSourceMesh) dsmbm.getObjects().iterator().next();
         _setMeshDefaults(dasm.getDefaultValues());
         _setWorkAroundAutoSourceMesh(dasm, src.getPart());

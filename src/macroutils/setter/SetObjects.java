@@ -143,7 +143,7 @@ public class SetObjects {
      *
      * @param spq given ScalarPhysicalQuantity object.
      * @param val given value.
-     * @param u given Units
+     * @param u given Units.
      * @param text given text. <b>null</b> to ignore.
      * @param vo given verbose option. False will not print anything.
      */

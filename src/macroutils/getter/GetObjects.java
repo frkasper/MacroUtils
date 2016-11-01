@@ -143,7 +143,7 @@ public class GetObjects {
     /**
      * Gets a standard colormap shipped with STAR-CCM+.
      *
-     * @param opt given Volume Mesher choice. See {@link StaticDeclarations.Colormaps} for options.
+     * @param opt given Volume Mesher choice. See {@link macroutils.StaticDeclarations.Colormaps} for options.
      * @return The LookupTable.
      */
     public LookupTable colormap(StaticDeclarations.Colormaps opt) {
@@ -192,7 +192,7 @@ public class GetObjects {
     /**
      * Gets a Field Function based on the strings previously defined.
      *
-     * @param var given predefined variable defined in {@link StaticDeclarations} class.
+     * @param var given predefined variable defined in {@link macroutils.StaticDeclarations} class.
      * @return The FieldFunction.
      */
     public FieldFunction fieldFunction(StaticDeclarations.Vars var) {
