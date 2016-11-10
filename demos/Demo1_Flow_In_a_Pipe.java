@@ -85,8 +85,8 @@ public class Demo1_Flow_In_a_Pipe extends StarMacro {
         ud.bdry = mu.get.boundaries.byREGEX(ud.bcInlet, true);
         ud.ff2 = mu.get.objects.fieldFunction(StaticDeclarations.Vars.P.getVar(), true);
         ud.rep = mu.add.report.massFlowAverage(ud.bdry, "Pressure Inlet", ud.ff2, ud.unit_Pa, true);
-        ud.repMon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
-        mu.add.solver.stoppingCriteria(ud.repMon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 50);
+        ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 50);
         mu.open.all();
     }
 

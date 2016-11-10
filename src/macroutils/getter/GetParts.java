@@ -61,16 +61,16 @@ public class GetParts {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

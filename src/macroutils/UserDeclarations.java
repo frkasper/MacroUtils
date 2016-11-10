@@ -181,6 +181,11 @@ public class UserDeclarations {
     public Boundary bdry = null, bdry1 = null, bdry2 = null, bdry3 = null;
 
     /**
+     * A Global Boundary Interface variable. Useful somewhere.
+     */
+    public BoundaryInterface bdryIntrf = null, bdryIntrf1 = null, bdryIntrf2 = null, bdryIntrf3 = null;
+
+    /**
      * A Global 3D-CAD Body variable. Useful somewhere.
      */
     public Body cadBody = null, cadBody1 = null, cadBody2 = null, cadBody3 = null;
@@ -253,7 +258,12 @@ public class UserDeclarations {
     public GeometryPart geomPrt = null, geomPrt1 = null, geomPrt2 = null, geomPrt3 = null;
 
     /**
-     * A Global Interface variable. Useful somewhere.
+     * Some useful Global Variables: Global Parameters.
+     */
+    public GlobalParameterBase param = null, param1 = null, param2 = null, param3 = null;
+
+    /**
+     * Some useful Global Variables: Interfaces.
      */
     public Interface intrf = null, intrf1 = null, intrf2 = null, intrf3 = null;
 
@@ -359,6 +369,11 @@ public class UserDeclarations {
     public ReportMonitor repMon = null, repMon1 = null, repMon2 = null, repMon3 = null;
 
     /**
+     * Some useful Global Variables: Scalar Global Parameters.
+     */
+    public ScalarGlobalParameter scalParam = null, scalParam1 = null, scalParam2 = null, scalParam3 = null;
+
+    /**
      * Some useful Global Variables: Scenes.
      */
     public Scene scene = null, scene1 = null, scene2 = null, scene3 = null;
@@ -419,6 +434,11 @@ public class UserDeclarations {
     public UpdateEvent updEvent = null, updEvent1 = null, updEvent2 = null, updEvent3 = null;
 
     /**
+     * Some useful Global Variables: Vector Global Parameters.
+     */
+    public VectorGlobalParameter vecParam = null, vecParam1 = null, vecParam2 = null, vecParam3 = null;
+
+    /**
      * Some useful Global Variables: Visualization View (Camera View).
      */
     public VisView camView = null, camView1 = null, camView2 = null, camView3 = null;
@@ -438,7 +458,7 @@ public class UserDeclarations {
     //--
     /**
      * MacroUtils variable for setting the default Tessellation method. Default is
-     * {@link StaticDeclarations.GrowthRate#MEDIUM}.
+     * {@link macroutils.StaticDeclarations.GrowthRate#MEDIUM}.
      */
     public StaticDeclarations.Tessellation defTessOpt = StaticDeclarations.Tessellation.MEDIUM;
 
@@ -521,7 +541,7 @@ public class UserDeclarations {
     public double mshTrimmerMaxCellSize = 10000;
 
     /**
-     * Trimmer Volume Growth Rate when meshing. Default is {@link StaticDeclarations.GrowthRate#MEDIUM}.
+     * Trimmer Volume Growth Rate when meshing. Default is {@link macroutils.StaticDeclarations.GrowthRate#MEDIUM}.
      */
     public StaticDeclarations.GrowthRate mshTrimmerGrowthRate = StaticDeclarations.GrowthRate.MEDIUM;
 
@@ -625,17 +645,17 @@ public class UserDeclarations {
     public double urfEnergy = 0.;
 
     /**
-     * URF for Fluid Energy. Default: {@link StaticDeclarations.DefaultURFs#FLUID_ENERGY}.
+     * URF for Fluid Energy. Default: {@link macroutils.StaticDeclarations.DefaultURFs#FLUID_ENERGY}.
      */
     public double urfFluidEnrgy = StaticDeclarations.DefaultURFs.FLUID_ENERGY.getValue();
 
     /**
-     * URF for Granular Temperature. Default: {@link StaticDeclarations.DefaultURFs#GRANULAR_TEMPERATURE}.
+     * URF for Granular Temperature. Default: {@link macroutils.StaticDeclarations.DefaultURFs#GRANULAR_TEMPERATURE}.
      */
     public double urfGranTemp = StaticDeclarations.DefaultURFs.GRANULAR_TEMPERATURE.getValue();
 
     /**
-     * URF for K-Epsilon. Default: {@link StaticDeclarations.DefaultURFs#K_EPSILON}.
+     * URF for K-Epsilon. Default: {@link macroutils.StaticDeclarations.DefaultURFs#K_EPSILON}.
      */
     public double urfKEps = StaticDeclarations.DefaultURFs.K_EPSILON.getValue();
 
@@ -645,7 +665,7 @@ public class UserDeclarations {
     public double urfKEpsTurbVisc = 1.0;
 
     /**
-     * URF for K-Omega. Default: {@link StaticDeclarations.DefaultURFs#K_OMEGA}.
+     * URF for K-Omega. Default: {@link macroutils.StaticDeclarations.DefaultURFs#K_OMEGA}.
      */
     public double urfKOmega = StaticDeclarations.DefaultURFs.K_OMEGA.getValue();
 
@@ -655,22 +675,22 @@ public class UserDeclarations {
     public double urfKOmegaTurbVisc = 1.0;
 
     /**
-     * URF for Phase Couple Velocity. Default: {@link StaticDeclarations.DefaultURFs#PHASE_COUPLED_VELOCITY}.
+     * URF for Phase Couple Velocity. Default: {@link macroutils.StaticDeclarations.DefaultURFs#PHASE_COUPLED_VELOCITY}.
      */
     public double urfPhsCplVel = StaticDeclarations.DefaultURFs.PHASE_COUPLED_VELOCITY.getValue();
 
     /**
-     * URF for Pressure. Default: {@link StaticDeclarations.DefaultURFs#PRESSURE}.
+     * URF for Pressure. Default: {@link macroutils.StaticDeclarations.DefaultURFs#PRESSURE}.
      */
     public double urfP = StaticDeclarations.DefaultURFs.PRESSURE.getValue();
 
     /**
-     * URF for PPDF Combustion. Default: {@link StaticDeclarations.DefaultURFs#PPDF_COMBUSTION}.
+     * URF for PPDF Combustion. Default: {@link macroutils.StaticDeclarations.DefaultURFs#PPDF_COMBUSTION}.
      */
     public double urfPPDFComb = StaticDeclarations.DefaultURFs.PPDF_COMBUSTION.getValue();
 
     /**
-     * URF for Reynolds Stress Models. Default: {@link StaticDeclarations.DefaultURFs#REYNOLDS_STRESS_MODEL}.
+     * URF for Reynolds Stress Models. Default: {@link macroutils.StaticDeclarations.DefaultURFs#REYNOLDS_STRESS_MODEL}.
      */
     public double urfRS = StaticDeclarations.DefaultURFs.REYNOLDS_STRESS_MODEL.getValue();
 
@@ -680,26 +700,26 @@ public class UserDeclarations {
     public double urfRSTurbVisc = 1.0;
 
     /**
-     * URF for Solid Energy. Default: {@link StaticDeclarations.DefaultURFs#SOLID_ENERGY}.
+     * URF for Solid Energy. Default: {@link macroutils.StaticDeclarations.DefaultURFs#SOLID_ENERGY}.
      */
     public double urfSolidEnrgy = StaticDeclarations.DefaultURFs.SOLID_ENERGY.getValue();
     ;
 
-  /** URF for Species. Default: {@link StaticDeclarations.DefaultURFs#SPECIES}. */
+  /** URF for Species. Default: {@link macroutils.StaticDeclarations.DefaultURFs#SPECIES}. */
   public double urfSpecies = StaticDeclarations.DefaultURFs.SPECIES.getValue();
 
     /**
-     * URF for Velocity. Default: {@link StaticDeclarations.DefaultURFs#VELOCITY}.
+     * URF for Velocity. Default: {@link macroutils.StaticDeclarations.DefaultURFs#VELOCITY}.
      */
     public double urfVel = StaticDeclarations.DefaultURFs.VELOCITY.getValue();
 
     /**
-     * URF for Volume Fraction. Default: {@link StaticDeclarations.DefaultURFs#VOLUME_FRACTION}.
+     * URF for Volume Fraction. Default: {@link macroutils.StaticDeclarations.DefaultURFs#VOLUME_FRACTION}.
      */
     public double urfVolFrac = StaticDeclarations.DefaultURFs.VOLUME_FRACTION.getValue();
 
     /**
-     * URF for VOF. Default: {@link StaticDeclarations.DefaultURFs#VOLUME_FRACTION}.
+     * URF for VOF. Default: {@link macroutils.StaticDeclarations.DefaultURFs#VOLUME_FRACTION}.
      */
     public double urfVOF = StaticDeclarations.DefaultURFs.VOF.getValue();
 
@@ -1177,6 +1197,11 @@ public class UserDeclarations {
      * Hour unit (Time).
      */
     public Units unit_h = null;
+
+    /**
+     * Hertz unit (1/Time).
+     */
+    public Units unit_Hz = null;
 
     /**
      * Kilogram unit (Mass).

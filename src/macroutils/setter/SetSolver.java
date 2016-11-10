@@ -10,6 +10,7 @@ import star.flow.*;
 import star.keturb.*;
 import star.kwturb.*;
 import star.metrics.*;
+import star.mixturemultiphase.*;
 import star.multiphase.*;
 import star.rsturb.*;
 import star.segregatedenergy.*;
@@ -188,7 +189,7 @@ public class SetSolver {
                 urf = _ud.urfRS;
             } else if (s instanceof SegregatedSpeciesSolver) {
                 urf = _ud.urfSpecies;
-            } else if (s instanceof SegregatedVofSolver) {
+            } else if (s instanceof SegregatedMmpSolver) {
                 urf = _ud.urfVOF;
             } else if (s instanceof VolumeFractionSolver) {
                 urf = _ud.urfVolFrac;
@@ -276,7 +277,7 @@ public class SetSolver {
     /**
      * Freezes a specific or many solvers.
      *
-     * @param slv given solvers. See {@link StaticDeclarations} for all options.
+     * @param slv given solvers. See {@link macroutils.StaticDeclarations} for all options.
      * @param opt given option.
      */
     public void freeze(StaticDeclarations.Solvers slv, boolean opt) {
@@ -499,24 +500,22 @@ public class SetSolver {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainSetter _set = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

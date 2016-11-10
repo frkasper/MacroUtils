@@ -3,6 +3,7 @@ package macroutils.getter;
 import java.util.*;
 import macroutils.*;
 import star.common.*;
+import star.common.graph.*;
 
 /**
  * Low-level class for getting Plots with MacroUtils.
@@ -85,6 +86,28 @@ public class GetPlots {
     }
 
     /**
+     * Gets all DataSets available in a Plot.
+     *
+     * @param sp given StarPlot.
+     * @param vo given verbose option. False will not print anything.
+     * @return An ArrayList with DataSets.
+     */
+    public ArrayList<DataSet> datasets(StarPlot sp, boolean vo) {
+        _io.say.object(sp, vo);
+        ArrayList<DataSet> ads = new ArrayList(sp.getDataSetManager().getDataSets());
+        if (sp instanceof XYPlot) {
+            XYPlot xyp = (XYPlot) sp;
+            for (AxisType at : xyp.getYAxes().getObjects()) {
+                if (at instanceof YAxisType) {
+                    ads.addAll(((YAxisType) at).getDataSetManager().getDataSets());
+                }
+            }
+        }
+        _io.say.objects(ads, "Datasets", vo);
+        return ads;
+    }
+
+    /**
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
@@ -95,9 +118,9 @@ public class GetPlots {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

@@ -33,7 +33,21 @@ public class GetBoundaries {
         for (Region r : _get.regions.all(false)) {
             ab.addAll(r.getBoundaryManager().getBoundaries());
         }
-        _io.say.msg(vo, "Boundaries found: %d", ab.size());
+        _io.say.objects(ab, "Boundaries", vo);
+        return ab;
+    }
+
+    /**
+     * Gets all Boundaries from a given Region.
+     *
+     * @param r given Region.
+     * @param vo given verbose option. False will not print anything.
+     * @return An ArrayList of Boundaries.
+     */
+    public ArrayList<Boundary> all(Region r, boolean vo) {
+        _io.say.value("Getting all Boundaries from Region", r.getPresentationName(), true, vo);
+        ArrayList<Boundary> ab = new ArrayList(r.getBoundaryManager().getBoundaries());
+        _io.say.objects(ab, "Boundaries", vo);
         return ab;
     }
 
@@ -76,8 +90,8 @@ public class GetBoundaries {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
     }
 
     //--

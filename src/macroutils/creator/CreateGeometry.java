@@ -87,7 +87,7 @@ public class CreateGeometry {
      * @return The Cad Body.
      */
     public CadPart block3DCAD(double[] c1, double[] c2, Units u) {
-        Body bd = _tmpl.geometry.block(c1, c2, u, "Block", true);
+        Body bd = _templ.geometry.block(c1, c2, u, "Block", true);
         return _get.geometries.cadPart(bd, false);
     }
 
@@ -102,11 +102,11 @@ public class CreateGeometry {
      * @param l given Length.
      * @param org given origin as a 3-components array with coordinates. E.g.: {0, -1, -10}.
      * @param u given Units.
-     * @param ax given extrusion direction. See {@link StaticDeclarations.Axis} for options.
+     * @param ax given extrusion direction. See {@link macroutils.StaticDeclarations.Axis} for options.
      * @return The Cad Body.
      */
     public CadPart cylinder3DCAD(double r, double l, double[] org, Units u, StaticDeclarations.Axis ax) {
-        Body bd = _tmpl.geometry.cylinder(r, l, org, u, ax, "Cylinder", true);
+        Body bd = _templ.geometry.cylinder(r, l, org, u, ax, "Cylinder", true);
         return _get.geometries.cadPart(bd, false);
     }
 
@@ -203,22 +203,22 @@ public class CreateGeometry {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
-        _tmpl = _mu.templates;
+        _io = _mu.io;
         _set = _mu.set;
+        _templ = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.templates.MainTemplates _templ = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

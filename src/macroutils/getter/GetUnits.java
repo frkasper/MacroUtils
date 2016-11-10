@@ -55,6 +55,25 @@ public class GetUnits {
         return null;
     }
 
+    /**
+     * Gets the corresponding dimensions from the unit.
+     *
+     * @param u given unit.
+     * @return The Dimensions.
+     */
+    public Dimensions dimensions(Units u) {
+        if (u == null) {
+            return new Dimensions();
+        }
+        return u.getDimensions();
+    }
+
+    /**
+     * Gets the corresponding unit associated with a Monitor.
+     *
+     * @param m given Monitor.
+     * @return The Unit. Null if nothing is found.
+     */
     public Units fromMonitor(Monitor m) {
         if (m instanceof ResidualMonitor) {
             return ((ResidualMonitor) m).getMonitoredValueUnits();
@@ -69,9 +88,8 @@ public class GetUnits {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
-        _tmpl = _mu.templates;
+        _io = _mu.io;
     }
 
     //--
@@ -83,7 +101,6 @@ public class GetUnits {
     private MacroUtils _mu = null;
     private MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
     private Simulation _sim = null;
 
 }

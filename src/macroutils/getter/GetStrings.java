@@ -115,7 +115,7 @@ public class GetStrings {
     /**
      * Gets the necessary Meshers for an Automated Mesh Operation.
      *
-     * @param meshers given meshers separated by comma. See {@link StaticDeclarations.Meshers} for options.
+     * @param meshers given meshers separated by comma. See {@link macroutils.StaticDeclarations.Meshers} for options.
      * @return An ArrayList of Strings. Useful with {@link macroutils.creator.CreateMeshOperation#automatedMesh}.
      */
     public ArrayList<String> meshers(StaticDeclarations.Meshers... meshers) {

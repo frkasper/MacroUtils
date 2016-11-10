@@ -183,8 +183,8 @@ public class SetPhysics {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
         _ud = _mu.userDeclarations;
         _upd = _mu.update;
@@ -194,10 +194,10 @@ public class SetPhysics {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.misc.MainUpdater _upd = null;
     private macroutils.io.MainIO _io = null;
     private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
 
 }

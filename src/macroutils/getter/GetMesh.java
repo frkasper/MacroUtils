@@ -159,20 +159,18 @@ public class GetMesh {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
-        _tmpl = _mu.templates;
+        _io = _mu.io;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.checker.MainChecker _chk = null;
     private MainGetter _get = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.checker.MainChecker _chk = null;
+    private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

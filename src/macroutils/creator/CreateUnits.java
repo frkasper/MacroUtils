@@ -63,8 +63,8 @@ public class CreateUnits {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
     }
 
     //--

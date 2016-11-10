@@ -24,6 +24,18 @@ public class GetGeometries {
         _sim = m.getSimulation();
     }
 
+    private SolidModelPart _getSolidModelPart(Body bd) {
+        for (GeometryPart gp : all(false)) {
+            if (gp instanceof SolidModelPart) {
+                SolidModelPart smp = (SolidModelPart) gp;
+                if (smp.getCadModel().equals(bd.getModel())) {
+                    return smp;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Gets all Geometry Parts from the model.
      *
@@ -56,7 +68,7 @@ public class GetGeometries {
      * @return CadPart.
      */
     public CadPart cadPart(Body bd, boolean vo) {
-        return (CadPart) byREGEX(bd.getPresentationName(), vo);
+        return (CadPart) _getSolidModelPart(bd);
     }
 
     /**
@@ -89,16 +101,16 @@ public class GetGeometries {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

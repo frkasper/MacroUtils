@@ -75,19 +75,19 @@ public class MainSetter {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         boundary.updateInstances();
-        userDefault.updateInstances();
+        geometry.updateInstances();
         mesh.updateInstances();
         object.updateInstances();
-        geometry.updateInstances();
         physics.updateInstances();
         region.updateInstances();
         scene.updateInstances();
         solver.updateInstances();
+        userDefault.updateInstances();
         _chk.updateInstances();
         _dis.updateInstances();
         _ena.updateInstances();
+        _io = _mu.io;
         _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
     }
 
@@ -95,11 +95,11 @@ public class MainSetter {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private Simulation _sim = null;
-    private macroutils.io.MainIO _io = null;
     private macroutils.checker.MainChecker _chk = null;
+    private macroutils.io.MainIO _io = null;
     private macroutils.misc.MainDisabler _dis = null;
     private macroutils.misc.MainEnabler _ena = null;
+    private Simulation _sim = null;
 
     /**
      * This class is responsible for setting Boundary conditions (BCs) parameters.

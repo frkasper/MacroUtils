@@ -186,7 +186,7 @@ public class GetCameras {
             v.setFocalPoint(dvFP);
             v.setPosition(dvPos);
             v.setViewUp(dvVU);
-            v.setParallelScale(newPS);
+            v.getParallelScale().setValue(newPS);
             av.add(v);
         }
         _io.say.value("Cameras processed", av.size(), vo);
@@ -198,18 +198,16 @@ public class GetCameras {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
-        _tmpl = _mu.templates;
+        _io = _mu.io;
     }
 
     //--
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.io.MainIO _io = null;
     private Simulation _sim = null;
 
 }

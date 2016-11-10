@@ -67,9 +67,9 @@ public class GetRegions {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

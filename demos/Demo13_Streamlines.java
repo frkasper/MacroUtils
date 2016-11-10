@@ -110,7 +110,7 @@ public class Demo13_Streamlines extends StarMacro {
 
         pd1 = mu.add.scene.displayer_Geometry(ud.scene);
         pd1.setOpacity(1);
-        pd1.setColorMode(1);
+        pd1.setColorMode(PartColorMode.DEFAULT);
 
         pd2 = (PartDisplayer) mu.add.scene.displayer_Geometry(ud.scene);
         pd2.copyProperties(pd1);
@@ -124,9 +124,9 @@ public class Demo13_Streamlines extends StarMacro {
         std = mu.add.scene.displayer_Streamline(ud.scene, ud.namedObjects2, true);
         mu.templates.prettify.all();
         std.getScalarDisplayQuantity().setRange(new double[]{0, 3.0});
-        std.getAnimationManager().setMode(1);
+        std.getAnimationManager().setMode(StreamDisplayerAnimationMode.TRACER);
         std.setLegendPosition(scd.getLegend().getPositionCoordinate());
-        std.setVisibilityOverrideMode(2);
+        std.setVisibilityOverrideMode(DisplayerVisibilityOverride.HIDE_ALL_PARTS);
         //--
         //-- Animated Part and Scalar Displayers
         TemplatePostOverride tpo = new TemplatePostOverride(mu);
@@ -140,7 +140,7 @@ public class Demo13_Streamlines extends StarMacro {
         tpo.flyOver(ud.scene, null, null, act5);
         //--
         //-- Animated Streamline Displayer
-        std.setVisibilityOverrideMode(0);
+        std.setVisibilityOverrideMode(DisplayerVisibilityOverride.SHOW_ALL_PARTS);
         //-- This time the spin will take 3x longer.
         updateDeltaAngle(3 * spr);
         int preSpin = 8 * fps;

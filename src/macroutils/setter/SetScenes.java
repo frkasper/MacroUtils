@@ -33,7 +33,7 @@ public class SetScenes {
     public void background(Scene scn, Color color, boolean vo) {
         _io.say.action("Setting Solid Background Color", vo);
         _io.say.value("Setting Solid Background Color on Scene", scn.getPresentationName(), true, vo);
-        scn.setBackgroundColorMode(0);
+        scn.setBackgroundColorMode(BackgroundColorMode.SOLID);
         scn.getSolidBackgroundColor().setColorColor(color);
         _io.say.ok(vo);
     }
@@ -50,7 +50,7 @@ public class SetScenes {
             return;
         }
         scn.getCurrentView().setInput(new CameraStateInput(vv), vv.getCoordinateSystem(), true);
-        scn.getCurrentView().setProjectionMode(vv.getProjectionMode());
+        scn.getCurrentView().setProjectionMode(vv.getProjectionModeEnum());
         _io.say.value("Camera View set to", vv.getPresentationName(), true, vo);
     }
 
@@ -68,7 +68,7 @@ public class SetScenes {
             return;
         }
         PartDisplayer pd = (PartDisplayer) d;
-        pd.setColorMode(1);
+        pd.setColorMode(PartColorMode.CONSTANT);
         pd.setDisplayerColorColor(color);
         _io.say.ok(vo);
     }
@@ -213,11 +213,10 @@ public class SetScenes {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
@@ -227,9 +226,8 @@ public class SetScenes {
     private MacroUtils _mu = null;
     private MainSetter _set = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
+    private macroutils.UserDeclarations _ud = null;
 
 }

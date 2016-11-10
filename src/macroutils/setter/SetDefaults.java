@@ -39,7 +39,7 @@ public class SetDefaults {
     /**
      * Sets the default Colormap used by MacroUtils.
      *
-     * @param opt given option. See {@link StaticDeclarations.Colormaps} for options.
+     * @param opt given option. See {@link macroutils.StaticDeclarations.Colormaps} for options.
      */
     public void colormap(StaticDeclarations.Colormaps opt) {
         _setting("Colormap", opt.getName());
@@ -71,7 +71,7 @@ public class SetDefaults {
     /**
      * Sets the default Tessellation option used by MacroUtils.
      *
-     * @param opt given option. See {@link StaticDeclarations.Tessellation} for options.
+     * @param opt given option. See {@link macroutils.StaticDeclarations.Tessellation} for options.
      */
     public void tessellation(StaticDeclarations.Tessellation opt) {
         _setting("Tessellation", opt.toString());
@@ -82,8 +82,8 @@ public class SetDefaults {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
         _ud = _mu.userDeclarations;
     }
 
@@ -91,8 +91,8 @@ public class SetDefaults {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
 
 }

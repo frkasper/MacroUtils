@@ -233,15 +233,15 @@ public class Demo8_Half_Wing extends StarMacro {
         //-- Cd
         ud.rep = mu.add.report.forceCoefficient(ud.boundaries, "C_d", 0.0, 1.196, wingVel,
                 ud.rep1.getReportMonitorValue(), new double[]{0, 0, -1}, true);
-        ud.repMon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
-        mu.set.object.updateEvent(ud.repMon, ud.updEvent2, true);
-        mu.add.solver.stoppingCriteria(ud.repMon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, stopIter);
+        ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
+        mu.set.object.updateEvent(ud.mon, ud.updEvent2, true);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, stopIter);
         //-- Cl
         ud.rep = mu.add.report.forceCoefficient(ud.boundaries, "C_l", 0.0, 1.196, wingVel,
                 ud.rep2.getReportMonitorValue(), new double[]{0, 1, 0}, true);
-        ud.repMon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
-        mu.set.object.updateEvent(ud.repMon, ud.updEvent2, true);
-        mu.add.solver.stoppingCriteria(ud.repMon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, stopIter);
+        ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
+        mu.set.object.updateEvent(ud.mon, ud.updEvent2, true);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, stopIter);
         // mu.saveSim("c_Ready");
     }
 

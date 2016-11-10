@@ -1,6 +1,5 @@
 package macroutils.templates;
 
-import java.io.*;
 import java.util.*;
 import macroutils.*;
 import star.common.*;
@@ -25,8 +24,8 @@ public class TemplatePost {
         _sim = m.getSimulation();
     }
 
-    private void _flyOver(Scene scn, VisView v1, VisView v2,
-            int frames, ArrayList<VisView> avv, RecordedSolutionView rsv) {
+    private void _flyOver(Scene scn, VisView v1, VisView v2, int frames,
+            ArrayList<VisView> avv, RecordedSolutionView rsv) {
         _frames = frames;
         int maxState = 10000;
         if (rsv != null) {
@@ -47,8 +46,7 @@ public class TemplatePost {
             cam2 = v2.getPresentationName();
             avv.addAll(_get.cameras.inBetween_Linear(v1, v2, frames, false));
         }
-        _ud.picPath = new File(_ud.simPath, "pics_" + _ud.simTitle).toString();
-        File picFolder = _io.createFolder(_ud.picPath);
+        _ud.picPath = _io.createFolder("pics_" + _ud.simTitle).toString();
         for (int i = 0; i < frames; i++) {
             int picNumber = i + nOldFrame;
             if (rsv != null) {
@@ -63,7 +61,7 @@ public class TemplatePost {
             String picName = String.format("pic%04d_Cam_%s_to_%s.png", picNumber, cam1, cam2);
             _io.say.msgDebug("Saving: \"%s\"...", picName);
             flyOver_prePrintPicture();
-            _io.write.picture(scn, new File(picFolder, picName).toString(), _ud.picResX, _ud.picResY, false);
+            _io.write.picture(scn, picName, _ud.picResX, _ud.picResY, false);
             _currentFrame++;
         }
         flyOver_postPrintPicture();
@@ -188,10 +186,10 @@ public class TemplatePost {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _add = _mu.add;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _reset = _mu.reset;
         _set = _mu.set;
         _ud = _mu.userDeclarations;
@@ -201,14 +199,14 @@ public class TemplatePost {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private Simulation _sim = null;
-    private macroutils.creator.MainCreator _add = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
+    private macroutils.creator.MainCreator _add = null;
     private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
     private macroutils.misc.MainResetter _reset = null;
     private macroutils.setter.MainSetter _set = null;
-    private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
     /**
      * Variable for controlling current frame number.

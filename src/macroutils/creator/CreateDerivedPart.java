@@ -100,10 +100,31 @@ public class CreateDerivedPart {
         _creating(ano, "Isosurface");
         _io.say.object(ff, true);
         IsoPart ip = _sim.getPartManager().createIsoPart(new NeoObjectVector(ano.toArray()), ff);
-        ip.setMode(0);
+        ip.setMode(IsoMode.ISOVALUE_SINGLE);
         _set.object.physicalQuantity(ip.getSingleIsoValue().getValueQuantity(), val, u, "Iso Value", true);
         _io.say.created(ip, true);
         return ip;
+    }
+
+    /**
+     * Creates a Line Probe.
+     *
+     * @param ano given ArrayList of NamedObjects.
+     * @param c1 given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[] {0., 0., 0.}
+     * @param c2 given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[] {0., 1., 0.}
+     * @param res given resolution for the line, i.e., the number of points.
+     * @return The created Line.
+     */
+    public LinePart line(ArrayList<NamedObject> ano, double[] c1, double[] c2, int res) {
+        _creating(ano, "Line Probe");
+        NeoObjectVector where = new NeoObjectVector(ano.toArray());
+        DoubleVector from = new DoubleVector(c1);
+        DoubleVector to = new DoubleVector(c2);
+        LinePart lp = _sim.getPartManager().createLinePart(where, from, to, res);
+        lp.getPoint1Coordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength, from);
+        lp.getPoint2Coordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength, to);
+        _io.say.created(lp, true);
+        return lp;
     }
 
     /**
@@ -226,10 +247,9 @@ public class CreateDerivedPart {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
@@ -240,12 +260,11 @@ public class CreateDerivedPart {
     private final double[] _Y = new double[]{0., 1., 0.};
     private final double[] _Z = new double[]{0., 0., 1.};
 
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

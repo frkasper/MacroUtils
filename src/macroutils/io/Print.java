@@ -83,7 +83,7 @@ public class Print {
         value("  - Position", cam.getPosition(), vo);
         value("  - View Up", cam.getViewUp(), vo);
         value("  - Parallel Scale", cam.getParallelScale().getValue(), vo);
-        value("  - Projection Mode", cam.getProjectionMode(), vo);
+        value("  - Projection Mode", cam.getProjectionModeEnum().getPresentationName(), true, vo);
         msg("", vo);
     }
 
@@ -456,9 +456,9 @@ public class Print {
     private final String _msgDbgPrefix = StaticDeclarations.MSG_DEBUG_PREFIX;
 
     private boolean _dbg = false;
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
+    private Simulation _sim = null;
 
 }

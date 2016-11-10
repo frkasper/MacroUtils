@@ -57,11 +57,11 @@ public class CreateScene {
     private PartDisplayer _createDisplayer_Part(Scene scn, ArrayList<NamedObject> ano, boolean vo) {
         PartDisplayer pd = _getDM(scn).createPartDisplayer(StaticDeclarations.Displayer.GEOMETRY.getType());
         pd.initialize();
-        pd.setColorMode(_COLOR_BY_PART);
+        pd.setColorMode(PartColorMode.DP);
         pd.setOutline(false);
         pd.setSurface(true);
         pd.addParts(ano);
-        _createdDisplayer(pd, vo);
+        _createdDisplayer(pd, ano, vo);
         return pd;
     }
 
@@ -74,7 +74,7 @@ public class CreateScene {
             sd.getScalarDisplayQuantity().setUnits(u);
         }
         sd.addParts(ano);
-        _createdDisplayer(sd, vo);
+        _createdDisplayer(sd, ano, vo);
         return sd;
     }
 
@@ -88,7 +88,7 @@ public class CreateScene {
         }
         //-- Here, ano is a collection of StreamPart's.
         sd.addParts(ano);
-        _createdDisplayer(sd, vo);
+        _createdDisplayer(sd, ano, vo);
         return sd;
     }
 
@@ -104,12 +104,13 @@ public class CreateScene {
             vd.getVectorDisplayQuantity().setUnits(u);
         }
         vd.addParts(ano);
-        _createdDisplayer(vd, vo);
+        _createdDisplayer(vd, ano, vo);
         return vd;
     }
 
-    private void _createdDisplayer(Displayer d, boolean vo) {
+    private void _createdDisplayer(Displayer d, ArrayList<NamedObject> ano, boolean vo) {
         d.setPresentationName(d.getPresentationName().split(" ")[0]);
+        _io.say.objects(ano, "Parts", vo);
         _io.say.created(d, vo);
     }
 
@@ -200,7 +201,8 @@ public class CreateScene {
         scn.resetCamera();
         _get.objects.hardcopyProperties(scn, false).setUseCurrentResolution(false);
         scn.setDepthPeel(false);
-        ((FixedAspectAnnotationProp) scn.getAnnotationPropManager().getAnnotationProp("Logo")).setLocation(1);
+        AnnotationProp ap = scn.getAnnotationPropManager().getAnnotationProp("Logo");
+        ((FixedAspectAnnotationProp) ap).setLocation(DisplayLocationMode.FOREGROUND);
         return scn;
     }
 
@@ -296,7 +298,7 @@ public class CreateScene {
      * Adds a new Displayer into a Scene.
      *
      * @param scn given Scene.
-     * @param dt given Displayer Type. See {@link StaticDeclarations.Displayer} for options.
+     * @param dt given Displayer Type. See {@link macroutils.StaticDeclarations.Displayer} for options.
      * @param ano given ArrayList of NamedObjects.
      * @param ff given Field Function, if applicable.
      * @param u given variable Unit, if applicable.
@@ -347,7 +349,7 @@ public class CreateScene {
                 _ud.defUnitVel, true);
         sd.setFieldFunction(sp.getFieldFunction().getMagnitudeFunction());
         if (tubeOpt) {
-            sd.setMode(2);
+            sd.setMode(StreamDisplayerMode.TUBES);
             sd.setWidth(_ud.postStreamlinesTubesWidth);
         }
         return sd;
@@ -403,7 +405,8 @@ public class CreateScene {
     public Scene scalar(ArrayList<NamedObject> ano, FieldFunction ff, Units u, boolean sf) {
         Scene scn = _createScene(StaticDeclarations.Scene.SCALAR, _getScalarNOs(ano), ff, u, true);
         if (sf) {
-            ((ScalarDisplayer) _get.scenes.displayerByREGEX(scn, "Scalar.*", false)).setFillMode(1);
+            ScalarDisplayer sd = (ScalarDisplayer) _get.scenes.displayerByREGEX(scn, "Scalar.*", false);
+            sd.setFillMode(ScalarFillMode.NODE_FILLED);
         }
         return scn;
     }
@@ -431,10 +434,10 @@ public class CreateScene {
         PartDisplayer pd = _createDisplayer_Part(scn, new ArrayList(sp.getInputParts().getParts()), tubeOpt);
         pd.setRepresentation(_get.mesh.geometry());
         pd.setOpacity(0.2);
-        pd.setColorMode(_COLOR_CONSTANT);
+        pd.setColorMode(PartColorMode.CONSTANT);
         pd.setDisplayerColorColor(_ud.defColor);
         if (tubeOpt) {
-            sd.setMode(2);
+            sd.setMode(StreamDisplayerMode.TUBES);
             sd.setWidth(_ud.postStreamlinesTubesWidth);
         }
         return scn;
@@ -451,7 +454,8 @@ public class CreateScene {
         Scene scn = _createScene(StaticDeclarations.Scene.VECTOR, ano,
                 _get.objects.fieldFunction(StaticDeclarations.Vars.VEL), _ud.defUnitVel, true);
         if (licOpt) {
-            ((VectorDisplayer) _get.scenes.displayerByREGEX(scn, "Vector", false)).setDisplayMode(1);
+            VectorDisplayer vd = (VectorDisplayer) _get.scenes.displayerByREGEX(scn, "Vector", false);
+            vd.setDisplayMode(VectorDisplayMode.VECTOR_DISPLAY_MODE_LIC);
         }
         return scn;
     }
@@ -460,30 +464,24 @@ public class CreateScene {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _add = _mu.add;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private final int _COLOR_CONSTANT = 1;
-    private final int _COLOR_BY_PART = 4;
-    private final int _COLOR_BY_REGION = 2;
-
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainCreator _add = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

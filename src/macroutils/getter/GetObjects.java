@@ -29,6 +29,16 @@ public class GetObjects {
         return new ArrayList(_sim.getFieldFunctionManager().getObjects());
     }
 
+    private ArrayList<PhysicsContinuum> _getPCs() {
+        ArrayList<PhysicsContinuum> apc = new ArrayList();
+        for (Continuum pc : _sim.getContinuumManager().getObjects()) {
+            if (pc instanceof PhysicsContinuum) {
+                apc.add((PhysicsContinuum) pc);
+            }
+        }
+        return apc;
+    }
+
     /**
      * Gets a STAR-CCM+ NamedObject by using a REGEX search pattern.
      *
@@ -68,6 +78,18 @@ public class GetObjects {
             arr.add(null);
         }
         return arr;
+    }
+
+    /**
+     * Gets all Physics Continuas available in the model.
+     *
+     * @param vo given verbose option. False will not print anything.
+     * @return An ArrayList of PhysicsContinuum.
+     */
+    public ArrayList<PhysicsContinuum> allPhysicsContinua(boolean vo) {
+        ArrayList<PhysicsContinuum> apc = _getPCs();
+        _io.say.objects(apc, "Getting all Physics Continuas", vo);
+        return apc;
     }
 
     /**
@@ -121,7 +143,7 @@ public class GetObjects {
     /**
      * Gets a standard colormap shipped with STAR-CCM+.
      *
-     * @param opt given Volume Mesher choice. See {@link StaticDeclarations.Colormaps} for options.
+     * @param opt given Volume Mesher choice. See {@link macroutils.StaticDeclarations.Colormaps} for options.
      * @return The LookupTable.
      */
     public LookupTable colormap(StaticDeclarations.Colormaps opt) {
@@ -170,7 +192,7 @@ public class GetObjects {
     /**
      * Gets a Field Function based on the strings previously defined.
      *
-     * @param var given predefined variable defined in {@link StaticDeclarations} class.
+     * @param var given predefined variable defined in {@link macroutils.StaticDeclarations} class.
      * @return The FieldFunction.
      */
     public FieldFunction fieldFunction(StaticDeclarations.Vars var) {
@@ -214,6 +236,29 @@ public class GetObjects {
         }
         _io.say.msg(vo, "'%s' does not have a HardcopyProperties. Returning NULL...", no.getPresentationName());
         return null;
+    }
+
+    /**
+     * Gets a Global Parameter that matches the REGEX search pattern among all Parameters available in the model.
+     *
+     * @param regexPatt given Regular Expression (REGEX) pattern.
+     * @param vo given verbose option. False will not print anything.
+     * @return The GlobalParameterBase. Null if nothing is found.
+     */
+    public GlobalParameterBase parameter(String regexPatt, boolean vo) {
+        return (GlobalParameterBase) byREGEX(regexPatt, "Global Parameter",
+                new ArrayList(_sim.get(GlobalParameterManager.class).getObjects()), vo);
+    }
+
+    /**
+     * Gets a Physics Continua that matches the REGEX search pattern among all Continuas available in the model.
+     *
+     * @param regexPatt given Regular Expression (REGEX) pattern.
+     * @param vo given verbose option. False will not print anything.
+     * @return The PhysicsContinuum. Null if nothing is found.
+     */
+    public PhysicsContinuum physicsContinua(String regexPatt, boolean vo) {
+        return (PhysicsContinuum) byREGEX(regexPatt, "Physics Continua", new ArrayList(_getPCs()), vo);
     }
 
     /**
@@ -279,9 +324,9 @@ public class GetObjects {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

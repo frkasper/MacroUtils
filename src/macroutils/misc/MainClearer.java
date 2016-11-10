@@ -2,6 +2,7 @@ package macroutils.misc;
 
 import macroutils.*;
 import star.common.*;
+import star.meshing.*;
 
 /**
  * Main class for "clearing" methods in MacroUtils.
@@ -23,6 +24,15 @@ public class MainClearer {
     }
 
     /**
+     * Clears all generated meshes.
+     */
+    public void meshes() {
+        _io.say.msg("Clearing Meshes...");
+        _sim.get(MeshPipelineController.class).clearGeneratedMeshes();
+        _io.say.ok(true);
+    }
+
+    /**
      * Clears the Solution and all Fields are erased.
      */
     public void solution() {
@@ -41,7 +51,7 @@ public class MainClearer {
     /**
      * This method gives you the ability to clears different areas of the Solution.
      *
-     * @param sc given option. See {@link StaticDeclarations.SolutionClear} for options.
+     * @param sc given option. See {@link macroutils.StaticDeclarations.SolutionClear} for options.
      */
     public void solution(StaticDeclarations.SolutionClear... sc) {
         _io.say.action("Clearing Solution", true);
@@ -63,8 +73,8 @@ public class MainClearer {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

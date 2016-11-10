@@ -27,7 +27,7 @@ public class GetScenes {
         _io.say.value(what, d.getPresentationName(), true, vo);
         _io.say.msg("Nothing found. Returning NULL!", vo);
     }
-    
+
     /**
      * Gets all Scenes available in the model.
      *
@@ -163,10 +163,10 @@ public class GetScenes {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainGetter _get = null;
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
 
 }

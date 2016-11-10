@@ -17,14 +17,14 @@ import star.common.*;
  * <p>
  * <b>Requires:</b>
  * <ul>
- * <li> STAR-CCM+ v11.04 libraries. <u>It may not run in other versions</u>;
- * <li> If one is compiling through NetBeans 8 or higher, please do it against JDK 7 Source/Binary format.
- * <li> Compiling against JDK 8 will present runtime issues for STAR-CCM+ v11.04;
+ * <li> STAR-CCM+ v11.06 libraries. <u>It may not run in other versions</u>;
+ * <li> If one is compiling through NetBeans 8 or higher, please do it against JDK 7 Source/Binary format;
+ * <li> Compiling against JDK 8 will present runtime issues in STAR-CCM+.
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v11.04, August 25, 2016.
+ * @version v11.06, November 01, 2016.
  */
 public final class MacroUtils {
 
@@ -38,10 +38,6 @@ public final class MacroUtils {
      */
     public MacroUtils(Simulation s) {
         setSimulation(s, true);
-    }
-
-    private String _getMacroUtilsVersion() {
-        return "MacroUtils version 11.04 build 1";
     }
 
     /**
@@ -58,12 +54,15 @@ public final class MacroUtils {
         setSimulation(s, intrusiveMode);
     }
 
-    private void _initialize(boolean im) {
+    private String _getMacroUtilsVersion() {
+        return "MacroUtils version 11.06 build 1";
+    }
+
+    private void _initialize() {
         if (!_isInitialized) {
             io = new MainIO(this, _debug);
             _isInitialized = true;
         }
-        _im = im;
         add = new MainCreator(this);
         check = new MainChecker(this);
         clear = new MainClearer(this);
@@ -72,6 +71,7 @@ public final class MacroUtils {
         enable = new MainEnabler(this);
         get = new MainGetter(this);
         open = new MainOpener(this);
+        remove = new MainRemover(this);
         reset = new MainResetter(this);
         set = new MainSetter(this);
         templates = new MainTemplates(this);
@@ -83,6 +83,7 @@ public final class MacroUtils {
     }
 
     private void _initialize_defaults() {
+        _sim.loadMeshing();
         Locale.setDefault(Locale.ENGLISH);
         userDeclarations.simFullPath = _sim.getSessionPath();
         userDeclarations.simFile = new File(userDeclarations.simFullPath);
@@ -90,13 +91,36 @@ public final class MacroUtils {
         userDeclarations.simPath = _sim.getSessionDir();
         userDeclarations.cadPath = new File(userDeclarations.simPath, "CAD");
         userDeclarations.dbsPath = new File(userDeclarations.simPath, "DBS");
+        userDeclarations.picPath = userDeclarations.simPath;
         io.say.value("Simulation Name", userDeclarations.simTitle, true, true);
         io.say.value("Simulation File", userDeclarations.simFile.toString(), true, true);
         io.say.value("Simulation Path", userDeclarations.simPath, true, true);
         userDeclarations.csys0 = _sim.getCoordinateSystemManager().getLabCoordinateSystem();
         userDeclarations.lab0 = (LabCoordinateSystem) userDeclarations.csys0;
         userDeclarations.defColormap = get.objects.colormap(StaticDeclarations.Colormaps.BLUE_RED_BALANCED);
-        update.allUnits(true);
+        update.defaultUnits(true);
+        add.all();
+    }
+
+    private void _step(int n) {
+        SimulationIterator si = _sim.getSimulationIterator();
+        String s = "iterations";
+        io.say.action("Running the case", true);
+        io.say.cellCount();
+        if (!check.has.volumeMesh()) {
+            io.say.msg("No volume mesh found. Skipping run.");
+            return;
+        }
+        if (check.is.unsteady()) {
+            s = "timesteps";
+        }
+        set.suggestedPreRun();
+        if (n > 0) {
+            io.say.msg(true, "Running for %d %s...", n, s);
+            si.step(n);
+            return;
+        }
+        si.run();
     }
 
     private void _updateInstances() {
@@ -114,6 +138,7 @@ public final class MacroUtils {
             get.updateInstances();
             io.updateInstances();
             open.updateInstances();
+            remove.updateInstances();
             reset.updateInstances();
             set.updateInstances();
             templates.updateInstances();
@@ -123,22 +148,12 @@ public final class MacroUtils {
     }
 
     /**
-     * Disable Debug mode in MacroUtils. Back to usual verbose output.
+     * Gets the Debug mode in MacroUtils.
+     *
+     * @return True or False.
      */
-    public void disableDebugMode() {
-        _debug = false;
-        io.print.setDebug(_debug);
-    }
-
-    /**
-     * Enable Debug mode in MacroUtils. Lots of printing will occur.
-     */
-    public void enableDebugMode() {
-        _debug = true;
-        if (io == null) {
-            return;
-        }
-        io.print.setDebug(_debug);
+    public boolean getDebugMode() {
+        return _debug;
     }
 
     /**
@@ -167,44 +182,13 @@ public final class MacroUtils {
     }
 
     /**
-     * Sets a Simulation object for the MacroUtils instance.
-     *
-     * @param s given Simulation.
-     * @param intrusiveMode given intrusive mode option. This will change your simulation file with recommended
-     * MacroUtils settings.
-     */
-    public void setSimulation(Simulation s, boolean intrusiveMode) {
-        if (s == null) {
-            return;
-        }
-        _sim = s;
-        _initialize(intrusiveMode);
-    }
-
-    /**
      * Runs the simulation for a given number of Iterations or Timesteps.
      *
      * @param n given iterations. If the simulation is Unsteady it will be performed as a number of timesteps.
      */
+
     public void step(int n) {
-        SimulationIterator si = _sim.getSimulationIterator();
-        String s = "iterations";
-        io.say.action("Running the case", true);
-        io.say.cellCount();
-        if (!check.has.volumeMesh()) {
-            io.say.msg("No volume mesh found. Skipping run.");
-            return;
-        }
-        if (check.is.unsteady()) {
-            s = "timesteps";
-        }
-        set.suggestedPreRun();
-        if (n > 0) {
-            io.say.msg(true, "Running for %d %s...", n, s);
-            si.step(n);
-            return;
-        }
-        si.run();
+        _step(n);
     }
 
     /**
@@ -225,16 +209,59 @@ public final class MacroUtils {
 
     private void saveSim(String name, boolean vo) {
         io.say.action(String.format("Saving Simulation File"), vo);
-        _sim.saveState(new File(userDeclarations.simPath, name + ".sim").toString());
+        name = get.strings.fileBasename(name);
+        File f = new File(name + ".sim");
+        if (!f.canWrite()) {
+            f = new File(userDeclarations.simPath, f.getName());
+        }
+        _sim.saveState(f.toString());
         io.say.ok(vo);
+    }
+
+    /**
+     * Sets the Debug mode in MacroUtils. Lots of printing will occur.
+     *
+     * @param opt given option. True or False.
+     */
+    public void setDebugMode(boolean opt) {
+        _debug = opt;
+        if (io == null) {
+            return;
+        }
+        io.print.setDebug(_debug);
+    }
+
+    /**
+     * Sets the intrusive mode option in MacroUtils.
+     *
+     * @param opt given option. True or False.
+     */
+    public void setIntrusiveOption(boolean opt) {
+        _im = opt;
+    }
+
+    /**
+     * Sets a Simulation object for the MacroUtils instance.
+     *
+     * @param s given Simulation.
+     * @param intrusiveMode given intrusive mode option. This will change your simulation file with recommended
+     * MacroUtils settings.
+     */
+    public void setSimulation(Simulation s, boolean intrusiveMode) {
+        if (s == null || s == _sim) {
+            return;
+        }
+        _sim = s;
+        setIntrusiveOption(intrusiveMode);
+        _initialize();
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private boolean _isInitialized = false;
     private boolean _debug = false;
     private boolean _im = false;
+    private boolean _isInitialized = false;
     private Simulation _sim = null;
 
     /**
@@ -281,6 +308,11 @@ public final class MacroUtils {
      * This is where you can find the methods for <i>opening</i> objects with MacroUtils.
      */
     public MainOpener open = null;
+
+    /**
+     * This is where you can find the methods for <i>removing</i> STAR-CCM+ objects with MacroUtils.
+     */
+    public MainRemover remove = null;
 
     /**
      * This is where you can find the methods for <i>resetting</i> variables with MacroUtils.

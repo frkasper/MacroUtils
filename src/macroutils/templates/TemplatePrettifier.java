@@ -58,6 +58,7 @@ public class TemplatePrettifier {
     }
 
     private void _setDatasets(StarPlot sp, ArrayList<DataSet> ads) {
+        boolean isXYPlot = sp instanceof XYPlot;
         for (DataSet ds : ads) {
             String dsn = ds.getPresentationName();
             LineStyle ls = ds.getLineStyle();
@@ -90,11 +91,15 @@ public class TemplatePrettifier {
             if (ls.getWidth() == 1) {
                 ls.setWidth(lw);
             }
-            if (ss.getSpacing() == 1) {
-                ss.setSpacing(_SYMBOL_SPACING);
-            }
             if (ss.getSize() == 6) {
                 ss.setSize(_SYMBOL_SIZE);
+            }
+            if (isXYPlot) {
+                //-- Avoid change in spacing for XYPlots.
+                continue;
+            }
+            if (ss.getSpacing() == 1) {
+                ss.setSpacing(_SYMBOL_SPACING);
             }
         }
     }
@@ -108,7 +113,7 @@ public class TemplatePrettifier {
         axis.getTicks().setGridVisible(false);
     }
 
-    private void _setLegend(StarPlot sp, ArrayList<DataSet> ads) {
+    private void _setLegend(StarPlot sp, int nDataSets) {
         final DoubleVector defLegPos = new DoubleVector(new double[]{0.85, 0.8});
         MultiColLegend leg = sp.getLegend();
         leg.setFont(StaticDeclarations.Fonts.OTHER.getFont());
@@ -116,7 +121,7 @@ public class TemplatePrettifier {
         LegendLayoutOption llo = leg.getLegendLayoutOption();
         ChartPositionOption cpo = leg.getChartPositionOption();
         if (dv.equals(defLegPos) && cpo.getSelectedElement() == ChartPositionOption.Type.CUSTOM) {
-            if (ads.size() <= 7) {
+            if (nDataSets <= 7) {
                 llo.setSelected(LegendLayoutOption.Type.HORIZONTAL);
                 cpo.setSelected(ChartPositionOption.Type.SOUTH);
             } else {
@@ -168,6 +173,15 @@ public class TemplatePrettifier {
         _io.say.ok(true);
     }
 
+    /**
+     * Gets the preferred symbol size used by this Prettifier class.
+     *
+     * @return The Symbol Size.
+     */
+    public int getSymbolSize() {
+        return _SYMBOL_SIZE;
+    }
+
     private void histogram(HistogramPlot hp) {
         HistogramAxisType hat = hp.getXAxisType();
         hat.setNumberOfBin(20);
@@ -216,11 +230,11 @@ public class TemplatePrettifier {
                 _changeAndSayNewName(sp, nn, true);
             }
         }
-        ArrayList<DataSet> ad = new ArrayList(sp.getDataSetManager().getDataSets());
         sp.setTitleFont(StaticDeclarations.Fonts.TITLE.getFont());
         _setAxes(sp);
-        _setLegend(sp, ad);
-        _setDatasets(sp, ad);
+        ArrayList<DataSet> ads = _get.plots.datasets(sp, false);
+        _setDatasets(sp, ads);
+        _setLegend(sp, ads.size());
     }
 
     /**
@@ -269,9 +283,9 @@ public class TemplatePrettifier {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
     }
 
@@ -281,14 +295,14 @@ public class TemplatePrettifier {
     final private String _FMT2 = "    - %s...";
     final private int _GRID_WIDTH = 1;
     final private int _LINE_WIDTH = 2;
-    final private int _SYMBOL_SIZE = 8;
+    final private int _SYMBOL_SIZE = 12;
     final private int _SYMBOL_SPACING = 20;
 
     private MacroUtils _mu = null;
-    private Simulation _sim = null;
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private Simulation _sim = null;
 
 }

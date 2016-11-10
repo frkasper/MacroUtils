@@ -213,7 +213,7 @@ public class GetPartSurfaces {
      * Gets a Part Surface based on a Geometric Range of the Part Surfaces provided.
      *
      * @param aps given ArrayList of Part Surfaces.
-     * @param axis what will be queried? See {@link StaticDeclarations.Axis} for options.
+     * @param axis what will be queried? See {@link macroutils.StaticDeclarations.Axis} for options.
      * @param tol given absolute tolerance for searching in default units ({@link UserDeclarations#defUnitLength}).
      * @return The PartSurface that has the maximum axis within the given tolerance.
      */
@@ -225,7 +225,7 @@ public class GetPartSurfaces {
      * Gets a Part Surface based on a Geometric Range of the Part Surfaces provided.
      *
      * @param aps given ArrayList of Part Surfaces.
-     * @param axis what will be queried? See {@link StaticDeclarations.Axis} for options.
+     * @param axis what will be queried? See {@link macroutils.StaticDeclarations.Axis} for options.
      * @param tol given absolute tolerance for searching in default units ({@link UserDeclarations#defUnitLength}).
      * @return The PartSurface that has the minimum axis within the given tolerance.
      */
@@ -405,25 +405,25 @@ public class GetPartSurfaces {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
-
-    private enum RangeOpts {
+    private static enum RangeOpts {
 
         MIN, MAX
     }
+
+    private MacroUtils _mu = null;
+    private MainGetter _get = null;
+    private macroutils.checker.MainChecker _chk = null;
+    private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

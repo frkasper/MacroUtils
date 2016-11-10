@@ -6,6 +6,7 @@ import star.common.*;
 import star.meshing.*;
 import star.prismmesher.*;
 import star.solidmesher.*;
+import star.sweptmesher.*;
 
 /**
  * Low-level class for setting Mesh parameters with MacroUtils.
@@ -28,6 +29,16 @@ public class SetMesh {
         return scmc.getCustomValues().get(CustomPrismValuesManager.class);
     }
 
+    private DirectedAutoSourceMesh _getDirectedAutoSourceMesh(NamedObject no) {
+        DirectedMeshOperation dmo = (DirectedMeshOperation) no;
+        for (Object o : dmo.getGuidedSurfaceMeshBaseManager().getObjects()) {
+            if (o instanceof DirectedAutoSourceMesh) {
+                return (DirectedAutoSourceMesh) o;
+            }
+        }
+        return null;
+    }
+
     private void _setRS(RelativeSize rs, String what, double perc) {
         rs.setPercentage(perc);
         _io.say.percentage(what, rs.getPercentage(), true);
@@ -41,20 +52,23 @@ public class SetMesh {
     /**
      * Sets the mesh Base Size for a Mesh Operation, if applicable.
      *
-     * @param mo given Mesh Operation.
+     * @param no given Named Object, if applicable.
      * @param val reference size.
      * @param u given Units.
      * @param vo given verbose option. False will only print necessary data.
      */
-    public void baseSize(MeshOperation mo, double val, Units u, boolean vo) {
-        _io.say.action("Setting the Mesh Base Size", mo, vo);
-        BaseSize bs = _get.mesh.baseSize(mo, false);
-        if (bs == null) {
-            _io.say.msg("Mesh Operation does not have a Base Size.");
+    public void baseSize(NamedObject no, double val, Units u, boolean vo) {
+        _io.say.action("Setting the Mesh Base Size", no, vo);
+        if ((no instanceof DirectedMeshOperation) && _getDirectedAutoSourceMesh(no) != null) {
+            no = _getDirectedAutoSourceMesh(no);
+        }
+        if (no instanceof AutoMeshBase) {
+            BaseSize bs = ((AutoMeshBase) no).getDefaultValues().get(BaseSize.class);
+            _set.object.physicalQuantity(bs, val, u, "Base Size", true);
+            _io.say.ok(vo);
             return;
         }
-        _set.object.physicalQuantity(bs, val, u, "Base Size", true);
-        _io.say.ok(vo);
+        _io.say.msg("Mesh Operation does not have a Base Size.");
     }
 
     /**
@@ -301,11 +315,10 @@ public class SetMesh {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
@@ -313,11 +326,10 @@ public class SetMesh {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private macroutils.UserDeclarations _ud = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
     private MainSetter _set = null;
+    private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
 
 }

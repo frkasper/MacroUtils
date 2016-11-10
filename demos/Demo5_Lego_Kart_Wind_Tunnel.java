@@ -212,12 +212,12 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
                 ud.rep.getReportMonitorValue(), new double[]{0, 0, -1}, true);
         ud.rep2 = mu.add.report.forceCoefficient(getCarBoundaries(), "C_l", 0.0, 1.18, tunnelVel,
                 ud.rep.getReportMonitorValue(), new double[]{0, 1, 0}, true);
-        ud.repMon1 = mu.get.monitors.byREGEX(ud.rep1.getPresentationName(), true);
-        ud.repMon2 = mu.get.monitors.byREGEX(ud.rep2.getPresentationName(), true);
-        mu.set.object.updateEvent(ud.repMon1, ud.updEvent2, true);
-        mu.set.object.updateEvent(ud.repMon2, ud.updEvent2, true);
-        mu.add.solver.stoppingCriteria(ud.repMon1, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 100);
-        mu.add.solver.stoppingCriteria(ud.repMon2, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 100);
+        ud.mon1 = mu.get.monitors.byREGEX(ud.rep1.getPresentationName(), true);
+        ud.mon2 = mu.get.monitors.byREGEX(ud.rep2.getPresentationName(), true);
+        mu.set.object.updateEvent(ud.mon1, ud.updEvent2, true);
+        mu.set.object.updateEvent(ud.mon2, ud.updEvent2, true);
+        mu.add.solver.stoppingCriteria(ud.mon1, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 100);
+        mu.add.solver.stoppingCriteria(ud.mon2, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 100);
         // mu.saveSim("prep4");
     }
 

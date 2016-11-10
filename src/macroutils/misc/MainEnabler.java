@@ -204,7 +204,7 @@ public class MainEnabler {
      * @param angle given spread angle in degrees.
      * @param dir given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
      * @param relSizes given anisotropic 3-component relative sizes in (<b>%</b>). E.g.: {0, 25, 0}. Zeros will be
-     * ignored. Use {@link StaticDeclarations#COORD0} if convenient.
+     * ignored. Use {@link macroutils.StaticDeclarations#COORD0} if convenient.
      * @param gr given Growth Rate.
      */
     public void trimmerWakeRefinement(SurfaceCustomMeshControl scmc, double distance, double angle,
@@ -264,9 +264,9 @@ public class MainEnabler {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _chk = _mu.check;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
         _ud = _mu.userDeclarations;
         _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
@@ -275,12 +275,12 @@ public class MainEnabler {
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private macroutils.checker.MainChecker _chk = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

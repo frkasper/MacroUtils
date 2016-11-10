@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.*;
 import macroutils.*;
 import macroutils.getter.*;
+import macroutils.setter.*;
 import star.base.neo.*;
 import star.base.report.*;
 import star.common.*;
@@ -53,6 +54,49 @@ public class CreateTools {
         ev.setStartCount(start);
         _io.say.created(ev, true);
         return ev;
+    }
+
+    private GlobalParameterBase _createParameter(String name, StaticDeclarations.GlobalParameter type, boolean vo) {
+        _io.say.action(String.format("Creating a %s Global Parameter", type.getType()), true);
+        GlobalParameterManager gpm = _sim.get(GlobalParameterManager.class);
+        if (gpm.has(name)) {
+            _io.say.value("Skipping... Parameter already exists", name, true, vo);
+            return gpm.getObject(name);
+        }
+        Class cl = ScalarGlobalParameter.class;
+        switch (type) {
+            case SCALAR:
+                break;
+            case VECTOR:
+                cl = VectorGlobalParameter.class;
+                break;
+        }
+        GlobalParameterBase gpb = gpm.createGlobalParameter(cl, type.getType());
+        gpb.setPresentationName(name);
+        _io.say.created(gpb, vo);
+        return gpb;
+    }
+
+    private ScalarGlobalParameter _createParameterScalar(String name, String def, double val, Units u) {
+        ScalarGlobalParameter sgp = (ScalarGlobalParameter) _createParameter(name,
+                StaticDeclarations.GlobalParameter.SCALAR, false);
+        sgp.setDimensions(_get.units.dimensions(u));
+        if (def == null) {
+            _set.object.physicalQuantity(sgp.getQuantity(), val, u, name, true);
+        } else {
+            _set.object.physicalQuantity(sgp.getQuantity(), def, name, true);
+        }
+        _io.say.created(sgp, true);
+        return sgp;
+    }
+
+    private VectorGlobalParameter _createParameterVector(String name, double[] vals, Units u) {
+        VectorGlobalParameter vgp = (VectorGlobalParameter) _createParameter(name, 
+                StaticDeclarations.GlobalParameter.VECTOR, false);
+        vgp.setDimensions(_get.units.dimensions(u));
+        _set.object.physicalQuantity(vgp.getQuantity(), vals, u, name, true);
+        _io.say.created(vgp, true);
+        return vgp;
     }
 
     private RangeMonitorUpdateEvent _createRangeMonitorUE(PlotableMonitor pm, StaticDeclarations.Operator opt,
@@ -111,29 +155,86 @@ public class CreateTools {
     }
 
     /**
-     * Creates a Time Report Annotation with a custom decimal formatter. See {@link String#format}.
+     * Creates a Simple Text Annotation.
+     *
+     * @param name given name.
+     * @param value given value for the Annotation.
+     * @return The SimpleAnnotation.
+     */
+    public SimpleAnnotation annotation_Simple(String name, String value) {
+        _io.say.action("Creating a Simple Annotation", true);
+        AnnotationManager am = _sim.getAnnotationManager();
+        if (am.has(name)) {
+            if (am.getObject(name) instanceof SimpleAnnotation) {
+                _io.say.value("Annotation already exists", name, true, true);
+                return (SimpleAnnotation) am.getObject(name);
+            }
+        }
+        SimpleAnnotation sa = am.createSimpleAnnotation();
+        sa.setText(value);
+        sa.setPresentationName(name);
+        _io.say.created(sa, true);
+        return sa;
+    }
+
+    /**
+     * Creates a Time Report Annotation with a custom decimal formatter. See {@link java.lang.String#format}.
      *
      * @param fmt given time format.
      * @return The ReportAnnotation.
      */
     public ReportAnnotation annotation_Time(String fmt) {
         Report r = _add.report.expression("Time", _ud.unit_s, _ud.dimTime, "$Time", false);
+        AnnotationManager am = _sim.getAnnotationManager();
         _io.say.action("Creating a Time Report Annotation", true);
-        if (_sim.getAnnotationManager().has(r.getPresentationName())) {
-            _io.say.value("Report Annotation already exists", r.getPresentationName(), true, true);
-            return (ReportAnnotation) _sim.getAnnotationManager().getObject(r.getPresentationName());
+        if (am.has(r.getPresentationName())) {
+            if (am.getObject(r.getPresentationName()) instanceof ReportAnnotation) {
+                _io.say.value("Report Annotation already exists", r.getPresentationName(), true, true);
+                return (ReportAnnotation) am.getObject(r.getPresentationName());
+            }
         }
-        ReportAnnotation ra = _sim.getAnnotationManager().createReportAnnotation(r);
+        ReportAnnotation ra = am.createReportAnnotation(r);
         _io.say.created(ra, true);
         return ra;
+    }
+
+    /**
+     * Creates a Cylindrical Coordinate System aligned at the global origin, i.e., at [0, 0, 0] and based on a direction
+     * axis. So depending on the given axis, <b>r</b>, <b>theta</b> and <b>axial</b> directions will be:
+     * <ul>
+     * <li> X: Y, Z and X, respectively;
+     * <li> Y: X, Z and Y, respectively;
+     * <li> Z: X, Y and Z, respectively;
+     * </ul>
+     *
+     * @param ax given extrusion direction. See {@link macroutils.StaticDeclarations.Axis} for options.
+     * @return The CylindricalCoordinateSystem.
+     */
+    public CylindricalCoordinateSystem coordinateSystem_Cylindrical(StaticDeclarations.Axis ax) {
+        double[] b1 = {}, b2 = {};
+        switch (ax) {
+            case X:
+                b1 = new double[]{0, 1, 0};
+                b2 = new double[]{0, 0, 1};
+                break;
+            case Y:
+                b1 = new double[]{1, 0, 0};
+                b2 = new double[]{0, 0, 1};
+                break;
+            case Z:
+                b1 = new double[]{1, 0, 0};
+                b2 = new double[]{0, 1, 0};
+                break;
+        }
+        return coordinateSystem_Cylindrical(StaticDeclarations.COORD0, b1, b2);
     }
 
     /**
      * Creates a Cylindrical Coordinate System using default length units. See {@link UserDeclarations#defUnitLength}.
      *
      * @param org given 3-components double[] array for the Origin. E.g.: {0, 0, 0}.
-     * @param b1 given 3-components double[] array for the Basis1. E.g.: {0, 1, 0}.
-     * @param b2 given 3-components double[] array for the Basis2. E.g.: {0, 0, 1}.
+     * @param b1 given 3-components double[] array for the radial direction. E.g.: {0, 1, 0}.
+     * @param b2 given 3-components double[] array for the tangential direction. E.g.: {0, 0, 1}.
      * @return The CylindricalCoordinateSystem.
      */
     public CylindricalCoordinateSystem coordinateSystem_Cylindrical(double[] org, double[] b1, double[] b2) {
@@ -154,7 +255,7 @@ public class CreateTools {
      * @param name given Colormap/LookupTable name.
      * @param ac given ArrayList of {@link java.awt.Color}.
      * @param ad given ArrayList of opacities. If null is given, all colors will be opaque.
-     * @param cs given color space code, as in {@link StaticDeclarations.ColorSpace}.
+     * @param cs given color space code, as in {@link macroutils.StaticDeclarations.ColorSpace}.
      * @return The LookupTable, i.e., the colormap object as in STAR-CCM+.
      */
     public LookupTable colormap(String name, ArrayList<Color> ac, ArrayList<Double> ad,
@@ -239,6 +340,52 @@ public class CreateTools {
     }
 
     /**
+     * Creates a Global Parameter.
+     *
+     * @param type given type. See {@link macroutils.StaticDeclarations.GlobalParameter} for options.
+     * @param name given name.
+     * @return The GlobalParameterBase. Use {@link SetObjects#physicalQuantity} to change it.
+     */
+    public GlobalParameterBase parameter(String name, StaticDeclarations.GlobalParameter type) {
+        return _createParameter(name, type, true);
+    }
+
+    /**
+     * Creates a Scalar Global Parameter.
+     *
+     * @param name given name.
+     * @param val given value.
+     * @param u given Units.
+     * @return The ScalarGlobalParameter.
+     */
+    public ScalarGlobalParameter parameter_Scalar(String name, double val, Units u) {
+        return _createParameterScalar(name, null, val, u);
+    }
+
+    /**
+     * Creates a Scalar Global Parameter.
+     *
+     * @param name given name.
+     * @param def given definition.
+     * @return The ScalarGlobalParameter.
+     */
+    public ScalarGlobalParameter parameter_Scalar(String name, String def) {
+        return _createParameterScalar(name, def, 0, _ud.unit_Dimensionless);
+    }
+
+    /**
+     * Creates a Vector Global Parameter.
+     *
+     * @param name given name.
+     * @param vals given 3-components array with values. E.g.: {1, 2, 3.5}.
+     * @param u given Units.
+     * @return The VectorGlobalParameter.
+     */
+    public VectorGlobalParameter parameter_Vector(String name, double[] vals, Units u) {
+        return _createParameterVector(name, vals, u);
+    }
+
+    /**
      * Creates a Simple Transform for Visualization, i.e., a Vis Transform.
      * <ul>
      * <li> When providing values to Method, <b>null</b> values are ignored. Units used are
@@ -319,7 +466,7 @@ public class CreateTools {
     /**
      * Creates a single Logic Update Event.
      *
-     * @param opt given Logic Option. See {@link StaticDeclarations.Logic} for options.
+     * @param opt given Logic Option. See {@link macroutils.StaticDeclarations.Logic} for options.
      * @return The LogicUpdateEvent.
      */
     public LogicUpdateEvent updateEvent_Logic(StaticDeclarations.Logic opt) {
@@ -334,7 +481,7 @@ public class CreateTools {
      * Creates an Logic Update Event with the given Update Events.
      *
      * @param ues given Array of Update Events.
-     * @param opt given Logic Option. See {@link StaticDeclarations.Logic} for options.
+     * @param opt given Logic Option. See {@link macroutils.StaticDeclarations.Logic} for options.
      * @return The LogicUpdateEvent.
      */
     public LogicUpdateEvent updateEvent_Logic(UpdateEvent[] ues, StaticDeclarations.Logic opt) {
@@ -353,7 +500,7 @@ public class CreateTools {
      *
      * @param lue given Logic Update Event to be populated.
      * @param ue given Update Event to be added to the Logic Update Event.
-     * @param opt given Logic Option. See {@link StaticDeclarations.Logic} for options.
+     * @param opt given Logic Option. See {@link macroutils.StaticDeclarations.Logic} for options.
      */
     public void updateEvent_Logic(LogicUpdateEvent lue, UpdateEvent ue, StaticDeclarations.Logic opt) {
         _io.say.action("Adding an Update Event to a Logic Update Event", true);
@@ -371,7 +518,7 @@ public class CreateTools {
      *
      * @param pm given Plotable Monitor. Use with {@link GetMonitors#iteration} or {@link GetMonitors#physicalTime}
      * method.
-     * @param opt given Operator Option. See {@link StaticDeclarations.Operator} for options.
+     * @param opt given Operator Option. See {@link macroutils.StaticDeclarations.Operator} for options.
      * @param range given Range.
      * @return The Range Monitor Update Event variable.
      */
@@ -395,24 +542,22 @@ public class CreateTools {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _add = _mu.add;
         _get = _mu.get;
+        _io = _mu.io;
         _set = _mu.set;
-        _tmpl = _mu.templates;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
     private MacroUtils _mu = null;
     private MainCreator _add = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _tmpl = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }

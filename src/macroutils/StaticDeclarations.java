@@ -199,6 +199,7 @@ public class StaticDeclarations {
     /**
      * Some color definitions available in MacroUtils, based on {@link java.awt.Color} class, such as:
      * <ul>
+     * <li>{@link #BLACK}</li>
      * <li>{@link #BLUE}</li>
      * <li>{@link #BLUE_MEDIUM}</li>
      * <li>{@link #DARK_GREEN}</li>
@@ -222,7 +223,8 @@ public class StaticDeclarations {
      */
     public static enum Colors {
 
-        BLUE(Color.blue),
+        BLACK(Color.BLACK),
+        BLUE(Color.BLUE),
         BLUE_MEDIUM(new Color(0, 0, 205)),
         DARK_GREEN(new Color(0, 100, 0)),
         DARK_ORANGE(new Color(255, 140, 0)),
@@ -230,7 +232,7 @@ public class StaticDeclarations {
         GAINSBORO(new Color(220, 220, 220)),
         IVORY(new Color(255, 255, 240)),
         IVORY_BLACK(new Color(41, 36, 33)),
-        LIGHT_GRAY(Color.lightGray),
+        LIGHT_GRAY(Color.LIGHT_GRAY),
         LIME_GREEN(new Color(50, 205, 50)),
         MINT(new Color(189, 252, 201)),
         NAVY(new Color(0, 0, 128)),
@@ -239,7 +241,7 @@ public class StaticDeclarations {
         SLATE_GRAY_DARK(new Color(47, 79, 79)),
         ULTRAMARINE(new Color(18, 10, 143)),
         WHEAT(new Color(245, 222, 179)),
-        WHITE(Color.white),
+        WHITE(Color.WHITE),
         WHITE_SMOKE(new Color(245, 245, 245)),;
 
         private final Color c;
@@ -566,6 +568,41 @@ public class StaticDeclarations {
     }
 
     /**
+     * Special MacroUtils types for Global Parameters:
+     * <ul>
+     * <li>{@link #SCALAR}</li>
+     * <li>{@link #VECTOR}</li>
+     * </ul>
+     */
+    public static enum GlobalParameter {
+
+        /**
+         * A Scalar Parameter.
+         */
+        SCALAR("Scalar"),
+        /**
+         * A Vector Parameter.
+         */
+        VECTOR("Vector"),;
+
+        private final String s;
+
+        private GlobalParameter(final String s) {
+            this.s = s;
+        }
+
+        /**
+         * Gets the actual variable name.
+         *
+         * @return The variable name.
+         */
+        public String getType() {
+            return this.s;
+        }
+
+    }
+
+    /**
      * Special MacroUtils variable to select the Volume Growth Rate for the meshers:
      * <ul>
      * <li>{@link #FAST}</li>
@@ -644,7 +681,7 @@ public class StaticDeclarations {
         }
 
         /**
-         * Gets the actual {@link RegionManager.CreateInterfaceMode} expected by STAR-CCM+ API.
+         * Gets the actual {@link star.common.RegionManager.CreateInterfaceMode} expected by STAR-CCM+ API.
          *
          * @return The mode.
          */
@@ -719,6 +756,7 @@ public class StaticDeclarations {
      * <ul>
      * <li>{@link #AUTOMATIC_SURFACE_REPAIR}</li>
      * <li>{@link #POLY_MESHER}</li>
+     * <li>{@link #POLY_MESHER_2D}</li>
      * <li>{@link #PRISM_LAYER_MESHER}</li>
      * <li>{@link #SURFACE_REMESHER}</li>
      * <li>{@link #THIN_LAYER_MESHER}</li>
@@ -735,6 +773,10 @@ public class StaticDeclarations {
          * Polyhedral Mesher.
          */
         POLY_MESHER("star.dualmesher.DualAutoMesher"),
+        /**
+         * The 2D Polygonal Mesher.
+         */
+        POLY_MESHER_2D("star.twodmesher.DualAutoMesher2d"),
         /**
          * Prism Layer Mesher.
          */
@@ -933,7 +975,7 @@ public class StaticDeclarations {
         }
 
         /**
-         * Gets the actual {@link Solution.Clear} value expected by STAR-CCM+ API.
+         * Gets the actual {@link star.common.Solution.Clear} value expected by STAR-CCM+ API.
          *
          * @return The mode.
          */
@@ -1238,6 +1280,10 @@ public class StaticDeclarations {
          * <u>Velocity Magnitude</u> variable name inside STAR-CCM+.
          */
         VEL_MAG("Velocity Magnitude"),
+        /**
+         * <u>Volume</u> variable name inside STAR-CCM+.
+         */
+        VOL("Volume"),
         /**
          * <u>Dynamic Viscosity</u> variable name inside STAR-CCM+.
          */

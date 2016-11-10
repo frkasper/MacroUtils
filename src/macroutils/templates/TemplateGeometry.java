@@ -23,9 +23,9 @@ public class TemplateGeometry {
         _sim = m.getSimulation();
     }
 
-    private Body _createExtrusion(CadModel c, Sketch s, double l, Units u) {
-        ExtrusionMerge em = c.getFeatureManager().createExtrusionMerge(s);
-        ScalarQuantityDesignParameter emv = em.getDistance().createDesignParameter("Length");
+    private Body _createExtrusion(CadModel cm, Sketch sketch, double l, Units u) {
+        ExtrusionMerge em = cm.getFeatureManager().createExtrusionMerge(sketch);
+        ScalarQuantityDesignParameter emv = em.getDistance().createDesignParameter("Lz");
         em.setDirectionOption(0);
         em.setExtrudedBodyTypeOption(0);
         emv.getQuantity().setUnits(u);
@@ -36,11 +36,17 @@ public class TemplateGeometry {
         em.setCoordinateSystemOption(0);
         em.setFace(null);
         em.setBody(null);
-        em.setSketch(s);
+        em.setSketch(sketch);
         em.setPostOption(1);
         em.setExtrusionOption(0);
-        c.getFeatureManager().execute(em);
-        return c.getBodyManager().getBodies().iterator().next();
+        cm.getFeatureManager().execute(em);
+        return cm.getBodyManager().getBodies().iterator().next();
+    }
+
+    private void _createDesignParameter(Sketch sketch, String dpName, String lineName, double x0, double x1, Units u) {
+        LineSketchPrimitive lsp = (LineSketchPrimitive) sketch.getSketchPrimitive(lineName);
+        LengthDimension ld = sketch.createLengthDimension(lsp, x1 - x0, u);
+        ScalarQuantityDesignParameter sqd = ld.getLength().createDesignParameter(dpName);
     }
 
     /**
@@ -70,6 +76,8 @@ public class TemplateGeometry {
         double f = u.getConversion();
         sketch.createRectangle(_get.objects.doubleVector(c1[0] * f, c1[1] * f),
                 _get.objects.doubleVector(c2[0] * f, c2[1] * f));
+        _createDesignParameter(sketch, "Lx", "Line 2", c1[0] * f, c2[0] * f, u);
+        _createDesignParameter(sketch, "Ly", "Line 1", c1[1] * f, c2[1] * f, u);
         cm.getFeatureManager().stopSketchEdit(sketch, true);
         cm.getFeatureManager().rollForwardToEnd();
         Body body = _createExtrusion(cm, sketch, (c2[2] - c1[2]), u);
@@ -96,7 +104,7 @@ public class TemplateGeometry {
      * @param l given Length.
      * @param org given origin as a 3-components array with coordinates. E.g.: {0, -1, -10}.
      * @param u given Units.
-     * @param ax given extrusion direction. See {@link StaticDeclarations.Axis} for options.
+     * @param ax given extrusion direction. See {@link macroutils.StaticDeclarations.Axis} for options.
      * @param name given Cylinder name.
      * @param vo given verbose option. False will not print anything.
      * @return The Cad Body.
@@ -162,20 +170,20 @@ public class TemplateGeometry {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
         _ud = _mu.userDeclarations;
     }
 
     //--
     //-- Variables declaration area.
     //--
-    private Simulation _sim = null;
+    private static final String CAD_DIRECTIONS = "XYZ";
+
     private MacroUtils _mu = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private Simulation _sim = null;
     private UserDeclarations _ud = null;
-
-    private static final String CAD_DIRECTIONS = "XYZ";
 
 }

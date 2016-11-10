@@ -21,7 +21,6 @@ public class Read {
      */
     public Read(MacroUtils m) {
         _mu = m;
-        //-- Don't remove the declaration below.
         _sim = m.getSimulation();
     }
 
@@ -77,7 +76,7 @@ public class Read {
         } catch (Exception e) {
             _io.say.msg("Could not read Projection Mode. Using Parallel.");
         }
-        vv1.setProjectionMode(pm);
+        vv1.setProjectionMode(VisProjectionMode.PARALLEL);
         _io.say.camera(vv1, vo);
         return vv1;
     }
@@ -140,8 +139,8 @@ public class Read {
      * This method is called automatically by {@link MainIO} class. It is internal to MacroUtils.
      */
     public void updateInstances() {
-        _io = _mu.io;
         _get = _mu.get;
+        _io = _mu.io;
         _ud = _mu.userDeclarations;
     }
 
@@ -149,9 +148,9 @@ public class Read {
     //-- Variables declaration area.
     //--
     private MacroUtils _mu = null;
-    private Simulation _sim = null;
-    private macroutils.UserDeclarations _ud = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.UserDeclarations _ud = null;
+    private Simulation _sim = null;
 
 }
