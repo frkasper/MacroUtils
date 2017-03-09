@@ -93,22 +93,20 @@ public class GetMesh {
      *
      * @param amo given AutoMeshOperation.
      * @param vo given verbose option. False will not print anything.
-     * @return The RelativeSize object in percentage. Null if not applicable.
+     * @return The PartsRelativeOrAbsoluteSize object. Null if not applicable.
      */
-    public RelativeSize minRelativeSize(AutoMeshOperation amo, boolean vo) {
+    public PartsRelativeOrAbsoluteSize minRelativeSize(AutoMeshOperation amo, boolean vo) {
         _io.say.action("Getting the Minimum Relative Size", vo);
         _io.say.object(amo, vo);
-        RelativeSize rs = null;
         if (_chk.has.remesher(amo)) {
-            PartsMinimumSurfaceSize pmss = amo.getDefaultValues().get(PartsMinimumSurfaceSize.class);
-            rs = pmss.getRelativeSize();
+            return amo.getDefaultValues().get(PartsMinimumSurfaceSize.class);
         }
         if (_chk.is.surfaceWrapperOperation(amo)) {
             SurfaceWrapperAutoMeshOperation swamo = (SurfaceWrapperAutoMeshOperation) amo;
-            rs = swamo.getDefaultValues().get(PartsMinimumSurfaceSize.class).getRelativeSize();
+            return swamo.getDefaultValues().get(PartsMinimumSurfaceSize.class);
         }
-        _checkGotNull(rs, "Minimum Relative Size", vo);
-        return rs;
+        _checkGotNull(null, "Minimum Relative Size", vo);
+        return null;
     }
 
     /**
@@ -147,12 +145,12 @@ public class GetMesh {
      *
      * @param amo given AutoMeshOperation.
      * @param vo given verbose option. False will not print anything.
-     * @return The RelativeSize object in percentage. Null if not applicable.
+     * @return The PartsRelativeOrAbsoluteSize object. Null if not applicable.
      */
-    public RelativeSize targetRelativeSize(AutoMeshOperation amo, boolean vo) {
+    public PartsRelativeOrAbsoluteSize targetRelativeSize(AutoMeshOperation amo, boolean vo) {
         _io.say.action("Getting the Target Relative Size", vo);
         _io.say.object(amo, vo);
-        return amo.getDefaultValues().get(PartsTargetSurfaceSize.class).getRelativeSize();
+        return amo.getDefaultValues().get(PartsTargetSurfaceSize.class);
     }
 
     /**

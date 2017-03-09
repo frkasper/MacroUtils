@@ -17,14 +17,14 @@ import star.common.*;
  * <p>
  * <b>Requires:</b>
  * <ul>
- * <li> STAR-CCM+ v11.06 libraries. <u>It may not run in other versions</u>;
+ * <li> STAR-CCM+ v12.02 libraries. <u>It may not run in other versions</u>;
  * <li> If one is compiling through NetBeans 8 or higher, please do it against JDK 7 Source/Binary format;
  * <li> Compiling against JDK 8 will present runtime issues in STAR-CCM+.
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v11.06, November 01, 2016.
+ * @version v12.02, March 09, 2017.
  */
 public final class MacroUtils {
 

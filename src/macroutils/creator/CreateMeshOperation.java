@@ -321,11 +321,9 @@ public class CreateMeshOperation {
 
     private void _setMeshDefaults(AutoMeshDefaultValuesManager amdvm) {
         _set.object.physicalQuantity(amdvm.get(BaseSize.class), _ud.mshBaseSize, _ud.defUnitLength, "Base Size", true);
-        _setRelativeSize("Target Surface Size",
-                amdvm.get(PartsTargetSurfaceSize.class).getRelativeSize(), _ud.mshSrfSizeTgt);
+        _setRelativeSize("Target Surface Size", amdvm.get(PartsTargetSurfaceSize.class), _ud.mshSrfSizeTgt);
         if (amdvm.has("Minimum Surface Size")) {
-            _setRelativeSize("Minimum Surface Size",
-                    amdvm.get(PartsMinimumSurfaceSize.class).getRelativeSize(), _ud.mshSrfSizeMin);
+            _setRelativeSize("Minimum Surface Size", amdvm.get(PartsMinimumSurfaceSize.class), _ud.mshSrfSizeMin);
         }
         if (amdvm.has("Number of Prism Layers")) {
             _set.mesh.numPrismLayers(amdvm.get(NumPrismLayers.class), _ud.prismsLayers, false);
@@ -334,8 +332,7 @@ public class CreateMeshOperation {
             _set.mesh.prismLayerStretching(amdvm.get(PrismLayerStretching.class), _ud.prismsStretching, false);
         }
         if (amdvm.has("Prism Layer Total Thickness")) {
-            _setRelativeSize("Prism Layer Total Thickness",
-                    amdvm.get(PrismThickness.class).getRelativeSize(), _ud.prismsRelSizeHeight);
+            _setRelativeSize("Prism Layer Total Thickness", amdvm.get(PrismThickness.class), _ud.prismsRelSizeHeight);
         }
         if (amdvm.has("Surface Curvature")) {
             _set.mesh.surfaceCurvature(amdvm.get(SurfaceCurvature.class), _ud.mshSrfCurvNumPoints, false);
@@ -350,14 +347,18 @@ public class CreateMeshOperation {
             _io.say.value("Growth Rate Type", t.getPresentationName(), true, true);
         }
         if (amdvm.has("Maximum Cell Size")) {
-            _setRelativeSize("Maximum Cell Size",
-                    amdvm.get(MaximumCellSize.class).getRelativeSize(), _ud.mshTrimmerMaxCellSize);
+            _setRelativeSize("Maximum Cell Size", amdvm.get(MaximumCellSize.class), _ud.mshTrimmerMaxCellSize);
         }
     }
 
     private void _setRelativeSize(String what, RelativeSize rs, double perc) {
         rs.setPercentage(perc);
         _io.say.percentage(what, rs.getPercentage(), true);
+    }
+
+    private void _setRelativeSize(String what, PartsRelativeOrAbsoluteSize rs, double perc) {
+        rs.setRelativeSize(perc);
+        _io.say.percentage(what, rs.getRelativeSizeValue(), true);
     }
 
     private void _setWorkAroundAutoSourceMesh(DirectedAutoSourceMesh dasm, GeometryPart gp) {
@@ -874,7 +875,7 @@ public class CreateMeshOperation {
         CustomMeshControlConditionManager vccc = vcmc.getCustomConditions();
         if (_chk.has.polyMesher(amo) && relSize > 0) {
             vccc.get(VolumeControlDualMesherSizeOption.class).setVolumeControlBaseSizeOption(true);
-            vcmc.getCustomValues().get(VolumeControlSize.class).getRelativeSize().setPercentage(relSize);
+            _setRelativeSize("Relative Size", vcmc.getCustomValues().get(VolumeControlSize.class), relSize);
         }
         if (_chk.has.trimmerMesher(amo)) {
             vccc.get(VolumeControlTrimmerSizeOption.class).setTrimmerAnisotropicSizeOption(true);
@@ -882,7 +883,7 @@ public class CreateMeshOperation {
             if (relSize > 0) {
                 vccc.get(VolumeControlTrimmerSizeOption.class).setVolumeControlBaseSizeOption(true);
                 _setRelativeSize("Isotropic Relative Size",
-                        vcmc.getCustomValues().get(VolumeControlSize.class).getRelativeSize(), relSize);
+                        vcmc.getCustomValues().get(VolumeControlSize.class), relSize);
             }
             if (relSizes[0] > 0) {
                 tas.setXSize(true);
