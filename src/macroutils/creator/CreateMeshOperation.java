@@ -368,8 +368,7 @@ public class CreateMeshOperation {
         scmc.getGeometryObjects().setObjects(gp);
         CustomMeshControlConditionManager cmccm = scmc.getCustomConditions();
         cmccm.get(PartsTargetSurfaceSizeOption.class).setSelected(PartsTargetSurfaceSizeOption.Type.CUSTOM);
-        PartsTargetSurfaceSize ptss = scmc.getCustomValues().get(PartsTargetSurfaceSize.class);
-        ((GenericRelativeSize) ptss.getRelativeSize()).setPercentage(_ud.mshSrfSizeTgt);
+        _setRelativeSize("Relative Size", scmc.getCustomValues().get(PartsTargetSurfaceSize.class), _ud.mshSrfSizeTgt);
         scmc.setPresentationName("Work-Around AutoSource Mesh");
     }
 
@@ -873,17 +872,17 @@ public class CreateMeshOperation {
         VolumeCustomMeshControl vcmc = amo.getCustomMeshControls().createVolumeControl();
         vcmc.getGeometryObjects().setObjects(agp);
         CustomMeshControlConditionManager vccc = vcmc.getCustomConditions();
+        CustomMeshControlValueManager cmcvm = vcmc.getCustomValues();
         if (_chk.has.polyMesher(amo) && relSize > 0) {
             vccc.get(VolumeControlDualMesherSizeOption.class).setVolumeControlBaseSizeOption(true);
-            _setRelativeSize("Relative Size", vcmc.getCustomValues().get(VolumeControlSize.class), relSize);
+            _setRelativeSize("Relative Size", cmcvm.get(VolumeControlSize.class), relSize);
         }
         if (_chk.has.trimmerMesher(amo)) {
             vccc.get(VolumeControlTrimmerSizeOption.class).setTrimmerAnisotropicSizeOption(true);
             TrimmerAnisotropicSize tas = vcmc.getCustomValues().get(TrimmerAnisotropicSize.class);
             if (relSize > 0) {
                 vccc.get(VolumeControlTrimmerSizeOption.class).setVolumeControlBaseSizeOption(true);
-                _setRelativeSize("Isotropic Relative Size",
-                        vcmc.getCustomValues().get(VolumeControlSize.class), relSize);
+                _setRelativeSize("Isotropic Relative Size", cmcvm.get(VolumeControlSize.class), relSize);
             }
             if (relSizes[0] > 0) {
                 tas.setXSize(true);

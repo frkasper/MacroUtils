@@ -49,7 +49,7 @@ public class Write {
         _io.say.msgDebug("Trying to write: %s", f.toString());
         if (no instanceof Scene) {
             Scene scn = (Scene) no;
-            scn.open(true);
+            scn.open();
             scn.printAndWait(f, 1, resx, resy, _ud.picAntiAliasing, _ud.picTransparentBackground);
         } else if (no instanceof StarPlot) {
             StarPlot sp = (StarPlot) no;

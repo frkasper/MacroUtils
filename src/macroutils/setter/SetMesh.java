@@ -142,7 +142,7 @@ public class SetMesh {
     public void prismLayerTotalThickness(PrismThickness pt, double val, boolean vo) {
         _io.say.action("Setting Prism Layer Total Thickness", vo);
         pt.setRelativeSize(val);
-        _io.say.percentage("Prism Layer Total Thickness", pt.getRelativeSize().getPercentage(), true);
+        _io.say.percentage("Prism Layer Total Thickness", pt.getRelativeSizeValue(), true);
         _io.say.ok(vo);
     }
 
@@ -235,9 +235,8 @@ public class SetMesh {
      */
     public void surfaceCurvature(SurfaceCurvature sc, double n, boolean vo) {
         _io.say.action("Setting Surface Curvature", (NamedObject) sc.getParent().getParent(), vo);
-        SurfaceCurvatureNumPts scnp = sc.getSurfaceCurvatureNumPts();
-        scnp.setNumPointsAroundCircle(n);
-        _io.say.value("Surface Curvature Points/Curve", scnp.getNumPointsAroundCircle(), true);
+        sc.setNumPointsAroundCircle(n);
+        _io.say.value("Surface Curvature Points/Curve", sc.getNumPointsAroundCircle(), true);
         _io.say.ok(vo);
     }
 
