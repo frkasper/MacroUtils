@@ -46,6 +46,8 @@ public class Demo14_GCI extends StarMacro {
 
         mu.saveSim();
 
+        mu.io.write.all(ud.simTitle);
+
     }
 
     public void assessGCI() {
@@ -138,7 +140,7 @@ public class Demo14_GCI extends StarMacro {
                 mu.get.partSurfaces.byREGEX("z1", true), 5, StaticDeclarations.Meshers.POLY_MESHER_2D,
                 StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
         ud.scene = mu.add.scene.mesh();
-        ud.scene.open(true);
+        ud.scene.open();
     }
 
     private void setupPhysics() {

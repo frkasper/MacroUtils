@@ -27,13 +27,23 @@ import star.vof.*;
 public class Demo7_Sloshing_Case extends StarMacro {
 
     public void execute() {
+
         initMacro();
+
         prep1_createRegion();
+
         prep2_PhysicsAndMesh();
+
         prep3_MotionAndPost();
+
         mu.saveSim(ud.simTitle + "_preRun");
+
         mu.run();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     Region getRegion() {

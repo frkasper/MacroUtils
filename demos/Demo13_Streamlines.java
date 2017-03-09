@@ -23,6 +23,8 @@ public class Demo13_Streamlines extends StarMacro {
 
         mu.saveSim();
 
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {

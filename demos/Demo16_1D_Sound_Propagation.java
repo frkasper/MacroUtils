@@ -16,7 +16,9 @@ public class Demo16_1D_Sound_Propagation extends StarMacro {
 
         MacroUtils mu = new MacroUtils(getActiveSimulation());
 
-        mu.userDeclarations.simTitle = "Demo16_1D_Sound_Propagation";
+        UserDeclarations ud = mu.userDeclarations;
+
+        ud.simTitle = "Demo16_1D_Sound_Propagation";
 
         Demo16 demo16 = mu.templates.demos.demo16;
 
@@ -31,6 +33,8 @@ public class Demo16_1D_Sound_Propagation extends StarMacro {
         mu.run();
 
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
 
     }
 

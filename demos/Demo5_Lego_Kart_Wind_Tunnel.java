@@ -13,14 +13,25 @@ import star.meshing.*;
 public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
 
     public void execute() {
+
         initMacro();
+
         prep1_importGeometry();
+
         prep2_createTunnelWrapAndRegion();
+
         prep3_createBCsAndMesh();
+
         prep4_setPost();
+
         mu.run();
+
         mu.open.all();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {
@@ -41,7 +52,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         mu.set.userDefault.cameraView(ud.vv1);
         mu.add.geometry.importPart("LegoKart.x_b");
         ud.scene = mu.add.scene.geometry();
-        ud.scene.open(true);
+        ud.scene.open();
         // mu.saveSim("prep1");
     }
 

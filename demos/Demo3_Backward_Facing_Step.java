@@ -26,12 +26,21 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
     private final double Re_h = 189;            //-- Reynolds Number f(h)
 
     public void execute() {
+
         initMacro();
+
         prep1_createParts();
+
         prep2_BCsAndMesh();
+
         prep3_setPost();
+
         mu.run();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {

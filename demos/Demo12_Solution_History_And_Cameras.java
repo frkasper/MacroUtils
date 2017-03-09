@@ -25,6 +25,8 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
 
         mu.saveSim();
 
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {

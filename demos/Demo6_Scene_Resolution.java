@@ -12,16 +12,26 @@ import star.vis.*;
 public class Demo6_Scene_Resolution extends StarMacro {
 
     public void execute() {
+
         initMacro();
+
         createOrUpdateResolutionScene();
+
         while (true) {
+
             mu.get.objects.annotation(".*pixels", false).setText(getResolution());
+
             mu.io.sleep(slpTime * 1000);
+
             if (!mu.check.is.open(ud.scene)) {
+
                 break;
+
             }
         }
+
         mu.getSimulation().getSceneManager().remove(ud.scene);
+
     }
 
     void initMacro() {
@@ -43,7 +53,7 @@ public class Demo6_Scene_Resolution extends StarMacro {
         String s = String.format("Refreshing Scene in %d seconds...", slpTime);
         mu.add.scene.annotation(ud.scene, getResolution(), 0.05, new double[]{0.1, 0.5, 0});
         mu.add.scene.annotation(ud.scene, s, 0.05, new double[]{0.1, 0.4, 0});
-        ud.scene.open(true);
+        ud.scene.open();
     }
 
     String getResolution() {

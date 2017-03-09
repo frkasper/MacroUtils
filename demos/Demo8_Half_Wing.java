@@ -13,13 +13,23 @@ import star.trimmer.*;
 public class Demo8_Half_Wing extends StarMacro {
 
     public void execute() {
+
         initMacro();
+
         prep1_importGeometryAndSplit();
+
         prep2_createRegionBCsAndMesh();
+
         prep3_setPost();
+
         mu.open.all();
+
         mu.run();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     ArrayList<Boundary> getWingBoundaries() {
