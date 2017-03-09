@@ -4,7 +4,7 @@ MacroUtils is a collection of high-level APIs in order to make your life easier 
 
 ## Requires:
 
-1. STAR-CCM+ v11.06 libraries. It may not run in other versions;
+1. STAR-CCM+ v12.02 libraries. It may not run in other versions;
 
 1. If one is compiling through NetBeans, please do it against JDK 7 Source/Binary format;
 
