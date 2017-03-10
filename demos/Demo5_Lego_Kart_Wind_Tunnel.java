@@ -174,6 +174,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         mu.set.boundary.asPressureOutlet(getOutlet(), 0., 0., 0.02, 1.);
         //--
         mu.update.volumeMesh();
+        mu.remove.invalidCells();
         // mu.saveSim("prep3");
     }
 
