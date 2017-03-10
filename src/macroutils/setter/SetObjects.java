@@ -66,56 +66,8 @@ public class SetObjects {
     }
 
     private void _setUE(StarUpdate su, UpdateEvent ue) {
-        if ((su.getParent() instanceof Scene) || (su.getParent() instanceof AutoSave)) {
-            _setWorkAround(su, ue);
-            return;
-        }
         su.getUpdateModeOption().setSelected(StarUpdateModeOption.Type.EVENT);
         su.getEventUpdateFrequency().setUpdateEvent(ue);
-    }
-
-    private void _setWorkAround(StarUpdate su, UpdateEvent ue) {
-        //-- Check later.
-        // Workaround for the error below found in v11.04.
-        //    error: Server Error
-        //    expression: _starUpdate
-        //    file: Monitor.cpp
-        //    line: 331
-        // StarUpdate unexpectedly missing.
-        // Command: RunSimulation
-        su.setEnabled(true);
-        String sn = su.getParent().getPresentationName();
-        _io.say.value("Workaround on Update Event", sn, true, true);
-        String s2 = "  - Reverted to \"%s\" Update Mode.";
-        String s3 = "  - Not reverted. Risk of StarUpdate error.";
-        if (ue instanceof FrequencyMonitorUpdateEvent) {
-            FrequencyMonitorUpdateEvent fmue = (FrequencyMonitorUpdateEvent) ue;
-            if (fmue.getMonitor() instanceof IterationMonitor) {
-                su.getUpdateModeOption().setSelected(StarUpdateModeOption.Type.ITERATION);
-                IterationUpdateFrequency iuf = su.getIterationUpdateFrequency();
-                iuf.setIterations(fmue.getSampleFrequency());
-                iuf.setStart(fmue.getStartCount());
-                _io.say.msg(true, s2, iuf.getBeanDisplayName());
-            } else if (fmue.getMonitor() instanceof PhysicalTimeMonitor) {
-                su.getUpdateModeOption().setSelected(StarUpdateModeOption.Type.TIMESTEP);
-                TimeStepUpdateFrequency tuf = su.getTimeStepUpdateFrequency();
-                tuf.setTimeSteps(fmue.getSampleFrequency());
-                tuf.setStart(fmue.getStartCount());
-                _io.say.msg(true, s2, tuf.getBeanDisplayName());
-            } else {
-                _io.say.msg(true, s3);
-            }
-        } else if (ue instanceof DeltaMonitorUpdateEvent) {
-            DeltaMonitorUpdateEvent dmue = (DeltaMonitorUpdateEvent) ue;
-            if (dmue.getMonitor() instanceof PhysicalTimeMonitor) {
-                su.getUpdateModeOption().setSelected(StarUpdateModeOption.Type.DELTATIME);
-                DeltaTimeUpdateFrequency dtuf = su.getDeltaTimeUpdateFrequency();
-                dtuf.setDeltaTimeInput(dmue.getDeltaThresholdInput());
-                _io.say.msg(true, s2, dtuf.getBeanDisplayName());
-            }
-        } else {
-            _io.say.msg(true, s3);
-        }
     }
 
     private void _setWU(WindowUpdate wu, String pp, int resx, int resy) {
