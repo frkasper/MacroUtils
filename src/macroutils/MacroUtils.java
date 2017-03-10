@@ -55,7 +55,7 @@ public final class MacroUtils {
     }
 
     private String _getMacroUtilsVersion() {
-        return "MacroUtils version 11.06 build 1";
+        return "MacroUtils version 12.02 build 1";
     }
 
     private void _initialize() {
