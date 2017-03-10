@@ -115,14 +115,20 @@ public class Demo14_GCI extends StarMacro {
         }
     }
 
+    private PartSurface getSideA() {
+        return mu.get.partSurfaces.byREGEX("z0", true);
+    }
+
+    private PartSurface getSideB() {
+        return mu.get.partSurfaces.byREGEX("z1", true);
+    }
+
     private void setupBCs() {
         MomentumUserSourceOption muso = ud.region.getConditions().get(MomentumUserSourceOption.class);
         muso.setSelected(MomentumUserSourceOption.Type.SPECIFIED);
         MomentumUserSource mus = ud.region.getValues().get(MomentumUserSource.class);
         mu.set.object.physicalQuantity(mus.getMethod(ConstantVectorProfileMethod.class).getQuantity(),
                 "[0.0, 0.0, $dPdL]", "Momentum Source", true);
-        ud.bdryIntrf = mu.add.intrf.boundaryInterface(mu.get.boundaries.byREGEX("z0", true),
-                mu.get.boundaries.byREGEX("z1", true), InterfaceConfigurationOption.Type.PERIODIC);
     }
 
     private void setupPlotData(InternalDataSet ids, SymbolShapeOption.Type type, StaticDeclarations.Colors color) {
@@ -136,9 +142,8 @@ public class Demo14_GCI extends StarMacro {
         ud.prismsLayers = 3;
         ud.prismsRelSizeHeight = 40;
         ud.prismsNearCoreAspRat = 0.5;
-        ud.mshOp = mu.add.meshOperation.directedMeshing_AutoMesh(mu.get.partSurfaces.byREGEX("z0", true),
-                mu.get.partSurfaces.byREGEX("z1", true), 5, StaticDeclarations.Meshers.POLY_MESHER_2D,
-                StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
+        ud.mshOp = mu.add.meshOperation.directedMeshing_AutoMesh(getSideA(), getSideB(), 5,
+                StaticDeclarations.Meshers.POLY_MESHER_2D, StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
         ud.scene = mu.add.scene.mesh();
         ud.scene.open();
     }
@@ -168,7 +173,7 @@ public class Demo14_GCI extends StarMacro {
         FieldFunction fx, fVz;
         fx = mu.get.objects.fieldFunction(StaticDeclarations.Vars.POS.getVar(), true).getComponentFunction(0);
         fVz = mu.get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), true).getComponentFunction(2);
-        ud.bdry = ud.bdryIntrf.getInterfaceBoundary0();
+        ud.bdry = getSideA().getBoundary();
         ud.rep1 = mu.add.report.massFlowAverage(ud.bdry, repMean, fVz, ud.defUnitVel, true);
         ud.rep2 = mu.add.report.maximum(ud.bdry, repMax, fVz, ud.defUnitVel, true);
         ud.mon = mu.get.monitors.byREGEX("Z-momentum", true);
@@ -196,10 +201,12 @@ public class Demo14_GCI extends StarMacro {
     }
 
     private void setupRegion() {
-        ud.cadPrt = mu.add.geometry.cylinder3DCAD(R, L, StaticDeclarations.COORD0, ud.unit_mm, StaticDeclarations.Axis.Z);
+        ud.cadPrt = mu.add.geometry.cylinder3DCAD(R, L, StaticDeclarations.COORD0, ud.unit_mm,
+                StaticDeclarations.Axis.Z);
         ud.geometryParts.add(ud.cadPrt);
+        mu.add.contact.periodic(getSideA(), getSideB());
         ud.region = mu.add.region.fromPart(ud.cadPrt, StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
-                StaticDeclarations.InterfaceMode.CONTACT, StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                StaticDeclarations.InterfaceMode.BOUNDARY, StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
     }
 
     private MacroUtils mu;
