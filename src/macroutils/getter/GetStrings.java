@@ -133,13 +133,15 @@ public class GetStrings {
      * @return The String.
      */
     public String parentName(ClientServerObject cso) {
-        String s = cso.getParent().getBeanDisplayName();
-        if (s.endsWith("ies")) {
-            return s.replace("ies", "y");
-        } else if (s.endsWith("s")) {
-            return s.replace("s", "");
+        String name = cso.getParent().getBeanDisplayName();
+        String[] split = name.split(" ");
+        String lastWord = split[split.length - 1];
+        if (lastWord.endsWith("ies")) {
+            lastWord = lastWord.replace("ies", "y");
+        } else if (lastWord.endsWith("s")) {
+            lastWord = lastWord.replace("s", "");
         }
-        return s;
+        return name.replace(split[split.length - 1], lastWord);
     }
 
     /**
