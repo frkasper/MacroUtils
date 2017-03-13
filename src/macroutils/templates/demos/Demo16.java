@@ -84,8 +84,10 @@ public class Demo16 {
         }
         _F = _ud.scalParam.getQuantity().getRawValue();
         _W = _C / _F;
-        _L = 50.0 * _W;
+        _L = 10.0 * _W;
+        _ud.defUnitTemp = _ud.unit_K;
         _ud.trnMaxTime = 2.0 * _L / _C;
+        _ud.v0 = new double[]{1E-4 * _C, 0, 0};
         _io.say.ok(true);
         _upd.solverSettings();
     }
@@ -106,14 +108,14 @@ public class Demo16 {
     private void _setupMesh() {
         _ud.partSrf1 = _get.partSurfaces.byREGEX(_ud.bcInlet, true);
         _ud.partSrf2 = _get.partSurfaces.byREGEX(_ud.bcOutlet, true);
-        int nx = (int) (_L / (_W / 100.0));
+        int nPointsPerWavelength = 100;
+        int nx = (int) Math.ceil(_L / _W * nPointsPerWavelength);
         _add.meshOperation.directedMeshing_Channel(_ud.partSrf1, _ud.partSrf2, nx, 1, 1).execute();
     }
 
     private void _setupPart() {
         _ud.geometryParts.clear();
-        _ud.cadPrt = _add.geometry.block3DCAD(StaticDeclarations.COORD0,
-                new double[]{_L, 0.1, 0.1}, _ud.unit_m);
+        _ud.cadPrt = _add.geometry.block3DCAD(StaticDeclarations.COORD0, new double[]{_L, 0.1, 0.1}, _ud.unit_m);
         _ud.cadPrt.setPresentationName("Domain");
         _ud.geometryParts.add(_ud.cadPrt);
         _get.partSurfaces.byREGEX("x0", true).setPresentationName(_ud.bcInlet);
@@ -136,6 +138,10 @@ public class Demo16 {
         ids.getSymbolStyle().getSymbolShapeOption().setSelected(SymbolShapeOption.Type.FILLED_CIRCLE);
         ids.getSymbolStyle().setColor(StaticDeclarations.Colors.BLACK.getColor());
         ids.getSymbolStyle().setSize(4);
+        Cartesian2DAxisManager cam = (Cartesian2DAxisManager) _ud.starPlot.getAxisManager();
+        Cartesian2DAxis cla = (Cartesian2DAxis) cam.getAxis("Left Axis");
+        cla.setMinimum(-1.2);
+        cla.setMaximum(1.2);
         _ud.starPlot.open();
     }
 
@@ -144,7 +150,6 @@ public class Demo16 {
             _ud.physCont = _get.objects.physicsContinua(".*Explicit.*", true);
             return;
         }
-        _ud.v0 = new double[]{0.05 * _C, 0, 0};
         _ud.physCont = _add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL,
                 StaticDeclarations.Time.EXPLICIT_UNSTEADY, StaticDeclarations.Material.GAS,
                 StaticDeclarations.Solver.COUPLED, StaticDeclarations.Density.IDEAL_GAS,
@@ -152,15 +157,13 @@ public class Demo16 {
     }
 
     private void _setupRegion() {
-        _ud.defUnitTemp = _ud.unit_K;
         _ud.ff = _add.tools.fieldFunction("Pout", String.format("sin(2*$PI*%g*$Time)", _F),
                 _ud.dimPress, FieldFunctionTypeOption.Type.SCALAR);
-        //--
         _ud.region = _add.region.fromAll(true);
         _ud.bdry = _get.boundaries.byREGEX(_ud.bcInlet, true);
-        _set.boundary.asFreeStream(_ud.bdry, new double[]{1, 0, 0}, 0.05, 0, 300, 0, 0);
+        _set.boundary.asFreeStream(_ud.bdry, new double[]{1, 0, 0}, _ud.v0[0] / _C, 0, _ud.t0, 0, 0);
         _ud.bdry = _get.boundaries.byREGEX(_ud.bcOutlet, true);
-        _set.boundary.asPressureOutlet(_ud.bdry, 0, 300, 0, 0);
+        _set.boundary.asPressureOutlet(_ud.bdry, 0, _ud.t0, 0, 0);
         _set.boundary.definition(_ud.bdry, StaticDeclarations.Vars.P, "$Pout");
         _set.boundary.asSymmetry(_get.boundaries.byREGEX(_ud.bcSym, true));
     }
