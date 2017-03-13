@@ -38,7 +38,7 @@ public class Write {
         _io.say.ok(true);
     }
 
-    private void _writePic(NamedObject no, String name, int resx, int resy, boolean vo) {
+    private boolean _tryWritePic(NamedObject no, String name, int resx, int resy, boolean vo) {
         if (name == null) {
             name = no.getPresentationName();
         } else {
@@ -49,19 +49,34 @@ public class Write {
         _io.say.msgDebug("Trying to write: %s", f.toString());
         if (no instanceof Scene) {
             Scene scn = (Scene) no;
-            scn.open();
             scn.printAndWait(f, 1, resx, resy, _ud.picAntiAliasing, _ud.picTransparentBackground);
         } else if (no instanceof StarPlot) {
             StarPlot sp = (StarPlot) no;
-            sp.open();
             sp.encode(f.toString(), StaticDeclarations.PIC_EXT, resx, resy, true);
         }
-        if (!f.exists()) {
-            _io.say.value("Picture not written", f.getName(), true, true);
-            return;
+        if (f.isFile()) {
+            _io.say.value("Written", f.getName(), true, true);
+            _io.say.ok(vo);
+            return true;
         }
-        _io.say.value("Written", f.getName(), true, true);
-        _io.say.ok(vo);
+        _io.say.value("Picture not written", f.getName(), true, true);
+        return false;
+    }
+
+    private void _writePic(NamedObject no, String name, int resx, int resy, boolean vo) {
+        int nTries = 3;
+        for (int n = 1; n <= nTries; n++) {
+            boolean picWritten = _tryWritePic(no, name, resx, resy, vo);
+            if (picWritten) {
+                break;
+            }
+            if (n == nTries) {
+                _io.say.msg("  - Giving up!", true);
+                break;
+            }
+            _io.say.msg("  - Will try again in a second...", true);
+            _io.sleep(1000);
+        }
     }
 
     /**
