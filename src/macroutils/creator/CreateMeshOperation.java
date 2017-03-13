@@ -444,12 +444,15 @@ public class CreateMeshOperation {
      * @param src given Source Part Surface.
      * @param tgt given Target Part Surface.
      * @param meshers given meshers, separated by comma. See {@link macroutils.StaticDeclarations} for options.
-     * @param nv given number of points in volume distribution.
+     * @param nVol given number of layers in volume distribution.
      * @return The DirectedMeshOperation.
      */
-    public DirectedMeshOperation directedMeshing_AutoMesh(PartSurface src, PartSurface tgt, int nv,
+    public DirectedMeshOperation directedMeshing_AutoMesh(PartSurface src, PartSurface tgt, int nVol,
             StaticDeclarations.Meshers... meshers) {
         _io.say.action("Creating a Directed Mesh Operation with an Automated 2D Mesh", true);
+        _io.say.object(src, true);
+        _io.say.object(tgt, true);
+        _io.say.msg(true, "Number of Layers: %d.", nVol);
         DirectedMeshOperation dmo = _createDMO(src, tgt);
         //--
         String pn = src.getPart().getPresentationName();
@@ -462,7 +465,7 @@ public class CreateMeshOperation {
         _setWorkAroundAutoSourceMesh(dasm, src.getPart());
         DirectedMeshDistributionManager dmdm = dmo.getDirectedMeshDistributionManager();
         DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(_getNOV1(dmpc), "Constant");
-        dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nv);
+        dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
         dmo.execute();
         _io.say.created(dmo, true);
         return dmo;
@@ -480,6 +483,10 @@ public class CreateMeshOperation {
      */
     public DirectedMeshOperation directedMeshing_Channel(PartSurface src, PartSurface tgt, int nX, int nY, int nZ) {
         _io.say.action("Creating a Directed Mesh Operation in a Channel", true);
+        _io.say.msg("Number of Elements:");
+        _io.say.msg(true, "  - X Direction: %d;", nX);
+        _io.say.msg(true, "  - Y Direction: %d;", nY);
+        _io.say.msg(true, "  - Z Direction: %d.", nZ);
         DirectedMeshOperation dmo = _createDMO(src, tgt);
         int isX = 0, isY = 0, isZ = 0;
         int nP1 = 2, nP2 = 2, nVol = 2;
@@ -568,6 +575,10 @@ public class CreateMeshOperation {
             _io.say.msg("Directed Mesh not created.");
             return null;
         }
+        _io.say.msg("Number of Elements:");
+        _io.say.msg(true, "  - Tangent Direction (theta): %d;", nT);
+        _io.say.msg(true, "  - Radial Direction (r): %d;", nR);
+        _io.say.msg(true, "  - Along Pipe (axially): %d.", nVol);
         DirectedMeshOperation dmo = _createDMO(src, tgt);
         CylindricalCoordinateSystem ccs = (CylindricalCoordinateSystem) c;
         //--
