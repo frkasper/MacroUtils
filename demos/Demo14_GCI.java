@@ -174,8 +174,9 @@ public class Demo14_GCI extends StarMacro {
         fx = mu.get.objects.fieldFunction(StaticDeclarations.Vars.POS.getVar(), true).getComponentFunction(0);
         fVz = mu.get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), true).getComponentFunction(2);
         ud.bdry = getSideA().getBoundary();
-        ud.rep1 = mu.add.report.massFlowAverage(ud.bdry, repMean, fVz, ud.defUnitVel, true);
-        ud.rep2 = mu.add.report.maximum(ud.bdry, repMax, fVz, ud.defUnitVel, true);
+        InterfaceBoundary ib = mu.get.boundaries.interfaceBoundary(ud.bdry, true);
+        ud.rep1 = mu.add.report.massFlowAverage(ib, repMean, fVz, ud.defUnitVel, true);
+        ud.rep2 = mu.add.report.maximum(ib, repMax, fVz, ud.defUnitVel, true);
         ud.mon = mu.get.monitors.byREGEX("Z-momentum", true);
         mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.MIN, 1e-6, 0);
         //-- Setup Plot

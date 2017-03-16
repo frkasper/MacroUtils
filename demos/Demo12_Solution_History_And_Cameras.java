@@ -155,14 +155,16 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
         mu.set.solver.aggressiveSettings();
         mu.templates.post.unsteadyReports();
         mu.disable.residualMonitorsNormalization();
-        ud.rep1 = mu.add.report.force(mu.get.boundaries.allByREGEX("Cyl.*", false), "Fx", new double[]{1, 0, 0}, true);
-        ud.rep2 = mu.add.report.force(mu.get.boundaries.allByREGEX("Cyl.*", false), "Fy", new double[]{0, 1, 0}, true);
+        ud.namedObjects.addAll(mu.get.boundaries.allByREGEX("Cyl.*", false));
+        ud.rep1 = mu.add.report.force(ud.namedObjects, "Fx", new double[]{1, 0, 0}, true);
+        ud.rep2 = mu.add.report.force(ud.namedObjects, "Fy", new double[]{0, 1, 0}, true);
         mu.templates.prettify.all();
         ud.updEvent1 = mu.add.tools.updateEvent_DeltaTime(0.01, ud.unit_s, false);
         ud.updEvent2 = mu.add.tools.updateEvent_Range(mu.get.monitors.physicalTime(),
                 StaticDeclarations.Operator.GREATER_THAN_OR_EQUALS, 0.1);
         ud.updEvent = mu.add.tools.updateEvent_Logic(new UpdateEvent[]{ud.updEvent1, ud.updEvent2},
                 StaticDeclarations.Logic.AND);
+        ud.namedObjects.clear();
         ud.namedObjects.add(ud.region);
         ud.fieldFunctions.add(ud.ff.getMagnitudeFunction());
         ud.solHist = mu.add.solver.solutionHistory(ud.namedObjects, ud.fieldFunctions);

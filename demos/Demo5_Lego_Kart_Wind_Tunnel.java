@@ -233,8 +233,8 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         // mu.saveSim("prep4");
     }
 
-    ArrayList<Boundary> getCarBoundaries() {
-        return mu.get.boundaries.allByREGEX("^((?!" + tunnelName + ").)*$", false);
+    ArrayList<NamedObject> getCarBoundaries() {
+        return new ArrayList(mu.get.boundaries.allByREGEX("^((?!" + tunnelName + ").)*$", false));
     }
 
     Boundary getInlet() {
