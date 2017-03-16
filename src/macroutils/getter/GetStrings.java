@@ -96,6 +96,16 @@ public class GetStrings {
     }
 
     /**
+     * Gets a more detailed information from a STAR-CCM+ object.
+     *
+     * @param cso given ClientServerObject.
+     * @return A String.
+     */
+    public String information(ClientServerObject cso) {
+        return String.format("%s -> \"%s\"", parentName(cso), name(cso));
+    }
+
+    /**
      * Gets the current meshers selected in an Automated Mesh Operation.
      *
      * @param amo given AutoMeshOperation.
@@ -127,12 +137,33 @@ public class GetStrings {
     }
 
     /**
+     * Gets the friendly presentation name from a STAR-CCM+ object.
+     *
+     * @param cso given ClientServerObject.
+     * @return A String.
+     */
+    public String name(ClientServerObject cso) {
+        if (cso == null) {
+            return "NULL";
+        }
+        if (cso instanceof GeometryPart) {
+            return ((GeometryPart) cso).getPathInHierarchy();
+        } else if (cso instanceof ColumnDescriptor) {
+            return ((ColumnDescriptor) cso).getColumnName();
+        }
+        return cso.getPresentationName();
+    }
+
+    /**
      * Gets the parent name from a STAR-CCM+ object.
      *
-     * @param cso given Client Server Object.
-     * @return The String.
+     * @param cso given ClientServerObject.
+     * @return A String.
      */
     public String parentName(ClientServerObject cso) {
+        if (cso == null) {
+            return "NULL";
+        }
         String name = cso.getParent().getBeanDisplayName();
         String[] split = name.split(" ");
         String lastWord = split[split.length - 1];
