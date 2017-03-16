@@ -38,7 +38,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         sim = getActiveSimulation();
         mu = new MacroUtils(sim);
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo5_Lego_Kart";
+        ud.simTitle = "Demo5_Lego_Kart_Wind_Tunnel";
     }
 
     void prep1_importGeometry() {

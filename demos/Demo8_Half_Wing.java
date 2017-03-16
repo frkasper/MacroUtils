@@ -37,7 +37,7 @@ public class Demo8_Half_Wing extends StarMacro {
         sim = getActiveSimulation();
         mu = new MacroUtils(sim);
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo8_HalfWing";
+        ud.simTitle = "Demo8_Half_Wing";
         //--
         //-- Mesh settings
         ud.mshBaseSize = 30;

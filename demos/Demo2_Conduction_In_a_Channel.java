@@ -49,7 +49,7 @@ public class Demo2_Conduction_In_a_Channel extends StarMacro {
     void initMacro() {
         mu = new MacroUtils(getActiveSimulation());
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo2_Channel";
+        ud.simTitle = "Demo2_Conduction_In_a_Channel";
     }
 
     void prep1_createPart() {

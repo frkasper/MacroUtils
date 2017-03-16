@@ -46,7 +46,7 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
     void initMacro() {
         mu = new MacroUtils(getActiveSimulation());
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo3_BackwardFacingStep";
+        ud.simTitle = "Demo3_Backward_Facing_Step";
     }
 
     void prep1_createParts() {

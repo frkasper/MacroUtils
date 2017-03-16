@@ -54,7 +54,7 @@ public class Demo7_Sloshing_Case extends StarMacro {
         sim = getActiveSimulation();
         mu = new MacroUtils(sim);
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo7_Sloshing";
+        ud.simTitle = "Demo7_Sloshing_Case";
         //-- Physics/Solver/Mesh settings
         ud.mshBaseSize = 2.;
         W = ud.mshBaseSize;

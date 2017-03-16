@@ -43,7 +43,7 @@ public class Demo1_Flow_In_a_Pipe extends StarMacro {
     void initMacro() {
         mu = new MacroUtils(getActiveSimulation());
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo1_Cylinder";
+        ud.simTitle = "Demo1_Flow_In_a_Pipe";
     }
 
     void prep1_createPart() {
