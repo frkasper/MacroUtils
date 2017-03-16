@@ -89,13 +89,13 @@ public class CreateReport {
      * Creates a Force Report using the default Units for the selected Boundaries. A Monitor and Plot will be also
      * created.
      *
-     * @param ab given ArrayList of Boundaries.
+     * @param ano given ArrayList of NamedObjects, if applicable. E.g.: boundaries, interfaces, planes, etc...
      * @param name given Report name.
      * @param direction a 3-component array of the given direction of flow. E.g.: in X it is {1, 0, 0}.
      * @param vo given verbose option. False will not print anything.
      * @return The Force Report.
      */
-    public ForceReport force(ArrayList<Boundary> ab, String name, double[] direction, boolean vo) {
+    public ForceReport force(ArrayList<NamedObject> ano, String name, double[] direction, boolean vo) {
         _io.say.action("Creating a Force Report", vo);
         if (_checkHasIt(name, false) != null) {
             return (ForceReport) _checkHasIt(name, vo);
@@ -104,9 +104,9 @@ public class CreateReport {
         fr.getReferencePressure().setUnits(_ud.unit_Pa);
         fr.getReferencePressure().setValue(0.0);
         fr.setUnits(_ud.defUnitForce);
-        fr.getParts().setObjects(ab);
+        fr.getParts().setObjects(ano);
         fr.getDirection().setComponents(direction[0], direction[1], direction[2]);
-        _io.say.objects(ab, "Boundaries", vo);
+        _io.say.objects(ano, "Objects", vo);
         _io.say.unit(fr.getUnits(), vo);
         monitorAndPlot(fr, null, String.format("Force (%s)", _getString(fr.getUnits())), vo);
         _io.say.created(fr, vo);
@@ -119,7 +119,7 @@ public class CreateReport {
      *
      * The Pressure Coefficient variable will be updated based on the supplied values.
      *
-     * @param ab given ArrayList of Boundaries.
+     * @param ano given ArrayList of NamedObjects, if applicable. E.g.: boundaries, interfaces, planes, etc...
      * @param name given Report name.
      * @param refP given Reference Pressure in default unit. See {@link UserDeclarations#defUnitPress}.
      * @param refDen given Reference Density in default unit. See {@link UserDeclarations#defUnitDen}.
@@ -129,13 +129,13 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Force Coefficient Report.
      */
-    public ForceCoefficientReport forceCoefficient(ArrayList<Boundary> ab, String name, double refP, double refDen,
+    public ForceCoefficientReport forceCoefficient(ArrayList<NamedObject> ano, String name, double refP, double refDen,
             double refVel, double refArea, double[] direction, boolean vo) {
         _io.say.action("Creating a Force Coefficient Report", vo);
         if (_checkHasIt(name, false) != null) {
             return (ForceCoefficientReport) _checkHasIt(name, vo);
         }
-        _io.say.objects(ab, "Boundaries", vo);
+        _io.say.objects(ano, "Objects", vo);
         ForceCoefficientReport fcr = (ForceCoefficientReport) _createReport(ForceCoefficientReport.class, name);
         _setSPQ(fcr.getReferencePressure(), refP, _ud.defUnitPress, "Reference Pressure", vo);
         _setSPQ(fcr.getReferenceDensity(), refDen, _ud.defUnitDen, "Reference Density", vo);
@@ -143,7 +143,7 @@ public class CreateReport {
         _setSPQ(fcr.getReferenceArea(), refArea, _ud.defUnitArea, "Reference Area", vo);
         fcr.getForceOption().setSelected(ForceReportForceOption.Type.PRESSURE_AND_SHEAR);
         fcr.getDirection().setComponents(direction[0], direction[1], direction[2]);
-        fcr.getParts().setObjects(ab);
+        fcr.getParts().setObjects(ano);
         //-- Pressure Coefficient update. Will use refP = 0.
         _set.object.fieldFunctionPressureCoefficient(refDen, 0., refVel, vo);
         monitorAndPlot(fcr, null, String.format("Force Coefficient", _getString(fcr.getUnits())), vo);
@@ -154,27 +154,27 @@ public class CreateReport {
     /**
      * Creates a Frontal Area Report for the selected Boundaries.
      *
-     * @param ab given ArrayList of Boundaries.
+     * @param ano given ArrayList of NamedObjects, if applicable. E.g.: boundaries, interfaces, planes, etc...
      * @param name given Report name.
      * @param viewUp a 3-component array of the screen View Up. E.g.: if Y is showing up in the screen, then {0, 1, 0}.
      * @param direction a 3-component array of the given direction of flow. E.g.: in X it is {1, 0, 0}.
      * @param vo given verbose option. False will not print anything.
      * @return The Frontal Area Report.
      */
-    public Report frontalArea(ArrayList<Boundary> ab, String name, double[] viewUp, double[] direction, boolean vo) {
+    public Report frontalArea(ArrayList<NamedObject> ano, String name, double[] viewUp, double[] direction, boolean vo) {
         _io.say.action("Creating a Frontal Area Report", vo);
         if (_checkHasIt(name, false) != null) {
             return (ForceCoefficientReport) _checkHasIt(name, vo);
         }
         FrontalAreaReport far = (FrontalAreaReport) _createReport(FrontalAreaReport.class, name);
-        _io.say.objects(ab, "Boundaries", vo);
+        _io.say.objects(ano, "Objects", vo);
         _io.say.value("View Up", new DoubleVector(viewUp), vo);
         _io.say.value("Flow Direction", new DoubleVector(direction), vo);
         far.getViewUpCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
                 new DoubleVector(viewUp));
         far.getNormalCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
                 new DoubleVector(direction));
-        far.getParts().setObjects(ab);
+        far.getParts().setObjects(ano);
         far.setUnits(_ud.defUnitArea);
         _io.say.created(far, vo);
         return far;
@@ -237,35 +237,35 @@ public class CreateReport {
     /**
      * Creates a Mass Flow Report for the selected Boundary.
      *
-     * @param b given Boundary.
+     * @param no given NamedObject, if applicable. E.g.: boundaries, interfaces, planes, etc...
      * @param name given Report name.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      * @return The Mass Flow Report.
      */
-    public MassFlowReport massFlow(Boundary b, String name, Units u, boolean vo) {
-        return massFlow(_get.objects.arrayList(b), name, u, vo);
+    public MassFlowReport massFlow(NamedObject no, String name, Units u, boolean vo) {
+        return massFlow(_get.objects.arrayList(no), name, u, vo);
     }
 
     /**
      * Creates a Mass Flow Report for the selected Boundaries.
      *
-     * @param ab given ArrayList of Boundaries.
+     * @param ano given ArrayList of NamedObjects, if applicable. E.g.: boundaries, interfaces, planes, etc...
      * @param name given Report name.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      * @return The Mass Flow Report.
      */
-    public MassFlowReport massFlow(ArrayList<Boundary> ab, String name, Units u, boolean vo) {
+    public MassFlowReport massFlow(ArrayList<NamedObject> ano, String name, Units u, boolean vo) {
         _io.say.action("Creating a Mass Flow Report", vo);
         if (_checkHasIt(name, false) != null) {
             return (MassFlowReport) _checkHasIt(name, vo);
         }
-        _io.say.objects(ab, "Boundaries", vo);
+        _io.say.objects(ano, "Objects", vo);
         _io.say.unit(u, vo);
         MassFlowReport mfr = (MassFlowReport) _createReport(MassFlowReport.class, name);
         mfr.setUnits(u);
-        mfr.getParts().setObjects(ab);
+        mfr.getParts().setObjects(ano);
         monitorAndPlot(mfr, null, String.format("Mass Flow (%s)", _getString(u)), vo);
         _io.say.created(mfr, vo);
         return mfr;
@@ -274,39 +274,39 @@ public class CreateReport {
     /**
      * Creates a Mass Flow Average Report for the selected Boundary.
      *
-     * @param b given Boundary.
+     * @param no given NamedObject, if applicable. E.g.: boundaries, interfaces, planes, etc...
      * @param name given Report name.
      * @param ff given Field Function.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      * @return The Mass Flow Average Report.
      */
-    public MassFlowAverageReport massFlowAverage(Boundary b, String name, FieldFunction ff, Units u, boolean vo) {
-        return massFlowAverage(_get.objects.arrayList(b), name, ff, u, vo);
+    public MassFlowAverageReport massFlowAverage(NamedObject no, String name, FieldFunction ff, Units u, boolean vo) {
+        return massFlowAverage(_get.objects.arrayList(no), name, ff, u, vo);
     }
 
     /**
      * Creates a Mass Flow Average Report for the selected Boundaries.
      *
-     * @param ab given ArrayList of Boundaries.
+     * @param ano given ArrayList of NamedObjects, if applicable. E.g.: boundaries, interfaces, planes, etc...
      * @param name given Report name.
      * @param ff given Field Function.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      * @return The Mass Flow Average Report.
      */
-    public MassFlowAverageReport massFlowAverage(ArrayList<Boundary> ab, String name, FieldFunction ff,
+    public MassFlowAverageReport massFlowAverage(ArrayList<NamedObject> ano, String name, FieldFunction ff,
             Units u, boolean vo) {
         _io.say.action("Creating a Mass Flow Average Report", vo);
         if (_checkHasIt(name, false) != null) {
             return (MassFlowAverageReport) _checkHasIt(name, vo);
         }
-        _io.say.objects(ab, "Boundaries", vo);
+        _io.say.objects(ano, "Objects", vo);
         _io.say.scalar(ff, u, vo);
         MassFlowAverageReport mfa = (MassFlowAverageReport) _createReport(MassFlowAverageReport.class, name);
         mfa.setFieldFunction(ff);
         mfa.setUnits(u);
-        mfa.getParts().setObjects(ab);
+        mfa.getParts().setObjects(ano);
         monitorAndPlot(mfa, null, String.format("Mass Flow Average of %s (%s)", ff.getPresentationName(),
                 _getString(u)), vo);
         _io.say.created(mfa, vo);
@@ -396,24 +396,24 @@ public class CreateReport {
     /**
      * Creates a Pressure Drop Report. Definition: dP = P1 - P2.
      *
-     * @param b1 given Boundary 1. High Pressure.
-     * @param b2 given Boundary 2. Low Pressure
+     * @param no1 given NamedObject 1, if applicable. High Pressure. E.g.: boundaries, interfaces, planes, etc...
+     * @param no2 given NamedObject 2, if applicable. Low Pressure. E.g.: boundaries, interfaces, planes, etc...
      * @param name given Report name.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      * @return The Pressure Drop Report.
      */
-    public PressureDropReport pressureDrop(Boundary b1, Boundary b2, String name, Units u, boolean vo) {
+    public PressureDropReport pressureDrop(NamedObject no1, NamedObject no2, String name, Units u, boolean vo) {
         _io.say.action("Creating a Pressure Drop Report", vo);
         if (_checkHasIt(name, false) != null) {
             return (PressureDropReport) _checkHasIt(name, vo);
         }
-        _io.say.value("High Pressure", b1.getPresentationName(), true, vo);
-        _io.say.value("Low Pressure", b2.getPresentationName(), true, vo);
+        _io.say.value("High Pressure", no1.getPresentationName(), true, vo);
+        _io.say.value("Low Pressure", no2.getPresentationName(), true, vo);
         _io.say.unit(u, vo);
         PressureDropReport pdr = (PressureDropReport) _createReport(PressureDropReport.class, name);
-        pdr.getParts().setObjects(b1);
-        pdr.getLowPressureParts().setObjects(b2);
+        pdr.getParts().setObjects(no1);
+        pdr.getLowPressureParts().setObjects(no2);
         pdr.setUnits(u);
         monitorAndPlot(pdr, null, "Pressure Drop", vo);
         _io.say.created(pdr, vo);
