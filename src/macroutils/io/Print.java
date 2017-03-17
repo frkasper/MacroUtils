@@ -28,13 +28,11 @@ public class Print {
         return new Formatter().format(format, args).toString();
     }
 
-    private String _getName(ClientServerObject cso) {
-        if (cso instanceof GeometryPart) {
-            return ((GeometryPart) cso).getPathInHierarchy();
-        } else if (cso instanceof ColumnDescriptor) {
-            return ((ColumnDescriptor) cso).getColumnName();
+    public String _getValue(String what, String sval, boolean dq) {
+        if (dq) {
+            return String.format("%s: \"%s\".", what, sval);
         }
-        return cso.getPresentationName();
+        return String.format("%s: %s.", what, sval);
     }
 
     private void _say(String msg) {
@@ -254,12 +252,7 @@ public class Print {
      * @param vo given verbose option. False will not print anything.
      */
     public void object(ClientServerObject cso, boolean vo) {
-        String parentName = "NULL", csoName = "NULL";
-        if (cso != null) {
-            parentName = _get.strings.parentName(cso);
-            csoName = cso.getPresentationName();
-        }
-        value(parentName + " name", csoName, true, vo);
+        value(_get.strings.parentName(cso) + " name", _get.strings.name(cso), true, vo);
     }
 
     /**
@@ -277,7 +270,7 @@ public class Print {
         for (Object o : aos) {
             String s = o.toString();
             if (o instanceof ClientServerObject) {
-                s = _getName((ClientServerObject) o);
+                s = _get.strings.name((ClientServerObject) o);
             }
             msg(vo, "  - \"%s\"", s);
         }
@@ -435,11 +428,7 @@ public class Print {
         if (what == null) {
             return;
         }
-        if (dq) {
-            msg(vo, "%s: \"%s\".", what, sval);
-            return;
-        }
-        msg(vo, "%s: %s.", what, sval);
+        msg(_getValue(what, sval, dq), vo);
     }
 
     /**

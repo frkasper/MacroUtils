@@ -64,7 +64,7 @@ public class GetObjects {
                 if (!hasMatch) {
                     continue;
                 }
-                _io.say.msg(vo, "  - Match: \"%s\"", name, vo);
+                _io.say.msg(vo, "  - Match: \"%s\".", name, vo);
                 arr.add(no);
             }
             String s = "";
@@ -165,6 +165,30 @@ public class GetObjects {
         }
         _io.say.msg("ConstantMaterialPropertyMethod is NULL.");
         return null;
+    }
+
+    /**
+     * Gets all the children objects related to the given ArrayList of parent objects, when applicable.
+     *
+     * @param ano given ArrayList of STAR-CCM+ objects. E.g.: Regions, Boundaries, Parts, PlaneSections, etc...
+     * @param vo given verbose option. False will not print anything.
+     * @return An ArrayList of children NamedObjects, when applicable.
+     */
+    public ArrayList<NamedObject> children(ArrayList<NamedObject> ano, boolean vo) {
+        _io.say.objects(ano, "given Original Objects", vo);
+        ArrayList<NamedObject> anoChildren = new ArrayList();
+        for (NamedObject no : ano) {
+            if (no instanceof Region) {
+                anoChildren.addAll(((Region) no).getBoundaryManager().getBoundaries());
+                continue;
+            } else if (no instanceof GeometryPart) {
+                anoChildren.addAll(((PartSurface) no).getPartSurfaces());
+                continue;
+            }
+            anoChildren.add(no);
+        }
+        _io.say.objects(anoChildren, "Children Objects found", vo);
+        return anoChildren;
     }
 
     /**

@@ -21,19 +21,29 @@ public class Demo1_Flow_In_a_Pipe extends StarMacro {
     private final double radius = 20;
 
     public void execute() {
+
         initMacro();
+
         prep1_createPart();
+
         prep2_createRegion();
+
         prep3_BCsAndMesh();
+
         prep4_setPost();
+
         mu.run();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {
         mu = new MacroUtils(getActiveSimulation());
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo1_Cylinder";
+        ud.simTitle = "Demo1_Flow_In_a_Pipe";
     }
 
     void prep1_createPart() {

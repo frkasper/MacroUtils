@@ -13,9 +13,20 @@ public class Demo4_Split_Part_Surfaces extends StarMacro {
     public void execute() {
 
         mu = new MacroUtils(getActiveSimulation());
+
         ud = mu.userDeclarations;
+
         ud.simTitle = "Demo4_Split_Part_Surfaces";
 
+        importGeometryAndSplitPartSurfaces();
+
+        mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
+    }
+
+    private void importGeometryAndSplitPartSurfaces() {
         mu.add.geometry.importPart("radial_impeller.stp");
         ud.geomPrt = mu.get.geometries.byREGEX(".*", true);
         mu.get.partSurfaces.byREGEX(ud.geomPrt, ".*", true).setPresentationName("Faces");
@@ -57,15 +68,11 @@ public class Demo4_Split_Part_Surfaces extends StarMacro {
         ud.partSrf = mu.set.geometry.combinePartSurfaces(ud.partSurfaces, true);
         ud.partSrf.setPresentationName("blades");
 
-        ud.partSrf = mu.set.geometry.combinePartSurfaces(
-                mu.get.partSurfaces.allByREGEX(ud.geomPrt, ".*tips.*", true),
-                true);
-        ud.partSrf.setPresentationName("blade tips");
+        ud.partSurfaces2.addAll(mu.get.partSurfaces.allByREGEX(ud.geomPrt, ".*tips.*", true));
+        mu.set.geometry.combinePartSurfaces(ud.partSurfaces2, true).setPresentationName("blade tips");
 
         ud.defCamView = mu.io.read.cameraView("cam|-2.343460e-03,4.096864e-02,2.864518e-02|-1.684336e-02,5.075395e-01,3.809093e-01|1.234549e-02,6.027526e-01,-7.978326e-01|9.030182e-02|1", true);
-        mu.add.scene.geometry().open(true);
-
-        mu.saveSim();
+        mu.add.scene.geometry().open();
     }
 
     private MacroUtils mu;

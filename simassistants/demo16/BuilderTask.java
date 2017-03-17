@@ -1,4 +1,4 @@
-package simassistants.demo16;
+package demo16;
 
 import macroutils.*;
 import star.assistant.*;

@@ -12,10 +12,17 @@ import star.vis.*;
 public class Demo11_Directed_Meshing extends StarMacro {
 
     public void execute() {
+
         initMacro();
+
         pre();
+
         post();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {
@@ -93,7 +100,7 @@ public class Demo11_Directed_Meshing extends StarMacro {
         //--
         mu.update.volumeMesh();
         ud.scene = mu.add.scene.mesh();
-        ud.scene.open(true);
+        ud.scene.open();
     }
 
     void post() {
@@ -111,7 +118,7 @@ public class Demo11_Directed_Meshing extends StarMacro {
         ud.disp = mu.get.scenes.displayerByREGEX(ud.scene, ".*", true);
         ((ScalarDisplayer) ud.disp).setDisplayMeshBoolean(true);
         ((ScalarDisplayer) ud.disp).getLegend().setVisible(false);
-        ud.scene.open(true);
+        ud.scene.open();
     }
 
     double x = 100, y = 100, z = 100;

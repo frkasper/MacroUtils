@@ -35,10 +35,12 @@ public class MainIO {
      */
     public File createFolder(String fld) {
         File f = new File(_ud.simPath, fld);
+        if (f.canWrite()) {
+            say.value("Folder already exists", f.toString(), true, true);
+            return f;
+        }
         say.value("Creating a Folder", f.toString(), true, true);
-        if (f.exists()) {
-            say.msg(true, "Already exists.");
-        } else if (f.mkdir()) {
+        if (f.mkdir()) {
             say.ok(true);
         } else {
             say.msg(true, "Could not be created due an unknown error.");

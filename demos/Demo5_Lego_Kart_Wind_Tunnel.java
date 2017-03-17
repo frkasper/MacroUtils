@@ -13,21 +13,32 @@ import star.meshing.*;
 public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
 
     public void execute() {
+
         initMacro();
+
         prep1_importGeometry();
+
         prep2_createTunnelWrapAndRegion();
+
         prep3_createBCsAndMesh();
+
         prep4_setPost();
+
         mu.run();
+
         mu.open.all();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {
         sim = getActiveSimulation();
         mu = new MacroUtils(sim);
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo5_Lego_Kart";
+        ud.simTitle = "Demo5_Lego_Kart_Wind_Tunnel";
     }
 
     void prep1_importGeometry() {
@@ -41,7 +52,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         mu.set.userDefault.cameraView(ud.vv1);
         mu.add.geometry.importPart("LegoKart.x_b");
         ud.scene = mu.add.scene.geometry();
-        ud.scene.open(true);
+        ud.scene.open();
         // mu.saveSim("prep1");
     }
 
@@ -163,6 +174,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         mu.set.boundary.asPressureOutlet(getOutlet(), 0., 0., 0.02, 1.);
         //--
         mu.update.volumeMesh();
+        mu.remove.invalidCells();
         // mu.saveSim("prep3");
     }
 
@@ -221,8 +233,8 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         // mu.saveSim("prep4");
     }
 
-    ArrayList<Boundary> getCarBoundaries() {
-        return mu.get.boundaries.allByREGEX("^((?!" + tunnelName + ").)*$", false);
+    ArrayList<NamedObject> getCarBoundaries() {
+        return new ArrayList(mu.get.boundaries.allByREGEX("^((?!" + tunnelName + ").)*$", false));
     }
 
     Boundary getInlet() {

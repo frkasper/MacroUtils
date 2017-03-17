@@ -87,6 +87,25 @@ public class GetBoundaries {
     }
 
     /**
+     * Gets the first interface associated to a Boundary.
+     *
+     * @param b given Boundary.
+     * @param vo given verbose option. False will not print anything.
+     * @return The InterfaceBoundary. Null if nothing is found.
+     */
+    public InterfaceBoundary interfaceBoundary(Boundary b, boolean vo) {
+        _io.print.msg(vo, "Getting the InterfaceBoundary associated to Boundary: \"%s\".", b.getPresentationName());
+        Vector<BoundaryInterface> vbi = b.getDependentInterfaces();
+        if (vbi.isEmpty()) {
+            _io.print.msg("No Interfaces found. Returning NULL!", vo);
+            return null;
+        }
+        InterfaceBoundary ib = vbi.get(0).getInterfaceBoundary0();
+        _io.say.value("Found", ib.getPresentationName(), true, vo);
+        return ib;
+    }
+
+    /**
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {

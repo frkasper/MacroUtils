@@ -110,7 +110,7 @@ public class CreateScene {
 
     private void _createdDisplayer(Displayer d, ArrayList<NamedObject> ano, boolean vo) {
         d.setPresentationName(d.getPresentationName().split(" ")[0]);
-        _io.say.objects(ano, "Parts", vo);
+        _io.say.objects(ano, "Objects in Displayer", vo);
         _io.say.created(d, vo);
     }
 
@@ -204,6 +204,10 @@ public class CreateScene {
         AnnotationProp ap = scn.getAnnotationPropManager().getAnnotationProp("Logo");
         ((FixedAspectAnnotationProp) ap).setLocation(DisplayLocationMode.FOREGROUND);
         return scn;
+    }
+
+    private ArrayList<NamedObject> _getInputPartsChildren(StreamPart sp) {
+        return _get.objects.children(new ArrayList(sp.getInputPartsCollection()), false);
     }
 
     private ArrayList<NamedObject> _getScalarNOs(ArrayList<NamedObject> ano) {
@@ -421,7 +425,7 @@ public class CreateScene {
      * an Opacity of 0.2 and the default Color. See {@link UserDeclarations#defColor}.
      * </ul>
      *
-     * @param ano given ArrayList of NamedObjects.
+     * @param ano given ArrayList of NamedObjects. E.g.: a Region and an Inlet Boundary.
      * @param tubeOpt use tubes to represent the Streamlines.
      * @return The Scene.
      */
@@ -431,7 +435,7 @@ public class CreateScene {
         asp.add(sp);
         Scene scn = _createScene(StaticDeclarations.Scene.STREAMLINE, asp, _getVelocity(), _ud.defUnitVel, tubeOpt);
         StreamDisplayer sd = (StreamDisplayer) _mu.get.scenes.displayerByREGEX(scn, ".*", false);
-        PartDisplayer pd = _createDisplayer_Part(scn, new ArrayList(sp.getInputParts().getParts()), tubeOpt);
+        PartDisplayer pd = _createDisplayer_Part(scn, _getInputPartsChildren(sp), true);
         pd.setRepresentation(_get.mesh.geometry());
         pd.setOpacity(0.2);
         pd.setColorMode(PartColorMode.CONSTANT);

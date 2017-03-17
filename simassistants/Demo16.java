@@ -1,6 +1,6 @@
 import java.util.*;
 import macroutils.*;
-import simassistants.demo16.*;
+import demo16.*;
 import star.assistant.*;
 import star.assistant.annotation.*;
 

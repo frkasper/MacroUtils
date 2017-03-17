@@ -1,5 +1,6 @@
 import java.util.*;
 import macroutils.*;
+import star.base.neo.*;
 import star.common.*;
 import star.meshing.*;
 import star.trimmer.*;
@@ -13,24 +14,30 @@ import star.trimmer.*;
 public class Demo8_Half_Wing extends StarMacro {
 
     public void execute() {
-        initMacro();
-        prep1_importGeometryAndSplit();
-        prep2_createRegionBCsAndMesh();
-        prep3_setPost();
-        mu.open.all();
-        mu.run();
-        mu.saveSim();
-    }
 
-    ArrayList<Boundary> getWingBoundaries() {
-        return mu.get.boundaries.allByREGEX(".*wing.*", false);
+        initMacro();
+
+        prep1_importGeometryAndSplit();
+
+        prep2_createRegionBCsAndMesh();
+
+        prep3_setPost();
+
+        mu.open.all();
+
+        mu.run();
+
+        mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {
         sim = getActiveSimulation();
         mu = new MacroUtils(sim);
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo8_HalfWing";
+        ud.simTitle = "Demo8_Half_Wing";
         //--
         //-- Mesh settings
         ud.mshBaseSize = 30;
@@ -225,24 +232,27 @@ public class Demo8_Half_Wing extends StarMacro {
         //--
         //-- Reports and Stopping Criterias
         int stopIter = 75;
-        ud.boundaries.addAll(getWingBoundaries());
-        ud.rep1 = mu.add.report.frontalArea(ud.boundaries, "Frontal Area",
+        ud.rep1 = mu.add.report.frontalArea(getWingBoundaries(), "Frontal Area",
                 new double[]{0, 1, 0}, new double[]{0, 0, -1}, true);
-        ud.rep2 = mu.add.report.frontalArea(ud.boundaries, "Upper Area",
+        ud.rep2 = mu.add.report.frontalArea(getWingBoundaries(), "Upper Area",
                 new double[]{0, 0, 1}, new double[]{0, -1, 0}, true);
         //-- Cd
-        ud.rep = mu.add.report.forceCoefficient(ud.boundaries, "C_d", 0.0, 1.196, wingVel,
+        ud.rep = mu.add.report.forceCoefficient(getWingBoundaries(), "C_d", 0.0, 1.196, wingVel,
                 ud.rep1.getReportMonitorValue(), new double[]{0, 0, -1}, true);
         ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
         mu.set.object.updateEvent(ud.mon, ud.updEvent2, true);
         mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, stopIter);
         //-- Cl
-        ud.rep = mu.add.report.forceCoefficient(ud.boundaries, "C_l", 0.0, 1.196, wingVel,
+        ud.rep = mu.add.report.forceCoefficient(getWingBoundaries(), "C_l", 0.0, 1.196, wingVel,
                 ud.rep2.getReportMonitorValue(), new double[]{0, 1, 0}, true);
         ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
         mu.set.object.updateEvent(ud.mon, ud.updEvent2, true);
         mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, stopIter);
         // mu.saveSim("c_Ready");
+    }
+
+    ArrayList<NamedObject> getWingBoundaries() {
+        return new ArrayList(mu.get.boundaries.allByREGEX(".*wing.*", false));
     }
 
     void updateGlobalObjects() {

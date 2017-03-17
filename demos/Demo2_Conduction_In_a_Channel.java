@@ -27,19 +27,29 @@ public class Demo2_Conduction_In_a_Channel extends StarMacro {
     private final double depth = 50;
 
     public void execute() {
+
         initMacro();
+
         prep1_createPart();
+
         prep2_createRegion();
+
         prep3_BCsAndMesh();
+
         prep4_setPost();
+
         mu.run();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     void initMacro() {
         mu = new MacroUtils(getActiveSimulation());
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo2_Channel";
+        ud.simTitle = "Demo2_Conduction_In_a_Channel";
     }
 
     void prep1_createPart() {

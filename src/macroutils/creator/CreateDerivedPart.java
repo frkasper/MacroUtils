@@ -55,6 +55,18 @@ public class CreateDerivedPart {
         return ps;
     }
 
+    private StreamPart _streamlinePartSeed(ArrayList<NamedObject> anoIP, ArrayList<NamedObject> anoSP, boolean vo) {
+        _io.say.objects(anoIP, "Input Parts", vo);
+        _io.say.objects(anoSP, "Seed Parts", vo);
+        FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), false);
+        StreamPart sp = _sim.getPartManager().createStreamPart(new NeoObjectVector(anoIP.toArray()),
+                new NeoObjectVector(anoSP.toArray()), ff,
+                _ud.postStreamlineResolution, _ud.postStreamlineResolution, 0);
+        _io.say.object(sp.getFieldFunction(), true);
+        _io.say.created(sp, true);
+        return sp;
+    }
+
     /**
      * Creates a Cell Surface for postprocessing.
      *
@@ -208,39 +220,35 @@ public class CreateDerivedPart {
      * @return The StreamPart.
      */
     public StreamPart streamline_PartSeed(ArrayList<NamedObject> ano) {
+        _creating(null, "Streamline Derived Part");
         ArrayList<NamedObject> a3d = new ArrayList();
         ArrayList<NamedObject> a2d = new ArrayList();
         for (NamedObject no : ano) {
+            String info = _get.strings.information(no);
             if ((no instanceof Region) || (no instanceof GeometryPart)) {
+                _io.say.value(info, "added as a 3D object", false, true);
                 a3d.add(no);
             } else if ((no instanceof Boundary) || (no instanceof PartSurface)) {
+                _io.say.value(info, "added as a 2D object", false, true);
                 a2d.add(no);
             } else {
                 _io.say.value("Warning! Object is not 3D or 2D to be used for Streamline",
                         no.getBeanDisplayName(), true, true);
             }
         }
-        return streamline_PartSeed(a3d, a2d);
+        return _streamlinePartSeed(a3d, a2d, false);
     }
 
     /**
      * Creates a Part Seed type Streamline on all Regions based on a list of objects.
      *
      * @param anoIP given ArrayList of NamedObjects for the Input Parts. E.g.: Regions or Parts.
-     * @param anoSP given ArrayList of NamedObjects for the Input Parts. E.g.: Part Surfaces or Boundaries.
+     * @param anoSP given ArrayList of NamedObjects for the Seed Parts. E.g.: Part Surfaces or Boundaries.
      * @return The StreamPart.
      */
     public StreamPart streamline_PartSeed(ArrayList<NamedObject> anoIP, ArrayList<NamedObject> anoSP) {
         _creating(null, "Streamline Derived Part");
-        _io.say.objects(anoIP, "Input Parts", true);
-        _io.say.objects(anoSP, "Seed Parts", true);
-        FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), false);
-        StreamPart sp = _sim.getPartManager().createStreamPart(new NeoObjectVector(anoIP.toArray()),
-                new NeoObjectVector(anoSP.toArray()), ff,
-                _ud.postStreamlineResolution, _ud.postStreamlineResolution, 0);
-        _io.say.object(sp.getFieldFunction(), true);
-        _io.say.created(sp, true);
-        return sp;
+        return _streamlinePartSeed(anoIP, anoSP, true);
     }
 
     /**

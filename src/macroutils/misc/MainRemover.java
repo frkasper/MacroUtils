@@ -2,6 +2,7 @@ package macroutils.misc;
 
 import java.util.*;
 import macroutils.*;
+import star.base.neo.*;
 import star.base.report.*;
 import star.cadmodeler.*;
 import star.common.*;
@@ -25,6 +26,66 @@ public class MainRemover {
         _mu = m;
         _sim = m.getSimulation();
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
+    }
+
+    private NeoProperty _getNeoProperty(boolean aggressiveRemoval) {
+        double minFaceValidity = 0.51;
+        double minCellQuality = 1e-8;
+        double minVolChange = 1e-10;
+        double minConFaceAreas = 0.0;
+        int minDiscontigCells = 1;
+        if (aggressiveRemoval) {
+            minFaceValidity = 0.95;
+            minCellQuality = 1.e-5;
+            minVolChange = 1.e-4;
+            minDiscontigCells = 100;
+            minConFaceAreas = 1.e-8;
+        }
+        NeoProperty np = new NeoProperty();
+        np.put("function", "");
+        np.put("functionOperator", 0);
+        np.put("functionValue", 0.0);
+        np.put("functionEnabled", false);
+        np.put("minimumCellQualityEnabled", true);
+        np.put("minimumCellVolumeEnabled", true);
+        np.put("minimumFaceValidityEnabled", true);
+        np.put("minimumContiguousFaceAreaEnabled", true);
+        np.put("minimumDiscontiguousCellsEnabled", true);
+        np.put("minimumVolumeChangeEnabled", true);
+        np.put("minimumContiguousFaceArea", minConFaceAreas);
+        np.put("minimumDiscontiguousCells", minDiscontigCells);
+        np.put("minimumCellQuality", minCellQuality);
+        np.put("minimumCellVolume", 0.0);
+        np.put("minimumFaceValidity", minFaceValidity);
+        np.put("minimumVolumeChange", minVolChange);
+        return np;
+    }
+
+    private void _invalidCells(boolean aggressiveRemoval) {
+        _io.say.action("Removing Invalid Cells!", true);
+        ArrayList<Region> fvRegions = _get.regions.all(false);
+        if (fvRegions.size() < 1) {
+            _io.say.msg("Nothing to remove.");
+            return;
+        }
+        _io.say.objects(fvRegions, "Regions", true);
+        _io.say.msg("Parameters:");
+        NeoProperty np = _getNeoProperty(aggressiveRemoval);
+        ArrayList<String> npKeys = new ArrayList(np.getKeys());
+        Collections.sort(npKeys);
+        for (String s : npKeys) {
+            _io.say.msg(true, "  - %-35s: %s", s, np.get(s).toString());
+        }
+        _sim.getMeshManager().removeInvalidCells(new NeoObjectVector(fvRegions.toArray()), np);
+        _io.say.ok(true);
+    }
+
+    private void _removing(String what, int n) {
+        String sufix = "s";
+        if (n < 2) {
+            sufix = "";
+        }
+        _io.say.msg(true, "Removing %d %s%s...", n, what, sufix);
     }
 
     /**
@@ -63,14 +124,6 @@ public class MainRemover {
         allUserFieldFunctions();
         allGlobalParameters();
         allAnnotations();
-    }
-
-    private void _removing(String what, int n) {
-        String sufix = "s";
-        if (n < 2) {
-            sufix = "";
-        }
-        _io.say.msg(true, "Removing %d %s%s...", n, what, sufix);
     }
 
     /**
@@ -262,6 +315,20 @@ public class MainRemover {
         }
         _removing("User Field Function", auff.size());
         ffm.removeObjects(auff);
+    }
+
+    /**
+     * Removes the Invalid Cells in the model using default values.
+     */
+    public void invalidCells() {
+        _invalidCells(false);
+    }
+
+    /**
+     * Removes the Invalid Cells in the model using aggressive values. Use with caution.
+     */
+    public void invalidCells_Aggressive() {
+        _invalidCells(true);
     }
 
     /**

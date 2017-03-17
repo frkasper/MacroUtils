@@ -17,6 +17,7 @@ public class MainCreator {
      */
     public MainCreator(MacroUtils m) {
         _mu = m;
+        contact = new CreatePartContact(m);
         derivedPart = new CreateDerivedPart(m);
         geometry = new CreateGeometry(m);
         intrf = new CreateInterface(m);
@@ -70,6 +71,7 @@ public class MainCreator {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
+        contact.updateInstances();
         derivedPart.updateInstances();
         geometry.updateInstances();
         intrf.updateInstances();
@@ -97,6 +99,11 @@ public class MainCreator {
     private macroutils.io.MainIO _io = null;
     private macroutils.misc.MainUpdater _upd = null;
     private macroutils.UserDeclarations _ud = null;
+
+    /**
+     * This class is responsible for creating Part Contacts.
+     */
+    public CreatePartContact contact = null;
 
     /**
      * This class is responsible for creating Derived Parts.

@@ -27,13 +27,23 @@ import star.vof.*;
 public class Demo7_Sloshing_Case extends StarMacro {
 
     public void execute() {
+
         initMacro();
+
         prep1_createRegion();
+
         prep2_PhysicsAndMesh();
+
         prep3_MotionAndPost();
+
         mu.saveSim(ud.simTitle + "_preRun");
+
         mu.run();
+
         mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
     }
 
     Region getRegion() {
@@ -44,7 +54,7 @@ public class Demo7_Sloshing_Case extends StarMacro {
         sim = getActiveSimulation();
         mu = new MacroUtils(sim);
         ud = mu.userDeclarations;
-        ud.simTitle = "Demo7_Sloshing";
+        ud.simTitle = "Demo7_Sloshing_Case";
         //-- Physics/Solver/Mesh settings
         ud.mshBaseSize = 2.;
         W = ud.mshBaseSize;

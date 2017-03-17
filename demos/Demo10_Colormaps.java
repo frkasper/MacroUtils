@@ -13,13 +13,23 @@ public class Demo10_Colormaps extends StarMacro {
 
     public void execute() {
 
-        Simulation sim = getActiveSimulation();
-        MacroUtils mu = new MacroUtils(sim);
-        UserDeclarations ud = mu.userDeclarations;
+        mu = new MacroUtils(getActiveSimulation());
+
+        ud = mu.userDeclarations;
 
         ud.simTitle = "Demo10_Colormaps";
+
         ud.defCamView = mu.io.read.cameraView("cam|7.698946e-03,-2.109472e-02,7.961378e-02|7.698946e-03,-2.109472e-02,6.679604e-01|0.000000e+00,1.000000e+00,0.000000e+00|1.288606e-01|1", true);
 
+        addColormaps();
+
+        mu.saveSim();
+
+        mu.io.write.all(ud.simTitle);
+
+    }
+
+    private void addColormaps() {
         ud.colors.add(Color.YELLOW);
         ud.colors.add(Color.black);
         ud.colors.add(Color.blue);
@@ -46,10 +56,10 @@ public class Demo10_Colormaps extends StarMacro {
         ud.scene = mu.add.scene.scalar(ud.namedObjects,
                 mu.get.objects.fieldFunction("Centroid", true), ud.unit_mm, true);
         ((ScalarDisplayer) mu.get.scenes.displayerByREGEX(ud.scene, ".*", true)).setDisplayMeshBoolean(true);
-        ud.scene.open(true);
-
-        mu.saveSim();
-
+        ud.scene.open();
     }
+
+    private MacroUtils mu;
+    private UserDeclarations ud;
 
 }
