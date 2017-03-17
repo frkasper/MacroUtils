@@ -24,7 +24,7 @@ import star.common.*;
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v12.02, March 09, 2017.
+ * @version v12.02, March 17, 2017.
  */
 public final class MacroUtils {
 
