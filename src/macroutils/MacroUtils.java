@@ -17,16 +17,18 @@ import star.common.*;
  * <p>
  * <b>Requires:</b>
  * <ul>
- * <li> STAR-CCM+ v12.02 libraries. <u>It may not run in other versions</u>;
+ * <li> STAR-CCM+ v12.04 libraries. <u>It may not run in other versions</u>;
  * <li> If one is compiling through NetBeans 8 or higher, please do it against JDK 7 Source/Binary format;
  * <li> Compiling against JDK 8 will present runtime issues in STAR-CCM+.
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v12.02, March 17, 2017.
+ * @version v12.04, June 29, 2017.
  */
 public final class MacroUtils {
+
+    private final String _macroUtilsVersion = "MacroUtils version 12.04 (build 1)";
 
     /**
      * Initialize MacroUtils in intrusive mode by providing a Simulation object.
@@ -54,10 +56,6 @@ public final class MacroUtils {
         setSimulation(s, intrusiveMode);
     }
 
-    private String _getMacroUtilsVersion() {
-        return "MacroUtils version 12.02 build 1";
-    }
-
     private void _initialize() {
         if (!_isInitialized) {
             io = new MainIO(this, _debug);
@@ -78,8 +76,9 @@ public final class MacroUtils {
         update = new MainUpdater(this);
         userDeclarations = new UserDeclarations(this);
         _updateInstances();
+        io.print.action(String.format("Initializing %s. . .", _macroUtilsVersion), true);
         _initialize_defaults();
-        io.print.action(_getMacroUtilsVersion() + " initialized!", true);
+        io.print.action(String.format("%s initialized!", _macroUtilsVersion), true);
     }
 
     private void _initialize_defaults() {
@@ -186,7 +185,6 @@ public final class MacroUtils {
      *
      * @param n given iterations. If the simulation is Unsteady it will be performed as a number of timesteps.
      */
-
     public void step(int n) {
         _step(n);
     }
