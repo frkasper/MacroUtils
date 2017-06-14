@@ -1217,6 +1217,14 @@ public class StaticDeclarations {
          */
         DEN("Density"),
         /**
+         * <u>FaceQuality</u> variable name inside STAR-CCM+.
+         */
+        FACE_QUALITY("FaceQuality"),
+        /**
+         * <u>FreeEdges</u> variable name inside STAR-CCM+.
+         */
+        FREE_EDGES("FreeEdges"),
+        /**
          * <u>Heat Transfer Coefficient</u> variable name inside STAR-CCM+.
          */
         HTC("Heat Transfer Coefficient"),
