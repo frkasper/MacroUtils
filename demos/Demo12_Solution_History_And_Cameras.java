@@ -196,7 +196,7 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
         ud.solHist = mu.get.solver.solutionHistory(".*", true);
         ud.recSolView = (RecordedSolutionView) mu.add.solver.solutionView(ud.solHist);
         sd.setRepresentation(ud.recSolView.getRepresentation());
-        mu.io.say.action("Saving Pictures in several camera views...", true);
+        mu.io.say.action("Saving Pictures in several camera views", true);
         TemplatePost tp = mu.templates.post;
         tp.flyOver(ud.scene, ud.vv1, null, 5 * fps, ud.recSolView);
         tp.flyOver(ud.scene, ud.vv1, ud.vv2, 4 * fps, ud.recSolView);

@@ -25,7 +25,7 @@ public class MainOpener {
     }
 
     private void _openingAll(String what, boolean vo) {
-        _io.say.action(String.format("Opening All %s...", what), vo);
+        _io.say.action(String.format("Opening All %s", what), vo);
     }
 
     private void _opening(ClientServerObject cso, boolean vo) {

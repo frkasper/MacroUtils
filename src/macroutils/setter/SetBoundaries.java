@@ -30,13 +30,13 @@ public class SetBoundaries {
     }
 
     private void _setEnergyWall(Boundary b, WallThermalOption.Type wtoType, String wallEnrgy) {
-        _io.say.action(String.format("Setting BC as %s...", wallEnrgy), b, true);
+        _io.say.action(String.format("Setting BC as %s", wallEnrgy), b, true);
         b.setBoundaryType(WallBoundary.class);
         b.getConditions().get(WallThermalOption.class).setSelected(wtoType);
     }
 
     private void _setType(Boundary b, Class clz, String what) {
-        _io.say.action(String.format("Setting BC as %s...", what), b, true);
+        _io.say.action(String.format("Setting BC as %s", what), b, true);
         b.setBoundaryType(clz);
     }
 

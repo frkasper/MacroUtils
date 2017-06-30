@@ -76,7 +76,7 @@ public final class MacroUtils {
         update = new MainUpdater(this);
         userDeclarations = new UserDeclarations(this);
         _updateInstances();
-        io.print.action(String.format("Initializing %s. . .", _macroUtilsVersion), true);
+        io.print.action(String.format("Initializing %s", _macroUtilsVersion), true);
         _initialize_defaults();
         io.print.action(String.format("%s initialized!", _macroUtilsVersion), true);
     }

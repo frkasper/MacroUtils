@@ -90,7 +90,7 @@ public class MainEnabler {
      * @param vo given verbose option. False will not print anything.
      */
     public void expertDriver(boolean vo) {
-        _io.say.action("Enabling Expert Driver...", vo);
+        _io.say.action("Enabling Expert Driver", vo);
         if (!_isCoupled(vo)) {
             return;
         }

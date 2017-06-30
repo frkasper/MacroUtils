@@ -37,7 +37,7 @@ public class MainDisabler {
     }
 
     private void _disabling(String what, ClientServerObject cso, boolean vo) {
-        _io.say.action(String.format("Disabling %s...", what), vo);
+        _io.say.action(String.format("Disabling %s", what), vo);
         if (cso != null) {
             _io.say.object(cso, vo);
         }
@@ -74,7 +74,7 @@ public class MainDisabler {
      * @param amo given AutoMeshOperation.
      */
     public void prismsLayersOnSolids(AutoMeshOperation amo) {
-        _io.say.action(String.format("Disabling Prism Layers on Solid Regions..."), true);
+        _io.say.action(String.format("Disabling Prism Layers on Solid Regions"), true);
         _io.say.object(amo, true);
         for (Region r : _sim.getRegionManager().getRegions()) {
             if (!_chk.is.solid(r)) {
@@ -139,7 +139,7 @@ public class MainDisabler {
      * @param amo given AutoMeshOperation.
      */
     public void thinLayersOnFluids(AutoMeshOperation amo) {
-        _io.say.action(String.format("Disabling Thin Layers on Fluid Regions..."), true);
+        _io.say.action(String.format("Disabling Thin Layers on Fluid Regions"), true);
         _io.say.object(amo, true);
         for (Region r : _sim.getRegionManager().getRegions()) {
             if (_chk.is.solid(r)) {

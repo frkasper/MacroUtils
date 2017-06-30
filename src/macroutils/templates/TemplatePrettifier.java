@@ -115,20 +115,19 @@ public class TemplatePrettifier {
 
     private void _setLegend(StarPlot sp, int nDataSets) {
         final DoubleVector defLegPos = new DoubleVector(new double[]{0.85, 0.8});
-        MultiColLegend leg = sp.getLegend();
-        leg.setFont(StaticDeclarations.Fonts.OTHER.getFont());
-        DoubleVector dv = new DoubleVector(new double[]{leg.getRelativeXPosition(), leg.getRelativeYPosition()});
-        LegendLayoutOption llo = leg.getLegendLayoutOption();
-        ChartPositionOption cpo = leg.getChartPositionOption();
+        MultiColLegend mcl = sp.getLegend();
+        ChartPositionOption cpo = mcl.getChartPositionOption();
+        DoubleVector dv = new DoubleVector(new double[]{mcl.getRelativeXPosition(), mcl.getRelativeYPosition()});
         if (dv.equals(defLegPos) && cpo.getSelectedElement() == ChartPositionOption.Type.CUSTOM) {
             if (nDataSets <= 7) {
-                llo.setSelected(LegendLayoutOption.Type.HORIZONTAL);
+                mcl.setLegendLayout(MultiColLegend.LegendLayout.HORIZONTAL);
                 cpo.setSelected(ChartPositionOption.Type.SOUTH);
             } else {
-                llo.setSelected(LegendLayoutOption.Type.VERTICAL);
+                mcl.setLegendLayout(MultiColLegend.LegendLayout.VERTICAL);
                 cpo.setSelected(ChartPositionOption.Type.EAST);
             }
         }
+        mcl.setFont(StaticDeclarations.Fonts.OTHER.getFont());
     }
 
     /**
