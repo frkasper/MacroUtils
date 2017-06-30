@@ -139,7 +139,7 @@ public class CheckHas {
      * @return True or False.
      */
     public boolean VOF() {
-        return _sim.getSolverManager().has("Segregated Volume Fraction");
+        return _sim.getSolverManager().has("Segregated VOF");
     }
 
     /**
