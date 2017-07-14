@@ -1,8 +1,11 @@
 package macroutils.misc;
 
-import macroutils.*;
-import star.common.*;
-import star.meshing.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.Simulation;
+import star.common.Units;
+import star.meshing.MeshPipelineController;
 
 /**
  * Main class for "updating" methods in MacroUtils.

@@ -1,8 +1,13 @@
-import java.util.*;
-import macroutils.*;
-import simplehexamesher.*;
-import star.assistant.*;
-import star.assistant.annotation.*;
+
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import simplehexamesher.BlockTask;
+import simplehexamesher.IntroductionTask;
+import simplehexamesher.QuestionsAndAnswersTask;
+import simplehexamesher.StartOverTask;
+import star.assistant.SimulationAssistant;
+import star.assistant.Task;
+import star.assistant.annotation.StarAssistant;
 
 /**
  * Main code.
@@ -10,7 +15,10 @@ import star.assistant.annotation.*;
  * @since MacroUtils v11.06.
  * @author Fabio Kasper
  */
-@StarAssistant(desc = "Assistant", display = "SimpleHexaMesher Assistant.")
+@StarAssistant(
+        desc = "Assistant",
+        display = "SimpleHexaMesher Assistant."
+)
 public class SimpleHexaMesher extends SimulationAssistant {
 
     public SimpleHexaMesher() {

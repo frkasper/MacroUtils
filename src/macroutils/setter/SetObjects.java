@@ -1,13 +1,32 @@
 package macroutils.setter;
 
-import java.io.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.flow.*;
-import star.post.*;
-import star.vis.*;
+import java.io.File;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.ClientServerObject;
+import star.base.neo.NamedObject;
+import star.base.report.Monitor;
+import star.base.report.Report;
+import star.base.report.ReportMonitor;
+import star.common.Cartesian2DAxis;
+import star.common.ConstantScalarProfileMethod;
+import star.common.ConstantVectorProfileMethod;
+import star.common.FieldFunction;
+import star.common.ScalarPhysicalQuantity;
+import star.common.ScalarProfile;
+import star.common.StarPlot;
+import star.common.StarUpdate;
+import star.common.StarUpdateModeOption;
+import star.common.Units;
+import star.common.UpdateEvent;
+import star.common.UpdatePlot;
+import star.common.VectorPhysicalQuantity;
+import star.common.VectorProfile;
+import star.common.WindowUpdate;
+import star.flow.PressureCoefficientFunction;
+import star.post.SolutionHistory;
+import star.vis.Scene;
 
 /**
  * Low-level class for setting objects in general in STAR-CCM+ with MacroUtils.
@@ -90,8 +109,8 @@ public class SetObjects {
     }
 
     /**
-     * Sets a Constant Scalar Physical Quantities with this method, if applicable. It will also print something like: "Text:
-     * value unit" in the output.
+     * Sets a Constant Scalar Physical Quantities with this method, if applicable. It will also print something like:
+     * "Text: value unit" in the output.
      *
      * @param spq given ScalarPhysicalQuantity object.
      * @param val given value.

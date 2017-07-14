@@ -1,13 +1,38 @@
 package macroutils.creator;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.energy.*;
-import star.flow.*;
-import star.vis.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
+import star.base.report.AreaAverageReport;
+import star.base.report.ExpressionReport;
+import star.base.report.MaxReport;
+import star.base.report.MinReport;
+import star.base.report.Report;
+import star.base.report.ReportMonitor;
+import star.base.report.ScalarReport;
+import star.base.report.SumReport;
+import star.base.report.SurfaceIntegralReport;
+import star.base.report.SurfaceUniformityReport;
+import star.base.report.VolumeAverageReport;
+import star.common.Axis;
+import star.common.Cartesian2DAxis;
+import star.common.Cartesian2DAxisManager;
+import star.common.Dimensions;
+import star.common.FieldFunction;
+import star.common.MonitorPlot;
+import star.common.ScalarPhysicalQuantity;
+import star.common.Simulation;
+import star.common.Units;
+import star.energy.PressureDropReport;
+import star.flow.ForceCoefficientReport;
+import star.flow.ForceReport;
+import star.flow.ForceReportForceOption;
+import star.flow.MassAverageReport;
+import star.flow.MassFlowAverageReport;
+import star.flow.MassFlowReport;
+import star.vis.FrontalAreaReport;
 
 /**
  * Low-level class for creating Reports with MacroUtils.

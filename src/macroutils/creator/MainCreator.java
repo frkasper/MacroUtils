@@ -1,6 +1,6 @@
 package macroutils.creator;
 
-import macroutils.*;
+import macroutils.MacroUtils;
 
 /**
  * Main class for creating STAR-CCM+ objects with MacroUtils.

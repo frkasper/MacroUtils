@@ -1,6 +1,8 @@
-import macroutils.*;
+
+import macroutils.MacroUtils;
+import macroutils.UserDeclarations;
 import macroutils.templates.demos.Demo16;
-import star.common.*;
+import star.common.StarMacro;
 
 /**
  * Runs a simplified sound propagation problem inside a constant cross section channel. Boundary condition is a sinusoid

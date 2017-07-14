@@ -1,11 +1,16 @@
 package macroutils.setter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.cadmodeler.*;
-import star.common.*;
-import star.meshing.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.base.neo.NeoObjectVector;
+import star.cadmodeler.SolidModelPart;
+import star.common.GeometryPart;
+import star.common.PartCurve;
+import star.common.PartSurface;
+import star.meshing.CadPart;
+import star.meshing.LeafMeshPart;
+import star.meshing.SimpleBlockPart;
+import star.meshing.SimpleCylinderPart;
 
 /**
  * Low-level class for setting Geometry parameters with MacroUtils.

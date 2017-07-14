@@ -1,8 +1,9 @@
 package macroutils.setter;
 
-import macroutils.*;
-import star.common.*;
-import star.motion.*;
+import macroutils.MacroUtils;
+import star.common.Region;
+import star.motion.Motion;
+import star.motion.MotionSpecification;
 
 /**
  * Low-level class for setting Region parameters with MacroUtils.

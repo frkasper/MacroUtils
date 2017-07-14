@@ -1,9 +1,22 @@
-import java.io.*;
-import java.util.*;
-import macroutils.*;
-import macroutils.templates.*;
-import star.common.*;
-import star.flow.*;
+
+import java.io.File;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import macroutils.templates.TemplateGCI;
+import star.common.ConstantVectorProfileMethod;
+import star.common.FieldFunction;
+import star.common.FieldFunctionTypeOption;
+import star.common.InterfaceBoundary;
+import star.common.InternalDataSet;
+import star.common.PartSurface;
+import star.common.StarMacro;
+import star.common.SymbolShapeOption;
+import star.common.XYPlot;
+import star.common.YAxisType;
+import star.flow.MomentumUserSource;
+import star.flow.MomentumUserSourceOption;
 
 /**
  * Laminar fully developed flow in a pipe (Poiseuille flow).

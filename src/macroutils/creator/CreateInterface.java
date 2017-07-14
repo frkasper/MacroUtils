@@ -1,7 +1,10 @@
 package macroutils.creator;
 
-import macroutils.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import star.common.Boundary;
+import star.common.BoundaryInterface;
+import star.common.InterfaceConfigurationOption;
+import star.common.Simulation;
 
 /**
  * Low-level class for creating Interfaces with MacroUtils.

@@ -1,14 +1,28 @@
 package macroutils.misc;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.meshing.*;
-import star.metrics.*;
-import star.prismmesher.*;
-import star.solidmesher.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.base.neo.ClientServerObject;
+import star.base.report.Monitor;
+import star.common.AbortFileStoppingCriterion;
+import star.common.GeometryObject;
+import star.common.Model;
+import star.common.MonitorNormalizeOption;
+import star.common.PhysicsContinuum;
+import star.common.Region;
+import star.common.ResidualMonitor;
+import star.common.Simulation;
+import star.common.SolverStoppingCriterion;
+import star.common.StepStoppingCriterion;
+import star.meshing.AutoMeshOperation;
+import star.meshing.MeshOperation;
+import star.meshing.PartCustomMeshControl;
+import star.meshing.SurfaceCustomMeshControl;
+import star.metrics.CellQualityRemediationModel;
+import star.prismmesher.PartsCustomPrismsOption;
+import star.prismmesher.PartsCustomizePrismMesh;
+import star.solidmesher.PartsCustomThinOption;
+import star.solidmesher.PartsCustomizeThinMesh;
 
 /**
  * Main class for "disabling" methods in MacroUtils.

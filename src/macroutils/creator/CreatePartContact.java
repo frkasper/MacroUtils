@@ -1,7 +1,9 @@
 package macroutils.creator;
 
-import macroutils.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import star.common.PartContactManager;
+import star.common.PartSurface;
+import star.common.Simulation;
 
 /**
  * Low-level class for creating Part Contacts with MacroUtils.

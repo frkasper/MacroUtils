@@ -1,9 +1,14 @@
 package macroutils.creator;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.neo.NeoObjectVector;
+import star.common.GeometryPart;
+import star.common.Region;
+import star.common.RegionManager;
+import star.common.Simulation;
+import star.common.SimulationPartManager;
 
 /**
  * Low-level class for creating Regions with MacroUtils.

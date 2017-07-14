@@ -1,6 +1,8 @@
-import macroutils.*;
-import star.common.*;
-import star.vis.*;
+
+import macroutils.MacroUtils;
+import star.common.StarMacro;
+import star.vis.Scene;
+import star.vis.VisView;
 
 public class Demo6c_Read_Camera_Views extends StarMacro {
 

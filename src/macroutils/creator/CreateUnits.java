@@ -1,7 +1,11 @@
 package macroutils.creator;
 
-import macroutils.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.common.Dimensions;
+import star.common.Simulation;
+import star.common.Units;
+import star.common.UserUnits;
 
 /**
  * Low-level class for creating/updating Units with MacroUtils.

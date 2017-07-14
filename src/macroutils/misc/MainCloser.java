@@ -1,9 +1,10 @@
 package macroutils.misc;
 
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import macroutils.MacroUtils;
+import star.base.neo.ClientServerObject;
+import star.common.Simulation;
+import star.common.StarPlot;
+import star.vis.Scene;
 
 /**
  * Main class for "closing" methods in MacroUtils.

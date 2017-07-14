@@ -1,10 +1,16 @@
 package macroutils.io;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import java.util.ArrayList;
+import java.util.Formatter;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.neo.ClientServerObject;
+import star.base.neo.DoubleVector;
+import star.common.Dimensions;
+import star.common.FieldFunction;
+import star.common.Simulation;
+import star.common.Units;
+import star.vis.VisView;
 
 /**
  * Low-level class for console/log outputs in general in MacroUtils.

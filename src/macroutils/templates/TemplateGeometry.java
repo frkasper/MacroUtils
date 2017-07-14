@@ -1,9 +1,26 @@
 package macroutils.templates;
 
-import macroutils.*;
-import star.cadmodeler.*;
-import star.common.*;
-import star.base.neo.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NeoObjectVector;
+import star.cadmodeler.Body;
+import star.cadmodeler.CadModel;
+import star.cadmodeler.CanonicalSketchPlane;
+import star.cadmodeler.CircleSketchPrimitive;
+import star.cadmodeler.ExtrusionMerge;
+import star.cadmodeler.Face;
+import star.cadmodeler.LengthDimension;
+import star.cadmodeler.LineSketchPrimitive;
+import star.cadmodeler.PointSketchPrimitive;
+import star.cadmodeler.RadiusDimension;
+import star.cadmodeler.ScalarQuantityDesignParameter;
+import star.cadmodeler.Sketch;
+import star.cadmodeler.SolidModelManager;
+import star.cadmodeler.TransformSketchPlane;
+import star.common.Simulation;
+import star.common.Units;
 
 /**
  * Low-level class for some templated geometries with MacroUtils.

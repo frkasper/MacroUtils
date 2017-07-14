@@ -1,13 +1,31 @@
 package macroutils.templates;
 
-import java.awt.*;
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.common.graph.*;
-import star.vis.*;
+import java.awt.Color;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
+import star.base.report.Monitor;
+import star.common.Cartesian2DAxis;
+import star.common.ChartPositionOption;
+import star.common.HistogramAxisType;
+import star.common.HistogramPlot;
+import star.common.LinePatternOption;
+import star.common.LineStyle;
+import star.common.MonitorNormalizeOption;
+import star.common.MultiColLegend;
+import star.common.ResidualMonitor;
+import star.common.Simulation;
+import star.common.StarPlot;
+import star.common.SymbolShapeOption;
+import star.common.SymbolStyle;
+import star.common.XYPlot;
+import star.common.graph.DataSet;
+import star.common.graph.HistogramDataSet;
+import star.vis.Displayer;
+import star.vis.LogoAnnotation;
+import star.vis.Scene;
 
 /**
  * Low-level class for prettifying your simulation file with MacroUtils.

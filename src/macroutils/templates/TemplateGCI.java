@@ -1,13 +1,26 @@
 package macroutils.templates;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.common.graph.*;
+import java.awt.Color;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NeoObjectVector;
+import star.base.report.Report;
+import star.common.ExternalDataSet;
+import star.common.FileTable;
+import star.common.InternalDataSet;
+import star.common.Simulation;
+import star.common.StarPlot;
+import star.common.SymbolShapeOption;
+import star.common.SymbolStyle;
+import star.common.Units;
+import star.common.XYPlot;
+import star.common.YAxisType;
+import star.common.graph.DataSet;
 
 /**
  * Low-level class for assessing the Grid Convergence Index metric with MacroUtils.

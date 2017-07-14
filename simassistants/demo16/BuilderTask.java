@@ -1,10 +1,10 @@
 package demo16;
 
-import macroutils.*;
-import star.assistant.*;
-import star.assistant.annotation.*;
-import star.assistant.ui.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import star.assistant.Task;
+import star.assistant.annotation.StarAssistantTask;
+import star.assistant.ui.FunctionTaskController;
+import star.common.ScalarGlobalParameter;
 
 /**
  * Build/Update Task.
@@ -12,7 +12,11 @@ import star.common.*;
  * @since MacroUtils v11.06.
  * @author Fabio Kasper
  */
-@StarAssistantTask(display = "Task", contentPath = "html/Demo16.xhtml", controller = BuilderTask.BuilderController.class)
+@StarAssistantTask(
+        display = "Task",
+        contentPath = "html/Demo16.xhtml",
+        controller = BuilderTask.BuilderController.class
+)
 public class BuilderTask extends Task {
 
     public BuilderTask(MacroUtils m) {

@@ -1,6 +1,10 @@
-import macroutils.*;
-import star.common.*;
-import star.vis.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.StarMacro;
+import star.vis.ScalarDisplayer;
+import star.vis.Scene;
 
 /**
  * Simple Demo of a 3D conduction in a channel.

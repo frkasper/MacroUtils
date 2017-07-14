@@ -1,9 +1,15 @@
-import macroutils.*;
-import macroutils.templates.*;
-import star.common.*;
-import star.meshing.*;
-import star.post.*;
-import star.vis.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import macroutils.templates.TemplatePost;
+import star.common.Boundary;
+import star.common.Simulation;
+import star.common.StarMacro;
+import star.common.UpdateEvent;
+import star.meshing.AutoMeshOperation;
+import star.post.RecordedSolutionView;
+import star.vis.ScalarDisplayer;
 
 /**
  * Pseudo 2D Laminar Vortex Shedding under Reynolds of 500.

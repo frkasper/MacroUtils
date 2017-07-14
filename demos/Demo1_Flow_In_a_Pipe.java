@@ -1,5 +1,8 @@
-import macroutils.*;
-import star.common.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.StarMacro;
 
 /**
  * Simple Demo of a 3D laminar isothermal flow in a pipe.

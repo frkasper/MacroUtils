@@ -1,11 +1,19 @@
 package macroutils.io;
 
-import java.io.*;
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
+import star.common.Simulation;
+import star.common.StarPlot;
+import star.vis.Scene;
+import star.vis.VisView;
 
 /**
  * Low-level class for writing data in general with MacroUtils.

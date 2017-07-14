@@ -1,16 +1,48 @@
 package macroutils.creator;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import macroutils.*;
-import macroutils.getter.*;
-import macroutils.setter.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.motion.*;
-import star.vis.*;
+import java.awt.Color;
+import java.io.File;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import macroutils.getter.GetMonitors;
+import macroutils.setter.SetObjects;
+import star.base.neo.DoubleVector;
+import star.base.report.PlotableMonitor;
+import star.base.report.Report;
+import star.common.Coordinate;
+import star.common.CylindricalCoordinateSystem;
+import star.common.DeltaMonitorUpdateEvent;
+import star.common.Dimensions;
+import star.common.FieldFunction;
+import star.common.FieldFunctionTypeOption;
+import star.common.FileTable;
+import star.common.FrequencyMonitorUpdateEvent;
+import star.common.GlobalParameterBase;
+import star.common.GlobalParameterManager;
+import star.common.LocalCoordinateSystemManager;
+import star.common.LogicUpdateEvent;
+import star.common.RangeMonitorUpdateEvent;
+import star.common.ScalarGlobalParameter;
+import star.common.Simulation;
+import star.common.Units;
+import star.common.UpdateEvent;
+import star.common.UpdateEventDeltaOption;
+import star.common.UpdateEventLogicOption;
+import star.common.UpdateEventRangeOption;
+import star.common.UserFieldFunction;
+import star.common.VectorGlobalParameter;
+import star.motion.MotionManager;
+import star.motion.TranslatingMotion;
+import star.vis.AnnotationManager;
+import star.vis.ColorMap;
+import star.vis.LookupTable;
+import star.vis.LookupTableManager;
+import star.vis.ReportAnnotation;
+import star.vis.SimpleAnnotation;
+import star.vis.SimpleTransform;
+import star.vis.UserLookupTable;
 
 /**
  * Low-level class for creating Tools objects with MacroUtils.
@@ -91,7 +123,7 @@ public class CreateTools {
     }
 
     private VectorGlobalParameter _createParameterVector(String name, double[] vals, Units u) {
-        VectorGlobalParameter vgp = (VectorGlobalParameter) _createParameter(name, 
+        VectorGlobalParameter vgp = (VectorGlobalParameter) _createParameter(name,
                 StaticDeclarations.GlobalParameter.VECTOR, false);
         vgp.setDimensions(_get.units.dimensions(u));
         _set.object.physicalQuantity(vgp.getQuantity(), vals, u, name, true);

@@ -1,12 +1,16 @@
 package simplehexamesher;
 
-import macroutils.*;
-import star.assistant.*;
-import star.assistant.annotation.*;
-import star.assistant.ui.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import macroutils.MacroUtils;
+import macroutils.UserDeclarations;
+import star.assistant.Task;
+import star.assistant.annotation.StarAssistantTask;
+import star.assistant.ui.FunctionTaskController;
+import star.base.neo.DoubleVector;
+import star.common.Region;
+import star.common.Simulation;
+import star.common.VectorGlobalParameter;
+import star.vis.Annotation;
+import star.vis.Scene;
 
 /**
  * Block Mesher Task.
@@ -15,16 +19,24 @@ import star.vis.*;
  * @author Fabio Kasper
  */
 @StarAssistantTask(
-        display = "Block Mesher",
         contentPath = "html/BlockTask.xhtml",
-        controller = BlockTask.MesherController.class
+        controller = BlockTask.MesherController.class,
+        display = "Block Mesher"
 )
 public class BlockTask extends Task {
 
+    /**
+     * Main constructor for this class.
+     *
+     * @param m given MacroUtils object.
+     */
     public BlockTask(MacroUtils m) {
         _mu = m;
     }
 
+    /**
+     * Current {@link FunctionTaskController} subclass.
+     */
     public class MesherController extends FunctionTaskController {
 
         /**
@@ -51,7 +63,7 @@ public class BlockTask extends Task {
                 _ud.namedObjects.addAll(_mu.get.boundaries.all(r, false));
             }
             Scene scn = _mu.add.scene.mesh(_ud.namedObjects);
-            scn.openScene();
+            scn.open();
             if (!is2D) {
                 scn.setViewOrientation(new DoubleVector(new double[]{-1.0, 1.0, -1.0}),
                         new DoubleVector(new double[]{0.0, 1.0, 0.0}));

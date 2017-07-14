@@ -1,12 +1,38 @@
 package macroutils.setter;
 
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.meshing.*;
-import star.prismmesher.*;
-import star.solidmesher.*;
-import star.sweptmesher.*;
+import macroutils.MacroUtils;
+import star.base.neo.ClientServerObject;
+import star.base.neo.NamedObject;
+import star.common.ConditionManager;
+import star.common.Units;
+import star.meshing.AutoMeshBase;
+import star.meshing.AutoMeshDefaultValuesManager;
+import star.meshing.AutoMeshOperation;
+import star.meshing.BaseSize;
+import star.meshing.CustomMeshControl;
+import star.meshing.CustomMeshControlConditionManager;
+import star.meshing.MaximumCellSize;
+import star.meshing.PartsMinimumSurfaceSize;
+import star.meshing.PartsMinimumSurfaceSizeOption;
+import star.meshing.PartsRelativeOrAbsoluteSize;
+import star.meshing.PartsTargetSurfaceSize;
+import star.meshing.PartsTargetSurfaceSizeOption;
+import star.meshing.RelativeOrAbsoluteSize;
+import star.meshing.SurfaceCurvature;
+import star.meshing.SurfaceCustomMeshControl;
+import star.meshing.SurfaceProximity;
+import star.prismmesher.CustomPrismValuesManager;
+import star.prismmesher.NumPrismLayers;
+import star.prismmesher.PartsCustomPrismsOption;
+import star.prismmesher.PartsCustomizePrismMesh;
+import star.prismmesher.PrismAutoMesher;
+import star.prismmesher.PrismLayerStretching;
+import star.prismmesher.PrismThickness;
+import star.solidmesher.ThinAutoMesher;
+import star.solidmesher.ThinNumLayers;
+import star.solidmesher.ThinThicknessThreshold;
+import star.sweptmesher.DirectedAutoSourceMesh;
+import star.sweptmesher.DirectedMeshOperation;
 
 /**
  * Low-level class for setting Mesh parameters with MacroUtils.

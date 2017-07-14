@@ -1,7 +1,19 @@
-import macroutils.*;
-import macroutils.templates.*;
-import star.common.*;
-import star.vis.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import macroutils.templates.TemplatePost;
+import star.common.Simulation;
+import star.common.StarMacro;
+import star.vis.AnimationDirector;
+import star.vis.DisplayerVisibilityOverride;
+import star.vis.PartColorMode;
+import star.vis.PartDisplayer;
+import star.vis.ScalarDisplayer;
+import star.vis.SimpleTransform;
+import star.vis.StreamAnimationSettings;
+import star.vis.StreamDisplayer;
+import star.vis.StreamDisplayerAnimationMode;
 
 /**
  * Turbulent flow with Ideal Gas. This Demo shows how to do more advanced post processing using macros in STAR-CCM+.

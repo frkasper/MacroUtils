@@ -1,7 +1,7 @@
 package macroutils.templates;
 
-import macroutils.*;
-import macroutils.templates.demos.*;
+import macroutils.MacroUtils;
+import macroutils.templates.demos.Demo16;
 
 /**
  * Main class for assessing some legacy MacroUtils demos in template mode.

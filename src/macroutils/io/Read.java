@@ -1,10 +1,16 @@
 package macroutils.io;
 
-import java.io.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.common.Simulation;
+import star.vis.VisProjectionMode;
+import star.vis.VisView;
 
 /**
  * Low-level class for reading objects in general with MacroUtils.

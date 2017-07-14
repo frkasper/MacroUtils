@@ -1,8 +1,9 @@
 package macroutils.misc;
 
-import macroutils.*;
-import star.common.*;
-import star.vis.*;
+import macroutils.MacroUtils;
+import macroutils.UserDeclarations;
+import star.common.Simulation;
+import star.vis.Displayer;
 
 /**
  * Main class for "resetting" objects or variables in MacroUtils.

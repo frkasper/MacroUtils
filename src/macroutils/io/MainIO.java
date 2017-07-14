@@ -1,7 +1,8 @@
 package macroutils.io;
 
-import java.io.*;
-import macroutils.*;
+import java.io.File;
+import macroutils.MacroUtils;
+import macroutils.UserDeclarations;
 
 /**
  * Main class for IO methods in MacroUtils.

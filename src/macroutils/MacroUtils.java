@@ -1,15 +1,24 @@
 package macroutils;
 
-import java.io.*;
-import java.util.*;
-import macroutils.checker.*;
-import macroutils.creator.*;
-import macroutils.getter.*;
-import macroutils.io.*;
-import macroutils.misc.*;
-import macroutils.setter.*;
-import macroutils.templates.*;
-import star.common.*;
+import java.io.File;
+import java.util.Locale;
+import macroutils.checker.MainChecker;
+import macroutils.creator.MainCreator;
+import macroutils.getter.MainGetter;
+import macroutils.io.MainIO;
+import macroutils.misc.MainClearer;
+import macroutils.misc.MainCloser;
+import macroutils.misc.MainDisabler;
+import macroutils.misc.MainEnabler;
+import macroutils.misc.MainOpener;
+import macroutils.misc.MainRemover;
+import macroutils.misc.MainResetter;
+import macroutils.misc.MainUpdater;
+import macroutils.setter.MainSetter;
+import macroutils.templates.MainTemplates;
+import star.common.LabCoordinateSystem;
+import star.common.Simulation;
+import star.common.SimulationIterator;
 
 /**
  * MacroUtils is now a library that can be used for writing macros, Simulation Assistants and other third party

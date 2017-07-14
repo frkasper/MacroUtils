@@ -1,10 +1,12 @@
 package macroutils;
 
-import java.awt.*;
-import star.base.neo.*;
-import star.common.*;
-import star.meshing.*;
-import star.trimmer.*;
+import java.awt.Color;
+import java.awt.Font;
+import star.base.neo.NeoObjectVector;
+import star.common.RegionManager;
+import star.common.Solution;
+import star.meshing.TessellationDensityOption;
+import star.trimmer.PartsGrowthRateOption;
 
 /**
  * Low-level class for storing static declarations (immutable) to be used with MacroUtils, such as:
@@ -1401,7 +1403,7 @@ public class StaticDeclarations {
      */
     public static final NeoObjectVector EMPTY_NEO_OBJECT_VECTOR = new NeoObjectVector(EMPTY_OBJECT);
 
-  //--
+    //--
     //-- Integers.
     //--
     //--

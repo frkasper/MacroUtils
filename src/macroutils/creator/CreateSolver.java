@@ -1,12 +1,33 @@
 package macroutils.creator;
 
-import java.io.*;
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.post.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Vector;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.NamedObject;
+import star.base.report.Monitor;
+import star.common.FieldFunction;
+import star.common.MinimumInnerIterationStoppingCriterion;
+import star.common.MonitorIterationStoppingCriterion;
+import star.common.MonitorIterationStoppingCriterionAsymptoticType;
+import star.common.MonitorIterationStoppingCriterionMaxLimitType;
+import star.common.MonitorIterationStoppingCriterionMinLimitType;
+import star.common.MonitorIterationStoppingCriterionOption;
+import star.common.MonitorIterationStoppingCriterionStandardDeviationType;
+import star.common.MonitorIterationStoppingCriterionType;
+import star.common.Region;
+import star.common.Simulation;
+import star.common.SolutionView;
+import star.common.SolverStoppingCriterion;
+import star.common.SolverStoppingCriterionLogicalOption;
+import star.common.SolverStoppingCriterionManager;
+import star.common.Units;
+import star.post.RecordedSolutionView;
+import star.post.SolutionHistory;
+import star.post.SolutionHistoryManager;
+import star.post.SolutionViewManager;
 
 /**
  * Low-level class for creating Solver related objects with MacroUtils.

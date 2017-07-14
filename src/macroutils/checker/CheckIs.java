@@ -1,15 +1,44 @@
 package macroutils.checker;
 
-import java.io.*;
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.cadmodeler.*;
-import star.common.*;
-import star.meshing.*;
-import star.surfacewrapper.*;
-import star.vis.*;
+import java.io.File;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.NamedObject;
+import star.base.report.Monitor;
+import star.base.report.ReportMonitor;
+import star.cadmodeler.SolidModelPart;
+import star.common.Boundary;
+import star.common.CoordinateSystem;
+import star.common.CylindricalCoordinateSystem;
+import star.common.FieldFunction;
+import star.common.FieldFunctionTypeOption;
+import star.common.FluidRegion;
+import star.common.GeometryPart;
+import star.common.HistogramPlot;
+import star.common.ModelManager;
+import star.common.PartCurve;
+import star.common.PartSurface;
+import star.common.PhysicsContinuum;
+import star.common.Region;
+import star.common.ResidualMonitor;
+import star.common.ResidualPlot;
+import star.common.Simulation;
+import star.common.SolidRegion;
+import star.common.StarPlot;
+import star.common.Units;
+import star.common.WallBoundary;
+import star.meshing.AutoMeshOperation;
+import star.meshing.AutoMeshOperation2d;
+import star.meshing.CadPart;
+import star.meshing.MeshOperation;
+import star.surfacewrapper.SurfaceWrapperAutoMeshOperation;
+import star.vis.Displayer;
+import star.vis.ScalarDisplayer;
+import star.vis.Scene;
+import star.vis.StreamDisplayer;
+import star.vis.VectorDisplayer;
 
 /**
  * Low-level class for is-type methods in MacroUtils.

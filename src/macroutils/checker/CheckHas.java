@@ -1,8 +1,8 @@
 package macroutils.checker;
 
-import macroutils.*;
-import star.common.*;
-import star.meshing.*;
+import macroutils.MacroUtils;
+import star.common.Simulation;
+import star.meshing.AutoMeshOperation;
 
 /**
  * Low-level class for has-type methods in MacroUtils.

@@ -1,9 +1,9 @@
 package simplehexamesher;
 
-import macroutils.*;
-import star.assistant.*;
-import star.assistant.annotation.*;
-import star.assistant.ui.*;
+import macroutils.MacroUtils;
+import star.assistant.Task;
+import star.assistant.annotation.StarAssistantTask;
+import star.assistant.ui.FunctionTaskController;
 
 /**
  * Start over Task.
@@ -12,20 +12,31 @@ import star.assistant.ui.*;
  * @author Fabio Kasper
  */
 @StarAssistantTask(
-        display = "Start Over",
         contentPath = "html/StartOverTask.xhtml",
-        controller = StartOverTask.RemoverController.class
+        controller = StartOverTask.RemoverController.class,
+        display = "Start Over"
 )
 public class StartOverTask extends Task {
 
     private final MacroUtils _mu;
 
+    /**
+     * Main constructor for this class.
+     *
+     * @param m given MacroUtils object.
+     */
     public StartOverTask(MacroUtils m) {
         _mu = m;
     }
 
+    /**
+     * Current {@link FunctionTaskController} subclass.
+     */
     public class RemoverController extends FunctionTaskController {
 
+        /**
+         * Removes all objects.
+         */
         public void removeAll() {
             _mu.setSimulation(getActiveSimulation(), false);
             _mu.remove.all();

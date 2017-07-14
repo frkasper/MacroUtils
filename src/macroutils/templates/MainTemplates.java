@@ -1,6 +1,6 @@
 package macroutils.templates;
 
-import macroutils.*;
+import macroutils.MacroUtils;
 
 /**
  * Main class for templates methods in MacroUtils.

@@ -1,6 +1,8 @@
-import macroutils.*;
-import star.common.*;
-import star.vis.*;
+
+import macroutils.MacroUtils;
+import macroutils.UserDeclarations;
+import star.common.StarMacro;
+import star.vis.FixedAspectAnnotationProp;
 
 /**
  * How to adjust STAR-CCM+ GUI in order to get the desired resolution on Scenes. This is useful for creating high

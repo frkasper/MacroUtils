@@ -1,7 +1,9 @@
 package macroutils.setter;
 
-import macroutils.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import star.common.AutoSave;
+import star.common.Simulation;
+import star.common.UpdateEvent;
 
 /**
  * Main class for set-type methods in MacroUtils.
