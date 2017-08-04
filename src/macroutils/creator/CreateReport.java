@@ -1,13 +1,38 @@
 package macroutils.creator;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.energy.*;
-import star.flow.*;
-import star.vis.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
+import star.base.report.AreaAverageReport;
+import star.base.report.ExpressionReport;
+import star.base.report.MaxReport;
+import star.base.report.MinReport;
+import star.base.report.Report;
+import star.base.report.ReportMonitor;
+import star.base.report.ScalarReport;
+import star.base.report.SumReport;
+import star.base.report.SurfaceIntegralReport;
+import star.base.report.SurfaceUniformityReport;
+import star.base.report.VolumeAverageReport;
+import star.common.Axis;
+import star.common.Cartesian2DAxis;
+import star.common.Cartesian2DAxisManager;
+import star.common.Dimensions;
+import star.common.FieldFunction;
+import star.common.MonitorPlot;
+import star.common.ScalarPhysicalQuantity;
+import star.common.Simulation;
+import star.common.Units;
+import star.energy.PressureDropReport;
+import star.flow.ForceCoefficientReport;
+import star.flow.ForceReport;
+import star.flow.ForceReportForceOption;
+import star.flow.MassAverageReport;
+import star.flow.MassFlowAverageReport;
+import star.flow.MassFlowReport;
+import star.vis.FrontalAreaReport;
 
 /**
  * Low-level class for creating Reports with MacroUtils.
@@ -27,14 +52,6 @@ public class CreateReport {
         _sim = m.getSimulation();
     }
 
-    private Report _checkHasIt(String name, boolean vo) {
-        if (_sim.getReportManager().has(name)) {
-            _io.say.value("Skipping... Report already exists", name, true, vo);
-            return _sim.getReportManager().getReport(name);
-        }
-        return null;
-    }
-
     private Report _createReport(Class clz, String name) {
         Report r = _sim.getReportManager().createReport(clz);
         if (name == null) {
@@ -48,8 +65,37 @@ public class CreateReport {
         return _get.strings.fromUnit(u);
     }
 
+    private Report _hasReport(String name, boolean vo) {
+        if (_sim.getReportManager().has(name)) {
+            _io.say.value("Skipping... Report already exists", name, true, vo);
+            return _sim.getReportManager().getReport(name);
+        }
+        return null;
+    }
+
+    private boolean _isFieldFunctionOnlyValidFor2D(FieldFunction ff) {
+        return ff.getFunctionName().matches("FaceQuality|FreeEdges");
+    }
+
     private void _setSPQ(ScalarPhysicalQuantity spq, double val, Units u, String text, boolean vo) {
         _set.object.physicalQuantity(spq, val, u, text, vo);
+    }
+
+    private ScalarReport _setSR(ScalarReport sr, ArrayList<? extends NamedObject> ano,
+            FieldFunction ff, Units u, boolean vo) {
+        if (_isFieldFunctionOnlyValidFor2D(ff)) {
+            sr.setRepresentation(_get.geometries.representation());
+        }
+        if (ff != null) {
+            sr.setFieldFunction(ff);
+        }
+        if (u == null) {
+            u = _ud.unit_Dimensionless;
+        }
+        sr.setUnits(u);
+        sr.getParts().setObjects(ano);
+        _io.say.created(sr, vo);
+        return sr;
     }
 
     private void _setTitle(Axis axis, String title) {
@@ -71,8 +117,8 @@ public class CreateReport {
      */
     public ExpressionReport expression(String name, Units u, Dimensions dim, String def, boolean vo) {
         _io.say.action("Creating an Expression Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (ExpressionReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (ExpressionReport) _hasReport(name, vo);
         }
         ExpressionReport er = (ExpressionReport) _createReport(ExpressionReport.class, name);
         er.setDimensions(dim);
@@ -95,10 +141,10 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Force Report.
      */
-    public ForceReport force(ArrayList<NamedObject> ano, String name, double[] direction, boolean vo) {
+    public ForceReport force(ArrayList<? extends NamedObject> ano, String name, double[] direction, boolean vo) {
         _io.say.action("Creating a Force Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (ForceReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (ForceReport) _hasReport(name, vo);
         }
         ForceReport fr = (ForceReport) _createReport(ForceReport.class, name);
         fr.getReferencePressure().setUnits(_ud.unit_Pa);
@@ -108,8 +154,8 @@ public class CreateReport {
         fr.getDirection().setComponents(direction[0], direction[1], direction[2]);
         _io.say.objects(ano, "Objects", vo);
         _io.say.unit(fr.getUnits(), vo);
-        monitorAndPlot(fr, null, String.format("Force (%s)", _getString(fr.getUnits())), vo);
         _io.say.created(fr, vo);
+        monitorAndPlot(fr, null, String.format("Force (%s)", _getString(fr.getUnits())), vo);
         return fr;
     }
 
@@ -129,11 +175,11 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Force Coefficient Report.
      */
-    public ForceCoefficientReport forceCoefficient(ArrayList<NamedObject> ano, String name, double refP, double refDen,
-            double refVel, double refArea, double[] direction, boolean vo) {
+    public ForceCoefficientReport forceCoefficient(ArrayList<? extends NamedObject> ano, String name, double refP,
+            double refDen, double refVel, double refArea, double[] direction, boolean vo) {
         _io.say.action("Creating a Force Coefficient Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (ForceCoefficientReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (ForceCoefficientReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Objects", vo);
         ForceCoefficientReport fcr = (ForceCoefficientReport) _createReport(ForceCoefficientReport.class, name);
@@ -146,8 +192,8 @@ public class CreateReport {
         fcr.getParts().setObjects(ano);
         //-- Pressure Coefficient update. Will use refP = 0.
         _set.object.fieldFunctionPressureCoefficient(refDen, 0., refVel, vo);
-        monitorAndPlot(fcr, null, String.format("Force Coefficient", _getString(fcr.getUnits())), vo);
         _io.say.created(fcr, vo);
+        monitorAndPlot(fcr, null, String.format("Force Coefficient", _getString(fcr.getUnits())), vo);
         return fcr;
     }
 
@@ -161,10 +207,11 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Frontal Area Report.
      */
-    public Report frontalArea(ArrayList<NamedObject> ano, String name, double[] viewUp, double[] direction, boolean vo) {
+    public Report frontalArea(ArrayList<? extends NamedObject> ano, String name, double[] viewUp,
+            double[] direction, boolean vo) {
         _io.say.action("Creating a Frontal Area Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (ForceCoefficientReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (ForceCoefficientReport) _hasReport(name, vo);
         }
         FrontalAreaReport far = (FrontalAreaReport) _createReport(FrontalAreaReport.class, name);
         _io.say.objects(ano, "Objects", vo);
@@ -193,6 +240,12 @@ public class CreateReport {
         if (r.getPresentationName().startsWith("_")) {
             return null;
         }
+        if (r instanceof ScalarReport) {
+            ScalarReport sr = (ScalarReport) r;
+            if (_isFieldFunctionOnlyValidFor2D(sr.getFieldFunction())) {
+                return null;
+            }
+        }
         ReportMonitor rm = r.createMonitor();
         MonitorPlot mp = _sim.getPlotManager().createMonitorPlot();
         rm.setPresentationName(r.getPresentationName());
@@ -210,27 +263,25 @@ public class CreateReport {
     /**
      * Creates a Mass Average Report for the selected Regions.
      *
-     * @param ar given ArrayList of Regions.
+     * @param ano given ArrayList of STAR-CCM+ Objects. Just make sure it is 3D.
      * @param name given Report name.
      * @param ff given Field Function.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      * @return Mass Average Report.
      */
-    public MassAverageReport massAverage(ArrayList<Region> ar, String name, FieldFunction ff, Units u, boolean vo) {
+    public MassAverageReport massAverage(ArrayList<? extends NamedObject> ano, String name,
+            FieldFunction ff, Units u, boolean vo) {
         _io.say.action("Creating a Mass Average Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (MassAverageReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (MassAverageReport) _hasReport(name, vo);
         }
-        _io.say.objects(ar, "Regions", vo);
+        _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         MassAverageReport mar = (MassAverageReport) _createReport(MassAverageReport.class, name);
-        mar.setFieldFunction(ff);
-        mar.setUnits(u);
-        mar.getParts().setObjects(ar);
+        _setSR(mar, ano, ff, u, vo);
         monitorAndPlot(mar, null, String.format("Mass Average of %s (%s)", ff.getPresentationName(),
                 _getString(u)), vo);
-        _io.say.created(mar, vo);
         return mar;
     }
 
@@ -256,18 +307,16 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Mass Flow Report.
      */
-    public MassFlowReport massFlow(ArrayList<NamedObject> ano, String name, Units u, boolean vo) {
+    public MassFlowReport massFlow(ArrayList<? extends NamedObject> ano, String name, Units u, boolean vo) {
         _io.say.action("Creating a Mass Flow Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (MassFlowReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (MassFlowReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Objects", vo);
         _io.say.unit(u, vo);
         MassFlowReport mfr = (MassFlowReport) _createReport(MassFlowReport.class, name);
-        mfr.setUnits(u);
-        mfr.getParts().setObjects(ano);
+        _setSR(mfr, ano, null, u, vo);
         monitorAndPlot(mfr, null, String.format("Mass Flow (%s)", _getString(u)), vo);
-        _io.say.created(mfr, vo);
         return mfr;
     }
 
@@ -295,21 +344,18 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Mass Flow Average Report.
      */
-    public MassFlowAverageReport massFlowAverage(ArrayList<NamedObject> ano, String name, FieldFunction ff,
-            Units u, boolean vo) {
+    public MassFlowAverageReport massFlowAverage(ArrayList<? extends NamedObject> ano, String name,
+            FieldFunction ff, Units u, boolean vo) {
         _io.say.action("Creating a Mass Flow Average Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (MassFlowAverageReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (MassFlowAverageReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Objects", vo);
         _io.say.scalar(ff, u, vo);
         MassFlowAverageReport mfa = (MassFlowAverageReport) _createReport(MassFlowAverageReport.class, name);
-        mfa.setFieldFunction(ff);
-        mfa.setUnits(u);
-        mfa.getParts().setObjects(ano);
+        _setSR(mfa, ano, ff, u, vo);
         monitorAndPlot(mfa, null, String.format("Mass Flow Average of %s (%s)", ff.getPresentationName(),
                 _getString(u)), vo);
-        _io.say.created(mfa, vo);
         return mfa;
     }
 
@@ -337,19 +383,16 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Maximum Report.
      */
-    public MaxReport maximum(ArrayList<NamedObject> ano, String name, FieldFunction ff, Units u, boolean vo) {
+    public MaxReport maximum(ArrayList<? extends NamedObject> ano, String name, FieldFunction ff, Units u, boolean vo) {
         _io.say.action("Creating a Maximum Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (MaxReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (MaxReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         MaxReport mr = (MaxReport) _createReport(MaxReport.class, name);
-        mr.setFieldFunction(ff);
-        mr.setUnits(u);
-        mr.getParts().setObjects(ano);
+        _setSR(mr, ano, ff, u, vo);
         monitorAndPlot(mr, null, String.format("Maximum of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _io.say.created(mr, vo);
         return mr;
     }
 
@@ -377,19 +420,16 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Minimum Report.
      */
-    public MinReport minimum(ArrayList<NamedObject> ano, String name, FieldFunction ff, Units u, boolean vo) {
+    public MinReport minimum(ArrayList<? extends NamedObject> ano, String name, FieldFunction ff, Units u, boolean vo) {
         _io.say.action("Creating a Minimum Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (MinReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (MinReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         MinReport mr = (MinReport) _createReport(MinReport.class, name);
-        mr.setFieldFunction(ff);
-        mr.setUnits(u);
-        mr.getParts().setObjects(ano);
+        _setSR(mr, ano, ff, u, vo);
         monitorAndPlot(mr, null, String.format("Minimum of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _io.say.created(mr, vo);
         return mr;
     }
 
@@ -405,8 +445,8 @@ public class CreateReport {
      */
     public PressureDropReport pressureDrop(NamedObject no1, NamedObject no2, String name, Units u, boolean vo) {
         _io.say.action("Creating a Pressure Drop Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (PressureDropReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (PressureDropReport) _hasReport(name, vo);
         }
         _io.say.value("High Pressure", no1.getPresentationName(), true, vo);
         _io.say.value("Low Pressure", no2.getPresentationName(), true, vo);
@@ -415,8 +455,8 @@ public class CreateReport {
         pdr.getParts().setObjects(no1);
         pdr.getLowPressureParts().setObjects(no2);
         pdr.setUnits(u);
-        monitorAndPlot(pdr, null, "Pressure Drop", vo);
         _io.say.created(pdr, vo);
+        monitorAndPlot(pdr, null, "Pressure Drop", vo);
         return pdr;
     }
 
@@ -430,21 +470,17 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Sum Report.
      */
-    public SumReport sum(ArrayList<NamedObject> ano, String name, FieldFunction ff, Units u, boolean vo) {
+    public SumReport sum(ArrayList<? extends NamedObject> ano, String name, FieldFunction ff, Units u, boolean vo) {
         _io.say.action("Creating a Sum Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (SumReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (SumReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
-        SumReport mr = (SumReport) _createReport(SumReport.class, name);
-        mr.setFieldFunction(ff);
-        mr.setUnits(u);
-        mr.getParts().setObjects(ano);
-        monitorAndPlot(mr, null,
-                String.format("Sum of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _io.say.created(mr, vo);
-        return mr;
+        SumReport sr = (SumReport) _createReport(SumReport.class, name);
+        _setSR(sr, ano, ff, u, vo);
+        monitorAndPlot(sr, null, String.format("Sum of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
+        return sr;
     }
 
     /**
@@ -457,21 +493,18 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Surface Average Report.
      */
-    public AreaAverageReport surfaceAverage(ArrayList<NamedObject> ano, String name, FieldFunction ff, Units u,
-            boolean vo) {
+    public AreaAverageReport surfaceAverage(ArrayList<? extends NamedObject> ano, String name,
+            FieldFunction ff, Units u, boolean vo) {
         _io.say.action("Creating a Surface Average Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (AreaAverageReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (AreaAverageReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         AreaAverageReport aar = (AreaAverageReport) _createReport(AreaAverageReport.class, name);
-        aar.setFieldFunction(ff);
-        aar.setUnits(u);
-        aar.getParts().setObjects(ano);
+        _setSR(aar, ano, ff, u, vo);
         monitorAndPlot(aar, null,
                 String.format("Surface Average of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _io.say.created(aar, vo);
         return aar;
     }
 
@@ -485,21 +518,18 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Surface Integral Report.
      */
-    public SurfaceIntegralReport surfaceIntegral(ArrayList<NamedObject> ano, String name, FieldFunction ff,
+    public SurfaceIntegralReport surfaceIntegral(ArrayList<? extends NamedObject> ano, String name, FieldFunction ff,
             Units u, boolean vo) {
         _io.say.action("Creating a Surface Integral Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (SurfaceIntegralReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (SurfaceIntegralReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         SurfaceIntegralReport sir = (SurfaceIntegralReport) _createReport(SurfaceIntegralReport.class, name);
-        sir.setFieldFunction(ff);
-        sir.setUnits(u);
-        sir.getParts().setObjects(ano);
+        _setSR(sir, ano, ff, u, vo);
         monitorAndPlot(sir, null, String.format("Surface Integral of %s (%s)", ff.getPresentationName(),
                 _getString(u)), vo);
-        _io.say.created(sir, vo);
         return sir;
     }
 
@@ -513,21 +543,18 @@ public class CreateReport {
      * @param vo given verbose option. False will not print anything.
      * @return The Surface Uniformity Report.
      */
-    public SurfaceUniformityReport surfaceUniformity(ArrayList<NamedObject> ano, String name,
+    public SurfaceUniformityReport surfaceUniformity(ArrayList<? extends NamedObject> ano, String name,
             FieldFunction ff, Units u, boolean vo) {
         _io.say.action("Creating a Surface Uniformity Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (SurfaceUniformityReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (SurfaceUniformityReport) _hasReport(name, vo);
         }
         _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         SurfaceUniformityReport sur = (SurfaceUniformityReport) _createReport(SurfaceUniformityReport.class, name);
-        sur.setFieldFunction(ff);
-        sur.setUnits(u);
-        sur.getParts().setObjects(ano);
+        _setSR(sur, ano, ff, u, vo);
         monitorAndPlot(sur, null,
                 String.format("Surface Uniformity of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _io.say.created(sur, vo);
         return sur;
     }
 
@@ -544,27 +571,25 @@ public class CreateReport {
     /**
      * Creates a Volume Average Report for the selected Regions.
      *
-     * @param ar given ArrayList of Regions.
+     * @param ano given ArrayList of STAR-CCM+ Objects. Just make sure it is 3D.
      * @param name given Report name.
      * @param ff given Field Function.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      * @return The Volume Average Report.
      */
-    public VolumeAverageReport volumeAverage(ArrayList<Region> ar, String name, FieldFunction ff, Units u, boolean vo) {
+    public VolumeAverageReport volumeAverage(ArrayList<? extends NamedObject> ano, String name,
+            FieldFunction ff, Units u, boolean vo) {
         _io.say.action("Creating a Volume Average Report", vo);
-        if (_checkHasIt(name, false) != null) {
-            return (VolumeAverageReport) _checkHasIt(name, vo);
+        if (_hasReport(name, false) != null) {
+            return (VolumeAverageReport) _hasReport(name, vo);
         }
-        _io.say.objects(ar, "Regions", vo);
+        _io.say.objects(ano, "Parts", vo);
         _io.say.scalar(ff, u, vo);
         VolumeAverageReport var = (VolumeAverageReport) _createReport(VolumeAverageReport.class, name);
-        var.setFieldFunction(ff);
-        var.setUnits(u);
-        var.getParts().setObjects(ar);
+        _setSR(var, ano, ff, u, vo);
         monitorAndPlot(var, null,
                 String.format("Volume Average of %s (%s)", ff.getPresentationName(), _getString(u)), vo);
-        _io.say.created(var, vo);
         return var;
     }
 

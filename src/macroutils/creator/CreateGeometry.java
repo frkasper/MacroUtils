@@ -1,12 +1,25 @@
 package macroutils.creator;
 
-import java.io.*;
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.cadmodeler.*;
-import star.common.*;
-import star.meshing.*;
+import java.io.File;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NeoObjectVector;
+import star.cadmodeler.Body;
+import star.common.GeometryPart;
+import star.common.LabCoordinateSystem;
+import star.common.PartSurface;
+import star.common.Simulation;
+import star.common.SimulationPartManager;
+import star.common.Units;
+import star.meshing.CadPart;
+import star.meshing.MeshPartFactory;
+import star.meshing.PartImportManager;
+import star.meshing.PartRepresentation;
+import star.meshing.SimpleBlockPart;
+import star.meshing.SimpleSpherePart;
 
 /**
  * Low-level class for creating Geometry with MacroUtils.

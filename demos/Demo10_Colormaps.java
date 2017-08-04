@@ -1,7 +1,10 @@
-import java.awt.*;
-import macroutils.*;
-import star.common.*;
-import star.vis.*;
+
+import java.awt.Color;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.StarMacro;
+import star.vis.ScalarDisplayer;
 
 /**
  * This method is for creating custom Colormaps.

@@ -1,7 +1,7 @@
 package simplehexamesher;
 
-import star.assistant.*;
-import star.assistant.annotation.*;
+import star.assistant.Task;
+import star.assistant.annotation.StarAssistantTask;
 
 /**
  * Introduction Task.
@@ -9,5 +9,8 @@ import star.assistant.annotation.*;
  * @since MacroUtils v11.06.
  * @author Fabio Kasper
  */
-@StarAssistantTask(display = "Introduction", contentPath = "html/IntroductionTask.xhtml")
+@StarAssistantTask(
+        contentPath = "html/IntroductionTask.xhtml",
+        display = "Introduction"
+)
 public class IntroductionTask extends Task { }

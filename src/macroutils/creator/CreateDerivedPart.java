@@ -1,11 +1,30 @@
 package macroutils.creator;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.vis.*;
+import java.util.ArrayList;
+import java.util.Vector;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
+import star.base.neo.NeoObjectVector;
+import star.base.report.FieldMeanMonitor;
+import star.common.Boundary;
+import star.common.FieldFunction;
+import star.common.GeometryPart;
+import star.common.PartSurface;
+import star.common.Region;
+import star.common.Simulation;
+import star.common.Units;
+import star.common.UpdateEvent;
+import star.vis.CellSurfacePart;
+import star.vis.ImplicitPart;
+import star.vis.IsoMode;
+import star.vis.IsoPart;
+import star.vis.LinePart;
+import star.vis.PlaneSection;
+import star.vis.PointPart;
+import star.vis.StreamPart;
 
 /**
  * Low-level class for creating Derived Parts with MacroUtils.

@@ -1,5 +1,8 @@
-import macroutils.*;
-import star.common.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.StarMacro;
 
 /**
  * Demo on how to split Part Surfaces and identify them based on geometric ranges. Very useful when automating

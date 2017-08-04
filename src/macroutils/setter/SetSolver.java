@@ -1,27 +1,55 @@
 package macroutils.setter;
 
-import java.util.*;
-import macroutils.*;
-import star.combustion.*;
-import star.common.*;
-import star.cosimulation.onedcoupling.*;
-import star.coupledflow.*;
-import star.flow.*;
-import star.keturb.*;
-import star.kwturb.*;
-import star.metrics.*;
-import star.mixturemultiphase.*;
-import star.multiphase.*;
-import star.rsturb.*;
-import star.segregatedenergy.*;
-import star.segregatedflow.*;
-import star.segregatedmultiphase.*;
-import star.segregatedspecies.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.combustion.PpdfCombustionSolver;
+import star.common.ImplicitUnsteadySolver;
+import star.common.InnerIterationStoppingCriterion;
+import star.common.Model;
+import star.common.PartitioningSolver;
+import star.common.PhysicalTimeStoppingCriterion;
+import star.common.PhysicsContinuum;
+import star.common.PisoUnsteadySolver;
+import star.common.Region;
+import star.common.ScalarPhysicalQuantity;
+import star.common.ScalarSolverBase;
+import star.common.Simulation;
+import star.common.Solver;
+import star.common.StepStoppingCriterion;
+import star.common.TimeDiscretizationOption;
+import star.common.Units;
+import star.cosimulation.onedcoupling.OneDSolver;
+import star.coupledflow.CoupledFlowModel;
+import star.coupledflow.CoupledImplicitSolver;
+import star.coupledflow.CoupledSolver;
+import star.flow.FlowUpwindOption;
+import star.keturb.KeTurbSolver;
+import star.keturb.KeTurbViscositySolver;
+import star.kwturb.KwTurbSolver;
+import star.kwturb.KwTurbViscositySolver;
+import star.metrics.GradientsModel;
+import star.metrics.LimiterMethodOption;
+import star.mixturemultiphase.SegregatedMmpSolver;
+import star.multiphase.GranularTemperatureTransportSolver;
+import star.rsturb.RsTurbSolver;
+import star.rsturb.RsTurbViscositySolver;
+import star.segregatedenergy.SegregatedEnergySolver;
+import star.segregatedflow.PressureSolver;
+import star.segregatedflow.SegregatedFlowModel;
+import star.segregatedflow.SegregatedFlowSolver;
+import star.segregatedflow.VelocitySolver;
+import star.segregatedmultiphase.MultiPhasePressureSolver;
+import star.segregatedmultiphase.MultiPhaseVelocitySolver;
+import star.segregatedmultiphase.SegregatedMultiPhaseSolver;
+import star.segregatedmultiphase.VolumeFractionSolver;
+import star.segregatedspecies.SegregatedSpeciesSolver;
 import star.sixdof.DofMotionSolver;
 import star.sixdof.SixDofSolver;
-import star.turbulence.*;
-import star.vof.*;
-import star.walldistance.*;
+import star.turbulence.TurbViscositySolver;
+import star.vof.VofWaveZoneDistanceSolver;
+import star.walldistance.WallDistanceSolver;
 
 /**
  * Low-level class for setting Solver parameters with MacroUtils.
@@ -360,7 +388,7 @@ public class SetSolver {
      */
     public void maxIterations(int n, boolean vo) {
         _io.say.action("Setting Maximum Number of Iterations", vo);
-        StepStoppingCriterion ssc= _get.solver.stoppingCriteria_MaxIterations();
+        StepStoppingCriterion ssc = _get.solver.stoppingCriteria_MaxIterations();
         ssc.setMaximumNumberSteps(n);
         _io.say.value("Maximum Iterations", ssc.getMaximumNumberSteps(), true);
         _ud.maxIter = ssc.getMaximumNumberSteps();

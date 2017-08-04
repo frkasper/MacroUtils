@@ -1,10 +1,28 @@
 package macroutils.setter;
 
-import macroutils.*;
-import star.common.*;
-import star.energy.*;
-import star.flow.*;
-import star.material.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.common.Model;
+import star.common.ModelManager;
+import star.common.PhysicsContinuum;
+import star.common.Units;
+import star.energy.SpecificHeatProperty;
+import star.energy.ThermalConductivityProperty;
+import star.energy.TurbulentPrandtlNumberProperty;
+import star.flow.ConstantDensityProperty;
+import star.flow.DynamicViscosityProperty;
+import star.flow.Gravity;
+import star.material.ConstantMaterialPropertyMethod;
+import star.material.Gas;
+import star.material.Liquid;
+import star.material.MaterialPropertyMethod;
+import star.material.SingleComponentGasModel;
+import star.material.SingleComponentLiquidModel;
+import star.material.SinglePhaseGas;
+import star.material.SinglePhaseGasModel;
+import star.material.SinglePhaseLiquid;
+import star.material.SinglePhaseLiquidModel;
+import star.material.SolidModel;
 
 /**
  * Low-level class for setting Physics parameters with MacroUtils.

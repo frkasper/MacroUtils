@@ -1,8 +1,14 @@
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.meshing.*;
+
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
+import star.common.Boundary;
+import star.common.Simulation;
+import star.common.StarMacro;
+import star.meshing.SurfaceCustomMeshControl;
 
 /**
  * Complete workflow from CAD to finish on a Lego Kart.

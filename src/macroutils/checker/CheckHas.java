@@ -1,8 +1,8 @@
 package macroutils.checker;
 
-import macroutils.*;
-import star.common.*;
-import star.meshing.*;
+import macroutils.MacroUtils;
+import star.common.Simulation;
+import star.meshing.AutoMeshOperation;
 
 /**
  * Low-level class for has-type methods in MacroUtils.
@@ -139,7 +139,7 @@ public class CheckHas {
      * @return True or False.
      */
     public boolean VOF() {
-        return _sim.getSolverManager().has("Segregated Volume Fraction");
+        return _sim.getSolverManager().has("Segregated VOF");
     }
 
     /**

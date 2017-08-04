@@ -1,9 +1,14 @@
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.meshing.*;
-import star.trimmer.*;
+
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.NamedObject;
+import star.common.PartSurface;
+import star.common.Simulation;
+import star.common.StarMacro;
+import star.meshing.SurfaceCustomMeshControl;
+import star.trimmer.PartsGrowthRateOption;
 
 /**
  * Another complete workflow automated with Macro Utils. 3D flow over a wing.

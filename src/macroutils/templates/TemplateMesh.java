@@ -1,9 +1,14 @@
 package macroutils.templates;
 
-import macroutils.*;
-import star.cadmodeler.*;
-import star.common.*;
-import star.meshing.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.cadmodeler.Body;
+import star.common.CylindricalCoordinateSystem;
+import star.common.GeometryPart;
+import star.common.PartSurface;
+import star.common.Region;
+import star.common.Units;
 
 /**
  * Low-level class for some templated ready to go meshes with MacroUtils.

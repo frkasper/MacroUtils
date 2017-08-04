@@ -1,5 +1,6 @@
-import macroutils.*;
-import star.common.*;
+
+import macroutils.MacroUtils;
+import star.common.StarMacro;
 
 /**
  * Prettify Scenes, Plots, Annotations and Monitors with this very useful method.

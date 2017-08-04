@@ -1,7 +1,15 @@
-import macroutils.*;
-import star.common.*;
-import star.vis.*;
-import star.vof.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.FieldFunctionTypeOption;
+import star.common.Region;
+import star.common.Simulation;
+import star.common.StarMacro;
+import star.vis.ReportAnnotation;
+import star.vis.ScalarDisplayer;
+import star.vis.ScalarFillMode;
+import star.vof.SegregatedVofModel;
 
 /**
  * Simple pseudo 2D Demo of a sloshing case in a tank.

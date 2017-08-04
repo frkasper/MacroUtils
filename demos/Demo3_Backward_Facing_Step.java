@@ -1,5 +1,8 @@
-import macroutils.*;
-import star.common.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.StarMacro;
 
 /**
  * Simple pseudo 2D Demo of the classic Backward Facing Step test case.

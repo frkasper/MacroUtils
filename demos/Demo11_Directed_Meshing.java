@@ -1,7 +1,13 @@
-import macroutils.*;
-import star.common.*;
-import star.meshing.*;
-import star.vis.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.Simulation;
+import star.common.StarMacro;
+import star.meshing.AutoMeshOperation;
+import star.meshing.ImprintMergeImprintMethodOption;
+import star.meshing.ImprintResultingMeshTypeOption;
+import star.vis.ScalarDisplayer;
 
 /**
  * Example of automation involving 3D-CAD models, Mesh Operation and Directed Meshing.

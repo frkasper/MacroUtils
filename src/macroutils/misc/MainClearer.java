@@ -1,8 +1,9 @@
 package macroutils.misc;
 
-import macroutils.*;
-import star.common.*;
-import star.meshing.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.common.Simulation;
+import star.meshing.MeshPipelineController;
 
 /**
  * Main class for "clearing" methods in MacroUtils.

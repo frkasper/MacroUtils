@@ -1,10 +1,15 @@
 package macroutils.templates;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
-import star.post.*;
-import star.vis.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.common.FieldFunction;
+import star.common.Region;
+import star.common.Simulation;
+import star.post.RecordedSolutionView;
+import star.vis.Scene;
+import star.vis.VisView;
 
 /**
  * Low-level class for creating useful post in general with MacroUtils.

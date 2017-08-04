@@ -1,6 +1,6 @@
 package macroutils.checker;
 
-import macroutils.*;
+import macroutils.MacroUtils;
 
 /**
  * Main class for check-type (e.g.: is/has) methods in MacroUtils.

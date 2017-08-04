@@ -1,7 +1,9 @@
 package macroutils.setter;
 
-import macroutils.*;
-import star.vis.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.vis.VisView;
 
 /**
  * Low-level class for setting MacroUtils user defaults defined in {@link UserDeclarations}.

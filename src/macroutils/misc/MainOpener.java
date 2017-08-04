@@ -1,9 +1,10 @@
 package macroutils.misc;
 
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import macroutils.MacroUtils;
+import star.base.neo.ClientServerObject;
+import star.common.Simulation;
+import star.common.StarPlot;
+import star.vis.Scene;
 
 /**
  * Main class for "opening" methods in MacroUtils.
@@ -25,7 +26,7 @@ public class MainOpener {
     }
 
     private void _openingAll(String what, boolean vo) {
-        _io.say.action(String.format("Opening All %s...", what), vo);
+        _io.say.action(String.format("Opening All %s", what), vo);
     }
 
     private void _opening(ClientServerObject cso, boolean vo) {

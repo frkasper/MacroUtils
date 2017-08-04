@@ -1,11 +1,19 @@
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.common.*;
-import star.vis.*;
-import star.keturb.*;
-import star.kwturb.*;
+
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.report.Monitor;
+import star.common.FieldFunctionTypeOption;
+import star.common.StarMacro;
+import star.keturb.KeTurbSpecOption;
+import star.kwturb.KwTurbSolver;
+import star.vis.LookupTable;
+import star.vis.PartDisplayer;
+import star.vis.ScalarDisplayer;
+import star.vis.Scene;
+import star.vis.VisView;
 
 /**
  * Runs the SST K-Omega DES model with IDDES formulation on a square channel under Re_L ~ 10k.

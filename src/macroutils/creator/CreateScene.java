@@ -1,10 +1,35 @@
 package macroutils.creator;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
+import star.common.FieldFunction;
+import star.common.Region;
+import star.common.Simulation;
+import star.common.Units;
+import star.vis.Annotation;
+import star.vis.AnnotationProp;
+import star.vis.AnnotationPropManager;
+import star.vis.DisplayLocationMode;
+import star.vis.Displayer;
+import star.vis.DisplayerManager;
+import star.vis.FixedAspectAnnotationProp;
+import star.vis.PartColorMode;
+import star.vis.PartDisplayer;
+import star.vis.ReportAnnotation;
+import star.vis.ScalarDisplayQuantity;
+import star.vis.ScalarDisplayer;
+import star.vis.ScalarFillMode;
+import star.vis.Scene;
+import star.vis.SimpleAnnotation;
+import star.vis.StreamDisplayer;
+import star.vis.StreamDisplayerMode;
+import star.vis.StreamPart;
+import star.vis.VectorDisplayMode;
+import star.vis.VectorDisplayer;
 
 /**
  * Low-level class for creating Scenes with MacroUtils.

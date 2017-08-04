@@ -1,9 +1,15 @@
-import macroutils.*;
-import macroutils.templates.*;
-import star.common.*;
-import star.meshing.*;
-import star.post.*;
-import star.vis.*;
+
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import macroutils.templates.TemplatePost;
+import star.common.Boundary;
+import star.common.Simulation;
+import star.common.StarMacro;
+import star.common.UpdateEvent;
+import star.meshing.AutoMeshOperation;
+import star.post.RecordedSolutionView;
+import star.vis.ScalarDisplayer;
 
 /**
  * Pseudo 2D Laminar Vortex Shedding under Reynolds of 500.
@@ -196,7 +202,7 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
         ud.solHist = mu.get.solver.solutionHistory(".*", true);
         ud.recSolView = (RecordedSolutionView) mu.add.solver.solutionView(ud.solHist);
         sd.setRepresentation(ud.recSolView.getRepresentation());
-        mu.io.say.action("Saving Pictures in several camera views...", true);
+        mu.io.say.action("Saving Pictures in several camera views", true);
         TemplatePost tp = mu.templates.post;
         tp.flyOver(ud.scene, ud.vv1, null, 5 * fps, ud.recSolView);
         tp.flyOver(ud.scene, ud.vv1, ud.vv2, 4 * fps, ud.recSolView);

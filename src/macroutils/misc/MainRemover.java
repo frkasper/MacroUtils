@@ -1,13 +1,34 @@
 package macroutils.misc;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.base.report.*;
-import star.cadmodeler.*;
-import star.common.*;
-import star.meshing.*;
-import star.vis.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import macroutils.MacroUtils;
+import star.base.neo.NeoObjectVector;
+import star.base.neo.NeoProperty;
+import star.base.report.Monitor;
+import star.base.report.MonitorManager;
+import star.base.report.ReportManager;
+import star.base.report.ReportMonitor;
+import star.base.report.SingleFieldAnalysisMonitor;
+import star.cadmodeler.SolidModelManager;
+import star.common.ContinuumManager;
+import star.common.FieldFunction;
+import star.common.FieldFunctionManager;
+import star.common.GeometryPartManager;
+import star.common.GlobalParameterManager;
+import star.common.LocalCoordinateSystemManager;
+import star.common.PlotManager;
+import star.common.Region;
+import star.common.RegionManager;
+import star.common.Simulation;
+import star.common.StarPlot;
+import star.common.UpdateEventManager;
+import star.common.UserFieldFunction;
+import star.meshing.MeshOperation;
+import star.meshing.MeshOperationManager;
+import star.vis.Annotation;
+import star.vis.AnnotationManager;
+import star.vis.SceneManager;
 
 /**
  * Main class for "removing" STAR-CCM+ objects with MacroUtils. Use with caution.

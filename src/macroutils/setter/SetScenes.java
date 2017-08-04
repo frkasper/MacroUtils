@@ -1,10 +1,24 @@
 package macroutils.setter;
 
-import java.awt.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import java.awt.Color;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.common.FieldFunction;
+import star.common.Units;
+import star.common.UpdateEvent;
+import star.vis.BackgroundColorMode;
+import star.vis.CameraStateInput;
+import star.vis.Displayer;
+import star.vis.Legend;
+import star.vis.LookupTable;
+import star.vis.PartColorMode;
+import star.vis.PartDisplayer;
+import star.vis.ScalarDisplayQuantity;
+import star.vis.Scene;
+import star.vis.VisTransform;
+import star.vis.VisView;
 
 /**
  * Low-level class for setting Scenes parameters with MacroUtils.

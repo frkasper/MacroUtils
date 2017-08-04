@@ -1,7 +1,14 @@
 package macroutils.templates.demos;
 
-import macroutils.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.common.Cartesian2DAxis;
+import star.common.Cartesian2DAxisManager;
+import star.common.FieldFunctionTypeOption;
+import star.common.InternalDataSet;
+import star.common.ScalarGlobalParameter;
+import star.common.Simulation;
+import star.common.SymbolShapeOption;
 
 /**
  * Low-level class for Demo 16.
