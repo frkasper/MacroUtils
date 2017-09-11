@@ -74,7 +74,7 @@ public class SetMesh {
             return;
         }
         rs.setRelativeSize(perc);
-        _io.say.percentage(what, rs.getRelativeSizeValue(), true);
+        _io.say.percentage(what, rs.getRelativeSizeScalar().getInternalValue(), true);
     }
 
     private void _setRelativeSize(RelativeOrAbsoluteSize rs, String what, double perc) {
@@ -168,7 +168,7 @@ public class SetMesh {
     public void prismLayerTotalThickness(PrismThickness pt, double val, boolean vo) {
         _io.say.action("Setting Prism Layer Total Thickness", vo);
         pt.setRelativeSize(val);
-        _io.say.percentage("Prism Layer Total Thickness", pt.getRelativeSizeValue(), true);
+        _io.say.percentage("Prism Layer Total Thickness", pt.getRelativeSizeScalar().getInternalValue(), true);
         _io.say.ok(vo);
     }
 

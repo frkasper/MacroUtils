@@ -62,10 +62,7 @@ public class GetUnits {
      * @return The Dimensions.
      */
     public Dimensions dimensions(Units u) {
-        if (u == null) {
-            return new Dimensions();
-        }
-        return u.getDimensions();
+        return (u != null) ? u.getDimensions() : new Dimensions();
     }
 
     /**
@@ -76,12 +73,10 @@ public class GetUnits {
      */
     public Units fromMonitor(Monitor m) {
         if (m instanceof ResidualMonitor) {
-            return ((ResidualMonitor) m).getMonitoredValueUnits();
+            return byName(_unitDimensionless, false);
+        } else {
+            return (m instanceof ReportMonitor) ? ((ReportMonitor) m).getReport().getUnits() : null;
         }
-        if (m instanceof ReportMonitor) {
-            return ((ReportMonitor) m).getMonitoredValueUnits();
-        }
-        return null;
     }
 
     /**

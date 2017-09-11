@@ -426,7 +426,7 @@ public class CreateMeshOperation {
 
     private void _setRelativeSize(String what, PartsRelativeOrAbsoluteSize rs, double perc) {
         rs.setRelativeSize(perc);
-        _io.say.percentage(what, rs.getRelativeSizeValue(), true);
+        _io.say.percentage(what, rs.getRelativeSizeScalar().getInternalValue(), true);
     }
 
     private void _setWorkAroundAutoSourceMesh(DirectedAutoSourceMesh dasm, GeometryPart gp) {
