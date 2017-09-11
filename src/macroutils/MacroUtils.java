@@ -26,18 +26,16 @@ import star.common.SimulationIterator;
  * <p>
  * <b>Requires:</b>
  * <ul>
- * <li> STAR-CCM+ v12.04 libraries. <u>It may not run in other versions</u>;
- * <li> If one is compiling through NetBeans 8 or higher, please do it against JDK 7 Source/Binary format;
- * <li> Compiling against JDK 8 will present runtime issues in STAR-CCM+.
+ * <li> STAR-CCM+ v12.06 libraries. <u>It may not run in other versions</u>;
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v12.04, August 04, 2017.
+ * @version v12.06, September 11, 2017.
  */
 public final class MacroUtils {
 
-    private final String _macroUtilsVersion = "MacroUtils version 12.04 (build 1)";
+    private final String MACROUTILS_VERSION = "MacroUtils version 12.06 (build 1)";
 
     /**
      * Initialize MacroUtils in intrusive mode by providing a Simulation object.
@@ -85,9 +83,9 @@ public final class MacroUtils {
         update = new MainUpdater(this);
         userDeclarations = new UserDeclarations(this);
         _updateInstances();
-        io.print.action(String.format("Initializing %s", _macroUtilsVersion), true);
+        io.print.action(String.format("Initializing %s", MACROUTILS_VERSION), true);
         _initialize_defaults();
-        io.print.action(String.format("%s initialized!", _macroUtilsVersion), true);
+        io.print.action(String.format("%s initialized!", MACROUTILS_VERSION), true);
     }
 
     private void _initialize_defaults() {
