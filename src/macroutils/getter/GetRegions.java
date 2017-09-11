@@ -29,7 +29,7 @@ public class GetRegions {
      * @return An ArrayList of Regions.
      */
     public ArrayList<Region> all(boolean vo) {
-        ArrayList<Region> ar = new ArrayList(_sim.getRegionManager().getRegions());
+        ArrayList<Region> ar = new ArrayList<>(_sim.getRegionManager().getRegions());
         _io.say.objects(ar, "Getting all Regions", vo);
         return ar;
     }
@@ -42,7 +42,7 @@ public class GetRegions {
      * @return An ArrayList of Regions.
      */
     public ArrayList<Region> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Regions", new ArrayList(all(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Regions", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -53,7 +53,7 @@ public class GetRegions {
      * @return The Region.
      */
     public Region byREGEX(String regexPatt, boolean vo) {
-        return (Region) _get.objects.allByREGEX(regexPatt, "Region", new ArrayList(all(false)), vo).get(0);
+        return (Region) _get.objects.allByREGEX(regexPatt, "Region", new ArrayList<>(all(false)), vo).get(0);
     }
 
     /**

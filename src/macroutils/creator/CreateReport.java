@@ -52,7 +52,7 @@ public class CreateReport {
         _sim = m.getSimulation();
     }
 
-    private Report _createReport(Class clz, String name) {
+    private <T extends Report> Report _createReport(Class<T> clz, String name) {
         Report r = _sim.getReportManager().createReport(clz);
         if (name == null) {
             name = r.getBeanDisplayName();

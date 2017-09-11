@@ -12,6 +12,7 @@ import star.common.ExpertInitManager;
 import star.common.ExpertInitOption;
 import star.common.GridSequencingInit;
 import star.common.ImplicitUnsteadyModel;
+import star.common.Model;
 import star.common.PhysicsContinuum;
 import star.common.PisoUnsteadyModel;
 import star.common.Simulation;
@@ -84,7 +85,7 @@ public class MainEnabler {
         return false;
     }
 
-    private void _toggleTime(PhysicsContinuum pc, Class dClz, Class eClz, boolean vo) {
+    private <T extends Model> void _toggleTime(PhysicsContinuum pc, Class<T> dClz, Class eClz, boolean vo) {
         _io.say.action(String.format("Enabling %s analysis", eClz.getName()), vo);
         if (pc == null) {
             _io.say.msg("Physics Continua not provided. Skipping...", vo);

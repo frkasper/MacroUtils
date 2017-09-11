@@ -105,7 +105,7 @@ public class Write {
      * @param prefix given prefix for the files. E.g.: simulation name.
      */
     public void all(String prefix) {
-        ArrayList<NamedObject> ano = new ArrayList();
+        ArrayList<NamedObject> ano = new ArrayList<>();
         ano.addAll(_sim.getPlotManager().getPlots());
         ano.addAll(_sim.getSceneManager().getScenes());
         _writeObjects("all Plots and Scenes", prefix, ano);
@@ -156,9 +156,9 @@ public class Write {
      */
     public void cameraViews(String filename) {
         _io.say.action("Writing Camera Views", true);
-        ArrayList<VisView> av = new ArrayList(_sim.getViewManager().getObjects());
+        ArrayList<VisView> av = new ArrayList<>(_sim.getViewManager().getObjects());
         _io.say.objects(av, "Camera Views", true);
-        ArrayList<String> als = new ArrayList();
+        ArrayList<String> als = new ArrayList<>();
         for (VisView v : _sim.getViewManager().getViews()) {
             String name = v.getPresentationName();
             DoubleVector fp = v.getFocalPoint();
@@ -196,7 +196,7 @@ public class Write {
      * values.
      */
     public void plots() {
-        _writeObjects("all Plots", "Plot", new ArrayList(_sim.getPlotManager().getPlots()));
+        _writeObjects("all Plots", "Plot", new ArrayList<>(_sim.getPlotManager().getPlots()));
     }
 
     /**
@@ -205,7 +205,7 @@ public class Write {
      * values.
      */
     public void scenes() {
-        _writeObjects("all Scenes", "Scene", new ArrayList(_sim.getSceneManager().getScenes()));
+        _writeObjects("all Scenes", "Scene", new ArrayList<>(_sim.getSceneManager().getScenes()));
     }
 
     /**

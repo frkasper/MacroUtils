@@ -84,7 +84,7 @@ public class SetSolver {
     }
 
     private ArrayList<Region> _getRegionsWithPhysicsContinua() {
-        ArrayList<Region> ar = new ArrayList();
+        ArrayList<Region> ar = new ArrayList<>();
         for (Region r : _get.regions.all(false)) {
             if (r.getPhysicsContinuum() == null) {
                 continue;
@@ -314,7 +314,7 @@ public class SetSolver {
         if (opt) {
             action = "Freezed";
         }
-        ArrayList<Solver> as = new ArrayList(_sim.getSolverManager().getObjects());
+        ArrayList<Solver> as = new ArrayList<>(_sim.getSolverManager().getObjects());
         switch (slv) {
             case ALL:
                 for (Solver s : as) {

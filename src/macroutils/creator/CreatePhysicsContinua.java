@@ -131,7 +131,7 @@ public class CreatePhysicsContinua {
     }
 
     private ArrayList<Class> _getClassesVOF() {
-        ArrayList<Class> aclz = new ArrayList();
+        ArrayList<Class> aclz = new ArrayList<>();
         aclz.add(EulerianMultiPhaseModel.class);
         aclz.add(SegregatedVofModel.class);
         aclz.add(SegregatedVolumeFluxBasedFlowModel.class);
@@ -397,7 +397,7 @@ public class CreatePhysicsContinua {
         _set.object.physicalQuantity(fvw.getWind(), wind, _ud.defUnitVel, "Wind", true);
         //--
         //-- Try to Set Light and Heavy Fluids Automatically
-        ArrayList<Double> dens = new ArrayList();
+        ArrayList<Double> dens = new ArrayList<>();
         EulerianMultiPhaseModel empm = pc.getModelManager().getModel(EulerianMultiPhaseModel.class);
         //--
         //-- Match the data defined in the Physics Continua
@@ -496,7 +496,7 @@ public class CreatePhysicsContinua {
     //--
     //-- Variables declaration area.
     //--
-    private ArrayList<String> _s = new ArrayList();
+    private ArrayList<String> _s = new ArrayList<>();
     private boolean _isOK = true;
     private MacroUtils _mu = null;
     private macroutils.checker.MainChecker _chk = null;

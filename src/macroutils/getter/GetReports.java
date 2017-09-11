@@ -30,7 +30,7 @@ public class GetReports {
      * @return An ArrayList of Reports.
      */
     public ArrayList<Report> all(boolean vo) {
-        ArrayList<Report> ar = new ArrayList(_sim.getReportManager().getObjects());
+        ArrayList<Report> ar = new ArrayList<>(_sim.getReportManager().getObjects());
         _io.say.objects(ar, "Getting all Reports", vo);
         return ar;
     }
@@ -43,7 +43,7 @@ public class GetReports {
      * @return An ArrayList of Reports.
      */
     public ArrayList<Report> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Reports", new ArrayList(all(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Reports", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -54,7 +54,7 @@ public class GetReports {
      * @return The Report.
      */
     public Report byREGEX(String regexPatt, boolean vo) {
-        return (Report) _get.objects.allByREGEX(regexPatt, "Report", new ArrayList(all(false)), vo).get(0);
+        return (Report) _get.objects.allByREGEX(regexPatt, "Report", new ArrayList<>(all(false)), vo).get(0);
     }
 
     /**

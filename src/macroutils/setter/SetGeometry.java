@@ -70,7 +70,7 @@ public class SetGeometry {
      * @param vo given verbose option. False will not print anything.
      */
     public void splitPartSurfacesByPartCurves(GeometryPart gp, boolean vo) {
-        splitPartSurfacesByPartCurves(new ArrayList(gp.getPartSurfaces()), new ArrayList(gp.getPartCurves()), vo);
+        splitPartSurfacesByPartCurves(new ArrayList<>(gp.getPartSurfaces()), new ArrayList<>(gp.getPartCurves()), vo);
     }
 
     /**
@@ -84,7 +84,7 @@ public class SetGeometry {
         _io.say.action("Splitting Part Surfaces by Part Curves", vo);
         _io.say.objects(aps, "Part Surfaces", vo);
         _io.say.objects(apc, "Part Curves", vo);
-        if (!(_chk.is.withinSamePart(new ArrayList(aps)) && _chk.is.withinSamePart(new ArrayList(apc)))) {
+        if (!(_chk.is.withinSamePart(new ArrayList<>(aps)) && _chk.is.withinSamePart(new ArrayList<>(apc)))) {
             _io.say.msg(vo, "Objects do not share the same Geometry Part. Returning NULL!");
             return;
         }

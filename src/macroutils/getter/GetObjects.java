@@ -25,12 +25,12 @@ public class GetObjects {
         _sim = m.getSimulation();
     }
 
-    private ArrayList<NamedObject> _getFFs() {
-        return new ArrayList(_sim.getFieldFunctionManager().getObjects());
+    private ArrayList<FieldFunction> _getFFs() {
+        return new ArrayList<>(_sim.getFieldFunctionManager().getObjects());
     }
 
     private ArrayList<PhysicsContinuum> _getPCs() {
-        ArrayList<PhysicsContinuum> apc = new ArrayList();
+        ArrayList<PhysicsContinuum> apc = new ArrayList<>();
         for (Continuum pc : _sim.getContinuumManager().getObjects()) {
             if (pc instanceof PhysicsContinuum) {
                 apc.add((PhysicsContinuum) pc);
@@ -48,13 +48,13 @@ public class GetObjects {
      * @param vo given verbose option. False will not print anything.
      * @return An ArrayList of NamedObjects.
      */
-    public ArrayList<NamedObject> allByREGEX(String regexPatt, String what, ArrayList<NamedObject> ano, boolean vo) {
-        ArrayList<NamedObject> arr = new ArrayList();
+    public <T extends NamedObject> ArrayList<T> allByREGEX(String regexPatt, String what, ArrayList<T> ano, boolean vo) {
+        ArrayList<T> arr = new ArrayList<>();
         _io.print.msg(vo, "Getting %s by REGEX search pattern: \"%s\".", what, regexPatt);
         if (ano.isEmpty()) {
             _io.print.msg(vo, "Input ArrayList is empty.");
         } else {
-            for (NamedObject no : ano) {
+            for (T no : ano) {
                 String name = no.getPresentationName();
                 boolean hasMatch = name.matches(regexPatt);
                 if ((no instanceof FieldFunction) && !hasMatch) {
@@ -101,17 +101,29 @@ public class GetObjects {
      */
     public star.vis.Annotation annotation(String regexPatt, boolean vo) {
         return (star.vis.Annotation) byREGEX(regexPatt, "Annotation",
-                new ArrayList(_sim.getAnnotationManager().getObjects()), vo);
+                new ArrayList<>(_sim.getAnnotationManager().getObjects()), vo);
     }
 
     /**
-     * Gets an ArrayList from an object. Casting to the desired variable may be necessary.
-     *
-     * @param obj given JAVA Object.
+     * Gets an ArrayList from a STAR-CCM+ object.
+       *
+     * @param <T> given type of Array.
+     * @param no given NamedObject.
      * @return An ArrrayList.
      */
-    public ArrayList arrayList(Object obj) {
-        return new ArrayList(Arrays.asList(new Object[]{obj}));
+    public <T extends NamedObject> ArrayList<T> arrayList(T no) {
+        return new ArrayList<>(Arrays.asList(no));
+    }
+
+    /**
+     * Gets an ArrayList from a STAR-CCM+ object.
+     *
+     * @param <T> given type of Array.
+     * @param ano given ArrayList of NamedObjects.
+     * @return An ArrrayList.
+     */
+    public <T extends NamedObject> ArrayList<T> arrayList(ArrayList<T> ano) {
+        return new ArrayList<>(ano);
     }
 
     /**
@@ -153,11 +165,12 @@ public class GetObjects {
     /**
      * Gets a constant material property object to be manipulated by MacroUtils.
      *
+     * @param <T> any Class that extends from MaterialProperty object in STAR-CCM+.
      * @param m given {@link star.common.Model}.
      * @param clz given material property Class. E.g.: {@link star.flow.ConstantDensityProperty}, etc...
      * @return The ConstantMaterialPropertyMethod.
      */
-    public ConstantMaterialPropertyMethod constantMaterialProperty(Model m, Class clz) {
+    public <T extends MaterialProperty> ConstantMaterialPropertyMethod constantMaterialProperty(Model m, Class<T> clz) {
         if (m instanceof SingleComponentMaterialModel) {
             SingleComponentMaterialModel scmm = (SingleComponentMaterialModel) m;
             MaterialPropertyManager mpp = scmm.getMaterial().getMaterialProperties();
@@ -176,7 +189,7 @@ public class GetObjects {
      */
     public ArrayList<NamedObject> children(ArrayList<NamedObject> ano, boolean vo) {
         _io.say.objects(ano, "given Original Objects", vo);
-        ArrayList<NamedObject> anoChildren = new ArrayList();
+        ArrayList<NamedObject> anoChildren = new ArrayList<>();
         for (NamedObject no : ano) {
             if (no instanceof Region) {
                 anoChildren.addAll(((Region) no).getBoundaryManager().getBoundaries());
@@ -242,7 +255,7 @@ public class GetObjects {
      * @return An ArrayList of FieldFunctions.
      */
     public ArrayList<FieldFunction> fieldFunctions(String regexPatt, boolean vo) {
-        return new ArrayList(allByREGEX(regexPatt, "Field Functions", _getFFs(), vo));
+        return new ArrayList<>(allByREGEX(regexPatt, "Field Functions", _getFFs(), vo));
     }
 
     /**
@@ -271,7 +284,7 @@ public class GetObjects {
      */
     public GlobalParameterBase parameter(String regexPatt, boolean vo) {
         return (GlobalParameterBase) byREGEX(regexPatt, "Global Parameter",
-                new ArrayList(_sim.get(GlobalParameterManager.class).getObjects()), vo);
+                new ArrayList<>(_sim.get(GlobalParameterManager.class).getObjects()), vo);
     }
 
     /**
@@ -282,7 +295,7 @@ public class GetObjects {
      * @return The PhysicsContinuum. Null if nothing is found.
      */
     public PhysicsContinuum physicsContinua(String regexPatt, boolean vo) {
-        return (PhysicsContinuum) byREGEX(regexPatt, "Physics Continua", new ArrayList(_getPCs()), vo);
+        return (PhysicsContinuum) byREGEX(regexPatt, "Physics Continua", new ArrayList<>(_getPCs()), vo);
     }
 
     /**
@@ -322,7 +335,7 @@ public class GetObjects {
      */
     public VisTransform transform(String regexPatt, boolean vo) {
         return (VisTransform) _get.objects.byREGEX(regexPatt, "Transform",
-                new ArrayList(_sim.getTransformManager().getObjects()), vo);
+                new ArrayList<>(_sim.getTransformManager().getObjects()), vo);
     }
 
     /**

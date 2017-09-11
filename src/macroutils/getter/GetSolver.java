@@ -26,10 +26,11 @@ public class GetSolver {
     /**
      * Gets a specific Solver from STAR-CCM+ API.
      *
+     * @param <T> any Class that extends from Solver object in STAR-CCM+.
      * @param solver given Solver Class name.
      * @return The Solver. Casting the variable might be necessary. Returns <b>null</b> if it is not available.
      */
-    public Solver byClass(Class solver) {
+    public <T extends Solver> T byClass(Class<T> solver) {
         try {
             return _sim.getSolverManager().getSolver(solver);
         } catch (Exception e) {
@@ -65,7 +66,7 @@ public class GetSolver {
      */
     public SolutionHistory solutionHistory(String regexPatt, boolean vo) {
         return (SolutionHistory) _get.objects.byREGEX(regexPatt,
-                new ArrayList(_sim.get(SolutionHistoryManager.class).getObjects()), vo);
+                new ArrayList<>(_sim.get(SolutionHistoryManager.class).getObjects()), vo);
     }
 
     /**
@@ -77,7 +78,7 @@ public class GetSolver {
      */
     public SolutionView solutionView(String regexPatt, boolean vo) {
         return (SolutionView) _get.objects.byREGEX(regexPatt,
-                new ArrayList(_sim.get(SolutionViewManager.class).getObjects()), vo);
+                new ArrayList<>(_sim.get(SolutionViewManager.class).getObjects()), vo);
     }
 
     /**
@@ -89,7 +90,7 @@ public class GetSolver {
      */
     public SolverStoppingCriterion stoppingCriteria(String regexPatt, boolean vo) {
         return (SolverStoppingCriterion) _get.objects.byREGEX(regexPatt,
-                new ArrayList(_sim.getSolverStoppingCriterionManager().getObjects()), vo);
+                new ArrayList<>(_sim.getSolverStoppingCriterionManager().getObjects()), vo);
     }
 
     /**

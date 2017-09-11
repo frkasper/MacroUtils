@@ -114,7 +114,7 @@ public class GetStrings {
      */
     public ArrayList<String> meshers(AutoMeshOperation amo, boolean vo) {
         _io.say.object(amo, vo);
-        ArrayList<String> as = new ArrayList();
+        ArrayList<String> as = new ArrayList<>();
         for (MesherBase mb : amo.getMeshers().getObjects()) {
             as.add(mb.getClass().getName());
         }
@@ -129,7 +129,7 @@ public class GetStrings {
      * @return An ArrayList of Strings. Useful with {@link macroutils.creator.CreateMeshOperation#automatedMesh}.
      */
     public ArrayList<String> meshers(StaticDeclarations.Meshers... meshers) {
-        ArrayList<String> as = new ArrayList();
+        ArrayList<String> as = new ArrayList<>();
         for (StaticDeclarations.Meshers mesher : meshers) {
             as.add(mesher.getMesher());
         }

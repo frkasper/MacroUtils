@@ -38,7 +38,7 @@ public class GetPlots {
      * @return An ArrayList of StarPlots.
      */
     public ArrayList<StarPlot> all(boolean vo) {
-        ArrayList<StarPlot> as = new ArrayList(_sim.getPlotManager().getObjects());
+        ArrayList<StarPlot> as = new ArrayList<>(_sim.getPlotManager().getObjects());
         _io.say.objects(as, "Getting all Plots", vo);
         return as;
     }
@@ -51,7 +51,7 @@ public class GetPlots {
      * @return An ArrayList of StarPlots.
      */
     public ArrayList<StarPlot> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Plots", new ArrayList(all(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Plots", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -82,7 +82,7 @@ public class GetPlots {
      * @return The StarPlot. Null if nothing is found.
      */
     public StarPlot byREGEX(String regexPatt, boolean vo) {
-        return (StarPlot) _get.objects.byREGEX(regexPatt, "Plot", new ArrayList(all(false)), vo);
+        return (StarPlot) _get.objects.byREGEX(regexPatt, "Plot", new ArrayList<>(all(false)), vo);
     }
 
     /**
@@ -94,7 +94,7 @@ public class GetPlots {
      */
     public ArrayList<DataSet> datasets(StarPlot sp, boolean vo) {
         _io.say.object(sp, vo);
-        ArrayList<DataSet> ads = new ArrayList(sp.getDataSetManager().getDataSets());
+        ArrayList<DataSet> ads = new ArrayList<>(sp.getDataSetManager().getDataSets());
         if (sp instanceof XYPlot) {
             XYPlot xyp = (XYPlot) sp;
             for (AxisType at : xyp.getYAxes().getObjects()) {

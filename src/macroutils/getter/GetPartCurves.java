@@ -29,7 +29,7 @@ public class GetPartCurves {
      * @return An ArrayList of Part Curves.
      */
     public ArrayList<PartCurve> all(boolean vo) {
-        ArrayList<PartCurve> apc = new ArrayList();
+        ArrayList<PartCurve> apc = new ArrayList<>();
         _io.say.msg(vo, "Getting all Part Curves from all Geometries...");
         for (GeometryPart gp : _get.geometries.all(false)) {
             apc.addAll(gp.getPartCurves());
@@ -57,7 +57,7 @@ public class GetPartCurves {
      * @return An ArrayList of Part Curves.
      */
     public ArrayList<PartCurve> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Curves", new ArrayList(all(false)), true));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Curves", new ArrayList<>(all(false)), true));
     }
 
     /**
@@ -69,8 +69,8 @@ public class GetPartCurves {
      * @return An ArrayList of Part Curves.
      */
     public ArrayList<PartCurve> allByREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Curves",
-                new ArrayList(gp.getPartCurves()), true));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Curves",
+                new ArrayList<>(gp.getPartCurves()), true));
     }
 
     /**
@@ -81,7 +81,7 @@ public class GetPartCurves {
      * @return The PartCurve. Null if nothing is found.
      */
     public PartCurve byREGEX(String regexPatt, boolean vo) {
-        return (PartCurve) _get.objects.byREGEX(regexPatt, "Part Curve", new ArrayList(all(false)), vo);
+        return (PartCurve) _get.objects.byREGEX(regexPatt, "Part Curve", new ArrayList<>(all(false)), vo);
     }
 
     /**
@@ -93,7 +93,7 @@ public class GetPartCurves {
      * @return The PartCurve. Null if nothing is found.
      */
     public PartCurve byREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return (PartCurve) _get.objects.byREGEX(regexPatt, "Part Curve", new ArrayList(gp.getPartCurves()), vo);
+        return (PartCurve) _get.objects.byREGEX(regexPatt, "Part Curve", new ArrayList<>(gp.getPartCurves()), vo);
     }
 
     /**

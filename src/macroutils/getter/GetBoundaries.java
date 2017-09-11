@@ -28,7 +28,7 @@ public class GetBoundaries {
      * @return An ArrayList of Boundaries.
      */
     public ArrayList<Boundary> all(boolean vo) {
-        ArrayList<Boundary> ab = new ArrayList();
+        ArrayList<Boundary> ab = new ArrayList<>();
         _io.say.msg(vo, "Getting all Boundaries from all Regions...");
         for (Region r : _get.regions.all(false)) {
             ab.addAll(r.getBoundaryManager().getBoundaries());
@@ -46,7 +46,7 @@ public class GetBoundaries {
      */
     public ArrayList<Boundary> all(Region r, boolean vo) {
         _io.say.value("Getting all Boundaries from Region", r.getPresentationName(), true, vo);
-        ArrayList<Boundary> ab = new ArrayList(r.getBoundaryManager().getBoundaries());
+        ArrayList<Boundary> ab = new ArrayList<>(r.getBoundaryManager().getBoundaries());
         _io.say.objects(ab, "Boundaries", vo);
         return ab;
     }
@@ -59,7 +59,7 @@ public class GetBoundaries {
      * @return An ArrayList of Boundaries.
      */
     public ArrayList<Boundary> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Boundaries", new ArrayList(all(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Boundaries", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -70,7 +70,7 @@ public class GetBoundaries {
      * @return The Boundary. Null if nothing is found.
      */
     public Boundary byREGEX(String regexPatt, boolean vo) {
-        return (Boundary) _get.objects.byREGEX(regexPatt, "Boundary", new ArrayList(all(false)), vo);
+        return (Boundary) _get.objects.byREGEX(regexPatt, "Boundary", new ArrayList<>(all(false)), vo);
     }
 
     /**
@@ -83,7 +83,7 @@ public class GetBoundaries {
      */
     public Boundary byREGEX(Region r, String regexPatt, boolean vo) {
         return (Boundary) _get.objects.byREGEX(regexPatt, "Boundary",
-                new ArrayList(r.getBoundaryManager().getBoundaries()), vo);
+                new ArrayList<>(r.getBoundaryManager().getBoundaries()), vo);
     }
 
     /**

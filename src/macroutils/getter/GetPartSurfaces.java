@@ -46,7 +46,7 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> all(boolean vo) {
-        ArrayList<PartSurface> aps = new ArrayList();
+        ArrayList<PartSurface> aps = new ArrayList<>();
         _io.say.msg(vo, "Getting all Part Surfaces from all Geometries...");
         for (GeometryPart gp : _get.geometries.all(false)) {
             aps.addAll(gp.getPartSurfaces());
@@ -74,7 +74,7 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Surfaces", new ArrayList(all(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Surfaces", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -87,8 +87,8 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "all Part Surfaces",
-                new ArrayList(gp.getPartSurfaces()), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Surfaces",
+                new ArrayList<>(gp.getPartSurfaces()), vo));
     }
 
     private PartSurface byArea(ArrayList<PartSurface> aps, RangeOpts opt) {
@@ -97,7 +97,7 @@ public class GetPartSurfaces {
         stats.remove(null);
         _io.say.action(String.format("Getting Part Surface with %s Area", opt.toString()), true);
         _io.say.objects(aps, "Part Surfaces", true);
-        HashMap<PartSurface, Double> areas = new HashMap();
+        HashMap<PartSurface, Double> areas = new HashMap<>();
         for (Map.Entry<PartSurface, NeoProperty> entry : stats.entrySet()) {
             PartSurface ps = entry.getKey();
             NeoProperty np = entry.getValue();
@@ -162,7 +162,7 @@ public class GetPartSurfaces {
         _io.say.action("Getting Part Surfaces Range", vo);
         DoubleVector globalMin = stats.get(null).getDoubleVector("LabMinRange");
         DoubleVector globalMax = stats.get(null).getDoubleVector("LabMaxRange");
-        ArrayList<PartSurface> aps2 = new ArrayList();
+        ArrayList<PartSurface> aps2 = new ArrayList<>();
         for (PartSurface ps : aps) {
             DoubleVector localMin = stats.get(ps).getDoubleVector("LabMinRange");
             DoubleVector localMax = stats.get(ps).getDoubleVector("LabMaxRange");
@@ -241,7 +241,7 @@ public class GetPartSurfaces {
      * @return The PartSurface. Null if nothing is found.
      */
     public PartSurface byREGEX(String regexPatt, boolean vo) {
-        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface", new ArrayList(all(false)), vo);
+        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface", new ArrayList<>(all(false)), vo);
     }
 
     /**
@@ -253,7 +253,7 @@ public class GetPartSurfaces {
      * @return The PartSurface. Null if nothing is found.
      */
     public PartSurface byREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface", new ArrayList(gp.getPartSurfaces()), vo);
+        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface", new ArrayList<>(gp.getPartSurfaces()), vo);
     }
 
     /**
@@ -306,7 +306,7 @@ public class GetPartSurfaces {
     public ArrayList<PartSurface> fromBoundaries(ArrayList<Boundary> ab) {
         _io.say.action("Getting Part Surfaces", true);
         _io.say.objects(ab, "Boundaries", true);
-        ArrayList<PartSurface> aps = new ArrayList();
+        ArrayList<PartSurface> aps = new ArrayList<>();
         for (Boundary b : ab) {
             aps.addAll(b.getPartSurfaceGroup().getObjects());
         }
@@ -364,11 +364,10 @@ public class GetPartSurfaces {
         psmw.setActiveParts(agp);
         _initPartSurfaceMeshWidget(psmw);
         //-- Add the Part Surfaces
-        NeoObjectVector psObjs = new NeoObjectVector(aps.toArray());
         //-- Init Query
         Class<SurfaceMeshWidgetSelectController> wscl = SurfaceMeshWidgetSelectController.class;
         SurfaceMeshWidgetSelectController smwsc = psmw.getControllers().getController(wscl);
-        smwsc.selectPartSurfaces(psObjs);
+        smwsc.selectPartSurfaces(aps);
         Class<SurfaceMeshWidgetQueryController> wqcl = SurfaceMeshWidgetQueryController.class;
         SurfaceMeshWidgetQueryController smwqc = psmw.getControllers().getController(wqcl);
         //-- Global Stats

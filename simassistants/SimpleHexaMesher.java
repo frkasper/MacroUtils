@@ -23,7 +23,7 @@ public class SimpleHexaMesher extends SimulationAssistant {
 
     public SimpleHexaMesher() {
 
-        ArrayList<Task> tasks = new ArrayList();
+        ArrayList<Task> tasks = new ArrayList<>();
 
         MacroUtils mu = new MacroUtils(null);
 

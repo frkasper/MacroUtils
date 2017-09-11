@@ -119,7 +119,7 @@ public class Demo8_Half_Wing extends StarMacro {
                 StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
         ud.mshOp.setPresentationName("Mesh");
         //-- Volumetric Controls
-        ArrayList<PartSurface> aps = new ArrayList(ud.geomPrt.getPartSurfaces());
+        ArrayList<PartSurface> aps = new ArrayList<>(ud.geomPrt.getPartSurfaces());
         blkCorner1 = new double[]{-.1, -30, -100};
         blkCorner2 = new double[]{4, 30, 100};
         ud.simpleBlkPrt = mu.add.geometry.block(aps, blkCorner1, blkCorner2);
@@ -257,7 +257,7 @@ public class Demo8_Half_Wing extends StarMacro {
     }
 
     ArrayList<NamedObject> getWingBoundaries() {
-        return new ArrayList(mu.get.boundaries.allByREGEX(".*wing.*", false));
+        return new ArrayList<>(mu.get.boundaries.allByREGEX(".*wing.*", false));
     }
 
     void updateGlobalObjects() {

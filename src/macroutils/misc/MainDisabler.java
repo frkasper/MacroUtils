@@ -43,7 +43,7 @@ public class MainDisabler {
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
     }
 
-    private void _disable(PhysicsContinuum pc, Class clz) {
+    private <T extends Model> void _disable(PhysicsContinuum pc, Class<T> clz) {
         Model m = pc.getModelManager().getModel(clz);
         if (pc.getModelManager().has(m)) {
             pc.disableModel(m);
@@ -65,8 +65,7 @@ public class MainDisabler {
      * @param vo given verbose option. False will not print anything.
      */
     public void cellQualityRemediation(PhysicsContinuum pc, boolean vo) {
-        SolverStoppingCriterion stp = _get.solver.stoppingCriteria("Stop File", false);
-        _disabling("Cell Quality Remediation", stp, vo);
+        _disabling("Cell Quality Remediation", pc, vo);
         _disable(pc, CellQualityRemediationModel.class);
     }
 
@@ -94,7 +93,7 @@ public class MainDisabler {
             if (!_chk.is.solid(r)) {
                 continue;
             }
-            ArrayList<GeometryObject> ago = new ArrayList(r.getPartGroup().getObjects());
+            ArrayList<GeometryObject> ago = new ArrayList<>(r.getPartGroup().getObjects());
             SurfaceCustomMeshControl scmc = amo.getCustomMeshControls().createSurfaceControl();
             scmc.getGeometryObjects().setObjects(ago);
             scmc.setPresentationName(String.format("Prism Layers on %s", r.getPresentationName()));
@@ -159,7 +158,7 @@ public class MainDisabler {
             if (_chk.is.solid(r)) {
                 continue;
             }
-            ArrayList<GeometryObject> ago = new ArrayList(r.getPartGroup().getObjects());
+            ArrayList<GeometryObject> ago = new ArrayList<>(r.getPartGroup().getObjects());
             PartCustomMeshControl pcmc = amo.getCustomMeshControls().createPartControl();
             pcmc.getGeometryObjects().setObjects(ago);
             pcmc.setPresentationName(String.format("Thin Layers on %s", r.getPresentationName()));

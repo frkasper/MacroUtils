@@ -60,7 +60,7 @@ public class CreateSolver {
         File simhf = new File(_ud.simPath, _ud.simTitle + ".simh");
         SolutionHistory sh = _sim.get(SolutionHistoryManager.class).createForFile(simhf.toString(), false);
         sh.getRegions().setObjects(ano);
-        sh.setFunctions(new Vector(aff));
+        sh.setFunctions(new Vector<>(aff));
         for (NamedObject no : ano) {
             if (no instanceof Region) {
                 sh.getRegions().add(no);
@@ -68,9 +68,9 @@ public class CreateSolver {
             }
             sh.getInputs().add(no);
         }
-        _io.say.objects(new ArrayList(sh.getFunctions()), "Functions", true);
-        _io.say.objects(new ArrayList(sh.getRegions().getParts()), "Regions", true);
-        _io.say.objects(new ArrayList(sh.getInputs().getParts()), "Inputs", true);
+        _io.say.objects(new ArrayList<>(sh.getFunctions()), "Functions", true);
+        _io.say.objects(new ArrayList<>(sh.getRegions().getParts()), "Regions", true);
+        _io.say.objects(new ArrayList<>(sh.getInputs().getParts()), "Inputs", true);
         _io.say.created(sh, true);
         return sh;
     }

@@ -1,12 +1,11 @@
 package macroutils.creator;
 
 import java.util.ArrayList;
+import java.util.Vector;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
-import star.base.neo.ClientServerObject;
 import star.base.neo.DoubleVector;
-import star.base.neo.NeoObjectVector;
 import star.base.neo.NeoProperty;
 import star.base.neo.StringVector;
 import star.common.CoordinateSystem;
@@ -109,13 +108,14 @@ public class CreateMeshOperation {
     }
 
     private MeshOperation _createBooleanMeshOperation(StaticDeclarations.Operation op, GeometryPart tgtGP) {
+        MeshOperationManager mom = _sim.get(MeshOperationManager.class);
         switch (op) {
             case SUBTRACT:
-                SubtractPartsOperation spo = (SubtractPartsOperation) _getMOM().createSubtractPartsOperation();
+                SubtractPartsOperation spo = (SubtractPartsOperation) mom.createSubtractPartsOperation();
                 spo.setTargetPart((MeshPart) tgtGP);
                 return spo;
             case UNITE:
-                UnitePartsOperation upo = (UnitePartsOperation) _getMOM().createUnitePartsOperation();
+                UnitePartsOperation upo = (UnitePartsOperation) mom.createUnitePartsOperation();
                 return upo;
         }
         return null;
@@ -130,7 +130,7 @@ public class CreateMeshOperation {
         }
         _io.say.msg("Rebuilding external Patch Curves...");
         //-- Building is always clock-wise (0, 90, 180, 270)
-        ArrayList<PatchVertex> placedVs = new ArrayList();
+        ArrayList<PatchVertex> placedVs = new ArrayList<>();
         Vector3 p1 = c.transformCoordinate(new Vector3(r, 0., 0.));
         Vector3 p2 = c.transformCoordinate(new Vector3(r, 90. / 180. * Math.PI, 0.));
         Vector3 p3 = c.transformCoordinate(new Vector3(r, Math.PI, 0));
@@ -299,8 +299,8 @@ public class CreateMeshOperation {
         if (!_chk.is.directedMeshable(src, tgt)) {
             return null;
         }
-        ArrayList a = _get.objects.arrayList(src.getPart());
-        MeshOperation mo = _getMOM().createDirectedMeshOperation(a);
+        MeshOperationManager mom = _sim.get(MeshOperationManager.class);
+        MeshOperation mo = mom.createDirectedMeshOperation(new ArrayList<>(_get.objects.arrayList(src.getPart())));
         DirectedMeshOperation dmo = (DirectedMeshOperation) mo;
         dmo.getSourceSurfaceGroup().add(src);
         dmo.getTargetSurfaceGroup().add(tgt);
@@ -319,18 +319,6 @@ public class CreateMeshOperation {
         return scmc;
     }
 
-    private MeshOperationManager _getMOM() {
-        return _sim.get(MeshOperationManager.class);
-    }
-
-    private NeoObjectVector _getNOV1(ClientServerObject cso) {
-        return new NeoObjectVector(new ClientServerObject[]{cso});
-    }
-
-    private NeoObjectVector _getNOV2(ArrayList al) {
-        return new NeoObjectVector(al.toArray());
-    }
-
     private Object _getNewObject(ArrayList objOld, ArrayList objNew) {
         for (Object o : objNew) {
             if (!objOld.contains(o)) {
@@ -341,11 +329,11 @@ public class CreateMeshOperation {
     }
 
     private ArrayList<PatchCurve> _getPCs(DirectedPatchSourceMesh patchMsh) {
-        return new ArrayList(patchMsh.getPatchCurveManager().getObjects());
+        return new ArrayList<>(patchMsh.getPatchCurveManager().getObjects());
     }
 
     private ArrayList<PatchVertex> _getPVs(DirectedPatchSourceMesh patchMsh) {
-        return new ArrayList(patchMsh.getPatchVertexManager().getObjects());
+        return new ArrayList<>(patchMsh.getPatchVertexManager().getObjects());
     }
 
     private double _getRadius(DirectedPatchSourceMesh patchMsh, CylindricalCoordinateSystem c) {
@@ -448,7 +436,8 @@ public class CreateMeshOperation {
      * @return The AutoMeshOperation.
      */
     public AutoMeshOperation automatedMesh(ArrayList<GeometryPart> ag, ArrayList<String> am) {
-        AutoMeshOperation amo = _getMOM().createAutoMeshOperation(am, ag);
+        MeshOperationManager mom = _sim.get(MeshOperationManager.class);
+        AutoMeshOperation amo = mom.createAutoMeshOperation(am, ag);
         _setAutomatedMesh(amo, ag, "");
         return amo;
     }
@@ -473,7 +462,8 @@ public class CreateMeshOperation {
     public PrepareFor2dOperation badgeFor2D(ArrayList<GeometryPart> agp) {
         _io.say.action("Creating a Badge for 2D Mesh Operation", true);
         _io.say.objects(agp, "Geometry Parts", true);
-        PrepareFor2dOperation p2d = (PrepareFor2dOperation) _getMOM().createPrepareFor2dOperation(agp);
+        MeshOperationManager mom = _sim.get(MeshOperationManager.class);
+        PrepareFor2dOperation p2d = (PrepareFor2dOperation) mom.createPrepareFor2dOperation(agp);
         p2d.execute();
         _io.say.created(p2d, true);
         return p2d;
@@ -532,7 +522,8 @@ public class CreateMeshOperation {
         _setMeshDefaults(dasm.getDefaultValues());
         _setWorkAroundAutoSourceMesh(dasm, src.getPart());
         DirectedMeshDistributionManager dmdm = dmo.getDirectedMeshDistributionManager();
-        DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(_getNOV1(dmpc), "Constant");
+        DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(new Vector<>(_get.objects.arrayList(dmpc)), 
+                "Constant");
         dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
         dmo.execute();
         _io.say.created(dmo, true);
@@ -563,11 +554,11 @@ public class CreateMeshOperation {
         String pn = src.getPart().getPresentationName();
         DirectedMeshPartCollectionManager dmpcm = dmo.getGuidedMeshPartCollectionManager();
         DirectedMeshPartCollection dmpc = ((DirectedMeshPartCollection) dmpcm.getObject(pn));
-        NeoObjectVector srcPSs = new NeoObjectVector(new Object[]{src});
-        NeoObjectVector tgtPSs = new NeoObjectVector(new Object[]{tgt});
-        dmo.getGuidedSurfaceMeshBaseManager().validateConfigurationForPatchMeshCreation(dmpc, srcPSs, tgtPSs);
+        Vector<PartSurface> vpsSrc = new Vector<>(_get.objects.arrayList(src));
+        Vector<PartSurface> vpsTgt = new Vector<>(_get.objects.arrayList(tgt));
+        dmo.getGuidedSurfaceMeshBaseManager().validateConfigurationForPatchMeshCreation(dmpc, vpsSrc, vpsTgt);
         //--
-        DirectedPatchSourceMesh patchMsh = dmo.getGuidedSurfaceMeshBaseManager().createPatchSourceMesh(srcPSs, dmpc);
+        DirectedPatchSourceMesh patchMsh = dmo.getGuidedSurfaceMeshBaseManager().createPatchSourceMesh(vpsSrc, dmpc);
         NeoProperty np = patchMsh.autopopulateFeatureEdges();
         ArrayList<PatchCurve> pcs = _getPCs(patchMsh);
         //--
@@ -616,7 +607,8 @@ public class CreateMeshOperation {
         patchMsh.defineMeshPatchCurve(pc2, pc2.getStretchingFunction(), 0., 0., nP2, false, false);
         //--
         DirectedMeshDistributionManager dmdm = dmo.getDirectedMeshDistributionManager();
-        DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(_getNOV1(dmpc), "Constant");
+        DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(new Vector<>(_get.objects.arrayList(dmpc)), 
+                "Constant");
         dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
         dmo.execute();
         _io.say.created(dmo, true);
@@ -652,11 +644,11 @@ public class CreateMeshOperation {
         //--
         String s = src.getPart().getPresentationName();
         DirectedMeshPartCollection dmpc = dmo.getGuidedMeshPartCollectionManager().getObject(s);
-        NeoObjectVector srcPSs = new NeoObjectVector(new Object[]{src});
-        NeoObjectVector tgtPSs = new NeoObjectVector(new Object[]{tgt});
-        dmo.getGuidedSurfaceMeshBaseManager().validateConfigurationForPatchMeshCreation(dmpc, srcPSs, tgtPSs);
+        Vector<PartSurface> vpsSrc = new Vector<>(_get.objects.arrayList(src));
+        Vector<PartSurface> vpsTgt = new Vector<>(_get.objects.arrayList(tgt));
+        dmo.getGuidedSurfaceMeshBaseManager().validateConfigurationForPatchMeshCreation(dmpc, vpsSrc, vpsTgt);
         //--
-        DirectedPatchSourceMesh patchMsh = dmo.getGuidedSurfaceMeshBaseManager().createPatchSourceMesh(srcPSs, dmpc);
+        DirectedPatchSourceMesh patchMsh = dmo.getGuidedSurfaceMeshBaseManager().createPatchSourceMesh(vpsSrc, dmpc);
         NeoProperty np = patchMsh.autopopulateFeatureEdges();
         //_io.say.msg("NeoProperty np = patchMsh.autopopulateFeatureEdges();");
         //_io.say.msg(np.getHashtable().toString());
@@ -672,14 +664,17 @@ public class CreateMeshOperation {
             return null;
         }
         //--
-        patchMsh.defineMeshMultiplePatchCurves(_getNOV2(pcExts), nT, false);
-        patchMsh.defineMeshMultiplePatchCurves(_getNOV1(pcInt), nR, false);
+        ArrayList<PatchCurve> pcInts = new ArrayList<>();
+        pcInts.add(pcInt);
+        patchMsh.defineMeshMultiplePatchCurves(new Vector<>(pcExts), nT, false);
+        patchMsh.defineMeshMultiplePatchCurves(new Vector<>(pcInts), nR, false);
         if (_ud.dmSmooths > 0) {
             patchMsh.smoothPatchPolygonMesh(_ud.dmSmooths, 0.25, false);
         }
         //--
         DirectedMeshDistributionManager dmdm = dmo.getDirectedMeshDistributionManager();
-        DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(_getNOV1(dmpc), "Constant");
+        DirectedMeshDistribution dmd = dmdm.createDirectedMeshDistribution(new Vector<>(_get.objects.arrayList(dmpc)), 
+                "Constant");
         dmd.getDefaultValues().get(DirectedMeshNumLayers.class).setNumLayers(nVol);
         dmo.execute();
         _io.say.created(dmo, true);
@@ -694,7 +689,8 @@ public class CreateMeshOperation {
      */
     public ExtractVolumeOperation extractVolume(ArrayList<GeometryPart> agp) {
         _io.say.action("Creating a Extract Volume Operation", true);
-        MeshOperation mo = _getMOM().createExtractVolumeOperation(agp);
+        MeshOperationManager mom = _sim.get(MeshOperationManager.class);
+        MeshOperation mo = mom.createExtractVolumeOperation(agp);
         _io.say.objects(agp, "Geometry Parts", true);
         mo.execute();
         _io.say.ok(true);
@@ -712,7 +708,8 @@ public class CreateMeshOperation {
     public FillHolesOperation fillHoles(ArrayList<GeometryPart> agp, ArrayList<PartSurface> aps,
             ArrayList<PartCurve> apc) {
         _io.say.action("Creating a Fill Holes Operation", true);
-        FillHolesOperation fho = (FillHolesOperation) _getMOM().createFillHolesOperation(agp);
+        MeshOperationManager mom = _sim.get(MeshOperationManager.class);
+        FillHolesOperation fho = (FillHolesOperation) mom.createFillHolesOperation(agp);
         _io.say.objects(agp, "Geometry Parts", true);
         _io.say.objects(aps, "Part Surfaces", true);
         fho.getEndSurfaces().setObjects(aps);
@@ -738,7 +735,8 @@ public class CreateMeshOperation {
             ImprintMergeImprintMethodOption.Type it, ImprintResultingMeshTypeOption.Type mt) {
         _io.say.action("Creating an Imprint Mesh Operation", true);
         _io.say.objects(agp, "Geometry Parts", true);
-        MeshOperation mo = _getMOM().createImprintPartsOperation(agp);
+        MeshOperationManager mom = _sim.get(MeshOperationManager.class);
+        MeshOperation mo = mom.createImprintPartsOperation(agp);
         ImprintPartsOperation ipo = (ImprintPartsOperation) mo;
         ipo.getMergeImprintMethod().setSelected(it);
         ipo.getResultingMeshType().setSelected(mt);
@@ -879,7 +877,8 @@ public class CreateMeshOperation {
     public SurfaceWrapperAutoMeshOperation surfaceWrapper(ArrayList<GeometryPart> agp, String name) {
         _io.say.action("Creating a Surface Wrapper Mesh Operation", true);
         _io.say.objects(agp, "Geometry Parts", true);
-        AutoMeshOperation amo = _getMOM().createSurfaceWrapperAutoMeshOperation(agp, name);
+        MeshOperationManager mom = _sim.get(MeshOperationManager.class);
+        AutoMeshOperation amo = mom.createSurfaceWrapperAutoMeshOperation(agp, name);
         SurfaceWrapperAutoMeshOperation swamo = (SurfaceWrapperAutoMeshOperation) amo;
         AutoMeshDefaultValuesManager amdvm = swamo.getDefaultValues();
         _set.mesh.baseSize(swamo, _ud.mshBaseSize, _ud.defUnitLength, false);

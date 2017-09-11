@@ -270,7 +270,7 @@ public class Print {
      */
     public void objects(ArrayList aos, String what, boolean vo) {
         if (aos == null) {
-            aos = new ArrayList();
+            aos = new ArrayList<>();
         }
         msg(vo, "Number of %s: %d.", what, aos.size(), vo);
         for (Object o : aos) {

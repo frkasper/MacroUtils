@@ -67,7 +67,7 @@ public class GetMesh {
         }
         AutoMeshOperation amo = (AutoMeshOperation) mo;
         return (CustomMeshControl) _get.objects.byREGEX(regexPatt,
-                new ArrayList(amo.getCustomMeshControls().getObjects()), true);
+                new ArrayList<>(amo.getCustomMeshControls().getObjects()), true);
     }
 
     /**
@@ -118,7 +118,7 @@ public class GetMesh {
      */
     public MeshOperation operation(String regexPatt, boolean vo) {
         return (MeshOperation) _get.objects.byREGEX(regexPatt,
-                new ArrayList(_sim.get(MeshOperationManager.class).getObjects()), vo);
+                new ArrayList<>(_sim.get(MeshOperationManager.class).getObjects()), vo);
     }
 
     /**

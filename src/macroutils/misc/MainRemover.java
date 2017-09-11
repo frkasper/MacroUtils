@@ -92,7 +92,7 @@ public class MainRemover {
         _io.say.objects(fvRegions, "Regions", true);
         _io.say.msg("Parameters:");
         NeoProperty np = _getNeoProperty(aggressiveRemoval);
-        ArrayList<String> npKeys = new ArrayList(np.getKeys());
+        ArrayList<String> npKeys = new ArrayList<>(np.getKeys());
         Collections.sort(npKeys);
         for (String s : npKeys) {
             _io.say.msg(true, "  - %-35s: %s", s, np.get(s).toString());
@@ -152,7 +152,7 @@ public class MainRemover {
      */
     public void allAnnotations() {
         AnnotationManager am = _sim.getAnnotationManager();
-        ArrayList<Annotation> aa = new ArrayList();
+        ArrayList<Annotation> aa = new ArrayList<>();
         for (Annotation a : am.getObjects()) {
             if (a.canDestroy()) {
                 aa.add(a);
@@ -220,7 +220,7 @@ public class MainRemover {
      */
     public void allMonitors() {
         MonitorManager mm = _sim.getMonitorManager();
-        ArrayList<Monitor> am = new ArrayList();
+        ArrayList<Monitor> am = new ArrayList<>();
         for (Monitor m : mm.getObjects()) {
             boolean isRM = m instanceof ReportMonitor;
             boolean isSFAM = m instanceof SingleFieldAnalysisMonitor;
@@ -325,7 +325,7 @@ public class MainRemover {
      */
     public void allUserFieldFunctions() {
         FieldFunctionManager ffm = _sim.getFieldFunctionManager();
-        ArrayList<UserFieldFunction> auff = new ArrayList();
+        ArrayList<UserFieldFunction> auff = new ArrayList<>();
         for (FieldFunction ff : ffm.getObjects()) {
             if (ff instanceof UserFieldFunction) {
                 auff.add((UserFieldFunction) ff);
