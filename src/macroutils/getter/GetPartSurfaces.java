@@ -1,11 +1,28 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.meshing.*;
-import star.vis.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.UserDeclarations;
+import star.base.neo.DoubleVector;
+import star.base.neo.NeoProperty;
+import star.common.Boundary;
+import star.common.GeometryPart;
+import star.common.PartSurface;
+import star.common.PartSurfaceManager;
+import star.common.Simulation;
+import star.meshing.CadPart;
+import star.meshing.LeafMeshPart;
+import star.meshing.MeshOperationPart;
+import star.meshing.PartSurfaceMeshWidget;
+import star.meshing.SimpleBlockPart;
+import star.meshing.SimpleCylinderPart;
+import star.meshing.SurfaceMeshWidgetDiagnosticsController;
+import star.meshing.SurfaceMeshWidgetQueryController;
+import star.meshing.SurfaceMeshWidgetSelectController;
+import star.vis.Scene;
 
 /**
  * Low-level class for getting Part Surfaces with MacroUtils.

@@ -1,10 +1,15 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.meshing.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.neo.ClientServerObject;
+import star.common.ColumnDescriptor;
+import star.common.GeometryPart;
+import star.common.Units;
+import star.meshing.AutoMeshOperation;
+import star.meshing.MesherBase;
 
 /**
  * Low-level class for several different ways of getting Strings with MacroUtils.

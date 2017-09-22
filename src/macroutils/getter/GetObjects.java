@@ -1,11 +1,36 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.material.*;
-import star.vis.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.neo.ClientServerObjectManager;
+import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
+import star.common.Continuum;
+import star.common.FieldFunction;
+import star.common.GeometryPart;
+import star.common.GlobalParameterBase;
+import star.common.GlobalParameterManager;
+import star.common.HardcopyProperties;
+import star.common.Model;
+import star.common.PartSurface;
+import star.common.PhysicsContinuum;
+import star.common.Profile;
+import star.common.Region;
+import star.common.ScalarProfile;
+import star.common.Simulation;
+import star.common.StarPlot;
+import star.common.UpdatePlot;
+import star.common.VectorProfile;
+import star.material.ConstantMaterialPropertyMethod;
+import star.material.MaterialProperty;
+import star.material.MaterialPropertyManager;
+import star.material.SingleComponentMaterialModel;
+import star.vis.LookupTable;
+import star.vis.LookupTableManager;
+import star.vis.Scene;
+import star.vis.VisTransform;
 
 /**
  * Low-level class for retrieving STAR-CCM+ objects in general in MacroUtils.

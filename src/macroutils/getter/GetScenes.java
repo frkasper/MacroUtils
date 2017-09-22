@@ -1,9 +1,15 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
-import star.vis.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.common.Simulation;
+import star.vis.Displayer;
+import star.vis.Legend;
+import star.vis.ScalarDisplayQuantity;
+import star.vis.ScalarDisplayer;
+import star.vis.Scene;
+import star.vis.StreamDisplayer;
+import star.vis.VectorDisplayer;
 
 /**
  * Low-level class for getting Scenes with MacroUtils.

@@ -1,9 +1,15 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
-import star.common.graph.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.common.AxisType;
+import star.common.Cartesian2DAxis;
+import star.common.Cartesian2DAxisManager;
+import star.common.Simulation;
+import star.common.StarPlot;
+import star.common.XYPlot;
+import star.common.YAxisType;
+import star.common.graph.DataSet;
 
 /**
  * Low-level class for getting Plots with MacroUtils.

@@ -1,8 +1,14 @@
 package macroutils.getter;
 
-import macroutils.*;
-import star.base.report.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.report.Monitor;
+import star.base.report.ReportMonitor;
+import star.common.Dimensions;
+import star.common.ResidualMonitor;
+import star.common.Simulation;
+import star.common.Units;
+import star.common.UnitsManager;
 
 /**
  * Low-level class for getting Units with MacroUtils.

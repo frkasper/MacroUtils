@@ -1,8 +1,9 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.common.Part;
+import star.common.Simulation;
 
 /**
  * Low-level class for getting Parts in general, e.g.: Derived Parts, with MacroUtils.

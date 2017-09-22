@@ -1,9 +1,14 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.report.*;
-import star.common.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.base.report.IterationMonitor;
+import star.base.report.Monitor;
+import star.base.report.PhysicalTimeMonitor;
+import star.base.report.PlotableMonitor;
+import star.base.report.Report;
+import star.base.report.ReportMonitor;
+import star.common.Simulation;
 
 /**
  * Low-level class for getting Monitor related objects with MacroUtils.

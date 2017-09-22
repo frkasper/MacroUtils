@@ -1,9 +1,15 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
-import star.meshing.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.common.GeometryPart;
+import star.common.PartCurve;
+import star.common.PartCurveManager;
+import star.meshing.CadPart;
+import star.meshing.LeafMeshPart;
+import star.meshing.MeshOperationPart;
+import star.meshing.SimpleBlockPart;
+import star.meshing.SimpleCylinderPart;
 
 /**
  * Low-level class for getting Part Curves with MacroUtils.

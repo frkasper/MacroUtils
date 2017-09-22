@@ -1,9 +1,9 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.report.*;
-import star.common.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.base.report.Report;
+import star.common.Simulation;
 
 /**
  * Low-level class for getting Report related objects with MacroUtils.

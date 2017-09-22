@@ -1,7 +1,7 @@
 package macroutils.getter;
 
-import macroutils.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import star.common.Simulation;
 
 /**
  * Main class for get-type methods in MacroUtils.

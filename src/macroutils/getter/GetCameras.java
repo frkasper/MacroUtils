@@ -1,10 +1,11 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.neo.DoubleVector;
+import star.common.Simulation;
+import star.vis.VisView;
 
 /**
  * Low-level class for getting Camera Views (VisView) with MacroUtils.

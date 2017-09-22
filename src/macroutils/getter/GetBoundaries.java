@@ -1,8 +1,12 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
+import java.util.ArrayList;
+import java.util.Vector;
+import macroutils.MacroUtils;
+import star.common.Boundary;
+import star.common.BoundaryInterface;
+import star.common.InterfaceBoundary;
+import star.common.Region;
 
 /**
  * Low-level class for getting Boundaries with MacroUtils.

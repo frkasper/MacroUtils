@@ -1,10 +1,15 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.cadmodeler.*;
-import star.common.*;
-import star.meshing.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.cadmodeler.Body;
+import star.cadmodeler.SolidModelPart;
+import star.common.GeometryPart;
+import star.common.PartSurface;
+import star.common.Simulation;
+import star.common.SimulationPartManager;
+import star.meshing.CadPart;
+import star.meshing.PartRepresentation;
 
 /**
  * Low-level class for getting Geometry entities in general with MacroUtils.

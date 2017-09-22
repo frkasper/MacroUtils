@@ -1,10 +1,13 @@
 package macroutils.getter;
 
-import java.text.*;
-import java.util.*;
-import macroutils.*;
-import macroutils.templates.*;
-import star.common.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.templates.TemplatePost;
+import star.common.Simulation;
 
 /**
  * Low-level class for retrieving Information in general with MacroUtils.

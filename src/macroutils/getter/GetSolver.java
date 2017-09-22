@@ -1,9 +1,18 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
-import star.post.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.common.AbortFileStoppingCriterion;
+import star.common.InnerIterationStoppingCriterion;
+import star.common.PhysicalTimeStoppingCriterion;
+import star.common.Simulation;
+import star.common.SolutionView;
+import star.common.Solver;
+import star.common.SolverStoppingCriterion;
+import star.common.StepStoppingCriterion;
+import star.post.SolutionHistory;
+import star.post.SolutionHistoryManager;
+import star.post.SolutionViewManager;
 
 /**
  * Low-level class for getting solver parameters with MacroUtils.
