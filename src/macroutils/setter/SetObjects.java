@@ -25,6 +25,10 @@ import star.common.VectorPhysicalQuantity;
 import star.common.VectorProfile;
 import star.common.WindowUpdate;
 import star.flow.PressureCoefficientFunction;
+import star.meshing.MeshOperationPart;
+import star.meshing.PartsRelativeOrAbsoluteSize;
+import star.meshing.RelativeOrAbsoluteSize;
+import star.meshing.RelativeSize;
 import star.post.SolutionHistory;
 import star.vis.Scene;
 
@@ -45,7 +49,7 @@ public class SetObjects {
         _mu = m;
     }
 
-    public void _setSP(ScalarProfile sp, double val, Units u, String def) {
+    private void _setSP(ScalarProfile sp, double val, Units u, String def) {
         if (sp == null) {
             return;
         }
@@ -98,6 +102,14 @@ public class SetObjects {
         wu.getHardcopyProperties().setOutputHeight(resy);
     }
 
+    /**
+     * Set the Pressure Coefficient Field Function.
+     *
+     * @param refDen given reference Density value.
+     * @param refP given reference Pressure value.
+     * @param refVel  given reference Velocity value.
+     * @param vo given verbose option. False will not print anything.
+     */
     public void fieldFunctionPressureCoefficient(double refDen, double refP, double refVel, boolean vo) {
         _io.say.action("Setting Pressure Coefficient Field Function", vo);
         FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.PC.getVar(), false);
@@ -106,6 +118,24 @@ public class SetObjects {
         _setSPQ(pcp.getReferencePressure(), refP, _ud.defUnitPress, "Reference Pressure", null, vo);
         _setSPQ(pcp.getReferenceVelocity(), refVel, _ud.defUnitVel, "Reference Velocity", null, vo);
         _io.say.ok(vo);
+    }
+
+    /**
+     * Set the Presentation Name of a STAR-CCM+ object.
+     *
+     * @param no given STAR-CCM+ NamedObject.
+     * @param name given new object name.
+     */
+    public void name(NamedObject no, String name) {
+        _io.say.action("Setting Presentation Name", true);
+        no.setPresentationName(name);
+        _io.say.object(no, true);
+        if (no instanceof MeshOperationPart) {
+            MeshOperationPart mop = (MeshOperationPart) no;
+            mop.getOperation().setPresentationName(name);
+            _io.say.object(mop.getOperation(), true);
+        }
+        _io.say.ok(true);
     }
 
     /**
@@ -220,6 +250,34 @@ public class SetObjects {
     }
 
     /**
+     * Sets the Relative Size (percentage) for a STAR-CCM+ object, if applicable.
+     * 
+     * @param cso given STAR-CCM+ ClientServerObject.
+     * @param key given what is being changed.
+     * @param perc given percentage value -- already multiplied by 100.
+     */
+    public void relativeSize(ClientServerObject cso, String key, double perc) {
+        if (cso == null) {
+            return;
+        }
+        double serverSideVal = Double.NaN;
+        if (cso instanceof PartsRelativeOrAbsoluteSize) {
+            PartsRelativeOrAbsoluteSize prs = (PartsRelativeOrAbsoluteSize) cso;
+            prs.setRelativeSize(perc);
+            serverSideVal = prs.getRelativeSizeScalar().getInternalValue();
+        } else if (cso instanceof RelativeOrAbsoluteSize) {
+            RelativeOrAbsoluteSize rs = (RelativeOrAbsoluteSize) cso;
+            rs.setRelativeSize(perc);
+            serverSideVal = rs.getRelativeSizeValue().getPercentage();
+        } else if (cso instanceof RelativeSize) {
+            RelativeSize rs = (RelativeSize) cso;
+            rs.setPercentage(perc);
+            serverSideVal = rs.getPercentage();
+        }
+        _io.say.percentage(key, serverSideVal, true);
+    }
+
+    /**
      * Sets a Plot or Scene to save a PNG picture with a given resolution. Pictures will be saved on
      * {@link UserDeclarations#simPath} under a folder called <b>pics_<i>ObjectName</i></b>.
      *
@@ -243,7 +301,7 @@ public class SetObjects {
     /**
      * Sets an Update Event to an Object, if applicable. Object can be any Plot, Monitor, Scene or Solution History.
      *
-     * @param cso given STAR-CCM+ NamedObject.
+     * @param cso given STAR-CCM+ ClientServerObject.
      * @param ue given UpdateEvent.
      * @param vo given verbose option. False will not print anything.
      */

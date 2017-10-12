@@ -224,6 +224,20 @@ public class GetInfos {
     }
 
     /**
+     * Gets the sum of a double array.
+     *
+     * @param array given double[] array.
+     * @return The sum.
+     */
+    public double sum(double[] array) {
+        double sum = 0.0;
+        for (int i = 0; i < array.length; i++) {
+            sum += array[i];
+        }
+        return sum;
+    }
+
+    /**
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
