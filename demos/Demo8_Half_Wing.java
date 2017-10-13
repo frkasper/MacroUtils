@@ -38,7 +38,7 @@ public class Demo8_Half_Wing extends StarMacro {
 
     }
 
-    void initMacro() {
+    private void initMacro() {
         sim = getActiveSimulation();
         mu = new MacroUtils(sim);
         ud = mu.userDeclarations;
@@ -57,7 +57,7 @@ public class Demo8_Half_Wing extends StarMacro {
         updateGlobalObjects();
     }
 
-    void prep1_importGeometryAndSplit() {
+    private void prep1_importGeometryAndSplit() {
         ud.vv1 = mu.io.read.cameraView("cam1|2.627790e-01,1.688267e-01,-8.768673e-02|3.042959e+00,2.949006e+00,2.692493e+00|0.000000e+00,1.000000e+00,0.000000e+00|1.257075e+00", true);
         ud.vv2 = mu.io.read.cameraView("cam2|9.022700e-02,-5.806686e-03,-2.014223e-01|7.395474e-01,6.435137e-01,4.478981e-01|0.000000e+00,1.000000e+00,0.000000e+00|2.935941e-01", true);
         ud.defCamView = ud.vv1;
@@ -87,7 +87,7 @@ public class Demo8_Half_Wing extends StarMacro {
         // mu.saveSim("a_import");
     }
 
-    void prep2_createRegionBCsAndMesh() {
+    private void prep2_createRegionBCsAndMesh() {
         if (!sim.getRegionManager().isEmpty()) {
             mu.io.say.loud("Region already created. Skipping prep2...");
             return;
@@ -98,16 +98,19 @@ public class Demo8_Half_Wing extends StarMacro {
         double farFieldRelSize = 10;
         //--
         //-- Sphere is created relative to the biggest length scale (dx, dy or dz)
-        ud.simpleSphPrt = mu.add.geometry.sphere(ud.partSurfaces, farFieldRelSize);
-        ud.simpleSphPrt.setPresentationName(regionName);
+        ud.geometryParts.addAll(mu.get.geometries.all(true));
+        ud.mshOpPrt1 = mu.add.meshOperation.boundedShape_Sphere(ud.geometryParts,  farFieldRelSize,
+                StaticDeclarations.COORD0);
+        ud.mshOpPrt1.setPresentationName(regionName);
+        ud.geometryParts.clear();
         //--
         //-- Block is created relative to each length scale (dx, dy and dz)
         double[] blkCorner1 = {-2 * farFieldRelSize, -50 * farFieldRelSize, -50 * farFieldRelSize};
         double[] blkCorner2 = {-0.5, 50 * farFieldRelSize, 50 * farFieldRelSize};
         ud.simpleBlkPrt = mu.add.geometry.block(ud.partSurfaces, blkCorner1, blkCorner2);
         ud.simpleBlkPrt.setPresentationName(ud.bcSym);
-        ud.mshOpPrt = mu.add.meshOperation.subtract(mu.get.geometries.all(true), ud.simpleSphPrt);
-        ud.region = mu.add.region.fromPart(ud.mshOpPrt,
+        ud.mshOpPrt2 = mu.add.meshOperation.subtract(mu.get.geometries.all(true), ud.mshOpPrt1);
+        ud.region = mu.add.region.fromPart(ud.mshOpPrt2,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE, StaticDeclarations.InterfaceMode.CONTACT,
                 StaticDeclarations.FeatureCurveMode.ONE_FOR_EACH_PART_CURVE, true);
         ud.region.setPresentationName(regionName);
@@ -204,7 +207,7 @@ public class Demo8_Half_Wing extends StarMacro {
         // mu.saveSim("b_meshed");
     }
 
-    void prep3_setPost() {
+    private void prep3_setPost() {
         if (!sim.getReportManager().isEmpty()) {
             mu.io.say.loud("Post-processing already exists. Skipping prep4...");
             return;
@@ -236,7 +239,6 @@ public class Demo8_Half_Wing extends StarMacro {
         mu.set.scene.updateEvent(ud.scene2, ud.updEvent1);
         //--
         //-- Reports and Stopping Criterias
-        int stopIter = 75;
         ud.rep1 = mu.add.report.frontalArea(getWingBoundaries(), "Frontal Area",
                 new double[]{0, 1, 0}, new double[]{0, 0, -1}, true);
         ud.rep2 = mu.add.report.frontalArea(getWingBoundaries(), "Upper Area",
@@ -246,21 +248,21 @@ public class Demo8_Half_Wing extends StarMacro {
                 ud.rep1.getReportMonitorValue(), new double[]{0, 0, -1}, true);
         ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
         mu.set.object.updateEvent(ud.mon, ud.updEvent2, true);
-        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, stopIter);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 25);
         //-- Cl
         ud.rep = mu.add.report.forceCoefficient(getWingBoundaries(), "C_l", 0.0, 1.196, wingVel,
                 ud.rep2.getReportMonitorValue(), new double[]{0, 1, 0}, true);
         ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
         mu.set.object.updateEvent(ud.mon, ud.updEvent2, true);
-        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, stopIter);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 25);
         // mu.saveSim("c_Ready");
     }
 
-    ArrayList<NamedObject> getWingBoundaries() {
+    private ArrayList<NamedObject> getWingBoundaries() {
         return new ArrayList<>(mu.get.boundaries.allByREGEX(".*wing.*", false));
     }
 
-    void updateGlobalObjects() {
+    private void updateGlobalObjects() {
         ud.geomPrt = mu.get.geometries.byREGEX(".*", true);
         ud.region = mu.get.regions.byREGEX(".*", true);
         if (ud.geomPrt == null) {
