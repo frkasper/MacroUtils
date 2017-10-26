@@ -31,11 +31,11 @@ import star.common.SimulationIterator;
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v12.06, October 26, 2017.
+ * @version v13.02, October 26, 2017.
  */
 public final class MacroUtils {
 
-    private final String MACROUTILS_VERSION = "MacroUtils version 12.06 (build 1)";
+    private final String MACROUTILS_VERSION = "MacroUtils version 13.02 (build 1)";
 
     /**
      * Initialize MacroUtils in intrusive mode by providing a Simulation object.
