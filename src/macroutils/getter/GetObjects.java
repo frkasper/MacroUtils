@@ -67,6 +67,7 @@ public class GetObjects {
     /**
      * Gets a STAR-CCM+ NamedObject by using a REGEX search pattern.
      *
+     * @param <T> any Class that extends from NamedObject in STAR-CCM+.
      * @param regexPatt given Regular Expression (REGEX) pattern.
      * @param ano given ArrayList of NamedObjects.
      * @param what what kind of object? E.g: Plane, Report, Scene, etc...
