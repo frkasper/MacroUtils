@@ -1,9 +1,15 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
-import star.vis.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.common.Simulation;
+import star.vis.Displayer;
+import star.vis.Legend;
+import star.vis.ScalarDisplayQuantity;
+import star.vis.ScalarDisplayer;
+import star.vis.Scene;
+import star.vis.StreamDisplayer;
+import star.vis.VectorDisplayer;
 
 /**
  * Low-level class for getting Scenes with MacroUtils.
@@ -35,7 +41,7 @@ public class GetScenes {
      * @return An ArrayList of Scenes.
      */
     public ArrayList<Scene> all(boolean vo) {
-        ArrayList<Scene> as = new ArrayList(_sim.getSceneManager().getScenes());
+        ArrayList<Scene> as = new ArrayList<>(_sim.getSceneManager().getScenes());
         _io.say.objects(as, "Getting all Scenes", vo);
         return as;
     }
@@ -48,7 +54,7 @@ public class GetScenes {
      * @return An ArrayList of Scenes.
      */
     public ArrayList<Scene> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Scenes", new ArrayList(all(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Scenes", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -58,7 +64,7 @@ public class GetScenes {
      * @return An ArrayList of Displayers.
      */
     public ArrayList<Displayer> allDisplayers(boolean vo) {
-        ArrayList<Displayer> ad = new ArrayList();
+        ArrayList<Displayer> ad = new ArrayList<>();
         for (Scene scn : all(false)) {
             ad.addAll(scn.getDisplayerManager().getObjects());
         }
@@ -75,7 +81,7 @@ public class GetScenes {
      */
     public ArrayList<Displayer> allDisplayers(Scene scn, boolean vo) {
         String sn = scn.getPresentationName();
-        ArrayList<Displayer> ad = new ArrayList(scn.getDisplayerManager().getObjects());
+        ArrayList<Displayer> ad = new ArrayList<>(scn.getDisplayerManager().getObjects());
         _io.say.objects(ad, String.format("Getting all Displayers from Scene \"%s\"", scn.getPresentationName()), vo);
         return ad;
     }
@@ -88,8 +94,8 @@ public class GetScenes {
      * @return An ArrayList of Displayers.
      */
     public ArrayList<Displayer> allDisplayersByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Displayers",
-                new ArrayList(allDisplayers(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Displayers",
+                new ArrayList<>(allDisplayers(false)), vo));
     }
 
     /**
@@ -100,7 +106,7 @@ public class GetScenes {
      * @return The Scene. Null if nothing is found.
      */
     public Scene byREGEX(String regexPatt, boolean vo) {
-        return (Scene) _get.objects.byREGEX(regexPatt, "Scene", new ArrayList(all(false)), vo);
+        return (Scene) _get.objects.byREGEX(regexPatt, "Scene", new ArrayList<>(all(false)), vo);
     }
 
     /**
@@ -112,7 +118,7 @@ public class GetScenes {
      * @return The Scene. Null if nothing is found.
      */
     public Displayer displayerByREGEX(Scene scn, String regexPatt, boolean vo) {
-        return (Displayer) _get.objects.byREGEX(regexPatt, "Scene", new ArrayList(allDisplayers(scn, false)), vo);
+        return (Displayer) _get.objects.byREGEX(regexPatt, "Scene", new ArrayList<>(allDisplayers(scn, false)), vo);
     }
 
     /**

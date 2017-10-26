@@ -8,7 +8,6 @@ import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import star.base.neo.DoubleVector;
-import star.base.neo.NeoObjectVector;
 import star.base.report.Report;
 import star.common.ExternalDataSet;
 import star.common.FileTable;
@@ -100,8 +99,8 @@ public class TemplateGCI {
         }
         //-- F1 to F3 == Coarse to Fine
         double[] x1 = null, y1 = null, x2 = null, y2 = null, x3 = null, y3 = null, y1p = null, y2p = null;
-        ArrayList<String> als = new ArrayList();
-        ArrayList<Double> hs = new ArrayList();
+        ArrayList<String> als = new ArrayList<>();
+        ArrayList<Double> hs = new ArrayList<>();
         als.add(_sim.getPresentationName());
         hs.add(_getGridSize(_sim));
         String pltName = sp.getPresentationName();
@@ -266,7 +265,7 @@ public class TemplateGCI {
     }
 
     private ArrayList<File> _getFiles(String[] files) {
-        ArrayList<File> af = new ArrayList();
+        ArrayList<File> af = new ArrayList<>();
         for (String file : files) {
             af.add(new File(_ud.simPath, file));
         }
@@ -294,7 +293,7 @@ public class TemplateGCI {
         MacroUtils mu2 = new MacroUtils(s, false);
         UserDeclarations ud2 = mu2.userDeclarations;
         double cc = mu2.get.mesh.fvr().getCellCount();
-        Report r = mu2.add.report.sum(new ArrayList(mu2.get.regions.all(false)), "_sumVolumeCells",
+        Report r = mu2.add.report.sum(new ArrayList<>(mu2.get.regions.all(false)), "_sumVolumeCells",
                 mu2.get.objects.fieldFunction(StaticDeclarations.Vars.VOL.getVar(), false),
                 ud2.unit_m3, false);
         double sumVC = r.getReportMonitorValue();
@@ -305,7 +304,7 @@ public class TemplateGCI {
 
     private double _getGridSizeThisSim() {
         double cc = _get.mesh.fvr().getCellCount();
-        Report r = _add.report.sum(new ArrayList(_get.regions.all(false)), "_sumVolumeCells",
+        Report r = _add.report.sum(new ArrayList<>(_get.regions.all(false)), "_sumVolumeCells",
                 _get.objects.fieldFunction(StaticDeclarations.Vars.VOL.getVar(), false),
                 _ud.unit_m3, false);
         double sumVC = r.getReportMonitorValue();
@@ -314,9 +313,9 @@ public class TemplateGCI {
     }
 
     private ExternalDataSet _getNewExternalDataSet(XYPlot xyp, FileTable ft) {
-        ArrayList<DataSet> datasetsOld = new ArrayList(xyp.getDataSetManager().getExternalDataSets());
-        xyp.getDataSetManager().addDataProviders(new NeoObjectVector(new Object[]{ft}));
-        ArrayList<DataSet> datasetsNew = new ArrayList(xyp.getDataSetManager().getExternalDataSets());
+        ArrayList<DataSet> datasetsOld = new ArrayList<>(xyp.getDataSetManager().getExternalDataSets());
+        xyp.getDataSetManager().addDataProvider(ft);
+        ArrayList<DataSet> datasetsNew = new ArrayList<>(xyp.getDataSetManager().getExternalDataSets());
         datasetsNew.removeAll(datasetsOld);
         return (ExternalDataSet) datasetsNew.get(0);
     }
@@ -397,7 +396,7 @@ public class TemplateGCI {
     }
 
     private double[] _getVals(String[] data, int i) {
-        ArrayList<Double> ard = new ArrayList();
+        ArrayList<Double> ard = new ArrayList<>();
         Double val;
         for (String line : data) {
             if (line.contains("\"")) {
@@ -425,8 +424,8 @@ public class TemplateGCI {
     private void _setupPlots(FileTable ft, StarPlot sp, double[] x1, double[] x2, double[] x3,
             double[] y1, double[] y2, double[] y3, double[] y1p, double[] y2p,
             double[] gci12, double[] gci23, double[] gciP, double[] e12_a, double[] e23_a, double[] gciExtr) {
-        ArrayList<String> data = new ArrayList();
-        ArrayList<String> plots = new ArrayList();
+        ArrayList<String> data = new ArrayList<>();
+        ArrayList<String> plots = new ArrayList<>();
         //-- Changing the original Plot and adding stuff.
         _io.say.msg("Changing Plot: " + sp.getPresentationName());
         XYPlot xyp = (XYPlot) sp;
@@ -476,7 +475,7 @@ public class TemplateGCI {
 
     private FileTable _writeAbsoluteCSV(double[] x3, double[] y3, double[] gci23) {
         //-- Writes the Absolute GCI CSV file.
-        ArrayList<String> data = new ArrayList();
+        ArrayList<String> data = new ArrayList<>();
         data.add(String.format("X, GCI23"));
         for (int i = 0; i < x3.length; i++) {
             if (Math.abs(gci23[i]) > GCI_LIMIT) {
@@ -569,7 +568,7 @@ public class TemplateGCI {
     public void evaluate(ArrayList<Double> gridSizes, ArrayList<Double> vals, ArrayList<String> grids) {
         String fmt = "%-35s %12g %12g %12.3f %12.2f %12g";
         String fmtS = "%-35s %12s %12s %12s %12s %12s";
-        ArrayList<String> toSay = new ArrayList();
+        ArrayList<String> toSay = new ArrayList<>();
         String size = String.format("Size (%s)", _ud.defUnitLength.getPresentationName());
         toSay.add(String.format(fmtS, "Grid Name", "Value", size, "GCI (%)", "ORDER", "EXACT"));
         _io.say.loud("Assessing Grid Convergence Index");

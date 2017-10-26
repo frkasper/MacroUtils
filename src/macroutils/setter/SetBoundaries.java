@@ -7,6 +7,7 @@ import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import star.base.neo.ClientServerObject;
 import star.common.Boundary;
+import star.common.BoundaryType;
 import star.common.ColumnDescriptor;
 import star.common.FreeStreamBoundary;
 import star.common.InletBoundary;
@@ -52,7 +53,7 @@ public class SetBoundaries {
         b.getConditions().get(WallThermalOption.class).setSelected(wtoType);
     }
 
-    private void _setType(Boundary b, Class clz, String what) {
+    private <T extends BoundaryType> void _setType(Boundary b, Class<T> clz, String what) {
         _io.say.action(String.format("Setting BC as %s", what), b, true);
         b.setBoundaryType(clz);
     }
@@ -213,12 +214,12 @@ public class SetBoundaries {
         }
         if (_chk.has.volumeMesh()) {
             _io.say.msg(true, "Found a Volume Mesh. Will combine using legacy method.");
-            _sim.getMeshManager().combineBoundaries(new Vector(ab));
+            _sim.getMeshManager().combineBoundaries(new Vector<>(ab));
         } else {
-            ArrayList<PartSurface> alp = new ArrayList();
+            ArrayList<PartSurface> alp = new ArrayList<>();
             for (Boundary b : ab) {
                 _io.say.object(b, true);
-                ArrayList<PartSurface> alpb = new ArrayList(b.getPartSurfaceGroup().getObjects());
+                ArrayList<PartSurface> alpb = new ArrayList<>(b.getPartSurfaceGroup().getObjects());
                 alp.addAll(alpb);
                 b.getPartSurfaceGroup().removeObjects(alpb);
             }
@@ -226,7 +227,7 @@ public class SetBoundaries {
             b0.getRegion().getBoundaryManager().removeObjects(ab);
             b0.getPartSurfaceGroup().addObjects(alp);
         }
-        _io.say.objects(new ArrayList(r.getBoundaryManager().getObjects()), "Boundaries after Combination", true);
+        _io.say.objects(new ArrayList<>(r.getBoundaryManager().getObjects()), "Boundaries after Combination", true);
         _io.say.ok(true);
         return b0;
     }
@@ -284,9 +285,9 @@ public class SetBoundaries {
         _io.say.action("Setting Boundary Values from a Table", true);
         _io.say.object(b, true);
         _io.say.object(t, true);
-        _io.say.objects(new ArrayList(b.getValues().getObjects()), "Physics Values", true);
-        _io.say.objects(new ArrayList(t.getColumnDescriptors()), "Columns", true);
-        ArrayList<String> cols = new ArrayList();
+        _io.say.objects(new ArrayList<>(b.getValues().getObjects()), "Physics Values", true);
+        _io.say.objects(new ArrayList<>(t.getColumnDescriptors()), "Columns", true);
+        ArrayList<String> cols = new ArrayList<>();
         for (ColumnDescriptor cd : t.getColumnDescriptors()) {
             cols.add(cd.getColumnName());
         }

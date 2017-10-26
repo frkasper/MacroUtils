@@ -20,7 +20,7 @@ public class Demo16 extends SimulationAssistant {
 
     public Demo16() {
 
-        ArrayList<Task> tasks = new ArrayList();
+        ArrayList<Task> tasks = new ArrayList<>();
 
         MacroUtils mu = new MacroUtils(null);
 

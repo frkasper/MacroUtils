@@ -1,10 +1,15 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.cadmodeler.*;
-import star.common.*;
-import star.meshing.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.cadmodeler.Body;
+import star.cadmodeler.SolidModelPart;
+import star.common.GeometryPart;
+import star.common.PartSurface;
+import star.common.Simulation;
+import star.common.SimulationPartManager;
+import star.meshing.CadPart;
+import star.meshing.PartRepresentation;
 
 /**
  * Low-level class for getting Geometry entities in general with MacroUtils.
@@ -44,7 +49,7 @@ public class GetGeometries {
      */
     public ArrayList<GeometryPart> all(boolean vo) {
         _io.say.msg(vo, "Getting all Leaf Parts...");
-        ArrayList<GeometryPart> agp = new ArrayList(_sim.get(SimulationPartManager.class).getLeafParts());
+        ArrayList<GeometryPart> agp = new ArrayList<>(_sim.get(SimulationPartManager.class).getLeafParts());
         _io.say.msg(vo, "Leaf Parts found: %d", agp.size());
         return agp;
     }
@@ -57,7 +62,7 @@ public class GetGeometries {
      * @return The Geometry Part.
      */
     public GeometryPart byREGEX(String regexPatt, boolean vo) {
-        return (GeometryPart) _get.objects.allByREGEX(regexPatt, "Geometry Part", new ArrayList(all(false)), vo).get(0);
+        return (GeometryPart) _get.objects.allByREGEX(regexPatt, "Geometry Part", new ArrayList<>(all(false)), vo).get(0);
     }
 
     /**
@@ -78,7 +83,7 @@ public class GetGeometries {
      * @return An ArrayList with Geometry Parts.
      */
     public ArrayList<GeometryPart> fromPartSurfaces(ArrayList<PartSurface> aps) {
-        ArrayList<GeometryPart> agp = new ArrayList();
+        ArrayList<GeometryPart> agp = new ArrayList<>();
         for (PartSurface ps : aps) {
             if (agp.contains(ps.getPart())) {
                 continue;

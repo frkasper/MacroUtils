@@ -1,10 +1,13 @@
 package macroutils.getter;
 
-import java.text.*;
-import java.util.*;
-import macroutils.*;
-import macroutils.templates.*;
-import star.common.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import macroutils.templates.TemplatePost;
+import star.common.Simulation;
 
 /**
  * Low-level class for retrieving Information in general with MacroUtils.
@@ -218,6 +221,20 @@ public class GetInfos {
         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
         Date date = new Date();
         return dateFormat.format(date);
+    }
+
+    /**
+     * Gets the sum of a double array.
+     *
+     * @param array given double[] array.
+     * @return The sum.
+     */
+    public double sum(double[] array) {
+        double sum = 0.0;
+        for (int i = 0; i < array.length; i++) {
+            sum += array[i];
+        }
+        return sum;
     }
 
     /**

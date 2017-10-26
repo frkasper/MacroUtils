@@ -45,7 +45,7 @@ public class CreateDerivedPart {
     }
 
     private PlaneSection _createPlane(double[] origin, double[] normal, String axis) {
-        PlaneSection pln = _sectionPlane(new ArrayList(_get.regions.all(false)), origin, normal, axis);
+        PlaneSection pln = _sectionPlane(new ArrayList<>(_get.regions.all(false)), origin, normal, axis);
         pln.setPresentationName("Plane " + axis);
         return pln;
     }
@@ -94,7 +94,7 @@ public class CreateDerivedPart {
      */
     public CellSurfacePart cellSurface(ArrayList<NamedObject> ano) {
         _creating(ano, "Cell Surface");
-        CellSurfacePart c = _sim.getPartManager().createCellSurfacePart(new Vector(ano));
+        CellSurfacePart c = _sim.getPartManager().createCellSurfacePart(new Vector<>(ano));
         _io.say.created(c, true);
         return c;
     }
@@ -182,7 +182,7 @@ public class CreateDerivedPart {
      * @return The PlaneSection.
      */
     public PlaneSection sectionPlane(double[] origin, double[] orientation) {
-        return _sectionPlane(new ArrayList(_get.regions.all(false)), origin, orientation, null);
+        return _sectionPlane(new ArrayList<>(_get.regions.all(false)), origin, orientation, null);
     }
 
     /**
@@ -240,8 +240,8 @@ public class CreateDerivedPart {
      */
     public StreamPart streamline_PartSeed(ArrayList<NamedObject> ano) {
         _creating(null, "Streamline Derived Part");
-        ArrayList<NamedObject> a3d = new ArrayList();
-        ArrayList<NamedObject> a2d = new ArrayList();
+        ArrayList<NamedObject> a3d = new ArrayList<>();
+        ArrayList<NamedObject> a2d = new ArrayList<>();
         for (NamedObject no : ano) {
             String info = _get.strings.information(no);
             if ((no instanceof Region) || (no instanceof GeometryPart)) {

@@ -89,9 +89,9 @@ public class Demo14_GCI extends StarMacro {
 
     public void solveGrids() {
         int n = 1;
-        ArrayList<Double> sizes = new ArrayList();
-        ArrayList<Double> dps = new ArrayList();
-        ArrayList<String> grids = new ArrayList();
+        ArrayList<Double> sizes = new ArrayList<>();
+        ArrayList<Double> dps = new ArrayList<>();
+        ArrayList<String> grids = new ArrayList<>();
         mu.templates.prettify.all();
         mu.set.solver.aggressiveSettings();
         mu.open.allPlots(true);

@@ -1,12 +1,21 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.meshing.*;
-import star.resurfacer.*;
-import star.surfacewrapper.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.base.neo.ClientServerObject;
+import star.common.FvRepresentation;
+import star.common.Simulation;
+import star.meshing.AutoMeshOperation;
+import star.meshing.BaseSize;
+import star.meshing.CustomMeshControl;
+import star.meshing.MeshOperation;
+import star.meshing.MeshOperationManager;
+import star.meshing.PartRepresentation;
+import star.meshing.PartsMinimumSurfaceSize;
+import star.meshing.PartsRelativeOrAbsoluteSize;
+import star.meshing.PartsTargetSurfaceSize;
+import star.resurfacer.ResurfacerAutoMesher;
+import star.surfacewrapper.SurfaceWrapperAutoMeshOperation;
 
 /**
  * Low-level class for getting Mesh parameters with MacroUtils.
@@ -67,7 +76,7 @@ public class GetMesh {
         }
         AutoMeshOperation amo = (AutoMeshOperation) mo;
         return (CustomMeshControl) _get.objects.byREGEX(regexPatt,
-                new ArrayList(amo.getCustomMeshControls().getObjects()), true);
+                new ArrayList<>(amo.getCustomMeshControls().getObjects()), true);
     }
 
     /**
@@ -118,7 +127,7 @@ public class GetMesh {
      */
     public MeshOperation operation(String regexPatt, boolean vo) {
         return (MeshOperation) _get.objects.byREGEX(regexPatt,
-                new ArrayList(_sim.get(MeshOperationManager.class).getObjects()), vo);
+                new ArrayList<>(_sim.get(MeshOperationManager.class).getObjects()), vo);
     }
 
     /**

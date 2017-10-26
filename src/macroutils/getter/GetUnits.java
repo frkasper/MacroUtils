@@ -1,8 +1,14 @@
 package macroutils.getter;
 
-import macroutils.*;
-import star.base.report.*;
-import star.common.*;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.report.Monitor;
+import star.base.report.ReportMonitor;
+import star.common.Dimensions;
+import star.common.ResidualMonitor;
+import star.common.Simulation;
+import star.common.Units;
+import star.common.UnitsManager;
 
 /**
  * Low-level class for getting Units with MacroUtils.
@@ -62,10 +68,7 @@ public class GetUnits {
      * @return The Dimensions.
      */
     public Dimensions dimensions(Units u) {
-        if (u == null) {
-            return new Dimensions();
-        }
-        return u.getDimensions();
+        return (u != null) ? u.getDimensions() : new Dimensions();
     }
 
     /**
@@ -76,12 +79,10 @@ public class GetUnits {
      */
     public Units fromMonitor(Monitor m) {
         if (m instanceof ResidualMonitor) {
-            return ((ResidualMonitor) m).getMonitoredValueUnits();
+            return byName(_unitDimensionless, false);
+        } else {
+            return (m instanceof ReportMonitor) ? ((ReportMonitor) m).getReport().getUnits() : null;
         }
-        if (m instanceof ReportMonitor) {
-            return ((ReportMonitor) m).getMonitoredValueUnits();
-        }
-        return null;
     }
 
     /**

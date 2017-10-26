@@ -6,15 +6,14 @@ import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import star.base.neo.DoubleVector;
-import star.base.neo.NeoObjectVector;
 import star.cadmodeler.Body;
-import star.common.GeometryPart;
 import star.common.LabCoordinateSystem;
 import star.common.PartSurface;
 import star.common.Simulation;
 import star.common.SimulationPartManager;
 import star.common.Units;
 import star.meshing.CadPart;
+import star.meshing.MeshPart;
 import star.meshing.MeshPartFactory;
 import star.meshing.PartImportManager;
 import star.meshing.PartRepresentation;
@@ -127,16 +126,16 @@ public class CreateGeometry {
      * Find Part/Part contacts within a given tolerance specified in the default units. See
      * {@link UserDeclarations#defUnitLength}.
      *
-     * @param agp given ArrayList of Geometry Parts.
+     * @param <T> any Class that extends from MeshPart object in STAR-CCM+.
+     * @param agp given ArrayList of Geometry/Mesh Parts.
      * @param tol given tolerance in {@link UserDeclarations#defUnitLength} unit.
      */
-    public void contacts(ArrayList<GeometryPart> agp, double tol) {
+    public <T extends MeshPart> void contacts(ArrayList<T> agp, double tol) {
         _io.say.action("Finding Part/Part Contacts", true);
         PartRepresentation pr = _get.geometries.representation();
-        NeoObjectVector nov = new NeoObjectVector(agp.toArray());
         double tol_m = tol * _ud.defUnitLength.getConversion();
         _io.say.value("Tolerance", tol_m, _ud.unit_m, true);
-        pr.findPartPartContacts(new NeoObjectVector(agp.toArray()), tol_m);
+        pr.findPartPartContacts(new ArrayList<>(agp), tol_m);
         _io.say.ok(true);
     }
 

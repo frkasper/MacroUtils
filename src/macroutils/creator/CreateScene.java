@@ -195,9 +195,9 @@ public class CreateScene {
 
     private ArrayList<NamedObject> _getGeometryNOs() {
         if (_sim.getRegionManager().isEmpty()) {
-            return new ArrayList(_get.partSurfaces.all(false));
+            return new ArrayList<>(_get.partSurfaces.all(false));
         }
-        return new ArrayList(_get.boundaries.all(false));
+        return new ArrayList<>(_get.boundaries.all(false));
     }
 
     private DisplayerManager _getDM(Scene scn) {
@@ -232,11 +232,11 @@ public class CreateScene {
     }
 
     private ArrayList<NamedObject> _getInputPartsChildren(StreamPart sp) {
-        return _get.objects.children(new ArrayList(sp.getInputPartsCollection()), false);
+        return _get.objects.children(new ArrayList<>(sp.getInputPartsCollection()), false);
     }
 
     private ArrayList<NamedObject> _getScalarNOs(ArrayList<NamedObject> ano) {
-        ArrayList<NamedObject> ano2 = new ArrayList();
+        ArrayList<NamedObject> ano2 = new ArrayList<>();
         for (NamedObject no : ano) {
             if (no instanceof Region) {
                 Region r = (Region) no;
@@ -320,7 +320,7 @@ public class CreateScene {
      * @return The Scene.
      */
     public Scene empty() {
-        return _createScene(StaticDeclarations.Scene.EMPTY, new ArrayList(), null, null, true);
+        return _createScene(StaticDeclarations.Scene.EMPTY, new ArrayList<>(), null, null, true);
     }
 
     /**
@@ -390,7 +390,7 @@ public class CreateScene {
      * @return The Scene.
      */
     public Scene geometry() {
-        return _createScene(StaticDeclarations.Scene.GEOMETRY, new ArrayList(), null, null, true);
+        return _createScene(StaticDeclarations.Scene.GEOMETRY, new ArrayList<>(), null, null, true);
     }
 
     /**
@@ -409,7 +409,7 @@ public class CreateScene {
      * @return The Scene.
      */
     public Scene mesh() {
-        return _createScene(StaticDeclarations.Scene.MESH, new ArrayList(), null, null, true);
+        return _createScene(StaticDeclarations.Scene.MESH, new ArrayList<>(), null, null, true);
     }
 
     /**
@@ -455,7 +455,7 @@ public class CreateScene {
      * @return The Scene.
      */
     public Scene streamline(ArrayList<NamedObject> ano, boolean tubeOpt) {
-        ArrayList<NamedObject> asp = new ArrayList();
+        ArrayList<NamedObject> asp = new ArrayList<>();
         StreamPart sp = _add.derivedPart.streamline_PartSeed(ano);
         asp.add(sp);
         Scene scn = _createScene(StaticDeclarations.Scene.STREAMLINE, asp, _getVelocity(), _ud.defUnitVel, tubeOpt);

@@ -95,15 +95,18 @@ public class CreateTools {
             _io.say.value("Skipping... Parameter already exists", name, true, vo);
             return gpm.getObject(name);
         }
-        Class cl = ScalarGlobalParameter.class;
+        GlobalParameterBase gpb;
         switch (type) {
             case SCALAR:
+                gpb = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
                 break;
             case VECTOR:
-                cl = VectorGlobalParameter.class;
+                gpb = gpm.createGlobalParameter(VectorGlobalParameter.class, type.getType());
+                break;
+            default:
+                gpb = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
                 break;
         }
-        GlobalParameterBase gpb = gpm.createGlobalParameter(cl, type.getType());
         gpb.setPresentationName(name);
         _io.say.created(gpb, vo);
         return gpb;
@@ -149,7 +152,7 @@ public class CreateTools {
     }
 
     private ArrayList<Double> _getArrayList(int n, double val) {
-        ArrayList<Double> ad = new ArrayList();
+        ArrayList<Double> ad = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             ad.add(val);
         }

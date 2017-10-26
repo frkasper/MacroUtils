@@ -1,9 +1,14 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.report.*;
-import star.common.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.base.report.IterationMonitor;
+import star.base.report.Monitor;
+import star.base.report.PhysicalTimeMonitor;
+import star.base.report.PlotableMonitor;
+import star.base.report.Report;
+import star.base.report.ReportMonitor;
+import star.common.Simulation;
 
 /**
  * Low-level class for getting Monitor related objects with MacroUtils.
@@ -24,7 +29,7 @@ public class GetMonitors {
     }
 
     private ArrayList<ReportMonitor> _getAllReportMonitors() {
-        ArrayList<ReportMonitor> ar = new ArrayList();
+        ArrayList<ReportMonitor> ar = new ArrayList<>();
         for (Monitor m : all(false)) {
             if (m instanceof ReportMonitor) {
                 ar.add((ReportMonitor) m);
@@ -44,7 +49,7 @@ public class GetMonitors {
      * @return An ArrayList of Monitors.
      */
     public ArrayList<Monitor> all(boolean vo) {
-        ArrayList<Monitor> ar = new ArrayList();
+        ArrayList<Monitor> ar = new ArrayList<>();
         ar.addAll(_sim.getMonitorManager().getObjects());
         _io.say.objects(ar, "Getting all Monitors", vo);
         return ar;
@@ -58,7 +63,7 @@ public class GetMonitors {
      * @return An ArrayList of Monitors.
      */
     public ArrayList<Monitor> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Monitors", new ArrayList(all(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Monitors", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -69,7 +74,7 @@ public class GetMonitors {
      * @return The Monitor.
      */
     public Monitor byREGEX(String regexPatt, boolean vo) {
-        return (Monitor) _get.objects.allByREGEX(regexPatt, "Monitor", new ArrayList(all(false)), vo).get(0);
+        return (Monitor) _get.objects.allByREGEX(regexPatt, "Monitor", new ArrayList<>(all(false)), vo).get(0);
     }
 
     /**

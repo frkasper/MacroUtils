@@ -3,8 +3,8 @@ package macroutils.creator;
 import java.util.ArrayList;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
-import star.base.neo.NeoObjectVector;
 import star.common.GeometryPart;
+import star.common.ManagesParts;
 import star.common.Region;
 import star.common.RegionManager;
 import star.common.Simulation;
@@ -105,9 +105,10 @@ public class CreateRegion {
         ArrayList<Region> ar1 = _get.regions.all(false);
         ar1.removeAll(ar0);
         _io.say.msg(vo, "Regions created: %d", ar1.size());
-        NeoObjectVector nov = new NeoObjectVector(new Object[]{_sim.get(SimulationPartManager.class)});
+        ArrayList<ManagesParts> amp = new ArrayList<>();
+        amp.add(_sim.get(SimulationPartManager.class));
         //-- Attempt to automatically create the Interfaces.
-        rmg.updateInterfacesFromPartContacts(nov, im.getMode());
+        rmg.updateInterfacesFromPartContacts(amp, im.getMode());
         return ar1;
     }
 

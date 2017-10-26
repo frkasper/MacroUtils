@@ -1,9 +1,18 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.common.*;
-import star.post.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import star.common.AbortFileStoppingCriterion;
+import star.common.InnerIterationStoppingCriterion;
+import star.common.PhysicalTimeStoppingCriterion;
+import star.common.Simulation;
+import star.common.SolutionView;
+import star.common.Solver;
+import star.common.SolverStoppingCriterion;
+import star.common.StepStoppingCriterion;
+import star.post.SolutionHistory;
+import star.post.SolutionHistoryManager;
+import star.post.SolutionViewManager;
 
 /**
  * Low-level class for getting solver parameters with MacroUtils.
@@ -26,10 +35,11 @@ public class GetSolver {
     /**
      * Gets a specific Solver from STAR-CCM+ API.
      *
+     * @param <T> any Class that extends from Solver object in STAR-CCM+.
      * @param solver given Solver Class name.
      * @return The Solver. Casting the variable might be necessary. Returns <b>null</b> if it is not available.
      */
-    public Solver byClass(Class solver) {
+    public <T extends Solver> T byClass(Class<T> solver) {
         try {
             return _sim.getSolverManager().getSolver(solver);
         } catch (Exception e) {
@@ -65,7 +75,7 @@ public class GetSolver {
      */
     public SolutionHistory solutionHistory(String regexPatt, boolean vo) {
         return (SolutionHistory) _get.objects.byREGEX(regexPatt,
-                new ArrayList(_sim.get(SolutionHistoryManager.class).getObjects()), vo);
+                new ArrayList<>(_sim.get(SolutionHistoryManager.class).getObjects()), vo);
     }
 
     /**
@@ -77,7 +87,7 @@ public class GetSolver {
      */
     public SolutionView solutionView(String regexPatt, boolean vo) {
         return (SolutionView) _get.objects.byREGEX(regexPatt,
-                new ArrayList(_sim.get(SolutionViewManager.class).getObjects()), vo);
+                new ArrayList<>(_sim.get(SolutionViewManager.class).getObjects()), vo);
     }
 
     /**
@@ -89,7 +99,7 @@ public class GetSolver {
      */
     public SolverStoppingCriterion stoppingCriteria(String regexPatt, boolean vo) {
         return (SolverStoppingCriterion) _get.objects.byREGEX(regexPatt,
-                new ArrayList(_sim.getSolverStoppingCriterionManager().getObjects()), vo);
+                new ArrayList<>(_sim.getSolverStoppingCriterionManager().getObjects()), vo);
     }
 
     /**

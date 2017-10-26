@@ -1,10 +1,15 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.meshing.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.neo.ClientServerObject;
+import star.common.ColumnDescriptor;
+import star.common.GeometryPart;
+import star.common.Units;
+import star.meshing.AutoMeshOperation;
+import star.meshing.MesherBase;
 
 /**
  * Low-level class for several different ways of getting Strings with MacroUtils.
@@ -114,7 +119,7 @@ public class GetStrings {
      */
     public ArrayList<String> meshers(AutoMeshOperation amo, boolean vo) {
         _io.say.object(amo, vo);
-        ArrayList<String> as = new ArrayList();
+        ArrayList<String> as = new ArrayList<>();
         for (MesherBase mb : amo.getMeshers().getObjects()) {
             as.add(mb.getClass().getName());
         }
@@ -129,7 +134,7 @@ public class GetStrings {
      * @return An ArrayList of Strings. Useful with {@link macroutils.creator.CreateMeshOperation#automatedMesh}.
      */
     public ArrayList<String> meshers(StaticDeclarations.Meshers... meshers) {
-        ArrayList<String> as = new ArrayList();
+        ArrayList<String> as = new ArrayList<>();
         for (StaticDeclarations.Meshers mesher : meshers) {
             as.add(mesher.getMesher());
         }

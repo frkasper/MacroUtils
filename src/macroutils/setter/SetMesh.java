@@ -14,13 +14,12 @@ import star.meshing.CustomMeshControlConditionManager;
 import star.meshing.MaximumCellSize;
 import star.meshing.PartsMinimumSurfaceSize;
 import star.meshing.PartsMinimumSurfaceSizeOption;
-import star.meshing.PartsRelativeOrAbsoluteSize;
 import star.meshing.PartsTargetSurfaceSize;
 import star.meshing.PartsTargetSurfaceSizeOption;
-import star.meshing.RelativeOrAbsoluteSize;
 import star.meshing.SurfaceCurvature;
 import star.meshing.SurfaceCustomMeshControl;
 import star.meshing.SurfaceProximity;
+import star.meshing.VolumeCustomMeshControl;
 import star.prismmesher.CustomPrismValuesManager;
 import star.prismmesher.NumPrismLayers;
 import star.prismmesher.PartsCustomPrismsOption;
@@ -28,6 +27,7 @@ import star.prismmesher.PartsCustomizePrismMesh;
 import star.prismmesher.PrismAutoMesher;
 import star.prismmesher.PrismLayerStretching;
 import star.prismmesher.PrismThickness;
+import star.prismmesher.VolumeControlPrismsOption;
 import star.solidmesher.ThinAutoMesher;
 import star.solidmesher.ThinNumLayers;
 import star.solidmesher.ThinThicknessThreshold;
@@ -51,14 +51,6 @@ public class SetMesh {
         _mu = m;
     }
 
-    private AutoMeshDefaultValuesManager _getAMDVM(AutoMeshBase amb) {
-        return amb.getDefaultValues();
-    }
-
-    private CustomPrismValuesManager _getCPVM(SurfaceCustomMeshControl scmc) {
-        return scmc.getCustomValues().get(CustomPrismValuesManager.class);
-    }
-
     private DirectedAutoSourceMesh _getDirectedAutoSourceMesh(NamedObject no) {
         DirectedMeshOperation dmo = (DirectedMeshOperation) no;
         for (Object o : dmo.getGuidedSurfaceMeshBaseManager().getObjects()) {
@@ -67,22 +59,6 @@ public class SetMesh {
             }
         }
         return null;
-    }
-
-    private void _setRelativeSize(PartsRelativeOrAbsoluteSize rs, String what, double perc) {
-        if (rs == null) {
-            return;
-        }
-        rs.setRelativeSize(perc);
-        _io.say.percentage(what, rs.getRelativeSizeValue(), true);
-    }
-
-    private void _setRelativeSize(RelativeOrAbsoluteSize rs, String what, double perc) {
-        if (rs == null) {
-            return;
-        }
-        rs.setRelativeSize(perc);
-        _io.say.percentage(what, rs.getRelativeSizeValue().getPercentage(), true);
     }
 
     private void _settingPrisms(ClientServerObject cso, boolean vo) {
@@ -104,7 +80,8 @@ public class SetMesh {
             no = _getDirectedAutoSourceMesh(no);
         }
         if (no instanceof AutoMeshBase) {
-            BaseSize bs = _getAMDVM((AutoMeshBase) no).get(BaseSize.class);
+            AutoMeshBase amb = (AutoMeshBase) no;
+            BaseSize bs = amb.getDefaultValues().get(BaseSize.class);
             _set.object.physicalQuantity(bs, val, u, "Base Size", true);
             _io.say.ok(vo);
             return;
@@ -126,7 +103,8 @@ public class SetMesh {
             _io.say.msg("Not a Trimmer Mesh Operation", vo);
             return;
         }
-        _setRelativeSize(_getAMDVM(amo).get(MaximumCellSize.class), "Maximum Cell Size", val);
+        AutoMeshDefaultValuesManager amdvm = amo.getDefaultValues();
+        _set.object.relativeSize(amdvm.get(MaximumCellSize.class), "Maximum Cell Size", val);
         _io.say.ok(vo);
     }
 
@@ -139,6 +117,10 @@ public class SetMesh {
      */
     public void numPrismLayers(NumPrismLayers npl, int n, boolean vo) {
         _io.say.action("Setting the Number of Prism Layers", vo);
+        if (n < 1) {
+            _io.say.value("Invalid Number of Prism Layers", n, true);
+            return;
+        }
         npl.setNumLayers(n);
         _io.say.value("Number of Prism Layers", npl.getNumLayers(), true);
         _io.say.ok(vo);
@@ -153,6 +135,10 @@ public class SetMesh {
      */
     public void prismLayerStretching(PrismLayerStretching pls, double val, boolean vo) {
         _io.say.action("Setting Prism Layer Stretching", vo);
+        if (val < 1.0) {
+            _io.say.value("Invalid Prism Layer Stretching", val, true);
+            return;
+        }
         pls.setStretching(val);
         _io.say.value("Prism Layer Stretching", pls.getStretching(), true);
         _io.say.ok(vo);
@@ -167,8 +153,11 @@ public class SetMesh {
      */
     public void prismLayerTotalThickness(PrismThickness pt, double val, boolean vo) {
         _io.say.action("Setting Prism Layer Total Thickness", vo);
-        pt.setRelativeSize(val);
-        _io.say.percentage("Prism Layer Total Thickness", pt.getRelativeSizeValue(), true);
+        if (val <= 0) {
+            _io.say.value("Invalid Prism Layer Total Thickness", val, true);
+            return;
+        }
+        _mu.set.object.relativeSize(pt, "Prism Layer Total Thickness", val);
         _io.say.ok(vo);
     }
 
@@ -178,21 +167,22 @@ public class SetMesh {
      * @param amo given Automated Mesh Operation.
      * @param numLayers given number of prisms.
      * @param stretch given prism stretch relation.
-     * @param relSize given relative size in (%).
+     * @param totalThickness given total thickness size in (%).
      * @param vo given verbose option. False will only print necessary data.
      */
-    public void prisms(AutoMeshOperation amo, int numLayers, double stretch, double relSize, boolean vo) {
+    public void prisms(AutoMeshOperation amo, int numLayers, double stretch, double totalThickness, boolean vo) {
         _io.say.action("Setting Mesh Prism Parameters", amo, vo);
         if (!_chk.has.prismLayerMesher(amo)) {
             _io.say.msg("Mesh Operation does not have Prism Layers.", vo);
             return;
         }
-        PrismAutoMesher pam = ((PrismAutoMesher) amo.getMeshers().getObject("Prism Layer Mesher"));
+        AutoMeshDefaultValuesManager amdvm = amo.getDefaultValues();
+        PrismAutoMesher pam = (PrismAutoMesher) amo.getMeshers().getObject("Prism Layer Mesher");
         pam.setMinimumThickness(_ud.prismsMinThickn);
         pam.setGapFillPercentage(_ud.prismsGapFillPerc);
         pam.setLayerChoppingPercentage(_ud.prismsLyrChoppPerc);
         pam.setNearCoreLayerAspectRatio(_ud.prismsNearCoreAspRat);
-        prisms(_getAMDVM(amo), numLayers, stretch, relSize, false);
+        prisms(amdvm, numLayers, stretch, totalThickness, false);
         _io.say.value("Prism Layer Minimum Thickness", pam.getMinimumThickness(), true);
         _io.say.percentage("Prism Layer Gap Fill Percentage", pam.getGapFillPercentage(), true);
         _io.say.percentage("Prism Layer Chopping Percentage", pam.getLayerChoppingPercentage(), true);
@@ -206,48 +196,58 @@ public class SetMesh {
      * @param cm given Condition Manager.
      * @param numLayers given number of prisms.
      * @param stretch given prism stretch relation.
-     * @param relSize given relative size in (%).
+     * @param totalThickness given total thickness size in (%).
      * @param vo given verbose option. False will only print necessary data.
      */
-    public void prisms(ConditionManager cm, int numLayers, double stretch, double relSize, boolean vo) {
+    public void prisms(ConditionManager cm, int numLayers, double stretch, double totalThickness, boolean vo) {
         _settingPrisms(cm, vo);
         numPrismLayers(cm.get(NumPrismLayers.class), numLayers, false);
         prismLayerStretching(cm.get(PrismLayerStretching.class), stretch, false);
-        _setRelativeSize(cm.get(PrismThickness.class), "Prism Layer Total Thickness", relSize);
+        _set.object.relativeSize(cm.get(PrismThickness.class), "Prism Layer Total Thickness", totalThickness);
         _io.say.ok(vo);
     }
 
     /**
-     * Sets Prism Mesh parameters for a Custom Surface Mesh Control.
+     * Sets Prism Mesh parameters for a Custom Mesh Control -- Surface or Volumetric.
      *
-     * @param scmc given Surface Custom Mesh Control.
+     * @param cmc given Custom Mesh Control.
      * @param numLayers given number of prisms. Zero is ignored.
      * @param stretch given prism stretch relation. Zero is ignored.
-     * @param relSize given relative size in (%). Zero is ignored.
+     * @param totalThickness given total thickness size in (%). Zero is ignored.
      * @param vo given verbose option. False will only print necessary data.
      */
-    public void prisms(SurfaceCustomMeshControl scmc, int numLayers, double stretch, double relSize, boolean vo) {
-        _settingPrisms(scmc, vo);
-        PartsCustomizePrismMesh pcpm = scmc.getCustomConditions().get(PartsCustomizePrismMesh.class);
-        pcpm.getCustomPrismOptions().setSelected(PartsCustomPrismsOption.Type.CUSTOMIZE);
-        if (numLayers > 0) {
-            pcpm.getCustomPrismControls().setCustomizeNumLayers(true);
-            numPrismLayers(_getCPVM(scmc).get(NumPrismLayers.class), numLayers, false);
-        } else {
-            pcpm.getCustomPrismControls().setCustomizeNumLayers(false);
+    public void prisms(CustomMeshControl cmc, int numLayers, double stretch, double totalThickness, boolean vo) {
+        _settingPrisms(cmc, vo);
+        PartsCustomizePrismMesh pcpm;
+        VolumeControlPrismsOption vcpo;
+        boolean hasNumLayers = numLayers > 0;
+        boolean hasStretching = stretch > 0;
+        boolean hasTotalThickness = totalThickness > 0;
+        if (!(hasNumLayers || hasStretching || hasTotalThickness)) {
+            _io.say.msg("Nothing to change.", vo);
+            return;
         }
-        if (stretch > 0) {
-            pcpm.getCustomPrismControls().setCustomizeStretching(true);
-            prismLayerStretching(_getCPVM(scmc).get(PrismLayerStretching.class), stretch, false);
-        } else {
-            pcpm.getCustomPrismControls().setCustomizeStretching(false);
+        if (cmc instanceof SurfaceCustomMeshControl) {
+            pcpm = cmc.getCustomConditions().get(PartsCustomizePrismMesh.class);
+            pcpm.getCustomPrismOptions().setSelected(PartsCustomPrismsOption.Type.CUSTOMIZE);
+            pcpm.getCustomPrismControls().setCustomizeNumLayers(hasNumLayers);
+            pcpm.getCustomPrismControls().setCustomizeStretching(hasStretching);
+            pcpm.getCustomPrismControls().setCustomizeTotalThickness(hasTotalThickness);
+        } else if (cmc instanceof VolumeCustomMeshControl) {
+            vcpo = cmc.getCustomConditions().get(VolumeControlPrismsOption.class);
+            vcpo.setCustomizeNumLayers(hasNumLayers);
+            vcpo.setCustomizeStretching((hasStretching));
+            vcpo.setCustomizeTotalThickness(hasTotalThickness);
         }
-        if (relSize > 0) {
-            pcpm.getCustomPrismControls().setCustomizeTotalThickness(true);
-            _getCPVM(scmc).get(PrismThickness.class).setRelativeSize(relSize);
-            _setRelativeSize(_getCPVM(scmc).get(PrismThickness.class), "Prism Layer Total Thickness", relSize);
-        } else {
-            pcpm.getCustomPrismControls().setCustomizeTotalThickness(false);
+        CustomPrismValuesManager cpvm = cmc.getCustomValues().get(CustomPrismValuesManager.class);
+        if (hasNumLayers) {
+            numPrismLayers(cpvm.get(NumPrismLayers.class), numLayers, false);
+        }
+        if (hasStretching) {
+            prismLayerStretching(cpvm.get(PrismLayerStretching.class), stretch, false);
+        }
+        if (hasTotalThickness) {
+            prismLayerTotalThickness(cpvm.get(PrismThickness.class), totalThickness, false);
         }
         _io.say.ok(vo);
     }
@@ -292,8 +292,8 @@ public class SetMesh {
      */
     public void surfaceSizes(AutoMeshOperation amo, double min, double tgt, boolean vo) {
         _io.say.action("Setting Mesh Surface Sizes", amo, vo);
-        _setRelativeSize(_get.mesh.targetRelativeSize(amo, false), "Target Surface Size", tgt);
-        _setRelativeSize(_get.mesh.minRelativeSize(amo, false), "Minimum Surface Size", min);
+        _set.object.relativeSize(_get.mesh.targetRelativeSize(amo, false), "Target Surface Size", tgt);
+        _set.object.relativeSize(_get.mesh.minRelativeSize(amo, false), "Minimum Surface Size", min);
         _io.say.ok(vo);
     }
 
@@ -311,11 +311,11 @@ public class SetMesh {
         CustomMeshControlConditionManager cm = cmc.getCustomConditions();
         if (min > 0) {
             cm.get(PartsMinimumSurfaceSizeOption.class).setSelected(PartsMinimumSurfaceSizeOption.Type.CUSTOM);
-            _setRelativeSize(cmc.getCustomValues().get(PartsMinimumSurfaceSize.class), "Minimum Surface Size", min);
+            _set.object.relativeSize(cmc.getCustomValues().get(PartsMinimumSurfaceSize.class), "Minimum Surface Size", min);
         }
         if (tgt > 0) {
             cm.get(PartsTargetSurfaceSizeOption.class).setSelected(PartsTargetSurfaceSizeOption.Type.CUSTOM);
-            _setRelativeSize(cmc.getCustomValues().get(PartsTargetSurfaceSize.class), "Target Surface Size", tgt);
+            _set.object.relativeSize(cmc.getCustomValues().get(PartsTargetSurfaceSize.class), "Target Surface Size", tgt);
         }
         _io.say.ok(vo);
     }
@@ -335,12 +335,13 @@ public class SetMesh {
             _io.say.msg("Mesh Operation does not have Thin Mesher.", vo);
             return;
         }
-        ThinAutoMesher tam = ((ThinAutoMesher) amo.getMeshers().getObject("Thin Mesher"));
+        AutoMeshDefaultValuesManager amdvm = amo.getDefaultValues();
+        ThinAutoMesher tam = (ThinAutoMesher) amo.getMeshers().getObject("Thin Mesher");
         tam.setCustomizeThicknessOption(true);
-        ThinNumLayers tnl = _getAMDVM(amo).get(ThinNumLayers.class);
+        ThinNumLayers tnl = amdvm.get(ThinNumLayers.class);
         tnl.setLayers(Math.max(2, numLayers));
         _io.say.value("Number of Thin Layers", tnl.getLayers(), true);
-        _setRelativeSize(_getAMDVM(amo).get(ThinThicknessThreshold.class), "Thin Layer Thickness Threshold", thicknThr);
+        _set.object.relativeSize(amdvm.get(ThinThicknessThreshold.class), "Thin Layer Thickness Threshold", thicknThr);
         _io.say.ok(vo);
     }
 

@@ -104,7 +104,7 @@ public class Demo15_Run_DES extends StarMacro {
     }
 
     void setupPartDisplayer(Scene scn) {
-        PartDisplayer pd = mu.add.scene.displayer_Geometry(scn, new ArrayList(mu.get.boundaries.all(true)));
+        PartDisplayer pd = mu.add.scene.displayer_Geometry(scn, new ArrayList<>(mu.get.boundaries.all(true)));
         pd.setPresentationName("Channel");
         pd.setOpacity(0.1);
     }
@@ -261,7 +261,7 @@ public class Demo15_Run_DES extends StarMacro {
         //--
         //-- Instantaneous and Mean Velocity Scalar Scenes
         ud.ff3 = mu.get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), true);
-        mu.add.derivedPart.fieldMeanMonitor(new ArrayList(mu.get.regions.all(true)),
+        mu.add.derivedPart.fieldMeanMonitor(new ArrayList<>(mu.get.regions.all(true)),
                 ud.ff3.getMagnitudeFunction(), ud.updEvent2);
         ud.namedObjects.clear();
         ud.namedObjects.add(mu.get.parts.byREGEX("Plane", true));

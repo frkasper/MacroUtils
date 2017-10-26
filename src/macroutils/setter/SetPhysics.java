@@ -3,7 +3,6 @@ package macroutils.setter;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import star.common.Model;
-import star.common.ModelManager;
 import star.common.PhysicsContinuum;
 import star.common.Units;
 import star.energy.SpecificHeatProperty;
@@ -13,16 +12,9 @@ import star.flow.ConstantDensityProperty;
 import star.flow.DynamicViscosityProperty;
 import star.flow.Gravity;
 import star.material.ConstantMaterialPropertyMethod;
-import star.material.Gas;
-import star.material.Liquid;
+import star.material.MaterialPropertyManager;
 import star.material.MaterialPropertyMethod;
-import star.material.SingleComponentGasModel;
-import star.material.SingleComponentLiquidModel;
-import star.material.SinglePhaseGas;
-import star.material.SinglePhaseGasModel;
-import star.material.SinglePhaseLiquid;
-import star.material.SinglePhaseLiquidModel;
-import star.material.SolidModel;
+import star.material.SingleComponentMaterialModel;
 
 /**
  * Low-level class for setting Physics parameters with MacroUtils.
@@ -41,60 +33,39 @@ public class SetPhysics {
         _mu = m;
     }
 
-    private Model _getMM(PhysicsContinuum pc) {
-        ModelManager mm = pc.getModelManager();
-        if (mm.has("Gas")) {
-            return mm.getModel(SingleComponentGasModel.class);
-        } else if (mm.has("Liquid")) {
-            return mm.getModel(SingleComponentLiquidModel.class);
-        } else if (mm.has("Solid")) {
-            return mm.getModel(SolidModel.class);
+    private Model _getModel(PhysicsContinuum pc) {
+        if (pc.getModelManager().getObjectsOf(SingleComponentMaterialModel.class).size() > 0) {
+            return pc.getModelManager().getObjectsOf(SingleComponentMaterialModel.class).get(0);
         }
         return null;
     }
 
     private ConstantMaterialPropertyMethod _getCMPM(Model model, StaticDeclarations.Vars var) {
-        Class clz = null;
-        MaterialPropertyMethod mpm = null;
+        MaterialPropertyMethod mpm;
+        if (!(model instanceof SingleComponentMaterialModel)) {
+            _io.say.msg("Currently limited to Single Component materials!");
+            return null;
+        }
+        MaterialPropertyManager mpmgr = ((SingleComponentMaterialModel) model).getMaterial().getMaterialProperties();
         switch (var) {
             case CP:
-                clz = SpecificHeatProperty.class;
+                mpm = mpmgr.getMaterialProperty(SpecificHeatProperty.class).getMethod();
                 break;
             case DEN:
-                clz = ConstantDensityProperty.class;
+                mpm = mpmgr.getMaterialProperty(ConstantDensityProperty.class).getMethod();
                 break;
             case K:
-                clz = ThermalConductivityProperty.class;
+                mpm = mpmgr.getMaterialProperty(ThermalConductivityProperty.class).getMethod();
                 break;
             case PRANDTL:
-                clz = TurbulentPrandtlNumberProperty.class;
+                mpm = mpmgr.getMaterialProperty(TurbulentPrandtlNumberProperty.class).getMethod();
                 break;
             case VISC:
-                clz = DynamicViscosityProperty.class;
+                mpm = mpmgr.getMaterialProperty(DynamicViscosityProperty.class).getMethod();
                 break;
             default:
                 _io.say.value("Invalid variable for material property", var.getVar(), true, true);
-                break;
-        }
-        if (model.getClass().getName().matches(".*SingleComponentGasModel$")) {
-            SingleComponentGasModel scgm = (SingleComponentGasModel) model;
-            Gas gas = (Gas) scgm.getMaterial();
-            mpm = gas.getMaterialProperties().getMaterialProperty(clz).getMethod();
-        }
-        if (model.getClass().getName().matches(".*SingleComponentLiquidModel$")) {
-            SingleComponentLiquidModel sclm = (SingleComponentLiquidModel) model;
-            Liquid liq = (Liquid) sclm.getMaterial();
-            mpm = liq.getMaterialProperties().getMaterialProperty(clz).getMethod();
-        }
-        if (model.getClass().getName().matches(".*SinglePhaseGasModel$")) {
-            SinglePhaseGasModel spgm = (SinglePhaseGasModel) model;
-            SinglePhaseGas spg = (SinglePhaseGas) spgm.getMaterial();
-            mpm = spg.getMaterialProperties().getMaterialProperty(clz).getMethod();
-        }
-        if (model.getClass().getName().matches(".*SinglePhaseLiquidModel$")) {
-            SinglePhaseLiquidModel splm = (SinglePhaseLiquidModel) model;
-            SinglePhaseLiquid spl = (SinglePhaseLiquid) splm.getMaterial();
-            mpm = spl.getMaterialProperties().getMaterialProperty(clz).getMethod();
+                return null;
         }
         return (ConstantMaterialPropertyMethod) mpm;
     }
@@ -193,7 +164,7 @@ public class SetPhysics {
             double val, Units u) {
         _io.say.action("Setting Material Property", true);
         _io.say.value("Material Name", matName, true, true);
-        _set.object.physicalQuantity(_getCMPM(_getMM(pc), matProp).getQuantity(), val, u, matProp.getVar(), true);
+        _set.object.physicalQuantity(_getCMPM(_getModel(pc), matProp).getQuantity(), val, u, matProp.getVar(), true);
         _io.say.ok(true);
     }
 

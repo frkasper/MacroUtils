@@ -423,7 +423,7 @@ public class CheckIs {
      * @return True or False.
      */
     public boolean withinSamePart(ArrayList<NamedObject> ano) {
-        ArrayList<GeometryPart> agp = new ArrayList();
+        ArrayList<GeometryPart> agp = new ArrayList<>();
         for (NamedObject no : ano) {
             GeometryPart gp = null;
             if (no instanceof PartSurface) {

@@ -779,17 +779,17 @@ public class UserDeclarations {
     /**
      * Useful Variable for storing Doubles.
      */
-    public ArrayList<Double> doubles = new ArrayList(), doubles2 = new ArrayList();
+    public ArrayList<Double> doubles = new ArrayList<>(), doubles2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Files.
      */
-    public ArrayList<File> files = new ArrayList(), files2 = new ArrayList();
+    public ArrayList<File> files = new ArrayList<>(), files2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Strings.
      */
-    public ArrayList<String> strings = new ArrayList(), strings2 = new ArrayList();
+    public ArrayList<String> strings = new ArrayList<>(), strings2 = new ArrayList<>();
 
     //--
     //-- Public ArrayList's from STAR-CCM+ API
@@ -797,32 +797,32 @@ public class UserDeclarations {
     /**
      * Useful Variable for storing Boundaries.
      */
-    public ArrayList<Boundary> boundaries = new ArrayList(), boundaries2 = new ArrayList();
+    public ArrayList<Boundary> boundaries = new ArrayList<>(), boundaries2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Cad Bodies.
      */
-    public ArrayList<Body> cadBodies = new ArrayList(), cadBodies2 = new ArrayList();
+    public ArrayList<Body> cadBodies = new ArrayList<>(), cadBodies2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Cad Models.
      */
-    public ArrayList<Body> cadModels = new ArrayList(), cadModels2 = new ArrayList();
+    public ArrayList<Body> cadModels = new ArrayList<>(), cadModels2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Cad Parts.
      */
-    public ArrayList<CadPart> cadParts = new ArrayList(), cadParts2 = new ArrayList();
+    public ArrayList<CadPart> cadParts = new ArrayList<>(), cadParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Colors.
      */
-    public ArrayList<Color> colors = new ArrayList(), colors2 = new ArrayList();
+    public ArrayList<Color> colors = new ArrayList<>(), colors2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Composite Parts.
      */
-    public ArrayList<CompositePart> compositeParts = new ArrayList(), compositeParts2 = new ArrayList();
+    public ArrayList<CompositePart> compositeParts = new ArrayList<>(), compositeParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Double Vectors.
@@ -832,82 +832,82 @@ public class UserDeclarations {
     /**
      * Useful Variable for storing Field Functions.
      */
-    public ArrayList<FieldFunction> fieldFunctions = new ArrayList(), fieldFunctions2 = new ArrayList();
+    public ArrayList<FieldFunction> fieldFunctions = new ArrayList<>(), fieldFunctions2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Geometry Objects (STAR-CCM+ Geometry Object).
      */
-    public ArrayList<GeometryObject> geometryObjects = new ArrayList(), geometryObjects2 = new ArrayList();
+    public ArrayList<GeometryObject> geometryObjects = new ArrayList<>(), geometryObjects2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Geometry Parts.
      */
-    public ArrayList<GeometryPart> geometryParts = new ArrayList(), geometryParts2 = new ArrayList();
+    public ArrayList<GeometryPart> geometryParts = new ArrayList<>(), geometryParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Leaf Mesh Parts.
      */
-    public ArrayList<LeafMeshPart> leafMeshParts = new ArrayList(), leafMeshParts2 = new ArrayList();
+    public ArrayList<LeafMeshPart> leafMeshParts = new ArrayList<>(), leafMeshParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Meshers.
      */
-    public ArrayList<String> meshers = new ArrayList(), meshers2 = new ArrayList();
+    public ArrayList<String> meshers = new ArrayList<>(), meshers2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Mesh Parts.
      */
-    public ArrayList<MeshPart> meshParts = new ArrayList(), meshParts2 = new ArrayList();
+    public ArrayList<MeshPart> meshParts = new ArrayList<>(), meshParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Monitors.
      */
-    public ArrayList<Monitor> monitors = new ArrayList(), monitors2 = new ArrayList();
+    public ArrayList<Monitor> monitors = new ArrayList<>(), monitors2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Named Objects (STAR-CCM+ Object).
      */
-    public ArrayList<NamedObject> namedObjects = new ArrayList(), namedObjects2 = new ArrayList();
+    public ArrayList<NamedObject> namedObjects = new ArrayList<>(), namedObjects2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Objects.
      */
-    public ArrayList<Object> objects = new ArrayList(), objects2 = new ArrayList();
+    public ArrayList<Object> objects = new ArrayList<>(), objects2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Part Curves.
      */
-    public ArrayList<PartCurve> partCurves = new ArrayList(), partCurves2 = new ArrayList();
+    public ArrayList<PartCurve> partCurves = new ArrayList<>(), partCurves2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Part Surfaces.
      */
-    public ArrayList<PartSurface> partSurfaces = new ArrayList(), partSurfaces2 = new ArrayList();
+    public ArrayList<PartSurface> partSurfaces = new ArrayList<>(), partSurfaces2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Planes.
      */
-    public ArrayList<PlaneSection> planes = new ArrayList(), planes2 = new ArrayList();
+    public ArrayList<PlaneSection> planes = new ArrayList<>(), planes2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Regions.
      */
-    public ArrayList<Region> regions = new ArrayList(), regions2 = new ArrayList();
+    public ArrayList<Region> regions = new ArrayList<>(), regions2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Reports.
      */
-    public ArrayList<Report> reports = new ArrayList(), reports2 = new ArrayList();
+    public ArrayList<Report> reports = new ArrayList<>(), reports2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Scenes.
      */
-    public ArrayList<Scene> scenes = new ArrayList(), scenes2 = new ArrayList();
+    public ArrayList<Scene> scenes = new ArrayList<>(), scenes2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Camera Views.
      */
-    public ArrayList<VisView> cameras = new ArrayList(), cameras2 = new ArrayList();
+    public ArrayList<VisView> cameras = new ArrayList<>(), cameras2 = new ArrayList<>();
 
     //--
     //-- Strings

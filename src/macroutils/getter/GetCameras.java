@@ -1,10 +1,11 @@
 package macroutils.getter;
 
-import java.util.*;
-import macroutils.*;
-import star.base.neo.*;
-import star.common.*;
-import star.vis.*;
+import java.util.ArrayList;
+import macroutils.MacroUtils;
+import macroutils.StaticDeclarations;
+import star.base.neo.DoubleVector;
+import star.common.Simulation;
+import star.vis.VisView;
 
 /**
  * Low-level class for getting Camera Views (VisView) with MacroUtils.
@@ -46,7 +47,7 @@ public class GetCameras {
      * @return An ArrayList of Camera Views.
      */
     public ArrayList<VisView> all(boolean vo) {
-        ArrayList<VisView> avv = new ArrayList(_sim.getViewManager().getObjects());
+        ArrayList<VisView> avv = new ArrayList<>(_sim.getViewManager().getObjects());
         _io.say.objects(avv, "Getting all Camera Views", vo);
         return avv;
     }
@@ -59,7 +60,7 @@ public class GetCameras {
      * @return An ArrayList of Camera Views.
      */
     public ArrayList<VisView> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList(_get.objects.allByREGEX(regexPatt, "Camera Views", new ArrayList(all(false)), vo));
+        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Camera Views", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -70,7 +71,7 @@ public class GetCameras {
      * @return The VisView.
      */
     public VisView byREGEX(String regexPatt, boolean vo) {
-        return (VisView) _get.objects.allByREGEX(regexPatt, "Camera View", new ArrayList(all(false)), vo).get(0);
+        return (VisView) _get.objects.allByREGEX(regexPatt, "Camera View", new ArrayList<>(all(false)), vo).get(0);
     }
 
     /**
@@ -87,7 +88,7 @@ public class GetCameras {
         _io.say.value("Camera 1", v1.getPresentationName(), true, vo);
         _io.say.value("Camera 2", v2.getPresentationName(), true, vo);
         _io.say.value("Number of Steps", nSteps, vo);
-        ArrayList<VisView> av = new ArrayList();
+        ArrayList<VisView> av = new ArrayList<>();
         nSteps = Math.max(nSteps, 2);
         for (int i = 1; i <= nSteps; i++) {
             VisView v = _sim.getViewManager().createView();
@@ -129,8 +130,8 @@ public class GetCameras {
         }
         _io.say.msg(vo, "Spline Interpolator...");
         //--
-        ArrayList<VisView> av = new ArrayList();
-        ArrayList<Double> _x = new ArrayList(), _f = new ArrayList();
+        ArrayList<VisView> av = new ArrayList<>();
+        ArrayList<Double> _x = new ArrayList<>(), _f = new ArrayList<>();
         DoubleVector dvFP = avv.get(0).getFocalPoint();
         DoubleVector dvPos = avv.get(0).getPosition();
         DoubleVector dvVU = avv.get(0).getViewUp();

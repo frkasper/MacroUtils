@@ -4,7 +4,6 @@ import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import star.base.neo.DoubleVector;
-import star.base.neo.NeoObjectVector;
 import star.cadmodeler.Body;
 import star.cadmodeler.CadModel;
 import star.cadmodeler.CanonicalSketchPlane;
@@ -107,8 +106,7 @@ public class TemplateGeometry {
         ((Face) body.getFaceManager().getObject("Face 5")).setNameAttribute("z1");
         _sim.get(SolidModelManager.class).endEditCadModel(cm);
         _io.say.msg("Creating a Part...", vo);
-        cm.createParts(new NeoObjectVector(new Object[]{body}), "SharpEdges", 30.0,
-                _ud.defTessOpt.getValue(), false, 1.0E-5);
+        cm.createParts(_get.objects.arrayList(body), "SharpEdges", 30.0, _ud.defTessOpt.getValue(), false, 1.0E-5);
         _io.say.ok(vo);
         return body;
     }
@@ -177,8 +175,7 @@ public class TemplateGeometry {
         f1.setNameAttribute(ax.toString().toLowerCase() + "1");
         _sim.get(SolidModelManager.class).endEditCadModel(cm);
         _io.say.msg(vo, "Creating Part: %s...", cm.getPresentationName());
-        cm.createParts(new NeoObjectVector(new Object[]{body}), "SharpEdges", 30.0,
-                _ud.defTessOpt.getValue(), false, 1.0E-5);
+        cm.createParts(_get.objects.arrayList(body), "SharpEdges", 30.0, _ud.defTessOpt.getValue(), false, 1.0E-5);
         _io.say.ok(vo);
         return body;
     }

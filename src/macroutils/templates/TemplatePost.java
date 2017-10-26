@@ -104,7 +104,7 @@ public class TemplatePost {
      * @param frames given number of frames to be generated.
      */
     public void flyOver(Scene scn, VisView v1, VisView v2, int frames) {
-        _flyOver(scn, v1, v2, frames, new ArrayList(), null);
+        _flyOver(scn, v1, v2, frames, new ArrayList<>(), null);
     }
 
     /**
@@ -119,7 +119,7 @@ public class TemplatePost {
      * @param rsv given Recorded Solution View.
      */
     public void flyOver(Scene scn, VisView v1, VisView v2, int frames, RecordedSolutionView rsv) {
-        _flyOver(scn, v1, v2, frames, new ArrayList(), rsv);
+        _flyOver(scn, v1, v2, frames, new ArrayList<>(), rsv);
     }
 
     public void flyOver(Scene scn, ArrayList<VisView> avv) {
@@ -181,7 +181,7 @@ public class TemplatePost {
         ArrayList<Region> ar = _get.regions.all(false);
         FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.CFL.getVar(), false);
         _add.report.volumeAverage(ar, "CFL_avg", ff, _ud.unit_Dimensionless, false);
-        _add.report.maximum(new ArrayList(ar), "CFL_max", ff, _ud.unit_Dimensionless, false);
+        _add.report.maximum(new ArrayList<>(ar), "CFL_max", ff, _ud.unit_Dimensionless, false);
         _io.say.msg("Creating Time Report Annotation...");
         _add.tools.annotation_Time("6.2f");
         _io.say.ok(true);
