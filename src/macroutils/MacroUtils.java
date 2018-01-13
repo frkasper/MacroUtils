@@ -31,7 +31,7 @@ import star.common.SimulationIterator;
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v13.02, October 26, 2017.
+ * @version v13.02, January 13, 2018.
  */
 public final class MacroUtils {
 

@@ -269,17 +269,17 @@ public class MainEnabler {
         if (relSizes[0] > 0) {
             _io.say.msg("Relative Size X (%): " + relSizes[0]);
             wras.setXSize(true);
-            wras.getRelativeXSize().setPercentage(relSizes[0]);
+            wras.getRelativeXSize().getRelativeSize().setValue(relSizes[0]);
         }
         if (relSizes[1] > 0) {
             _io.say.msg("Relative Size Y (%): " + relSizes[1]);
             wras.setYSize(true);
-            wras.getRelativeYSize().setPercentage(relSizes[1]);
+            wras.getRelativeYSize().getRelativeSize().setValue(relSizes[1]);
         }
         if (relSizes[2] > 0) {
             _io.say.msg("Relative Size Z (%): " + relSizes[2]);
             wras.setZSize(true);
-            wras.getRelativeZSize().setPercentage(relSizes[2]);
+            wras.getRelativeZSize().getRelativeSize().setValue(relSizes[2]);
         }
         _io.say.ok(true);
     }

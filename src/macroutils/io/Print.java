@@ -8,6 +8,7 @@ import star.base.neo.ClientServerObject;
 import star.base.neo.DoubleVector;
 import star.common.Dimensions;
 import star.common.FieldFunction;
+import star.common.ScalarPhysicalQuantity;
 import star.common.Simulation;
 import star.common.Units;
 import star.vis.VisView;
@@ -34,11 +35,11 @@ public class Print {
         return new Formatter().format(format, args).toString();
     }
 
-    public String _getValue(String what, String sval, boolean dq) {
+    public String _getValue(String key, String sval, boolean dq) {
         if (dq) {
-            return String.format("%s: \"%s\".", what, sval);
+            return String.format("%s: \"%s\".", key, sval);
         }
-        return String.format("%s: %s.", what, sval);
+        return String.format("%s: %s.", key, sval);
     }
 
     private void _say(String msg) {
@@ -265,14 +266,14 @@ public class Print {
      * Prints the STAR-CCM+ object names in the console/output.
      *
      * @param aos given {@link ArrayList} containing objects in general.
-     * @param what given type of the object. E.g.: "Boundary, Report, Scenes, etc...
+     * @param key given type of the object. E.g.: "Boundary, Report, Scenes, etc...
      * @param vo given verbose option. False will not print anything.
      */
-    public void objects(ArrayList aos, String what, boolean vo) {
+    public void objects(ArrayList aos, String key, boolean vo) {
         if (aos == null) {
             aos = new ArrayList<>();
         }
-        msg(vo, "Number of %s: %d.", what, aos.size(), vo);
+        msg(vo, "Number of %s: %d.", key, aos.size(), vo);
         for (Object o : aos) {
             String s = o.toString();
             if (o instanceof ClientServerObject) {
@@ -294,12 +295,12 @@ public class Print {
     /**
      * Prints something with percentage values.
      *
-     * @param what given String of what will be print.
+     * @param key given String of the key that will be print.
      * @param val given percentage value.
      * @param vo given verbose option. False will not print anything.
      */
-    public void percentage(String what, double val, boolean vo) {
-        value(what, String.format("%g%%", val), false, vo);
+    public void percentage(String key, double val, boolean vo) {
+        value(key, String.format("%g%%", val), false, vo);
     }
 
     /**
@@ -353,88 +354,99 @@ public class Print {
     /**
      * Prints something with Values.
      *
-     * @param what given String of what will be print.
+     * @param key given String of the key that will be print.
      * @param val given value.
      * @param vo given verbose option. False will not print anything.
      */
-    public void value(String what, double val, boolean vo) {
-        value(what, String.format("%g", val), false, vo);
+    public void value(String key, double val, boolean vo) {
+        value(key, String.format("%g", val), false, vo);
     }
 
     /**
      * Prints something with Values.
      *
-     * @param what given String of what will be print.
+     * @param key given String of the key that will be print.
      * @param val given value.
      * @param vo given verbose option. False will not print anything.
      */
-    public void value(String what, int val, boolean vo) {
-        value(what, String.format("%d", val), false, vo);
+    public void value(String key, int val, boolean vo) {
+        value(key, String.format("%d", val), false, vo);
     }
 
     /**
      * Prints something with Values.
      *
-     * @param what given String of what will be print.
+     * @param key given String of the key that will be print.
      * @param dv given values in DoubleVector format.
      * @param vo given verbose option. False will not print anything.
      */
-    public void value(String what, DoubleVector dv, boolean vo) {
-        value(what, _get.strings.withinTheBrackets(dv.toString()), false, vo);
+    public void value(String key, DoubleVector dv, boolean vo) {
+        value(key, _get.strings.withinTheBrackets(dv.toString()), false, vo);
     }
 
     /**
      * Prints something with Values and Units.
      *
-     * @param what given String of what will be print.
+     * @param key given String of the key that will be print.
      * @param val given value.
      * @param vo given verbose option. False will not print anything.
      * @param u given Units.
      */
-    public void value(String what, double val, Units u, boolean vo) {
-        value(what, String.format("%g", val), u, vo);
+    public void value(String key, double val, Units u, boolean vo) {
+        value(key, String.format("%g", val), u, vo);
     }
 
     /**
      * Prints something with Values and Units.
      *
-     * @param what given String of what will be print.
+     * @param key given String of the key that will be print.
      * @param sval given value as string.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      */
-    public void value(String what, String sval, Units u, boolean vo) {
-        if (what == null) {
+    public void value(String key, String sval, Units u, boolean vo) {
+        if (key == null) {
             return;
         }
-        msg(vo, "%s: %s [%s].", what, sval, _get.strings.fromUnit(u));
+        msg(vo, "%s: %s [%s].", key, sval, _get.strings.fromUnit(u));
     }
 
     /**
      * Prints something with Values and Units.
      *
-     * @param what given String of what will be print.
+     * @param key given String of the key that will be print.
      * @param dv given values in DoubleVector format.
      * @param u given Units.
      * @param vo given verbose option. False will not print anything.
      */
-    public void value(String what, DoubleVector dv, Units u, boolean vo) {
-        value(what, _get.strings.withinTheBrackets(dv.toString()), u, vo);
+    public void value(String key, DoubleVector dv, Units u, boolean vo) {
+        value(key, _get.strings.withinTheBrackets(dv.toString()), u, vo);
     }
 
     /**
      * Prints something with values double-quoted. E.g.: Variable: "Pressure".
      *
-     * @param what given String of what will be print.
+     * @param key given String of the key that will be print.
      * @param sval given value that will be print.
      * @param dq option to double quote the value.
      * @param vo given verbose option. False will not print anything.
      */
-    public void value(String what, String sval, boolean dq, boolean vo) {
-        if (what == null) {
+    public void value(String key, String sval, boolean dq, boolean vo) {
+        if (key == null) {
             return;
         }
-        msg(_getValue(what, sval, dq), vo);
+        msg(_getValue(key, sval, dq), vo);
+    }
+
+    /**
+     * Prints something with Values and Units.
+     *
+     * @param key given String of the key that will be print.
+     * @param spq given ScalarPhysicalQuantity STAR-CCM+ object.
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void value(String key, ScalarPhysicalQuantity spq, boolean vo) {
+        value(key, spq.getInternalValue(), spq.getUnits(), vo);
     }
 
     /**

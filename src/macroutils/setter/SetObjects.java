@@ -268,11 +268,11 @@ public class SetObjects {
         } else if (cso instanceof RelativeOrAbsoluteSize) {
             RelativeOrAbsoluteSize rs = (RelativeOrAbsoluteSize) cso;
             rs.setRelativeSize(perc);
-            serverSideVal = rs.getRelativeSizeValue().getPercentage();
+            serverSideVal = rs.getRelativeSizeValue().getRelativeSize().getInternalValue();
         } else if (cso instanceof RelativeSize) {
             RelativeSize rs = (RelativeSize) cso;
-            rs.setPercentage(perc);
-            serverSideVal = rs.getPercentage();
+            rs.getRelativeSize().setValue(perc);
+            serverSideVal = rs.getRelativeSize().getInternalValue();
         }
         _io.say.percentage(key, serverSideVal, true);
     }
