@@ -20,6 +20,7 @@ import star.meshing.PartSurfaceMeshWidget;
 import star.meshing.SimpleBlockPart;
 import star.meshing.SimpleCylinderPart;
 import star.meshing.SurfaceMeshWidgetDiagnosticsController;
+import star.meshing.SurfaceMeshWidgetDisplayController;
 import star.meshing.SurfaceMeshWidgetQueryController;
 import star.meshing.SurfaceMeshWidgetSelectController;
 import star.vis.Scene;
@@ -376,17 +377,19 @@ public class GetPartSurfaces {
         ArrayList<GeometryPart> agp = _get.geometries.fromPartSurfaces(aps);
         _io.say.action("Querying Part Surfaces Statistics", true);
         //-- Init Widget
-        Scene scn = _mu.add.scene.geometry();
-        PartSurfaceMeshWidget psmw = _get.mesh.geometry().startSurfaceMeshWidget(scn);
-        psmw.setActiveParts(agp);
-        _initPartSurfaceMeshWidget(psmw);
-        //-- Add the Part Surfaces
-        //-- Init Query
-        Class<SurfaceMeshWidgetSelectController> wscl = SurfaceMeshWidgetSelectController.class;
-        SurfaceMeshWidgetSelectController smwsc = psmw.getControllers().getController(wscl);
+        Scene scn = _sim.getSceneManager().createScene("Repair Surface");
+        scn.initializeAndWait();
+        PartSurfaceMeshWidget psmw = _get.geometries.representation().startSurfaceMeshWidget(scn);
+        psmw.setActiveParts(agp, _get.geometries.rootDescriptionSource());
+        psmw.startSurfaceRepairControllers();
+        scn.setAdvancedRenderingEnabled(false);
+        psmw.getControllers().getController(SurfaceMeshWidgetDisplayController.class).showAllFaces();
+        scn.open();
+        SurfaceMeshWidgetSelectController smwsc = psmw.getControllers()
+                .getController(SurfaceMeshWidgetSelectController.class);
         smwsc.selectPartSurfaces(aps);
-        Class<SurfaceMeshWidgetQueryController> wqcl = SurfaceMeshWidgetQueryController.class;
-        SurfaceMeshWidgetQueryController smwqc = psmw.getControllers().getController(wqcl);
+        SurfaceMeshWidgetQueryController smwqc = psmw.getControllers()
+                .getController(SurfaceMeshWidgetQueryController.class);
         //-- Global Stats
         _io.say.msg(true, "Querying Global Stats on %d Geometry Part(s)...", agp.size());
         _io.say.objects(aps, "Part Surfaces", true);
