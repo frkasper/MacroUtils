@@ -122,7 +122,7 @@ public class SetMesh {
             return;
         }
         npl.setNumLayers(n);
-        _io.say.value("Number of Prism Layers", npl.getNumLayers(), true);
+        _io.say.value("Number of Prism Layers", npl.getNumLayersValue().getValue(), true);
         _io.say.ok(vo);
     }
 
@@ -140,7 +140,7 @@ public class SetMesh {
             return;
         }
         pls.setStretching(val);
-        _io.say.value("Prism Layer Stretching", pls.getStretching(), true);
+        _io.say.value("Prism Layer Stretching", pls.getStretchingQuantity(), true);
         _io.say.ok(vo);
     }
 
