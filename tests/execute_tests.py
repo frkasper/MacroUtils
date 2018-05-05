@@ -33,20 +33,18 @@ from collections import namedtuple
 
 
 _Options = namedtuple('Options', ['datahome', 'demohome', 'jarfile',
-                                  'starhome', 'testhome', 'demo', 'verbose',
-                                  'stop'])
+                                  'starhome', 'testhome', 'demo',
+                                  'pytest_args'])
 PWD = os.getcwd()
 
 
 def _call_pytest(options, demos_to_run):
     print(strings.heading('Calling pytest'))
-    stop = '-x' if options.stop else None
-    verbosity = '-s' if options.verbose else None
-    args = ' '.join([arg for arg in [stop, verbosity] if arg])
     commands = ['export PYTHONPATH=%s' % PWD,
                 'export STARHOME=%s' % options.starhome,
                 'export TESTHOME=%s' % options.testhome,
-                'pytest -v %s %s' % (args, _test_files(demos_to_run))]
+                'pytest %s %s' % (options.pytest_args,
+                                  _test_files(demos_to_run))]
     os.system('; '.join(commands))
     print('\n')
 
@@ -123,32 +121,52 @@ def parse_options():
             ]
 
     parser = optparse.OptionParser('\n'.join(usage))
-    parser.add_option('--datahome', dest='datahome', action='store',
-                      help='path to supporting files -- e.g.: geometries, etc',
-                      default=None)
-    parser.add_option('--demohome', dest='demohome', action='store',
-                      help='path to demo source files',
-                      default=None)
-    parser.add_option('--demo', dest='demo', action='store',
-                      help='run a specific demo number (default = all)',
-                      default=None)
-    parser.add_option('--jarhome', dest='jarhome', action='store',
-                      help='path to MacroUtils.jar file',
-                      default=None)
-    parser.add_option('--starhome', dest='starhome', action='store',
-                      help='path to STAR-CCM+ installation',
-                      default=None)
-    parser.add_option('--testhome', dest='testhome', action='store',
-                      help='path to where testing will be conducted',
-                      default=None)
-    parser.add_option('-v', dest='verbose', action='store_true',
-                      help='output extra verbosity when running pytest',
-                      default=False)
-    parser.add_option('-x', dest='stop', action='store_true',
-                      help='stop at first pytest failure',
-                      default=False)
+
+    #
+    # Runtime Group
+    gr_r = optparse.OptionGroup(parser, 'Runtime Options', 'These options '
+                                'control the required inputs for launching '
+                                'the tests.')
+    parser.add_option_group(gr_r)
+
+    gr_r.add_option('--datahome', dest='datahome', action='store',
+                    help='path to supporting files -- e.g.: geometries, etc',
+                    default=None)
+    gr_r.add_option('--demohome', dest='demohome', action='store',
+                    help='path to demo source files',
+                    default=None)
+    gr_r.add_option('--demo', dest='demo', action='store',
+                    help='run a specific demo number (default = all)',
+                    default=None)
+    gr_r.add_option('--jarhome', dest='jarhome', action='store',
+                    help='path to MacroUtils.jar file',
+                    default=None)
+    gr_r.add_option('--starhome', dest='starhome', action='store',
+                    help='path to STAR-CCM+ installation',
+                    default=None)
+    gr_r.add_option('--testhome', dest='testhome', action='store',
+                    help='path to where testing will be conducted',
+                    default=None)
+
+    #
+    # pytest Group
+    gr_p = optparse.OptionGroup(parser, 'pytest Options', 'These options '
+                                'control pytest utility.')
+    parser.add_option_group(gr_p)
+
+    gr_p.add_option('-s', dest='capture_no', action='store_true',
+                    help='print captured output to console',
+                    default=False)
+    gr_p.add_option('-v', dest='verbose', action='store_true',
+                    help='extra verbosity for each test_case()',
+                    default=False)
+    gr_p.add_option('-x', dest='stop', action='store_true',
+                    help='stop at first failure',
+                    default=False)
+
     (opts, args) = parser.parse_args()
 
+    #
     # Assert all arguments are in place
     items = opts.__dict__.items()
     errors = ['%s not informed' % k for k, v in items if _is_error(k, v)]
@@ -184,8 +202,16 @@ def parse_options():
         except ValueError:
             parser.error('demo must be an integer: "%s"' % opts.demo)
 
+    pytest_args = []
+    if opts.capture_no:
+        pytest_args.append('-s')
+    if opts.verbose:
+        pytest_args.append('-v')
+    if opts.stop:
+        pytest_args.append('-x')
+
     return _Options(datahome, demohome, jarfile, starhome, testhome, demo,
-                    opts.verbose, opts.stop)
+                    ' '.join(pytest_args))
 
 
 def print_overview(options, demos_to_run):
