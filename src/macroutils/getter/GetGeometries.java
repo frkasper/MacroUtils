@@ -11,7 +11,6 @@ import star.common.SimulationPartManager;
 import star.meshing.CadPart;
 import star.meshing.PartRepresentation;
 import star.meshing.RootDescriptionSource;
-import star.meshing.SimulationMeshPartDescriptionSourceManager;
 
 /**
  * Low-level class for getting Geometry entities in general with MacroUtils.
@@ -110,8 +109,7 @@ public class GetGeometries {
      * @return The RootDescriptionSource.
      */
     public RootDescriptionSource rootDescriptionSource() {
-        return (RootDescriptionSource) _sim.get(SimulationMeshPartDescriptionSourceManager.class)
-                .getObject("Root");
+        return (RootDescriptionSource) _get.mesh.descriptionSource("Root");
     }
 
     /**

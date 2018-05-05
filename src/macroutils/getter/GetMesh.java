@@ -7,13 +7,16 @@ import star.common.FvRepresentation;
 import star.common.Simulation;
 import star.meshing.AutoMeshOperation;
 import star.meshing.BaseSize;
+import star.meshing.CurrentDescriptionSource;
 import star.meshing.CustomMeshControl;
 import star.meshing.MeshOperation;
 import star.meshing.MeshOperationManager;
+import star.meshing.MeshPartDescriptionSource;
 import star.meshing.PartRepresentation;
 import star.meshing.PartsMinimumSurfaceSize;
 import star.meshing.PartsRelativeOrAbsoluteSize;
 import star.meshing.PartsTargetSurfaceSize;
+import star.meshing.SimulationMeshPartDescriptionSourceManager;
 import star.resurfacer.ResurfacerAutoMesher;
 import star.surfacewrapper.SurfaceWrapperAutoMeshOperation;
 
@@ -80,6 +83,16 @@ public class GetMesh {
     }
 
     /**
+     * Gets a mesh description as can be seen in user interface.
+     *
+     * @param name given mesh description.
+     * @return The MeshPartDescriptionSource.
+     */
+    public MeshPartDescriptionSource descriptionSource(String name) {
+        return _sim.get(SimulationMeshPartDescriptionSourceManager.class).getObject(name);
+    }
+
+    /**
      * Gets the Finite Volume Representation.
      *
      * @return FvRepresentation.
@@ -94,7 +107,16 @@ public class GetMesh {
      * @return PartRepresentation.
      */
     public PartRepresentation geometry() {
-        return ((PartRepresentation) _sim.getRepresentationManager().getObject("Geometry"));
+        return (PartRepresentation) _sim.getRepresentationManager().getObject("Geometry");
+    }
+
+    /**
+     * Get the Latest Surface mesh description.
+     *
+     * @return The CurrentDescriptionSource.
+     */
+    public CurrentDescriptionSource latestSurfaceDescriptionSource() {
+        return (CurrentDescriptionSource) descriptionSource("Latest Surface");
     }
 
     /**

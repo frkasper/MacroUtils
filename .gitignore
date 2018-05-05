@@ -1,15 +1,24 @@
-# my typical settings
+# NetBeans files
 build/
 nbproject/
 dist/
 build.xml
 manifest.mf
+*.jar
+
+# STAR-CCM+ files
 *.sim
 *.sim~
 *.simh
-*.jar
+
+# Support files
 *.stp
 *.x_b
 *.txt
 *.csv
 *.png
+
+# Python files 
+.cache
+.spyproject
+*.pyc

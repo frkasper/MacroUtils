@@ -10,6 +10,7 @@ import star.common.GeometryPart;
 import star.common.Units;
 import star.meshing.AutoMeshOperation;
 import star.meshing.MesherBase;
+import star.vis.Displayer;
 
 /**
  * Low-level class for several different ways of getting Strings with MacroUtils.
@@ -30,6 +31,10 @@ public class GetStrings {
 
     private String[] _getTokens(String filename) {
         return filename.split("\\.(?=[^\\.]+$)");
+    }
+
+    private String _information(ClientServerObject cso) {
+        return String.format("%s -> %s", parentName(cso), name(cso));
     }
 
     /**
@@ -107,7 +112,14 @@ public class GetStrings {
      * @return A String.
      */
     public String information(ClientServerObject cso) {
-        return String.format("%s -> \"%s\"", parentName(cso), name(cso));
+        String thisCSO = _information(cso);
+        if (cso instanceof Displayer) {
+            Displayer d = (Displayer) cso;
+            String sceneCSO = _information(d.getScene());
+            return String.format("%s -> %s", sceneCSO, thisCSO);
+        } else {
+            return thisCSO;
+        }
     }
 
     /**
