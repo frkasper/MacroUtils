@@ -25,6 +25,7 @@ import itertools
 import optparse
 import os
 import re
+import shutil
 import common.executor as executor
 import common.set_up as set_up
 import common.star as star
@@ -61,9 +62,26 @@ def _commands_from_demo(options, demo_nt):
 
 def _copy_test_macros(options, demos_to_run):
     print(strings.heading('Test macros'))
-    test_macros = _test_macros(options)
-    set_up._copy(test_macros, options.testhome)
-    names = [os.path.split(f)[1] for f in test_macros]
+
+    # Test macros first
+    test_macros_home = os.path.join(PWD, 'macros')
+    java_files = glob.glob(os.path.join(test_macros_home, '*Test.java'))
+    assert len(java_files) > 0, 'No test macros found in %s' % test_macros_home
+
+    # Then auxiliary macros
+    aux_folder = 'common'
+    aux_macros_home = os.path.join(test_macros_home, aux_folder)
+    java_files.extend(glob.glob(os.path.join(aux_macros_home, '*.java')))
+
+    aux_in_testhome = os.path.join(options.testhome, aux_folder)
+    if os.path.isdir(aux_in_testhome):
+        shutil.rmtree(aux_in_testhome)
+
+    # Finally, copy files
+    set_up._copy(java_files, options.testhome)
+    shutil.copytree(aux_macros_home, aux_in_testhome)
+
+    names = [os.path.split(f)[1] for f in java_files]
     print(strings.itemized(names))
     print('\n')
 
@@ -99,13 +117,6 @@ def _is_error(key, value):
 def _test_files(demos_to_run):
     files = ['test/test_demo%02d.py' % nt.id for nt in demos_to_run]
     return ' '.join(files)
-
-
-def _test_macros(options):
-    test_macros_home = os.path.join(PWD, 'macros')
-    files = glob.glob(os.path.join(test_macros_home, '*Test.java'))
-    assert len(files) > 0, 'No test macros found in %s' % test_macros_home
-    return files
 
 
 def parse_options():
