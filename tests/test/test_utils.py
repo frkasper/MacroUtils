@@ -125,6 +125,12 @@ def _int_from_argument(re_patt, argument):
     return int(_float_from_argument(re_patt, argument))
 
 
+def _load_sim(sim_file, macro_file):
+    star_cmd = star.load_simulation(_star_home(), sim_file, macro_file,
+                                    np=1, is_batch=True)
+    os.system(star_cmd)
+
+
 def _pair(key, value, fmt='%g', multiplier=1.0):
     return '%s = %s' % (key, fmt % (multiplier * value))
 
@@ -144,8 +150,12 @@ def _pwd():
 
 
 def _remove(filename):
-    if os.path.exists(filename):
-        os.remove(filename)
+    if isinstance(filename, list):
+        for f in filename:
+            _remove(f)
+    else:
+        if os.path.exists(filename):
+            os.remove(filename)
 
 
 def _star_home():
@@ -185,9 +195,7 @@ def _test_home():
 
 def _write_summary(sim_file, ref_file):
     _remove(ref_file)
-    star_cmd = star.load_simulation(_star_home(), sim_file, _summary_macro(),
-                                    np=1, is_batch=True)
-    os.system(star_cmd)
+    _load_sim(sim_file, _summary_macro())
     _assert_exists(ref_file)
 
 

@@ -61,16 +61,16 @@ def test_vmax_report_grid_002():
     _assert_report(_grid(2), 'Vmax', 1.544657e-01)
 
 
-def test_solution_grid_003():
-    test_utils.assert_iteration(_grid(3), 8352)
-
-
 def test_write_summary_grid_003():
     _assert_summary_contents(3)
 
 
 def test_cell_count_grid_003():
     test_utils.assert_cell_count(_grid(3), 9290, relative=False)
+
+
+def test_solution_grid_003():
+    test_utils.assert_iteration(_grid(3), 8352)
 
 
 def test_vmean_report_grid_003():

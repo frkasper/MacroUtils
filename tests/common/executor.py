@@ -25,7 +25,7 @@ def _flat(commands):
     return flattened
 
 
-def _demo_name(command):
+def _case_name(command):
     """Demo name based on command supplied"""
     found = re.findall('(\w*)\.java', command)
     assert len(found) == 1, 'Could not parse name from command: %s' % command
@@ -34,7 +34,7 @@ def _demo_name(command):
 
 def _log(command):
     """Automatic log file generation based on macro"""
-    return '%s.log' % _demo_name(command)
+    return '%s.log' % _case_name(command)
 
 
 def _run(testhome, command):
@@ -58,9 +58,12 @@ def run_multiple(testhome, commands, num_threads=4):
 
 def run_sequential(testhome, commands):
     """Run invidually"""
+    commands = [cmd for cmd in commands if cmd is not None]
+    if len(commands) == 0:
+        return
     print(strings.heading('Running in sequential mode'))
     for command in _flat(commands):
-        base_name = _demo_name(command)
+        base_name = _case_name(command)
         if _will_run(testhome, base_name):
             print('Running: %s' % base_name)
             _run(testhome, command)

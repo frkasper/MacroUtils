@@ -19,6 +19,7 @@ import re
 from collections import namedtuple
 
 
+Bug = namedtuple('Bug', ['load_demo', 'macro_name'])
 Demo = namedtuple('Demo', ['id', 'np', 'batch', 'files'])
 
 
@@ -41,14 +42,25 @@ DEMO_15 = Demo(id=15, np=16, batch=True, files=['TableFromPeriodicRun.csv'])
 DEMO_16 = Demo(id=16, np=4, batch=True, files=[])
 
 
-# Then collect them using Python magic
+# Declare individual bugs here
+BUG_014 = Bug(load_demo=1, macro_name='BugCreateStreamlineSceneTest')
+
+
+# Then collect them all using Python magic
 DEMOS = [v for k, v in sorted(vars().items()) if re.match('DEMO_\d{2}', k)]
+BUGS = [v for k, v in sorted(vars().items()) if re.match('BUG_\d{3}', k)]
 
 
-def all_demos_files(demohome, datahome):
-    """Return a list of all files necessary to run all demos"""
-    all_files = [demo_files(demo.id, demohome, datahome) for demo in DEMOS]
-    return sorted(list(itertools.chain.from_iterable(all_files)))
+def _is_nt(nt, key):
+    assert isinstance(nt, tuple), 'Must be a namedtuple'
+    return bool(re.match('^%s\(.*\)$' % key, nt.__doc__))
+
+
+def bug_file(macro_name, testhome):
+    """Return a file necessary to run a particular bug"""
+    macro_file = os.path.join(testhome, '%s.java' % macro_name)
+    assert os.path.exists(macro_file), 'File does not exist: %s' % macro_file
+    return macro_file
 
 
 def demo(number):
@@ -68,6 +80,14 @@ def demo_files(number, demohome, datahome):
         assert os.path.exists(sf), 'File does not exist: %s' % sf
     all_files = [java_files(number, demohome), support_files]
     return sorted(list(itertools.chain.from_iterable(all_files)))
+
+
+def is_bug(nt):
+    return _is_nt(nt, 'Bug')
+
+
+def is_demo(nt):
+    return _is_nt(nt, 'Demo')
 
 
 def java_files(number, demohome):
