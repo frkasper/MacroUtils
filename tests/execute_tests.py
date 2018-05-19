@@ -36,7 +36,7 @@ from collections import namedtuple
 
 _Options = namedtuple('Options', ['datahome', 'demohome', 'jarfile',
                                   'starhome', 'testhome', 'test_cases',
-                                  'pytest_args'])
+                                  'threads', 'pytest_args'])
 PWD = os.getcwd()
 
 
@@ -114,7 +114,7 @@ def _demo_home(options):
 
 def _is_error(key, value):
     """Check if key is worth of trowing an optparse error"""
-    if re.match('^demo$', key):
+    if re.match('^(demo|threads)$', key):
         return False
     return value is None
 
@@ -183,7 +183,9 @@ def parse_options():
     gr_r.add_option('--testhome', dest='testhome', action='store',
                     help='path to where testing will be conducted',
                     default=None)
-
+    gr_r.add_option('--threads', dest='threads', action='store',
+                    help='how many multiple instances of STAR-CCM+ will be '
+                    'run (default = 4)', default=4)
     #
     # pytest Group
     gr_p = optparse.OptionGroup(parser, 'pytest Options', 'These options '
@@ -253,8 +255,10 @@ def parse_options():
     if opts.stop:
         pytest_args.append('-x')
 
+    threads = max(opts.threads, 0)
+
     return _Options(datahome, demohome, jarfile, starhome, testhome,
-                    test_cases, ' '.join(pytest_args))
+                    test_cases, threads, ' '.join(pytest_args))
 
 
 def print_overview(options):
@@ -284,7 +288,7 @@ def print_overview(options):
 
 def run_step1(options, test_cases):
     star_commands = [_commands_from_test(options, nt) for nt in test_cases]
-    executor.run_sequential(options.testhome, star_commands)
+    executor.run_commands(options.testhome, star_commands, options.threads)
 
 
 def run_step2(options, test_cases):
