@@ -2,16 +2,19 @@ package common;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import macroutils.MacroUtils;
-import star.base.neo.NamedObject;
-import star.base.report.Report;
 import star.common.FvRepresentation;
 import star.common.GeometryPart;
 import star.common.PartSurface;
 import star.common.Simulation;
+import star.common.StarPlot;
+import star.common.XYPlot;
+import star.common.YAxisType;
+import star.common.graph.DataSet;
 import star.meshing.CurrentDescriptionSource;
 import star.vis.DisplayQuantity;
 import star.vis.Displayer;
@@ -31,17 +34,34 @@ import star.vis.VectorDisplayer;
  */
 public final class SummaryWriter {
 
+    private final boolean collectAll;
     private final MacroUtils mu;
     private final Simulation sim;
     private static final List<String> INFORMATION = new ArrayList<>();
 
+    /**
+     * Typical constructor.
+     *
+     * @param mu given MacroUtils instance
+     */
     public SummaryWriter(MacroUtils mu) {
-        this.mu = mu;
-        this.sim = mu.getSimulation();
+        this(mu, true);
     }
 
     /**
-     * Collect information for concerning geometry Parts.
+     * Constructor with an option to not collect all information on execution step.
+     *
+     * @param mu         given MacroUtils instance
+     * @param collectAll option to collect all information on {@link #execute} step
+     */
+    public SummaryWriter(MacroUtils mu, boolean collectAll) {
+        this.mu = mu;
+        this.sim = mu.getSimulation();
+        this.collectAll = collectAll;
+    }
+
+    /**
+     * Collect information concerning geometry Parts.
      */
     public void collectGeometry() {
         List<String> parts = mu.get.geometries.all(true).stream()
@@ -51,7 +71,7 @@ public final class SummaryWriter {
     }
 
     /**
-     * Collect information for concerning mesh.
+     * Collect all information concerning mesh.
      */
     public void collectMesh() {
         if (mu.check.has.volumeMesh()) {
@@ -62,17 +82,38 @@ public final class SummaryWriter {
     }
 
     /**
-     * Collect information for concerning Reports.
+     * Collect information concerning a specific Plot.
+     *
+     * @param sp given StarPlot
+     */
+    public void collectPlot(StarPlot sp) {
+        if (sp instanceof XYPlot) {  // Internal datasets only in XYPlots
+            ((XYPlot) sp).getYAxes().getObjects().stream()
+                    .map(YAxisType.class::cast)
+                    .forEach(yat -> collectDataSets(sp, yat));
+        }
+        sp.getDataSetManager().getDataSets().stream().forEach(ds -> collectDataSet(sp, ds));
+    }
+
+    /**
+     * Collect information concerning XYPlots.
+     */
+    public void collectPlots() {
+        sim.getPlotManager().getObjectsOf(XYPlot.class).stream().forEach(xyp -> collectPlot(xyp));
+    }
+
+    /**
+     * Collect information concerning Reports.
      */
     public void collectReports() {
         List<String> reports = sim.getReportManager().getObjects().stream()
-                .map(r -> getPair(r))
+                .map(r -> getPair(mu.get.strings.information(r), r.getReportMonitorValue()))
                 .collect(Collectors.toList());
         INFORMATION.addAll(reports);
     }
 
     /**
-     * Collect information for concerning Scenes and its dependents.
+     * Collect information concerning Scenes and its dependents.
      */
     public void collectScenes() {
         Collection<Scene> allScenes = sim.getSceneManager().getObjects();
@@ -81,7 +122,7 @@ public final class SummaryWriter {
     }
 
     /**
-     * Collect information for concerning Solution.
+     * Collect information concerning Solution.
      */
     public void collectSolution() {
         if (mu.check.is.unsteady()) {
@@ -94,7 +135,9 @@ public final class SummaryWriter {
      * Execute this class -- call is mandatory.
      */
     public void execute() {
-        collectAll();
+        if (collectAll) {
+            collectAll();
+        }
         mu.io.say.msg(INFORMATION.toString());
         writeInformation();
     }
@@ -104,7 +147,23 @@ public final class SummaryWriter {
         collectMesh();
         collectSolution();
         collectReports();
+        collectPlots();
         collectScenes();
+    }
+
+    private void collectDataSet(StarPlot sp, DataSet ds) {
+        String key = mu.get.strings.information(sp) + " -> " + ds.getPresentationName();
+        Arrays.stream(ds.getSeriesLabels()).forEach(sl -> collectDataSetSeries(key, ds, sl));
+    }
+
+    private void collectDataSetSeries(String key, DataSet ds, String seriesName) {
+        int i = Arrays.asList(ds.getSeriesLabels()).indexOf(seriesName);
+        INFORMATION.add(getPair(key + " -> " + seriesName + " -> X values", ds.getXSeries(i)));
+        INFORMATION.add(getPair(key + " -> " + seriesName + " -> Y values", ds.getYSeries(i)));
+    }
+
+    private void collectDataSets(StarPlot sp, YAxisType yat) {
+        yat.getDataSetManager().getObjects().stream().forEach(ds -> collectDataSet(sp, ds));
     }
 
     private void collectDisplayers(Scene scene) {
@@ -179,15 +238,6 @@ public final class SummaryWriter {
         }
     }
 
-    private String getPair(NamedObject no) {
-        String info = mu.get.strings.information(no);
-        if (no instanceof Report) {
-            return getPair(info, ((Report) no).getReportMonitorValue());
-        } else {
-            return getPair(info, "Unknown value");
-        }
-    }
-
     private String getPair(String key, String value) {
         return getPair(key, value, false);
     }
@@ -198,7 +248,14 @@ public final class SummaryWriter {
     }
 
     private String getPair(String key, double value) {
-        return getPair(key, String.format("%.6e", value));
+        return getPair(key, getString(value));
+    }
+
+    private String getPair(String key, double[] values) {
+        List<String> ls = Arrays.stream(values)
+                .mapToObj(d -> getString(d))
+                .collect(Collectors.toList());
+        return getPair(key, ls.toString());
     }
 
     private String getPair(String key, int value) {
@@ -210,6 +267,10 @@ public final class SummaryWriter {
         List<PartSurface> allPS = mu.get.partSurfaces.all(gp, true);
         String plural = (allPS.size() > 1) ? "s" : "";
         return getPair(key, String.format("%d Part Surface%s", allPS.size(), plural));
+    }
+
+    private String getString(double value) {
+        return String.format("%.6e", value);
     }
 
     private void writeInformation() {
