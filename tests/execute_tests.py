@@ -255,7 +255,8 @@ def parse_options():
     if opts.stop:
         pytest_args.append('-x')
 
-    threads = max(opts.threads, 0)
+    nt = opts.threads
+    threads = max(int(nt) if isinstance(nt, str) else nt, 0)
 
     return _Options(datahome, demohome, jarfile, starhome, testhome,
                     test_cases, threads, ' '.join(pytest_args))

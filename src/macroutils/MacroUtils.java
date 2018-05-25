@@ -95,6 +95,7 @@ public final class MacroUtils {
         userDeclarations.simFile = new File(userDeclarations.simFullPath);
         userDeclarations.simTitle = _sim.getPresentationName();
         userDeclarations.simPath = _sim.getSessionDir();
+        userDeclarations.simPathFile = _sim.getSessionDirFile();
         userDeclarations.cadPath = new File(userDeclarations.simPath, "CAD");
         userDeclarations.dbsPath = new File(userDeclarations.simPath, "DBS");
         userDeclarations.picPath = userDeclarations.simPath;
@@ -209,18 +210,14 @@ public final class MacroUtils {
      * @param name given Simulation name.
      */
     public void saveSim(String name) {
-        saveSim(name, true);
-    }
-
-    private void saveSim(String name, boolean vo) {
-        io.say.action(String.format("Saving Simulation File"), vo);
-        name = get.strings.fileBasename(name);
-        File f = new File(name + ".sim");
-        if (!f.canWrite()) {
-            f = new File(userDeclarations.simPath, f.getName());
-        }
-        _sim.saveState(f.toString());
-        io.say.ok(vo);
+        io.say.action("Saving Simulation File", true);
+        File parentFolder = new File(name).getParentFile();
+        File folder = parentFolder == null ? userDeclarations.simPathFile : parentFolder;
+        String baseName = get.strings.friendlyFilename(new File(name).getName());
+        String newName = baseName.endsWith(".sim") ? baseName : baseName + ".sim";
+        io.say.value("File name", new File(folder, newName).toString(), true, true);
+        _sim.saveState(new File(folder, newName).toString());
+        io.say.ok(true);
     }
 
     /**

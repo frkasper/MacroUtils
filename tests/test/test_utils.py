@@ -126,9 +126,11 @@ def _int_from_argument(re_patt, argument):
 
 
 def _load_sim(sim_file, macro_file):
-    star_cmd = star.load_simulation(_star_home(), sim_file, macro_file,
-                                    np=1, is_batch=True)
-    os.system(star_cmd)
+    _run_sim(sim_file=sim_file, macro_file=macro_file)
+
+
+def _new_sim(macro_file):
+    _run_sim(sim_file=None, macro_file=macro_file)
 
 
 def _pair(key, value, fmt='%g', multiplier=1.0):
@@ -156,6 +158,16 @@ def _remove(filename):
     else:
         if os.path.exists(filename):
             os.remove(filename)
+
+
+def _run_sim(sim_file=None, macro_file=None):
+    os.chdir(_test_home())
+    sh, np, is_batch = _star_home(), 1, True
+    if sim_file is None:
+        star_cmd = star.new_simulation(sh, macro_file, np, is_batch)
+    else:
+        star_cmd = star.load_simulation(sh, sim_file, macro_file, np, is_batch)
+    os.system(star_cmd)
 
 
 def _star_home():

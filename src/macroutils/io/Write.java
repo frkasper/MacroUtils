@@ -50,7 +50,7 @@ public class Write {
         if (name == null) {
             name = no.getPresentationName();
         } else {
-            name = _get.strings.fileBasename(name);
+            name = _get.strings.friendlyFilename(name);
         }
         _io.say.object(no, vo);
         File f = new File(_ud.picPath, String.format("%s.%s", _getNewName(name), StaticDeclarations.PIC_EXT));
@@ -176,6 +176,18 @@ public class Write {
     }
 
     /**
+     * Writes a 1280x720 picture from a Scene or a Plot to the default picture path.
+     *
+     * See {@link UserDeclarations#picPath}.
+     *
+     * @param no given NamedObject. E.g.: a Scene or StarPlot.
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void picture(NamedObject no, boolean vo) {
+        picture(no, null, _ud.picResX, _ud.picResY, vo);
+    }
+
+    /**
      * Writes a picture from a Scene or a Plot to the default picture path. See {@link UserDeclarations#picPath}.
      *
      * @param no given NamedObject. E.g.: a Scene or StarPlot.
@@ -186,7 +198,6 @@ public class Write {
      */
     public void picture(NamedObject no, String name, int resx, int resy, boolean vo) {
         _io.say.action("Writing a Picture", vo);
-        _io.say.object(no, vo);
         _writePic(no, name, resx, resy, vo);
     }
 

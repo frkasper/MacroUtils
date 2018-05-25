@@ -1466,6 +1466,11 @@ public class UserDeclarations {
      */
     public File simFile = null;
 
+    /**
+     * Simulation path as {@link java.io.File}.
+     */
+    public File simPathFile = null;
+
     //--
     //-- Pictures settings
     //--
