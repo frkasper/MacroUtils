@@ -7,9 +7,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import macroutils.MacroUtils;
+import star.common.Boundary;
 import star.common.FvRepresentation;
 import star.common.GeometryPart;
 import star.common.PartSurface;
+import star.common.Region;
 import star.common.Simulation;
 import star.common.StarPlot;
 import star.common.XYPlot;
@@ -103,6 +105,13 @@ public final class SummaryWriter {
     }
 
     /**
+     * Collect all information concerning Regions and its Boundaries.
+     */
+    public void collectRegions() {
+        sim.getRegionManager().getRegions().stream().forEach(r -> collectRegion(r));
+    }
+
+    /**
      * Collect information concerning Reports.
      */
     public void collectReports() {
@@ -145,10 +154,16 @@ public final class SummaryWriter {
     private void collectAll() {
         collectGeometry();
         collectMesh();
+        collectRegions();
         collectSolution();
         collectReports();
         collectPlots();
         collectScenes();
+    }
+
+    private void collectBoundary(Boundary b) {
+        String key = mu.get.strings.information(b.getRegion());
+        INFORMATION.add(key + " -> " + mu.get.strings.information(b));
     }
 
     private void collectDataSet(StarPlot sp, DataSet ds) {
@@ -171,6 +186,10 @@ public final class SummaryWriter {
                 .map(displayer -> getDisplayerInfo(displayer))
                 .collect(Collectors.toList());
         INFORMATION.addAll(displayers);
+    }
+
+    private void collectRegion(Region r) {
+        r.getBoundaryManager().getBoundaries().stream().forEach(b -> collectBoundary(b));
     }
 
     private void collectSurfaceMeshInfo() {

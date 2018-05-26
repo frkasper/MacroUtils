@@ -29,6 +29,21 @@ public class GetStrings {
         _mu = m;
     }
 
+    private String _getSingular(String name) {
+        int lastChars = 3;
+        if (name.length() < lastChars) {
+            return name;  // There should not be such cases
+        }
+        String firstSlice = name.substring(0, name.length() - lastChars);
+        String secondSlice = name.substring(name.length() - lastChars);
+        if (secondSlice.endsWith("ies")) {
+            secondSlice = secondSlice.replace("ies", "y");
+        } else if (secondSlice.endsWith("s")) {
+            secondSlice = secondSlice.replace("s", "");
+        }
+        return firstSlice + secondSlice;
+    }
+
     private String[] _getTokens(String filename) {
         return filename.split("\\.(?=[^\\.]+$)");
     }
@@ -181,15 +196,7 @@ public class GetStrings {
         if (cso == null) {
             return "NULL";
         }
-        String name = cso.getParent().getBeanDisplayName();
-        String[] split = name.split(" ");
-        String lastWord = split[split.length - 1];
-        if (lastWord.endsWith("ies")) {
-            lastWord = lastWord.replace("ies", "y");
-        } else if (lastWord.endsWith("s")) {
-            lastWord = lastWord.replace("s", "");
-        }
-        return name.replace(split[split.length - 1], lastWord);
+        return _getSingular(cso.getParent().getBeanDisplayName());
     }
 
     /**
