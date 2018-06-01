@@ -19,6 +19,10 @@ import star.common.YAxisType;
  */
 public class CreatePlot {
 
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -27,12 +31,6 @@ public class CreatePlot {
     public CreatePlot(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    private void _setAxisType(AxisType at, FieldFunction ff, Units u) {
-        at.setMode(AxisTypeMode.SCALAR);
-        at.getScalarFunction().setFieldFunction(ff);
-        at.getScalarFunction().setUnits(u);
     }
 
     /**
@@ -47,12 +45,13 @@ public class CreatePlot {
      *
      * @param ano given ArrayList of STAR-CCM+ Objects.
      * @param ffx given Field Function for the x-axis.
-     * @param ux given units for the Field Function in the x-axis.
+     * @param ux  given units for the Field Function in the x-axis.
      * @param ffy given Field Function for the y-axis.
-     * @param uy given units for the Field Function in the y-axis.
+     * @param uy  given units for the Field Function in the y-axis.
      * @return The created XY Plot.
      */
-    public XYPlot xy(ArrayList<NamedObject> ano, FieldFunction ffx, Units ux, FieldFunction ffy, Units uy) {
+    public XYPlot xy(ArrayList<NamedObject> ano, FieldFunction ffx, Units ux, FieldFunction ffy,
+            Units uy) {
         _io.say.action("Creating a XY Plot", true);
         _io.say.objects(ano, "Parts", true);
         _io.say.value("X-Axis", ffx.getPresentationName(), true, true);
@@ -66,11 +65,10 @@ public class CreatePlot {
         return xyp;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
+    private void _setAxisType(AxisType at, FieldFunction ff, Units u) {
+        at.setMode(AxisTypeMode.SCALAR);
+        at.getScalarFunction().setFieldFunction(ff);
+        at.getScalarFunction().setUnits(u);
+    }
 
 }

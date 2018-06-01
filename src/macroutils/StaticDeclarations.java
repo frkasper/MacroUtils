@@ -11,31 +11,31 @@ import star.trimmer.PartsGrowthRateOption;
 /**
  * Low-level class for storing static declarations (immutable) to be used with MacroUtils, such as:
  * <ul>
- * <li>{@link Axis}</li>
- * <li>{@link BoundaryMode}</li>
- * <li>{@link Colormaps}</li>
- * <li>{@link Colors}</li>
- * <li>{@link DefaultURFs}</li>
- * <li>{@link Density}</li>
- * <li>{@link Energy}</li>
- * <li>{@link FeatureCurveMode}</li>
- * <li>{@link Fonts}</li>
- * <li>{@link GrowthRate}</li>
- * <li>{@link InterfaceMode}</li>
- * <li>{@link Logic}</li>
- * <li>{@link Material}</li>
- * <li>{@link Meshers}</li>
- * <li>{@link Operation}</li>
- * <li>{@link Operator}</li>
- * <li>{@link RegionMode}</li>
- * <li>{@link Solver}</li>
- * <li>{@link Solvers}</li>
- * <li>{@link Space}</li>
- * <li>{@link StopCriteria}</li>
- * <li>{@link Tessellation}</li>
- * <li>{@link Time}</li>
- * <li>{@link Vars}</li>
- * <li>{@link Viscous}</li>
+ * <li>{@link Axis}
+ * <li>{@link BoundaryMode}
+ * <li>{@link Colormaps}
+ * <li>{@link Colors}
+ * <li>{@link DefaultURFs}
+ * <li>{@link Density}
+ * <li>{@link Energy}
+ * <li>{@link FeatureCurveMode}
+ * <li>{@link Fonts}
+ * <li>{@link GrowthRate}
+ * <li>{@link InterfaceMode}
+ * <li>{@link Logic}
+ * <li>{@link Material}
+ * <li>{@link Meshers}
+ * <li>{@link Operation}
+ * <li>{@link Operator}
+ * <li>{@link RegionMode}
+ * <li>{@link Solver}
+ * <li>{@link Solvers}
+ * <li>{@link Space}
+ * <li>{@link StopCriteria}
+ * <li>{@link Tessellation}
+ * <li>{@link Time}
+ * <li>{@link Vars}
+ * <li>{@link Viscous}
  * </ul>
  *
  * @since February of 2016
@@ -62,7 +62,7 @@ public class StaticDeclarations {
     /**
      * Origin coordinates (0, 0, 0).
      */
-    public static final double[] COORD0 = {0., 0., 0.};
+    public static final double[] COORD0 = { 0., 0., 0. };
 
     //--
     //-- enums
@@ -70,9 +70,9 @@ public class StaticDeclarations {
     /**
      * Common axis options w.r.t Direction:
      * <ul>
-     * <li>{@link #X}</li>
-     * <li>{@link #Y}</li>
-     * <li>{@link #Z}</li>
+     * <li>{@link #X}
+     * <li>{@link #Y}
+     * <li>{@link #Z}
      * </ul>
      */
     public static enum Axis {
@@ -95,9 +95,9 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types when creating Regions w.r.t Boundaries:
      * <ul>
-     * <li>{@link #ONE_FOR_EACH_PART_SURFACE} (Preferred)</li>
-     * <li>{@link #ONE_FOR_ALL_PARTS}</li>
-     * <li>{@link #ONE_FOR_EACH_PART}</li>
+     * <li>{@link #ONE_FOR_EACH_PART_SURFACE} (Preferred)
+     * <li>{@link #ONE_FOR_ALL_PARTS}
+     * <li>{@link #ONE_FOR_EACH_PART}
      * </ul>
      */
     public static enum BoundaryMode {
@@ -135,11 +135,11 @@ public class StaticDeclarations {
     /**
      * Some standard colormap names shipped with STAR-CCM+, such as::
      * <ul>
-     * <li>{@link #BLUE_RED}</li>
-     * <li>{@link #BLUE_RED_BALANCED}</li>
-     * <li>{@link #BLUE_RED_BRIGHT}</li>
-     * <li>{@link #BLUE_RED_HIGHPASS}</li>
-     * <li>{@link #BLUE_RED_LOWPASS}</li>
+     * <li>{@link #BLUE_RED}
+     * <li>{@link #BLUE_RED_BALANCED}
+     * <li>{@link #BLUE_RED_BRIGHT}
+     * <li>{@link #BLUE_RED_HIGHPASS}
+     * <li>{@link #BLUE_RED_LOWPASS}
      * </ul>
      */
     public static enum Colormaps {
@@ -199,28 +199,29 @@ public class StaticDeclarations {
     }
 
     /**
-     * Some color definitions available in MacroUtils, based on {@link java.awt.Color} class, such as:
+     * Some color definitions available in MacroUtils, based on {@link java.awt.Color} class, such
+     * as:
      * <ul>
-     * <li>{@link #BLACK}</li>
-     * <li>{@link #BLUE}</li>
-     * <li>{@link #BLUE_MEDIUM}</li>
-     * <li>{@link #DARK_GREEN}</li>
-     * <li>{@link #DARK_ORANGE}</li>
-     * <li>{@link #DIM_GRAY}</li>
-     * <li>{@link #GAINSBORO}</li>
-     * <li>{@link #IVORY}</li>
-     * <li>{@link #IVORY_BLACK}</li>
-     * <li>{@link #LIGHT_GRAY}</li>
-     * <li>{@link #LIME_GREEN}</li>
-     * <li>{@link #MINT}</li>
-     * <li>{@link #NAVY}</li>
-     * <li>{@link #PURPLE}</li>
-     * <li>{@link #SLATE_GRAY}</li>
-     * <li>{@link #SLATE_GRAY_DARK}</li>
-     * <li>{@link #ULTRAMARINE}</li>
-     * <li>{@link #WHEAT}</li>
-     * <li>{@link #WHITE}</li>
-     * <li>{@link #WHITE_SMOKE}</li>
+     * <li>{@link #BLACK}
+     * <li>{@link #BLUE}
+     * <li>{@link #BLUE_MEDIUM}
+     * <li>{@link #DARK_GREEN}
+     * <li>{@link #DARK_ORANGE}
+     * <li>{@link #DIM_GRAY}
+     * <li>{@link #GAINSBORO}
+     * <li>{@link #IVORY}
+     * <li>{@link #IVORY_BLACK}
+     * <li>{@link #LIGHT_GRAY}
+     * <li>{@link #LIME_GREEN}
+     * <li>{@link #MINT}
+     * <li>{@link #NAVY}
+     * <li>{@link #PURPLE}
+     * <li>{@link #SLATE_GRAY}
+     * <li>{@link #SLATE_GRAY_DARK}
+     * <li>{@link #ULTRAMARINE}
+     * <li>{@link #WHEAT}
+     * <li>{@link #WHITE}
+     * <li>{@link #WHITE_SMOKE}
      * </ul>
      */
     public static enum Colors {
@@ -266,11 +267,11 @@ public class StaticDeclarations {
     /**
      * The color space code when creating Colormaps, such as:
      * <ul>
-     * <li>{@link #RGB}</li>
-     * <li>{@link #HSV}</li>
-     * <li>{@link #LAB}</li>
-     * <li>{@link #DIVERGING}</li>
-     * <li>{@link #HSV_WRAPPED}</li>
+     * <li>{@link #RGB}
+     * <li>{@link #HSV}
+     * <li>{@link #LAB}
+     * <li>{@link #DIVERGING}
+     * <li>{@link #HSV_WRAPPED}
      * </ul>
      */
     public static enum ColorSpace {
@@ -314,20 +315,21 @@ public class StaticDeclarations {
     }
 
     /**
-     * Default Under Relaxation Factors used by STAR-CCM+. Some are available in MacroUtils, such as:
+     * Default Under Relaxation Factors used by STAR-CCM+. Some are available in MacroUtils, such
+     * as:
      * <ul>
-     * <li>{@link #FLUID_ENERGY}</li>
-     * <li>{@link #GRANULAR_TEMPERATURE}</li>
-     * <li>{@link #K_EPSILON}</li>
-     * <li>{@link #PHASE_COUPLED_VELOCITY}</li>
-     * <li>{@link #PPDF_COMBUSTION}</li>
-     * <li>{@link #PRESSURE}</li>
-     * <li>{@link #REYNOLDS_STRESS_MODEL}</li>
-     * <li>{@link #SOLID_ENERGY}</li>
-     * <li>{@link #SPECIES}</li>
-     * <li>{@link #VELOCITY}</li>
-     * <li>{@link #VOLUME_FRACTION}</li>
-     * <li>{@link #VOF}</li>
+     * <li>{@link #FLUID_ENERGY}
+     * <li>{@link #GRANULAR_TEMPERATURE}
+     * <li>{@link #K_EPSILON}
+     * <li>{@link #PHASE_COUPLED_VELOCITY}
+     * <li>{@link #PPDF_COMBUSTION}
+     * <li>{@link #PRESSURE}
+     * <li>{@link #REYNOLDS_STRESS_MODEL}
+     * <li>{@link #SOLID_ENERGY}
+     * <li>{@link #SPECIES}
+     * <li>{@link #VELOCITY}
+     * <li>{@link #VOLUME_FRACTION}
+     * <li>{@link #VOF}
      * </ul>
      */
     public static enum DefaultURFs {
@@ -405,8 +407,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for creating a Physics Continua w.r.t Density/Equation Of State:
      * <ul>
-     * <li>{@link #INCOMPRESSIBLE} or {@link #INCOMPRESSIBLE}</li>
-     * <li>{@link #IDEAL_GAS}</li>
+     * <li>{@link #INCOMPRESSIBLE} or {@link #INCOMPRESSIBLE}
+     * <li>{@link #IDEAL_GAS}
      * </ul>
      */
     public static enum Density {
@@ -429,10 +431,10 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for Displayers:
      * <ul>
-     * <li>{@link #GEOMETRY}</li>
-     * <li>{@link #SCALAR}</li>
-     * <li>{@link #STREAMLINE}</li>
-     * <li>{@link #VECTOR}</li>
+     * <li>{@link #GEOMETRY}
+     * <li>{@link #SCALAR}
+     * <li>{@link #STREAMLINE}
+     * <li>{@link #VECTOR}
      * </ul>
      */
     public static enum Displayer {
@@ -474,8 +476,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for creating a Physics Continua w.r.t Energy:
      * <ul>
-     * <li>{@link #ISOTHERMAL}</li>
-     * <li>{@link #THERMAL}</li>
+     * <li>{@link #ISOTHERMAL}
+     * <li>{@link #THERMAL}
      * </ul>
      */
     public static enum Energy {
@@ -494,8 +496,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types when creating Regions w.r.t Feature Curves:
      * <ul>
-     * <li>{@link #ONE_FOR_EACH_PART_CURVE} (Preferred)</li>
-     * <li>{@link #ONE_FOR_ALL}</li>
+     * <li>{@link #ONE_FOR_EACH_PART_CURVE} (Preferred)
+     * <li>{@link #ONE_FOR_ALL}
      * </ul>
      */
     public static enum FeatureCurveMode {
@@ -540,15 +542,18 @@ public class StaticDeclarations {
          */
         TITLE(new Font("Lucida Sans Typewriter", Font.PLAIN, 20)),
         /**
-         * Font used for everywhere else, when {@link macroutils.templates.TemplatePrettifier} is used.
+         * Font used for everywhere else, when {@link macroutils.templates.TemplatePrettifier} is
+         * used.
          */
         OTHER(new Font("Lucida Sans Typewriter", Font.PLAIN, 16)),
         /**
-         * Font used for Report Annotations, when {@link macroutils.templates.TemplatePrettifier} is used.
+         * Font used for Report Annotations, when {@link macroutils.templates.TemplatePrettifier} is
+         * used.
          */
         REPORT_ANNOTATIONS(new Font("Lucida Sans Typewriter", Font.PLAIN, 24)),
         /**
-         * Font used for Text Annotations, when {@link macroutils.templates.TemplatePrettifier} is used.
+         * Font used for Text Annotations, when {@link macroutils.templates.TemplatePrettifier} is
+         * used.
          */
         SIMPLE_ANNOTATIONS(REPORT_ANNOTATIONS.getFont()),;
 
@@ -572,8 +577,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for Global Parameters:
      * <ul>
-     * <li>{@link #SCALAR}</li>
-     * <li>{@link #VECTOR}</li>
+     * <li>{@link #SCALAR}
+     * <li>{@link #VECTOR}
      * </ul>
      */
     public static enum GlobalParameter {
@@ -607,10 +612,10 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils variable to select the Volume Growth Rate for the meshers:
      * <ul>
-     * <li>{@link #FAST}</li>
-     * <li>{@link #MEDIUM}</li>
-     * <li>{@link #SLOW}</li>
-     * <li>{@link #VERY_SLOW}</li>
+     * <li>{@link #FAST}
+     * <li>{@link #MEDIUM}
+     * <li>{@link #SLOW}
+     * <li>{@link #VERY_SLOW}
      * </ul>
      */
     public static enum GrowthRate {
@@ -661,14 +666,15 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types when creating Regions w.r.t to Interfaces:
      * <ul>
-     * <li>{@link #CONTACT} (Preferred)</li>
-     * <li>{@link #BOUNDARY}</li>
+     * <li>{@link #CONTACT} (Preferred)
+     * <li>{@link #BOUNDARY}
      * </ul>
      */
     public static enum InterfaceMode {
 
         /**
-         * Contact Interface Mode. This is a newer mode available with the addition of Parts Based Meshing (Preferred).
+         * Contact Interface Mode. This is a newer mode available with the addition of Parts Based
+         * Meshing (Preferred).
          */
         CONTACT(RegionManager.CreateInterfaceMode.CONTACT),
         /**
@@ -683,7 +689,8 @@ public class StaticDeclarations {
         }
 
         /**
-         * Gets the actual {@link star.common.RegionManager.CreateInterfaceMode} expected by STAR-CCM+ API.
+         * Gets the actual {@link star.common.RegionManager.CreateInterfaceMode} expected by
+         * STAR-CCM+ API.
          *
          * @return The mode.
          */
@@ -696,9 +703,9 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types w.r.t logic options:
      * <ul>
-     * <li>{@link #AND}</li>
-     * <li>{@link #OR}</li>
-     * <li>{@link #XOR}</li>
+     * <li>{@link #AND}
+     * <li>{@link #OR}
+     * <li>{@link #XOR}
      * </ul>
      */
     public static enum Logic {
@@ -721,11 +728,11 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for creating a Physics Continua w.r.t Material/Media:
      * <ul>
-     * <li>{@link #GAS}</li>
-     * <li>{@link #LIQUID}</li>
-     * <li>{@link #SOLID}</li>
-     * <li>{@link #VOF}</li>
-     * <li>{@link #VOF_AIR_WATER}</li>
+     * <li>{@link #GAS}
+     * <li>{@link #LIQUID}
+     * <li>{@link #SOLID}
+     * <li>{@link #VOF}
+     * <li>{@link #VOF_AIR_WATER}
      * </ul>
      */
     public static enum Material {
@@ -756,13 +763,13 @@ public class StaticDeclarations {
     /**
      * The meshers available in STAR-CCM+, such as::
      * <ul>
-     * <li>{@link #AUTOMATIC_SURFACE_REPAIR}</li>
-     * <li>{@link #POLY_MESHER}</li>
-     * <li>{@link #POLY_MESHER_2D}</li>
-     * <li>{@link #PRISM_LAYER_MESHER}</li>
-     * <li>{@link #SURFACE_REMESHER}</li>
-     * <li>{@link #THIN_LAYER_MESHER}</li>
-     * <li>{@link #TRIMMER_MESHER}</li>
+     * <li>{@link #AUTOMATIC_SURFACE_REPAIR}
+     * <li>{@link #POLY_MESHER}
+     * <li>{@link #POLY_MESHER_2D}
+     * <li>{@link #PRISM_LAYER_MESHER}
+     * <li>{@link #SURFACE_REMESHER}
+     * <li>{@link #THIN_LAYER_MESHER}
+     * <li>{@link #TRIMMER_MESHER}
      * </ul>
      */
     public static enum Meshers {
@@ -816,8 +823,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types w.r.t Operations:
      * <ul>
-     * <li>{@link #SUBTRACT}</li>
-     * <li>{@link #UNITE}</li>
+     * <li>{@link #SUBTRACT}
+     * <li>{@link #UNITE}
      * </ul>
      */
     public static enum Operation {
@@ -830,8 +837,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types w.r.t operator:
      * <ul>
-     * <li>{@link #LESS_THAN_OR_EQUALS}</li>
-     * <li>{@link #GREATER_THAN_OR_EQUALS}</li>
+     * <li>{@link #LESS_THAN_OR_EQUALS}
+     * <li>{@link #GREATER_THAN_OR_EQUALS}
      * </ul>
      */
     public static enum Operator {
@@ -850,8 +857,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types when creating Regions:
      * <ul>
-     * <li>{@link #ONE_PER_PART} (Preferred)</li>
-     * <li>{@link #ONE}</li>
+     * <li>{@link #ONE_PER_PART} (Preferred)
+     * <li>{@link #ONE}
      * </ul>
      */
     public static enum RegionMode {
@@ -885,12 +892,12 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for Scenes:
      * <ul>
-     * <li>{@link #EMPTY}</li>
-     * <li>{@link #GEOMETRY}</li>
-     * <li>{@link #MESH}</li>
-     * <li>{@link #SCALAR}</li>
-     * <li>{@link #STREAMLINE}</li>
-     * <li>{@link #VECTOR}</li>
+     * <li>{@link #EMPTY}
+     * <li>{@link #GEOMETRY}
+     * <li>{@link #MESH}
+     * <li>{@link #SCALAR}
+     * <li>{@link #STREAMLINE}
+     * <li>{@link #VECTOR}
      * </ul>
      */
     public static enum Scene {
@@ -940,11 +947,11 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types when clearing the Solution:
      * <ul>
-     * <li>{@link #ADJOINT_FLOW}</li>
-     * <li>{@link #FIELDS}</li>
-     * <li>{@link #HISTORY}</li>
-     * <li>{@link #LAGRANGIAN_DEM}</li>
-     * <li>{@link #MESH}</li>
+     * <li>{@link #ADJOINT_FLOW}
+     * <li>{@link #FIELDS}
+     * <li>{@link #HISTORY}
+     * <li>{@link #LAGRANGIAN_DEM}
+     * <li>{@link #MESH}
      * </ul>
      */
     public static enum SolutionClear {
@@ -990,8 +997,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for creating a Physics Continua w.r.t Solver:
      * <ul>
-     * <li>{@link #SEGREGATED}</li>
-     * <li>{@link #COUPLED}</li>
+     * <li>{@link #SEGREGATED}
+     * <li>{@link #COUPLED}
      * </ul>
      */
     public static enum Solver {
@@ -1010,8 +1017,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types when working with STAR-CCM+ Solvers, e.g. freezing, such as:
      * <ul>
-     * <li>{@link #ALL}</li>
-     * <li>{@link #ALL_BUT_STRATEGIC}</li>
+     * <li>{@link #ALL}
+     * <li>{@link #ALL_BUT_STRATEGIC}
      * </ul>
      */
     public static enum Solvers {
@@ -1025,9 +1032,9 @@ public class StaticDeclarations {
          */
         ALL_BUT_STRATEGIC,
 
-//   * <li>{@link #FLOW}</li>
-//   * <li>{@link #ENERGY}</li>
-//   * <li>{@link #TURBULENCE}</li>
+//   * <li>{@link #FLOW}
+//   * <li>{@link #ENERGY}
+//   * <li>{@link #TURBULENCE}
 //    /** Flow solvers. */
 //    FLOW,
 //
@@ -1041,8 +1048,8 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for creating a Physics Continua w.r.t Space:
      * <ul>
-     * <li>{@link #THREE_DIMENSIONAL}</li>
-     * <li>{@link #TWO_DIMENSIONAL}</li>
+     * <li>{@link #THREE_DIMENSIONAL}
+     * <li>{@link #TWO_DIMENSIONAL}
      * </ul>
      */
     public static enum Space {
@@ -1061,11 +1068,11 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for Stopping Criteria:
      * <ul>
-     * <li>{@link #ASYMPTOTIC}</li>
-     * <li>{@link #MAX}</li>
-     * <li>{@link #MIN}</li>
-     * <li>{@link #MIN_INNER}</li>
-     * <li>{@link #STDEV}</li>
+     * <li>{@link #ASYMPTOTIC}
+     * <li>{@link #MAX}
+     * <li>{@link #MIN}
+     * <li>{@link #MIN_INNER}
+     * <li>{@link #STDEV}
      * </ul>
      */
     public static enum StopCriteria {
@@ -1109,14 +1116,15 @@ public class StaticDeclarations {
     }
 
     /**
-     * Special MacroUtils types for Tessellation when working with Parts. Based on {@link TessellationDensityOption}:
+     * Special MacroUtils types for Tessellation when working with Parts. Based on
+     * {@link TessellationDensityOption}:
      * <ul>
-     * <li>{@link #COARSE}</li>
-     * <li>{@link #FINE}</li>
-     * <li>{@link #MEDIUM}</li>
-     * <li>{@link #VERY_COARSE}</li>
-     * <li>{@link #VERY_FINE}</li>
-     * <li>{@link #DISTANCE_BIASED}</li>
+     * <li>{@link #COARSE}
+     * <li>{@link #FINE}
+     * <li>{@link #MEDIUM}
+     * <li>{@link #VERY_COARSE}
+     * <li>{@link #VERY_FINE}
+     * <li>{@link #DISTANCE_BIASED}
      * </ul>
      */
     public static enum Tessellation {
@@ -1175,9 +1183,9 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for creating a Physics Continua w.r.t Time:
      * <ul>
-     * <li>{@link #STEADY}</li>
-     * <li>{@link #IMPLICIT_UNSTEADY}</li>
-     * <li>{@link #EXPLICIT_UNSTEADY}</li>
+     * <li>{@link #STEADY}
+     * <li>{@link #IMPLICIT_UNSTEADY}
+     * <li>{@link #EXPLICIT_UNSTEADY}
      * </ul>
      */
     public static enum Time {
@@ -1275,11 +1283,13 @@ public class StaticDeclarations {
          */
         TOTAL_T("Total Temperature"),
         /**
-         * <u>Turbulence Intensity</u> variable name inside STAR-CCM+. Note this is not a Field Function.
+         * <u>Turbulence Intensity</u> variable name inside STAR-CCM+. Note this is not a Field
+         * Function.
          */
         TVR("Turbulent Viscosity Ratio"),
         /**
-         * <u>Turbulent Velocity Scale</u> variable name inside STAR-CCM+. Note this is not a Field Function.
+         * <u>Turbulent Velocity Scale</u> variable name inside STAR-CCM+. Note this is not a Field
+         * Function.
          */
         TVS("Turbulent Velocity Scale"),
         /**
@@ -1323,18 +1333,18 @@ public class StaticDeclarations {
     /**
      * Special MacroUtils types for creating a Physics Continua w.r.t Turbulence:
      * <ul>
-     * <li>{@link #DES_SST_KW_DDES}</li>
-     * <li>{@link #DES_SST_KW_IDDES}</li>
-     * <li>{@link #INVISCID}</li>
-     * <li>{@link #LAMINAR}</li>
-     * <li>{@link #NOT_APPLICABLE}</li>
-     * <li>{@link #KE_STD}</li>
-     * <li>{@link #RKE_2LAYER}</li>
-     * <li>{@link #RKE_HIGH_YPLUS}</li>
-     * <li>{@link #KW_2008}</li>
-     * <li>{@link #KW_STD}</li>
-     * <li>{@link #SOLID}</li>
-     * <li>{@link #SST_KW}</li>
+     * <li>{@link #DES_SST_KW_DDES}
+     * <li>{@link #DES_SST_KW_IDDES}
+     * <li>{@link #INVISCID}
+     * <li>{@link #LAMINAR}
+     * <li>{@link #NOT_APPLICABLE}
+     * <li>{@link #KE_STD}
+     * <li>{@link #RKE_2LAYER}
+     * <li>{@link #RKE_HIGH_YPLUS}
+     * <li>{@link #KW_2008}
+     * <li>{@link #KW_STD}
+     * <li>{@link #SOLID}
+     * <li>{@link #SST_KW}
      * </ul>
      */
     public static enum Viscous {
@@ -1424,7 +1434,8 @@ public class StaticDeclarations {
     /**
      * The format for reading/writing Camera Views with MacroUtils.
      */
-    public static final String CAM_FORMAT = ("%s " + CAM_VEC + "%.6e %d").replaceAll(" ", CAM_SPLIT_CHAR_FIELDS);
+    public static final String CAM_FORMAT
+            = ("%s " + CAM_VEC + "%.6e %d").replaceAll(" ", CAM_SPLIT_CHAR_FIELDS);
 
     /**
      * The prefix used by MacroUtils when printing something to the output/console.
@@ -1432,7 +1443,8 @@ public class StaticDeclarations {
     public static final String MSG_PREFIX = "[*]";
 
     /**
-     * The prefix used by MacroUtils when printing something to the output/console while in debug mode.
+     * The prefix used by MacroUtils when printing something to the output/console while in debug
+     * mode.
      */
     public static final String MSG_DEBUG_PREFIX = "[!]";
 

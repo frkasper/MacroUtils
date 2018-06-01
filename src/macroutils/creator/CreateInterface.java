@@ -14,6 +14,10 @@ import star.common.Simulation;
  */
 public class CreateInterface {
 
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -22,14 +26,6 @@ public class CreateInterface {
     public CreateInterface(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    private BoundaryInterface _createInterface(Boundary b1, Boundary b2) {
-        _io.say.action("Creating a Boundary Interface", true);
-        _io.say.object(b1, true);
-        _io.say.object(b2, true);
-        BoundaryInterface bi = _sim.getInterfaceManager().createBoundaryInterface(b1, b2, "Interface");
-        return bi;
     }
 
     /**
@@ -48,12 +44,13 @@ public class CreateInterface {
     /**
      * Creates a Boundary Interface.
      *
-     * @param b1 given Boundary 1.
-     * @param b2 given Boundary 2.
+     * @param b1   given Boundary 1.
+     * @param b2   given Boundary 2.
      * @param type given InterfaceConfigurationOption type;
      * @return The BoundaryInterface.
      */
-    public BoundaryInterface boundaryInterface(Boundary b1, Boundary b2, InterfaceConfigurationOption.Type type) {
+    public BoundaryInterface boundaryInterface(Boundary b1, Boundary b2,
+            InterfaceConfigurationOption.Type type) {
         BoundaryInterface bi = _createInterface(b1, b2);
         _io.say.created(bi, true);
         bi.getTopology().setSelected(type);
@@ -69,11 +66,11 @@ public class CreateInterface {
         _io = _mu.io;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
+    private BoundaryInterface _createInterface(Boundary b1, Boundary b2) {
+        _io.say.action("Creating a Boundary Interface", true);
+        _io.say.object(b1, true);
+        _io.say.object(b2, true);
+        return _sim.getInterfaceManager().createBoundaryInterface(b1, b2, "Interface");
+    }
 
 }

@@ -14,6 +14,10 @@ import star.vis.Scene;
  */
 public class MainOpener {
 
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -23,14 +27,6 @@ public class MainOpener {
         _mu = m;
         _sim = m.getSimulation();
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
-    }
-
-    private void _openingAll(String what, boolean vo) {
-        _io.say.action(String.format("Opening All %s", what), vo);
-    }
-
-    private void _opening(ClientServerObject cso, boolean vo) {
-        _io.say.value("Opening", cso.getPresentationName(), true, vo);
     }
 
     /**
@@ -74,14 +70,16 @@ public class MainOpener {
      */
     public void updateInstances() {
         _io = _mu.io;
-        _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
+        _io.print.msgDebug("" + this.getClass().getSimpleName()
+                + " instances updated succesfully.");
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
+    private void _opening(ClientServerObject cso, boolean vo) {
+        _io.say.value("Opening", cso.getPresentationName(), true, vo);
+    }
+
+    private void _openingAll(String what, boolean vo) {
+        _io.say.action(String.format("Opening All %s", what), vo);
+    }
 
 }

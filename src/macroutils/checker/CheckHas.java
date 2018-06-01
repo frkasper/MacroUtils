@@ -12,6 +12,10 @@ import star.meshing.AutoMeshOperation;
  */
 public class CheckHas {
 
+    private macroutils.getter.MainGetter _get = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -20,15 +24,6 @@ public class CheckHas {
     public CheckHas(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    /**
-     * Does the simulation have the Coupled Implicit Solver?
-     *
-     * @return True or False.
-     */
-    public boolean coupledImplicit() {
-        return _sim.getSolverManager().has("Coupled Implicit");
     }
 
     /**
@@ -47,6 +42,24 @@ public class CheckHas {
      */
     public boolean PISO() {
         return _sim.getSolverManager().has("PISO Unsteady");
+    }
+
+    /**
+     * Does the simulation have the Volume of Fluid Solver (VOF)?
+     *
+     * @return True or False.
+     */
+    public boolean VOF() {
+        return _sim.getSolverManager().has("Segregated VOF");
+    }
+
+    /**
+     * Does the simulation have the Coupled Implicit Solver?
+     *
+     * @return True or False.
+     */
+    public boolean coupledImplicit() {
+        return _sim.getSolverManager().has("Coupled Implicit");
     }
 
     /**
@@ -134,15 +147,6 @@ public class CheckHas {
     }
 
     /**
-     * Does the simulation have the Volume of Fluid Solver (VOF)?
-     *
-     * @return True or False.
-     */
-    public boolean VOF() {
-        return _sim.getSolverManager().has("Segregated VOF");
-    }
-
-    /**
      * Does the Simulation have a Valid Volume Mesh?
      *
      * @return True or False.
@@ -150,12 +154,5 @@ public class CheckHas {
     public boolean volumeMesh() {
         return _sim.getRepresentationManager().has("Volume Mesh");
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.getter.MainGetter _get = null;
-    private Simulation _sim = null;
 
 }

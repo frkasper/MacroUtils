@@ -19,6 +19,12 @@ import star.vis.VectorDisplayer;
  */
 public class GetScenes {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -27,11 +33,6 @@ public class GetScenes {
     public GetScenes(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    private void _gotNull(String what, Displayer d, boolean vo) {
-        _io.say.value(what, d.getPresentationName(), true, vo);
-        _io.say.msg("Nothing found. Returning NULL!", vo);
     }
 
     /**
@@ -50,11 +51,12 @@ public class GetScenes {
      * Gets all Scenes that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Scenes.
      */
     public ArrayList<Scene> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Scenes", new ArrayList<>(all(false)), vo));
+        return new ArrayList<>(
+                _get.objects.allByREGEX(regexPatt, "Scenes", new ArrayList<>(all(false)), vo));
     }
 
     /**
@@ -76,33 +78,37 @@ public class GetScenes {
      * Gets all Displayers from a given Scene.
      *
      * @param scn given Scene.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      * @return An ArrayList of Displayers.
      */
     public ArrayList<Displayer> allDisplayers(Scene scn, boolean vo) {
         String sn = scn.getPresentationName();
         ArrayList<Displayer> ad = new ArrayList<>(scn.getDisplayerManager().getObjects());
-        _io.say.objects(ad, String.format("Getting all Displayers from Scene \"%s\"", scn.getPresentationName()), vo);
+        _io.say.objects(ad, String.format("Getting all Displayers from Scene \"%s\"",
+                scn.getPresentationName()), vo);
         return ad;
     }
 
     /**
-     * Gets all Displayers that matches the REGEX search pattern among all Scenes available in the model.
+     * Gets all Displayers that matches the REGEX search pattern among all Scenes available in the
+     * model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Displayers.
      */
     public ArrayList<Displayer> allDisplayersByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Displayers",
-                new ArrayList<>(allDisplayers(false)), vo));
+        return new ArrayList<>(
+                _get.objects.allByREGEX(regexPatt, "Displayers",
+                        new ArrayList<>(allDisplayers(false)), vo)
+        );
     }
 
     /**
      * Gets a Scene that matches the REGEX search pattern among all Scenes available in the model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The Scene. Null if nothing is found.
      */
     public Scene byREGEX(String regexPatt, boolean vo) {
@@ -112,19 +118,20 @@ public class GetScenes {
     /**
      * Gets a Displayer that matches the REGEX search pattern within the given Scene.
      *
-     * @param scn given Scene.
+     * @param scn       given Scene.
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The Scene. Null if nothing is found.
      */
     public Displayer displayerByREGEX(Scene scn, String regexPatt, boolean vo) {
-        return (Displayer) _get.objects.byREGEX(regexPatt, "Scene", new ArrayList<>(allDisplayers(scn, false)), vo);
+        return (Displayer) _get.objects.byREGEX(regexPatt, "Scene",
+                new ArrayList<>(allDisplayers(scn, false)), vo);
     }
 
     /**
      * Get the Legend from a Displayer, if applicable.
      *
-     * @param d given Displayer. E.g.: Scalar, Vector or Streamline Displayer.
+     * @param d  given Displayer. E.g.: Scalar, Vector or Streamline Displayer.
      * @param vo given verbose option. False will not print anything.
      * @return The Legend.
      */
@@ -143,7 +150,7 @@ public class GetScenes {
     /**
      * Get the Scalar Display Quantity from a Displayer, if applicable.
      *
-     * @param d given Displayer. E.g.: Scalar or Streamline Displayer.
+     * @param d  given Displayer. E.g.: Scalar or Streamline Displayer.
      * @param vo given verbose option. False will not print anything.
      * @return The ScalarDisplayQuantity.
      */
@@ -166,13 +173,9 @@ public class GetScenes {
         _io = _mu.io;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
+    private void _gotNull(String what, Displayer d, boolean vo) {
+        _io.say.value(what, d.getPresentationName(), true, vo);
+        _io.say.msg("Nothing found. Returning NULL!", vo);
+    }
 
 }

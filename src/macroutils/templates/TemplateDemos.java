@@ -12,12 +12,16 @@ import macroutils.templates.demos.Demo16;
 public class TemplateDemos {
 
     /**
+     * This class is responsible for playing Demo 16.
+     */
+    public Demo16 demo16 = null;
+
+    /**
      * Main constructor for this class.
      *
      * @param m given MacroUtils object.
      */
     public TemplateDemos(MacroUtils m) {
-        _mu = m;
         demo16 = new Demo16(m);
     }
 
@@ -25,19 +29,7 @@ public class TemplateDemos {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        _io = _mu.io;
         demo16.updateInstances();
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-
-    /**
-     * This class is responsible for playing Demo 16.
-     */
-    public Demo16 demo16 = null;
 
 }

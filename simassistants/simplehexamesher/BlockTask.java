@@ -25,6 +25,14 @@ import star.vis.Scene;
 )
 public class BlockTask extends Task {
 
+    private final MacroUtils _mu;
+    private Simulation _sim;
+    private UserDeclarations _ud;
+    private static final String ANNOT_NAME = "is2D";
+    private static final String BLOCK_C1 = "Block Coordinate1";
+    private static final String BLOCK_C2 = "Block Coordinate2";
+    private static final String BLOCK_NCELLS = "Block Number of Cells";
+
     /**
      * Main constructor for this class.
      *
@@ -50,11 +58,14 @@ public class BlockTask extends Task {
             Annotation an = _mu.get.objects.annotation(ANNOT_NAME, false);
             boolean is2D = an != null;
             _mu.templates.mesh.setBadgeFor2D(is2D);
-            VectorGlobalParameter c1 = (VectorGlobalParameter) _mu.get.objects.parameter(BLOCK_C1, false);
-            VectorGlobalParameter c2 = (VectorGlobalParameter) _mu.get.objects.parameter(BLOCK_C2, false);
-            VectorGlobalParameter nc = (VectorGlobalParameter) _mu.get.objects.parameter(BLOCK_NCELLS, false);
-            Region r = _mu.templates.mesh.hexaBlock(getDouble(c1), getDouble(c2), c1.getQuantity().getUnits(),
-                    getInt(nc), "Block");
+            VectorGlobalParameter c1 = (VectorGlobalParameter) _mu.get.objects
+                    .parameter(BLOCK_C1, false);
+            VectorGlobalParameter c2 = (VectorGlobalParameter) _mu.get.objects
+                    .parameter(BLOCK_C2, false);
+            VectorGlobalParameter nc = (VectorGlobalParameter) _mu.get.objects
+                    .parameter(BLOCK_NCELLS, false);
+            Region r = _mu.templates.mesh.hexaBlock(getDouble(c1), getDouble(c2),
+                    c1.getQuantity().getUnits(), getInt(nc), "Block");
             if (is2D) {
                 _ud.namedObjects.add(r);
                 an.getAnnotationManager().remove(an);
@@ -65,8 +76,8 @@ public class BlockTask extends Task {
             Scene scn = _mu.add.scene.mesh(_ud.namedObjects);
             scn.open();
             if (!is2D) {
-                scn.setViewOrientation(new DoubleVector(new double[]{-1.0, 1.0, -1.0}),
-                        new DoubleVector(new double[]{0.0, 1.0, 0.0}));
+                scn.setViewOrientation(new DoubleVector(new double[]{ -1.0, 1.0, -1.0 }),
+                        new DoubleVector(new double[]{ 0.0, 1.0, 0.0 }));
             }
             scn.resetCamera();
             _ud.namedObjects.clear();
@@ -88,9 +99,11 @@ public class BlockTask extends Task {
          */
         public void setParameters() {
             initializeTask();
-            VectorGlobalParameter vgp = _mu.add.tools.parameter_Vector(BLOCK_C1, new double[]{0, 0, 0}, _ud.unit_m);
-            _mu.add.tools.parameter_Vector(BLOCK_C2, new double[]{1, 1, 1}, _ud.unit_m);
-            _mu.add.tools.parameter_Vector(BLOCK_NCELLS, new double[]{2, 4, 6}, _ud.unit_Dimensionless);
+            VectorGlobalParameter vgp = _mu.add.tools.parameter_Vector(BLOCK_C1,
+                    new double[]{ 0, 0, 0 }, _ud.unit_m);
+            _mu.add.tools.parameter_Vector(BLOCK_C2, new double[]{ 1, 1, 1 }, _ud.unit_m);
+            _mu.add.tools.parameter_Vector(BLOCK_NCELLS, new double[]{ 2, 4, 6 },
+                    _ud.unit_Dimensionless);
             selectNodeExclusive(vgp);
             _mu.io.say.action("Set Parameters Task is finished.", true);
         }
@@ -123,16 +136,5 @@ public class BlockTask extends Task {
         }
 
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private final MacroUtils _mu;
-    private Simulation _sim;
-    private UserDeclarations _ud;
-    private static final String ANNOT_NAME = "is2D";
-    private static final String BLOCK_C1 = "Block Coordinate1";
-    private static final String BLOCK_C2 = "Block Coordinate2";
-    private static final String BLOCK_NCELLS = "Block Number of Cells";
 
 }

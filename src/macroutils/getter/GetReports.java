@@ -13,6 +13,11 @@ import star.common.Simulation;
  */
 public class GetReports {
 
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -39,22 +44,24 @@ public class GetReports {
      * Gets all Reports that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Reports.
      */
     public ArrayList<Report> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Reports", new ArrayList<>(all(false)), vo));
+        return new ArrayList<>(
+                _get.objects.allByREGEX(regexPatt, "Reports", new ArrayList<>(all(false)), vo));
     }
 
     /**
      * Gets the Report that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The Report.
      */
     public Report byREGEX(String regexPatt, boolean vo) {
-        return (Report) _get.objects.allByREGEX(regexPatt, "Report", new ArrayList<>(all(false)), vo).get(0);
+        return (Report) _get.objects.allByREGEX(regexPatt, "Report",
+                new ArrayList<>(all(false)), vo).get(0);
     }
 
     /**
@@ -64,13 +71,5 @@ public class GetReports {
         _get = _mu.get;
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
 
 }

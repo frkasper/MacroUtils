@@ -17,6 +17,11 @@ import star.common.Simulation;
  */
 public class GetInfos {
 
+    private macroutils.io.MainIO _io = null;
+    private int _lastInterval;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -30,14 +35,15 @@ public class GetInfos {
     /**
      * Evaluates a simple Linear Regression equation in the form: <b>y = a * x + b</b>.
      *
-     * @param xx given independent variable interval. E.g.: { x0, x1 }.
-     * @param yy given dependent variable interval. E.g.: { y0, y1 }.
-     * @param x given independent variable value for y(x) to be evaluated.
+     * @param xx      given independent variable interval. E.g.: { x0, x1 }.
+     * @param yy      given dependent variable interval. E.g.: { y0, y1 }.
+     * @param x       given independent variable value for y(x) to be evaluated.
      * @param clipOpt option to clip the extremes. E.g.: y0 &lt;= y(x) &lt;= y1.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo      given verbose option. False will not print anything.
      * @return The value at y(x).
      */
-    public double linearRegression(double[] xx, double[] yy, double x, boolean clipOpt, boolean vo) {
+    public double linearRegression(double[] xx, double[] yy, double x, boolean clipOpt,
+            boolean vo) {
         _io.say.action("Evaluating a Simple Regression: y = a * x + b", vo);
         double a, b, y;
         a = (yy[1] - yy[0]) / (xx[1] - xx[0]);
@@ -64,8 +70,8 @@ public class GetInfos {
     /**
      * Gets the relative error between 2 numbers.
      *
-     * @param n1 given number 1.
-     * @param n2 given number 2.
+     * @param n1     given number 1.
+     * @param n2     given number 2.
      * @param optAbs option to have absolute relative error (without sign).
      * @return The relative error.
      */
@@ -78,7 +84,8 @@ public class GetInfos {
     }
 
     /**
-     * Gets the spline interpolation between the set of given numbers. This method is used by {@link TemplatePost}.
+     * Gets the spline interpolation between the set of given numbers. This method is used by
+     * {@link TemplatePost}.
      *
      * @param ax an ArrayList of independent values.
      * @param ay an ArrayList of dependent values.
@@ -143,8 +150,9 @@ public class GetInfos {
         }
         fpn = c[n - 2] + b[n - 2] * (c[n - 2] - c[n - 3]) / (b[n - 3] + b[n - 2]);
         if (n > 3) {
-            fpn = fpn + b[n - 2] * (c[n - 2] - c[n - 3] - (b[n - 3]
-                    + b[n - 2]) * (c[n - 3] - c[n - 4]) / (b[n - 3] + b[n - 4])) / (x[n - 1] - x[n - 4]);
+            fpn = fpn + b[n - 2] * (c[n - 2] - c[n - 3] - (b[n - 3] + b[n - 2])
+                    * (c[n - 3] - c[n - 4]) / (b[n - 3] + b[n - 4]))
+                    / (x[n - 1] - x[n - 4]);
         }
         //--
         //-- Calculate the right-hand-side and store it in c.
@@ -174,14 +182,15 @@ public class GetInfos {
         }
         b[n - 1] = b[n - 2] + h * (two * c[n - 2] + h * three * d[n - 2]);
         _io.say.msgDebug("spline coefficients");
-        return new double[][]{f, x, b, c, d};
+        return new double[][]{ f, x, b, c, d };
     }
 
     /**
-     * Gets the spline value based on a set of coefficients. This method is used by {@link TemplatePost}.
+     * Gets the spline value based on a set of coefficients. This method is used by
+     * {@link TemplatePost}.
      *
      * @param splineCoeffs given spline coefficients.
-     * @param t given interval the spline needs to be evaluated.
+     * @param t            given interval the spline needs to be evaluated.
      * @return A double.
      */
     public double splineValue(double[][] splineCoeffs, double t) {
@@ -213,17 +222,6 @@ public class GetInfos {
     }
 
     /**
-     * Gets the local time.
-     *
-     * @return String with local time.
-     */
-    public String time() {
-        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-        Date date = new Date();
-        return dateFormat.format(date);
-    }
-
-    /**
      * Gets the sum of a double array.
      *
      * @param array given double[] array.
@@ -235,6 +233,17 @@ public class GetInfos {
             sum += array[i];
         }
         return sum;
+    }
+
+    /**
+     * Gets the local time.
+     *
+     * @return String with local time.
+     */
+    public String time() {
+        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        Date date = new Date();
+        return dateFormat.format(date);
     }
 
     /**
@@ -264,13 +273,5 @@ public class GetInfos {
         _io.print.msg("STAR-CCM+ version in Integer format: " + vi, true);
         return vi;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private int _lastInterval;
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
 
 }

@@ -2,6 +2,7 @@ package macroutils.getter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import star.base.neo.ClientServerObjectManager;
@@ -40,6 +41,11 @@ import star.vis.VisTransform;
  */
 public class GetObjects {
 
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -50,31 +56,18 @@ public class GetObjects {
         _sim = m.getSimulation();
     }
 
-    private ArrayList<FieldFunction> _getFFs() {
-        return new ArrayList<>(_sim.getFieldFunctionManager().getObjects());
-    }
-
-    private ArrayList<PhysicsContinuum> _getPCs() {
-        ArrayList<PhysicsContinuum> apc = new ArrayList<>();
-        for (Continuum pc : _sim.getContinuumManager().getObjects()) {
-            if (pc instanceof PhysicsContinuum) {
-                apc.add((PhysicsContinuum) pc);
-            }
-        }
-        return apc;
-    }
-
     /**
      * Gets a STAR-CCM+ NamedObject by using a REGEX search pattern.
      *
-     * @param <T> any Class that extends from NamedObject in STAR-CCM+.
+     * @param <T>       any Class that extends from NamedObject in STAR-CCM+.
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param ano given ArrayList of NamedObjects.
-     * @param what what kind of object? E.g: Plane, Report, Scene, etc...
-     * @param vo given verbose option. False will not print anything.
+     * @param ano       given ArrayList of NamedObjects.
+     * @param what      what kind of object? E.g: Plane, Report, Scene, etc...
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of NamedObjects.
      */
-    public <T extends NamedObject> ArrayList<T> allByREGEX(String regexPatt, String what, ArrayList<T> ano, boolean vo) {
+    public <T extends NamedObject> ArrayList<T> allByREGEX(String regexPatt, String what,
+            ArrayList<T> ano, boolean vo) {
         ArrayList<T> arr = new ArrayList<>();
         _io.print.msg(vo, "Getting %s by REGEX search pattern: \"%s\".", what, regexPatt);
         if (ano.isEmpty()) {
@@ -119,10 +112,11 @@ public class GetObjects {
     }
 
     /**
-     * Gets an Annotation that matches the REGEX search pattern among all Annotations available in the model.
+     * Gets an Annotation that matches the REGEX search pattern among all Annotations available in
+     * the model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The Annotation. Null if nothing is found.
      */
     public star.vis.Annotation annotation(String regexPatt, boolean vo) {
@@ -132,9 +126,9 @@ public class GetObjects {
 
     /**
      * Gets an ArrayList from a STAR-CCM+ object.
-       *
+     *
      * @param <T> given type of Array.
-     * @param no given NamedObject.
+     * @param no  given NamedObject.
      * @return An ArrrayList.
      */
     public <T extends NamedObject> ArrayList<T> arrayList(T no) {
@@ -156,8 +150,8 @@ public class GetObjects {
      * Gets a STAR-CCM+ NamedObject by using a REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param ano given ArrayList of NamedObjects.
-     * @param vo given verbose option. False will not print anything.
+     * @param ano       given ArrayList of NamedObjects.
+     * @param vo        given verbose option. False will not print anything.
      * @return The NamedObject. Null if nothing is found.
      */
     public NamedObject byREGEX(String regexPatt, ArrayList<NamedObject> ano, boolean vo) {
@@ -169,48 +163,23 @@ public class GetObjects {
      * Gets a STAR-CCM+ NamedObject by using a REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param ano given ArrayList of NamedObjects.
-     * @param what what kind of object? E.g: Plane, Report, Scene, etc...
-     * @param vo given verbose option. False will not print anything.
+     * @param ano       given ArrayList of NamedObjects.
+     * @param what      what kind of object? E.g: Plane, Report, Scene, etc...
+     * @param vo        given verbose option. False will not print anything.
      * @return The NamedObject. Null if nothing is found.
      */
-    public NamedObject byREGEX(String regexPatt, String what, ArrayList<NamedObject> ano, boolean vo) {
+    public NamedObject byREGEX(String regexPatt, String what, ArrayList<NamedObject> ano,
+            boolean vo) {
         return allByREGEX(regexPatt, what, ano, vo).get(0);
     }
 
     /**
-     * Gets a standard colormap shipped with STAR-CCM+.
+     * Gets all the children objects related to the given ArrayList of parent objects, when
+     * applicable.
      *
-     * @param opt given Volume Mesher choice. See {@link macroutils.StaticDeclarations.Colormaps} for options.
-     * @return The LookupTable.
-     */
-    public LookupTable colormap(StaticDeclarations.Colormaps opt) {
-        return _sim.get(LookupTableManager.class).getObject(opt.getName());
-    }
-
-    /**
-     * Gets a constant material property object to be manipulated by MacroUtils.
-     *
-     * @param <T> any Class that extends from MaterialProperty object in STAR-CCM+.
-     * @param m given {@link star.common.Model}.
-     * @param clz given material property Class. E.g.: {@link star.flow.ConstantDensityProperty}, etc...
-     * @return The ConstantMaterialPropertyMethod.
-     */
-    public <T extends MaterialProperty> ConstantMaterialPropertyMethod constantMaterialProperty(Model m, Class<T> clz) {
-        if (m instanceof SingleComponentMaterialModel) {
-            SingleComponentMaterialModel scmm = (SingleComponentMaterialModel) m;
-            MaterialPropertyManager mpp = scmm.getMaterial().getMaterialProperties();
-            return (ConstantMaterialPropertyMethod) mpp.getMaterialProperty(clz).getMethod();
-        }
-        _io.say.msg("ConstantMaterialPropertyMethod is NULL.");
-        return null;
-    }
-
-    /**
-     * Gets all the children objects related to the given ArrayList of parent objects, when applicable.
-     *
-     * @param ano given ArrayList of STAR-CCM+ objects. E.g.: Regions, Boundaries, Parts, PlaneSections, etc...
-     * @param vo given verbose option. False will not print anything.
+     * @param ano given ArrayList of STAR-CCM+ objects. E.g.: Regions, Boundaries, Parts,
+     *            PlaneSections, etc...
+     * @param vo  given verbose option. False will not print anything.
      * @return An ArrayList of children NamedObjects, when applicable.
      */
     public ArrayList<NamedObject> children(ArrayList<NamedObject> ano, boolean vo) {
@@ -231,6 +200,51 @@ public class GetObjects {
     }
 
     /**
+     * Gets a standard colormap shipped with STAR-CCM+.
+     *
+     * @param opt given Volume Mesher choice. See {@link macroutils.StaticDeclarations.Colormaps}
+     *            for options.
+     * @return The LookupTable.
+     */
+    public LookupTable colormap(StaticDeclarations.Colormaps opt) {
+        return _sim.get(LookupTableManager.class).getObject(opt.getName());
+    }
+
+    /**
+     * Gets a constant material property object to be manipulated by MacroUtils.
+     *
+     * @param <T> any Class that extends from MaterialProperty object in STAR-CCM+.
+     * @param m   given {@link star.common.Model}.
+     * @param clz given material property Class. E.g.: {@link star.flow.ConstantDensityProperty},
+     *            etc...
+     * @return The ConstantMaterialPropertyMethod.
+     */
+    public <T extends MaterialProperty> ConstantMaterialPropertyMethod constantMaterialProperty(
+            Model m, Class<T> clz) {
+        if (m instanceof SingleComponentMaterialModel) {
+            SingleComponentMaterialModel scmm = (SingleComponentMaterialModel) m;
+            MaterialPropertyManager mpp = scmm.getMaterial().getMaterialProperties();
+            return (ConstantMaterialPropertyMethod) mpp.getMaterialProperty(clz).getMethod();
+        }
+        _io.say.msg("ConstantMaterialPropertyMethod is NULL.");
+        return null;
+    }
+
+    /**
+     * Gets a double[] array from an List of doubles.
+     *
+     * @param list given list of Doubles
+     * @return The double[] array
+     */
+    public double[] doubleArray(List<Double> list) {
+        double[] array = new double[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
+    }
+
+    /**
      * Gets a DoubleVector from values.
      *
      * @param vals given values separated by comma.
@@ -241,11 +255,12 @@ public class GetObjects {
     }
 
     /**
-     * Loops over all Field Functions and returns the first match based on the REGEX search pattern. The search will be
-     * done on Function Name first and then on its name on GUI, i.e., the PresentationName.
+     * Loops over all Field Functions and returns the first match based on the REGEX search pattern.
+     * The search will be done on Function Name first and then on its name on GUI, i.e., the
+     * PresentationName.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The FieldFunction.
      */
     public FieldFunction fieldFunction(String regexPatt, boolean vo) {
@@ -273,11 +288,12 @@ public class GetObjects {
     }
 
     /**
-     * Loops over all Field Functions and return all matches based on the REGEX search pattern. The search will be done
-     * on Function Name first and then on its name on GUI, i.e., the PresentationName.
+     * Loops over all Field Functions and return all matches based on the REGEX search pattern. The
+     * search will be done on Function Name first and then on its name on GUI, i.e., the
+     * PresentationName.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of FieldFunctions.
      */
     public ArrayList<FieldFunction> fieldFunctions(String regexPatt, boolean vo) {
@@ -297,15 +313,17 @@ public class GetObjects {
         } else if (no instanceof StarPlot) {
             return ((UpdatePlot) no).getPlotUpdate().getHardcopyProperties();
         }
-        _io.say.msg(vo, "'%s' does not have a HardcopyProperties. Returning NULL...", no.getPresentationName());
+        _io.say.msg(vo, "'%s' does not have a HardcopyProperties. Returning NULL...",
+                no.getPresentationName());
         return null;
     }
 
     /**
-     * Gets a Global Parameter that matches the REGEX search pattern among all Parameters available in the model.
+     * Gets a Global Parameter that matches the REGEX search pattern among all Parameters available
+     * in the model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The GlobalParameterBase. Null if nothing is found.
      */
     public GlobalParameterBase parameter(String regexPatt, boolean vo) {
@@ -314,14 +332,16 @@ public class GetObjects {
     }
 
     /**
-     * Gets a Physics Continua that matches the REGEX search pattern among all Continuas available in the model.
+     * Gets a Physics Continua that matches the REGEX search pattern among all Continuas available
+     * in the model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The PhysicsContinuum. Null if nothing is found.
      */
     public PhysicsContinuum physicsContinua(String regexPatt, boolean vo) {
-        return (PhysicsContinuum) byREGEX(regexPatt, "Physics Continua", new ArrayList<>(_getPCs()), vo);
+        return (PhysicsContinuum) byREGEX(regexPatt, "Physics Continua",
+                new ArrayList<>(_getPCs()), vo);
     }
 
     /**
@@ -329,12 +349,13 @@ public class GetObjects {
      *
      * @param csom given ClientServerObjectManager.
      * @param name given object name.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo   given verbose option. False will not print anything.
      * @return The Profile. Null if nothing is found.
      */
     public Profile profile(ClientServerObjectManager csom, String name, boolean vo) {
         if (!csom.has(name)) {
-            _io.say.msg(vo, "'%s' does not have a '%s' value. Returning NULL...", csom.getPresentationName(), name);
+            _io.say.msg(vo, "'%s' does not have a '%s' value. Returning NULL...",
+                    csom.getPresentationName(), name);
             return null;
         }
         return (Profile) csom.getObject(name);
@@ -345,7 +366,7 @@ public class GetObjects {
      *
      * @param csom given ClientServerObjectManager.
      * @param name given object name.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo   given verbose option. False will not print anything.
      * @return The ScalarProfile. Null if nothing is found.
      */
     public ScalarProfile scalarProfile(ClientServerObjectManager csom, String name, boolean vo) {
@@ -356,24 +377,12 @@ public class GetObjects {
      * Gets a Transform that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The VisTransform.
      */
     public VisTransform transform(String regexPatt, boolean vo) {
         return (VisTransform) _get.objects.byREGEX(regexPatt, "Transform",
                 new ArrayList<>(_sim.getTransformManager().getObjects()), vo);
-    }
-
-    /**
-     * Gets a VectorProfile, if applicable.
-     *
-     * @param csom given ClientServerObjectManager.
-     * @param name given object name.
-     * @param vo given verbose option. False will not print anything.
-     * @return The VectorProfile. Null if nothing is found.
-     */
-    public VectorProfile vectorProfile(ClientServerObjectManager csom, String name, boolean vo) {
-        return (VectorProfile) profile(csom, name, vo);
     }
 
     /**
@@ -384,12 +393,30 @@ public class GetObjects {
         _io = _mu.io;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
+    /**
+     * Gets a VectorProfile, if applicable.
+     *
+     * @param csom given ClientServerObjectManager.
+     * @param name given object name.
+     * @param vo   given verbose option. False will not print anything.
+     * @return The VectorProfile. Null if nothing is found.
+     */
+    public VectorProfile vectorProfile(ClientServerObjectManager csom, String name, boolean vo) {
+        return (VectorProfile) profile(csom, name, vo);
+    }
+
+    private ArrayList<FieldFunction> _getFFs() {
+        return new ArrayList<>(_sim.getFieldFunctionManager().getObjects());
+    }
+
+    private ArrayList<PhysicsContinuum> _getPCs() {
+        ArrayList<PhysicsContinuum> apc = new ArrayList<>();
+        for (Continuum pc : _sim.getContinuumManager().getObjects()) {
+            if (pc instanceof PhysicsContinuum) {
+                apc.add((PhysicsContinuum) pc);
+            }
+        }
+        return apc;
+    }
 
 }

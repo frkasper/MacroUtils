@@ -1,4 +1,3 @@
-
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
@@ -21,13 +20,19 @@ import star.common.StarMacro;
  */
 public class Demo3_Backward_Facing_Step extends StarMacro {
 
-    private final double L_t = 700;
-    private final double L_c = 500;
-    private final double h = 50;
     private final double H = 100;
-    private final double depth = 0.25;
-    private final double Re_h = 189;            //-- Reynolds Number f(h)
+    private final double L_c = 500;
+    private final double L_t = 700;
+    private final double Re_h = 189;  //-- Reynolds Number f(h)
 
+    private final String bcStep = "step";
+    private final double depth = 0.25;
+    private final double h = 50;
+    private MacroUtils mu;
+    private final String regionName = "Channel";
+    private UserDeclarations ud;
+
+    @Override
     public void execute() {
 
         initMacro();
@@ -46,28 +51,30 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
 
     }
 
-    void initMacro() {
+    private void initMacro() {
         mu = new MacroUtils(getActiveSimulation());
         ud = mu.userDeclarations;
         ud.simTitle = "Demo3_Backward_Facing_Step";
     }
 
-    void prep1_createParts() {
-        ud.coord1 = new double[]{L_t, H, depth};
+    private void prep1_createParts() {
+        ud.coord1 = new double[]{ L_t, H, depth };
         ud.cadPrt1 = mu.add.geometry.block3DCAD(StaticDeclarations.COORD0, ud.coord1, ud.unit_mm);
         ud.cadPrt1.setPresentationName("Block1");
         mu.get.partSurfaces.byREGEX(ud.cadPrt1, "x0", true).setPresentationName(ud.bcInlet);
         mu.get.partSurfaces.byREGEX(ud.cadPrt1, "x1", true).setPresentationName(ud.bcOutlet);
         mu.get.partSurfaces.byREGEX(ud.cadPrt1, "y1", true).setPresentationName(ud.bcTop);
         mu.get.partSurfaces.byREGEX(ud.cadPrt1, "y0", true).setPresentationName(ud.bcBottom);
-        mu.set.geometry.combinePartSurfaces(mu.get.partSurfaces.allByREGEX(ud.cadPrt1, "z.*", true),
-                true).setPresentationName(ud.bcSym);
+        mu.set.geometry.combinePartSurfaces(
+                mu.get.partSurfaces.allByREGEX(ud.cadPrt1, "z.*", true), true)
+                .setPresentationName(ud.bcSym);
         //--
-        ud.coord2 = new double[]{L_t - L_c, H - h, depth};
+        ud.coord2 = new double[]{ L_t - L_c, H - h, depth };
         ud.cadPrt2 = mu.add.geometry.block3DCAD(StaticDeclarations.COORD0, ud.coord2, ud.unit_mm);
         ud.cadPrt2.setPresentationName("Block2");
-        mu.set.geometry.combinePartSurfaces(mu.get.partSurfaces.allByREGEX(ud.cadPrt2, "x1|y1", true),
-                true).setPresentationName(bcStep);
+        mu.set.geometry.combinePartSurfaces(
+                mu.get.partSurfaces.allByREGEX(ud.cadPrt2, "x1|y1", true), true)
+                .setPresentationName(bcStep);
         //--
         ud.geometryParts.add(ud.cadPrt1);
         ud.geometryParts.add(ud.cadPrt2);
@@ -82,7 +89,7 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
                 StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
     }
 
-    void prep2_BCsAndMesh() {
+    private void prep2_BCsAndMesh() {
         //-- Mesh settings
         ud.mshBaseSize = depth * 10.;
         ud.mshSrfSizeMin = 100;
@@ -98,10 +105,10 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
                 StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
         ud.mshOp.setPresentationName("My Mesh");
         mu.disable.surfaceProximityRefinement(ud.mshOp);
-        mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL, StaticDeclarations.Time.STEADY,
-                StaticDeclarations.Material.GAS, StaticDeclarations.Solver.SEGREGATED,
-                StaticDeclarations.Density.INCOMPRESSIBLE, StaticDeclarations.Energy.ISOTHERMAL,
-                StaticDeclarations.Viscous.RKE_2LAYER);
+        mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL,
+                StaticDeclarations.Time.STEADY, StaticDeclarations.Material.GAS,
+                StaticDeclarations.Solver.SEGREGATED, StaticDeclarations.Density.INCOMPRESSIBLE,
+                StaticDeclarations.Energy.ISOTHERMAL, StaticDeclarations.Viscous.RKE_2LAYER);
         mu.set.solver.aggressiveSettings();
         //--
         ud.bdry1 = mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true);
@@ -117,8 +124,10 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
         mu.update.volumeMesh();
     }
 
-    void prep3_setPost() {
-        ud.defCamView = mu.io.read.cameraView("myCam|3.502958e-01,3.866198e-02,-8.724052e-04|3.502958e-01,3.866198e-02,1.366150e+00|0.000000e+00,1.000000e+00,0.000000e+00|1.986988e-01|1", true);
+    private void prep3_setPost() {
+        ud.defCamView = mu.io.read.cameraView("myCam|3.502958e-01,3.866198e-02,-8.724052e-04"
+                + "|3.502958e-01,3.866198e-02,1.366150e+00|0.000000e+00,1.000000e+00,0.000000e+00"
+                + "|1.986988e-01|1", true);
         //-- Stopping Criteria
         ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.P.getVar(), true);
         ud.rep = mu.add.report.massFlowAverage(ud.bdry1, "P_in", ud.ff, ud.defUnitPress, true);
@@ -136,10 +145,5 @@ public class Demo3_Backward_Facing_Step extends StarMacro {
         mu.set.object.updateEvent(ud.scene2, ud.updEvent2, true);
         mu.open.all();
     }
-
-    final private String bcStep = "step";
-    final private String regionName = "Channel";
-    private MacroUtils mu;
-    private UserDeclarations ud;
 
 }

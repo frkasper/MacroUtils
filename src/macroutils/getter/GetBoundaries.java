@@ -16,6 +16,10 @@ import star.common.Region;
  */
 public class GetBoundaries {
 
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+
     /**
      * Main constructor for this class.
      *
@@ -44,7 +48,7 @@ public class GetBoundaries {
     /**
      * Gets all Boundaries from a given Region.
      *
-     * @param r given Region.
+     * @param r  given Region.
      * @param vo given verbose option. False will not print anything.
      * @return An ArrayList of Boundaries.
      */
@@ -56,33 +60,39 @@ public class GetBoundaries {
     }
 
     /**
-     * Gets all Boundaries that matches the REGEX search pattern from all Regions available in the model.
+     * Gets all Boundaries that matches the REGEX search pattern from all Regions available in the
+     * model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Boundaries.
      */
     public ArrayList<Boundary> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Boundaries", new ArrayList<>(all(false)), vo));
+        return new ArrayList<>(
+                _get.objects.allByREGEX(regexPatt, "all Boundaries",
+                        new ArrayList<>(all(false)), vo)
+        );
     }
 
     /**
-     * Gets a Boundary that matches the REGEX search pattern among all Boundaries available in the model.
+     * Gets a Boundary that matches the REGEX search pattern among all Boundaries available in the
+     * model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The Boundary. Null if nothing is found.
      */
     public Boundary byREGEX(String regexPatt, boolean vo) {
-        return (Boundary) _get.objects.byREGEX(regexPatt, "Boundary", new ArrayList<>(all(false)), vo);
+        return (Boundary) _get.objects.byREGEX(regexPatt, "Boundary",
+                new ArrayList<>(all(false)), vo);
     }
 
     /**
      * Gets a Boundary within a Region that matches the REGEX search pattern.
      *
-     * @param r given Region.
+     * @param r         given Region.
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The Boundary. Null if nothing is found.
      */
     public Boundary byREGEX(Region r, String regexPatt, boolean vo) {
@@ -93,12 +103,13 @@ public class GetBoundaries {
     /**
      * Gets the first interface associated to a Boundary.
      *
-     * @param b given Boundary.
+     * @param b  given Boundary.
      * @param vo given verbose option. False will not print anything.
      * @return The InterfaceBoundary. Null if nothing is found.
      */
     public InterfaceBoundary interfaceBoundary(Boundary b, boolean vo) {
-        _io.print.msg(vo, "Getting the InterfaceBoundary associated to Boundary: \"%s\".", b.getPresentationName());
+        _io.print.msg(vo, "Getting the InterfaceBoundary associated to Boundary: \"%s\".",
+                b.getPresentationName());
         Vector<BoundaryInterface> vbi = b.getDependentInterfaces();
         if (vbi.isEmpty()) {
             _io.print.msg("No Interfaces found. Returning NULL!", vo);
@@ -116,12 +127,5 @@ public class GetBoundaries {
         _get = _mu.get;
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
 
 }

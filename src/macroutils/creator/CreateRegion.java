@@ -18,6 +18,11 @@ import star.common.SimulationPartManager;
  */
 public class CreateRegion {
 
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -29,30 +34,36 @@ public class CreateRegion {
     }
 
     /**
-     * Creates a single Region from all Parts available in the model using one Boundary per Part Surface and
-     * Contact-mode Interface (if available).
+     * Creates a single Region from all Parts available in the model using one Boundary per Part
+     * Surface and Contact-mode Interface (if available).
      *
      * @param vo given verbose option. False will not print anything.
      * @return The created Region.
      */
     public Region fromAll(boolean vo) {
         return fromParts(_get.geometries.all(false), StaticDeclarations.RegionMode.ONE,
-                StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE, StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_EACH_PART_CURVE, true).get(0);
+                StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
+                StaticDeclarations.InterfaceMode.CONTACT,
+                StaticDeclarations.FeatureCurveMode.ONE_FOR_EACH_PART_CURVE, true)
+                .get(0);
     }
 
     /**
      * Creates a single Region from the Part provided.
      *
-     * @param gp given GeometryPart.
-     * @param bm given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for options.
-     * @param im given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for options.
-     * @param fcm given Feature Curve mode. See {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
-     * @param vo given verbose option. False will not print anything.
+     * @param gp  given GeometryPart.
+     * @param bm  given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for
+     *            options.
+     * @param im  given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for
+     *            options.
+     * @param fcm given Feature Curve mode. See
+     *            {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
+     * @param vo  given verbose option. False will not print anything.
      * @return The Region.
      */
-    public Region fromPart(GeometryPart gp, StaticDeclarations.BoundaryMode bm, StaticDeclarations.InterfaceMode im,
-            StaticDeclarations.FeatureCurveMode fcm, boolean vo) {
+    public Region fromPart(GeometryPart gp, StaticDeclarations.BoundaryMode bm, 
+            StaticDeclarations.InterfaceMode im, StaticDeclarations.FeatureCurveMode fcm,
+            boolean vo) {
         return fromParts(_get.objects.arrayList(gp), bm, im, fcm, vo);
     }
 
@@ -60,14 +71,18 @@ public class CreateRegion {
      * Creates a single Region from the Parts provided.
      *
      * @param agp given ArrayList of Geometry Parts.
-     * @param bm given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for options.
-     * @param im given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for options.
-     * @param fcm given Feature Curve mode. See {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
-     * @param vo given verbose option. False will not print anything.
+     * @param bm  given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for
+     *            options.
+     * @param im  given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for
+     *            options.
+     * @param fcm given Feature Curve mode. See
+     *            {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
+     * @param vo  given verbose option. False will not print anything.
      * @return An ArrayList of the created Regions.
      */
     public Region fromParts(ArrayList<GeometryPart> agp, StaticDeclarations.BoundaryMode bm,
-            StaticDeclarations.InterfaceMode im, StaticDeclarations.FeatureCurveMode fcm, boolean vo) {
+            StaticDeclarations.InterfaceMode im, StaticDeclarations.FeatureCurveMode fcm,
+            boolean vo) {
         return fromParts(agp, StaticDeclarations.RegionMode.ONE, bm, im, fcm, vo).get(0);
     }
 
@@ -75,16 +90,21 @@ public class CreateRegion {
      * Creates a dedicated Region for every Part provided.
      *
      * @param agp given ArrayList of Geometry Parts.
-     * @param rm given Region mode. See {@link macroutils.StaticDeclarations.RegionMode} for options.
-     * @param bm given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for options.
-     * @param im given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for options.
-     * @param fcm given Feature Curve mode. See {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
-     * @param vo given verbose option. False will not print anything.
+     * @param rm  given Region mode. See {@link macroutils.StaticDeclarations.RegionMode} for
+     *            options.
+     * @param bm  given Boundary mode. See {@link macroutils.StaticDeclarations.BoundaryMode} for
+     *            options.
+     * @param im  given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for
+     *            options.
+     * @param fcm given Feature Curve mode. See
+     *            {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
+     * @param vo  given verbose option. False will not print anything.
      * @return An ArrayList of the created Regions.
      */
-    public ArrayList<Region> fromParts(ArrayList<GeometryPart> agp, StaticDeclarations.RegionMode rm,
-            StaticDeclarations.BoundaryMode bm, StaticDeclarations.InterfaceMode im,
-            StaticDeclarations.FeatureCurveMode fcm, boolean vo) {
+    public ArrayList<Region> fromParts(ArrayList<GeometryPart> agp, 
+            StaticDeclarations.RegionMode rm, StaticDeclarations.BoundaryMode bm,
+            StaticDeclarations.InterfaceMode im, StaticDeclarations.FeatureCurveMode fcm,
+            boolean vo) {
         switch (rm) {
             case ONE:
                 _io.say.action("Assigning Parts to a Single Region", vo);
@@ -119,13 +139,5 @@ public class CreateRegion {
         _get = _mu.get;
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
 
 }

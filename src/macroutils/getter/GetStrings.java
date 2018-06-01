@@ -20,6 +20,10 @@ import star.vis.Displayer;
  */
 public class GetStrings {
 
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private final String _s = StaticDeclarations.UNIT_DIMENSIONLESS;
+
     /**
      * Main constructor for this class.
      *
@@ -27,29 +31,6 @@ public class GetStrings {
      */
     public GetStrings(MacroUtils m) {
         _mu = m;
-    }
-
-    private String _getSingular(String name) {
-        int lastChars = 3;
-        if (name.length() < lastChars) {
-            return name;  // There should not be such cases
-        }
-        String firstSlice = name.substring(0, name.length() - lastChars);
-        String secondSlice = name.substring(name.length() - lastChars);
-        if (secondSlice.endsWith("ies")) {
-            secondSlice = secondSlice.replace("ies", "y");
-        } else if (secondSlice.endsWith("s")) {
-            secondSlice = secondSlice.replace("s", "");
-        }
-        return firstSlice + secondSlice;
-    }
-
-    private String[] _getTokens(String filename) {
-        return filename.split("\\.(?=[^\\.]+$)");
-    }
-
-    private String _information(ClientServerObject cso) {
-        return String.format("%s -> %s", parentName(cso), name(cso));
     }
 
     /**
@@ -73,8 +54,8 @@ public class GetStrings {
     }
 
     /**
-     * Modifies a string in order to be used for filenames, i.e., eliminates special characters (<i>= / #</i>, etc...).
-     * Spaces are replaced by underscores.
+     * Modifies a string in order to be used for filenames, i.e., eliminates special characters
+     * (<i>= / #</i>, etc...). Spaces are replaced by underscores.
      *
      * @param base given base String.
      * @return modified String.
@@ -141,7 +122,7 @@ public class GetStrings {
      * Gets the current meshers selected in an Automated Mesh Operation.
      *
      * @param amo given AutoMeshOperation.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      * @return An ArrayList of Strings.
      */
     public ArrayList<String> meshers(AutoMeshOperation amo, boolean vo) {
@@ -157,8 +138,10 @@ public class GetStrings {
     /**
      * Gets the necessary Meshers for an Automated Mesh Operation.
      *
-     * @param meshers given meshers separated by comma. See {@link macroutils.StaticDeclarations.Meshers} for options.
-     * @return An ArrayList of Strings. Useful with {@link macroutils.creator.CreateMeshOperation#automatedMesh}.
+     * @param meshers given meshers separated by comma. See
+     *                {@link macroutils.StaticDeclarations.Meshers} for options.
+     * @return An ArrayList of Strings. Useful with
+     *         {@link macroutils.creator.CreateMeshOperation#automatedMesh}.
      */
     public ArrayList<String> meshers(StaticDeclarations.Meshers... meshers) {
         ArrayList<String> as = new ArrayList<>();
@@ -211,6 +194,13 @@ public class GetStrings {
     }
 
     /**
+     * This method is called automatically by {@link MacroUtils}.
+     */
+    public void updateInstances() {
+        _io = _mu.io;
+    }
+
+    /**
      * Gets whatever is within the brackets.
      *
      * @param s given string.
@@ -225,19 +215,27 @@ public class GetStrings {
         return macroutils.StaticDeclarations.NONE_STRING;
     }
 
-    /**
-     * This method is called automatically by {@link MacroUtils}.
-     */
-    public void updateInstances() {
-        _io = _mu.io;
+    private String _getSingular(String name) {
+        int lastChars = 3;
+        if (name.length() < lastChars) {
+            return name;  // There should not be such cases
+        }
+        String firstSlice = name.substring(0, name.length() - lastChars);
+        String secondSlice = name.substring(name.length() - lastChars);
+        if (secondSlice.endsWith("ies")) {
+            secondSlice = secondSlice.replace("ies", "y");
+        } else if (secondSlice.endsWith("s")) {
+            secondSlice = secondSlice.replace("s", "");
+        }
+        return firstSlice + secondSlice;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private final String _s = StaticDeclarations.UNIT_DIMENSIONLESS;
+    private String[] _getTokens(String filename) {
+        return filename.split("\\.(?=[^\\.]+$)");
+    }
 
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
+    private String _information(ClientServerObject cso) {
+        return String.format("%s -> %s", parentName(cso), name(cso));
+    }
 
 }

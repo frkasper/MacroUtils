@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
@@ -18,6 +17,18 @@ import star.trimmer.PartsGrowthRateOption;
  */
 public class Demo8_Half_Wing extends StarMacro {
 
+    private final String bcAirfoil = "wing airfoil";
+    private final String bcAirfoil2 = "wing airfoil NotUsed";
+    private final String bcTrail = "wing trail";
+    private final String bcWing = "wing body";
+    private final double[] flowDirection = { 0, 0, -1 };
+    private MacroUtils mu;
+    private final String regionName = "FarField";
+    private Simulation sim;
+    private UserDeclarations ud;
+    private final double wingVel = 10.;
+
+    @Override
     public void execute() {
 
         initMacro();
@@ -38,6 +49,10 @@ public class Demo8_Half_Wing extends StarMacro {
 
     }
 
+    private ArrayList<NamedObject> getWingBoundaries() {
+        return new ArrayList<>(mu.get.boundaries.allByREGEX(".*wing.*", false));
+    }
+
     private void initMacro() {
         sim = getActiveSimulation();
         mu = new MacroUtils(sim);
@@ -47,7 +62,7 @@ public class Demo8_Half_Wing extends StarMacro {
         //-- Mesh settings
         ud.mshBaseSize = 30;
         ud.mshSrfSizeMin = 1. / 16. * 100.;
-        ud.mshSrfSizeTgt = 64 * 100.;  // Geometric progression in a ratio of 2. This is how Trimmer grows.
+        ud.mshSrfSizeTgt = 64 * 100.;  // Geometric progression in a ratio of 2. 
         ud.mshSrfCurvNumPoints = 60;
         ud.mshSrfGrowthRate = 1.15;
         ud.prismsLayers = 3;
@@ -58,8 +73,12 @@ public class Demo8_Half_Wing extends StarMacro {
     }
 
     private void prep1_importGeometryAndSplit() {
-        ud.vv1 = mu.io.read.cameraView("cam1|2.627790e-01,1.688267e-01,-8.768673e-02|3.042959e+00,2.949006e+00,2.692493e+00|0.000000e+00,1.000000e+00,0.000000e+00|1.257075e+00", true);
-        ud.vv2 = mu.io.read.cameraView("cam2|9.022700e-02,-5.806686e-03,-2.014223e-01|7.395474e-01,6.435137e-01,4.478981e-01|0.000000e+00,1.000000e+00,0.000000e+00|2.935941e-01", true);
+        ud.vv1 = mu.io.read.cameraView("cam1|2.627790e-01,1.688267e-01,-8.768673e-02"
+                + "|3.042959e+00,2.949006e+00,2.692493e+00|0.000000e+00,1.000000e+00,0.000000e+00"
+                + "|1.257075e+00", true);
+        ud.vv2 = mu.io.read.cameraView("cam2|9.022700e-02,-5.806686e-03,-2.014223e-01"
+                + "|7.395474e-01,6.435137e-01,4.478981e-01|0.000000e+00,1.000000e+00,0.000000e+00"
+                + "|2.935941e-01", true);
         ud.defCamView = ud.vv1;
         if (!sim.getGeometryPartManager().isEmpty()) {
             mu.io.say.loud("Geometry already created. Skipping prep1...");
@@ -99,19 +118,20 @@ public class Demo8_Half_Wing extends StarMacro {
         //--
         //-- Sphere is created relative to the biggest length scale (dx, dy or dz)
         ud.geometryParts.addAll(mu.get.geometries.all(true));
-        ud.mshOpPrt1 = mu.add.meshOperation.boundedShape_Sphere(ud.geometryParts,  farFieldRelSize,
+        ud.mshOpPrt1 = mu.add.meshOperation.boundedShape_Sphere(ud.geometryParts, farFieldRelSize,
                 StaticDeclarations.COORD0);
         ud.mshOpPrt1.setPresentationName(regionName);
         ud.geometryParts.clear();
         //--
         //-- Block is created relative to each length scale (dx, dy and dz)
-        double[] blkCorner1 = {-2 * farFieldRelSize, -50 * farFieldRelSize, -50 * farFieldRelSize};
-        double[] blkCorner2 = {-0.5, 50 * farFieldRelSize, 50 * farFieldRelSize};
-        ud.simpleBlkPrt = mu.add.geometry.block(ud.partSurfaces, blkCorner1, blkCorner2);
+        double[] blkCoord1 = { -2 * farFieldRelSize, -50 * farFieldRelSize, -50 * farFieldRelSize };
+        double[] blkCoord2 = { -0.5, 50 * farFieldRelSize, 50 * farFieldRelSize };
+        ud.simpleBlkPrt = mu.add.geometry.block(ud.partSurfaces, blkCoord1, blkCoord2);
         ud.simpleBlkPrt.setPresentationName(ud.bcSym);
         ud.mshOpPrt2 = mu.add.meshOperation.subtract(mu.get.geometries.all(true), ud.mshOpPrt1);
         ud.region = mu.add.region.fromPart(ud.mshOpPrt2,
-                StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE, StaticDeclarations.InterfaceMode.CONTACT,
+                StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
+                StaticDeclarations.InterfaceMode.CONTACT,
                 StaticDeclarations.FeatureCurveMode.ONE_FOR_EACH_PART_CURVE, true);
         ud.region.setPresentationName(regionName);
         //--
@@ -123,21 +143,21 @@ public class Demo8_Half_Wing extends StarMacro {
         ud.mshOp.setPresentationName("Mesh");
         //-- Volumetric Controls
         ArrayList<PartSurface> aps = new ArrayList<>(ud.geomPrt.getPartSurfaces());
-        blkCorner1 = new double[]{-.1, -30, -100};
-        blkCorner2 = new double[]{4, 30, 100};
-        ud.simpleBlkPrt = mu.add.geometry.block(aps, blkCorner1, blkCorner2);
+        blkCoord1 = new double[]{ -0.1, -30, -100 };
+        blkCoord2 = new double[]{ 4, 30, 100 };
+        ud.simpleBlkPrt = mu.add.geometry.block(aps, blkCoord1, blkCoord2);
         ud.simpleBlkPrt.setPresentationName("VC1");
-        blkCorner1 = new double[]{-.1, -5, -100};
-        blkCorner2 = new double[]{1, 5, 15};
-        ud.simpleBlkPrt1 = mu.add.geometry.block(aps, blkCorner1, blkCorner2);
+        blkCoord1 = new double[]{ -0.1, -5, -100 };
+        blkCoord2 = new double[]{ 1, 5, 15 };
+        ud.simpleBlkPrt1 = mu.add.geometry.block(aps, blkCoord1, blkCoord2);
         ud.simpleBlkPrt1.setPresentationName("VC2");
-        blkCorner1 = new double[]{-.1, -1, -10};
-        blkCorner2 = new double[]{0.25, 1, 0.75};
-        ud.simpleBlkPrt2 = mu.add.geometry.block(aps, blkCorner1, blkCorner2);
+        blkCoord1 = new double[]{ -0.1, -1, -10 };
+        blkCoord2 = new double[]{ 0.25, 1, 0.75 };
+        ud.simpleBlkPrt2 = mu.add.geometry.block(aps, blkCoord1, blkCoord2);
         ud.simpleBlkPrt2.setPresentationName("VC3");
-        blkCorner1 = new double[]{-.1, -.25, -3};
-        blkCorner2 = new double[]{0.0625, .5, 0.125};
-        ud.simpleBlkPrt3 = mu.add.geometry.block(aps, blkCorner1, blkCorner2);
+        blkCoord1 = new double[]{ -0.1, -.25, -3 };
+        blkCoord2 = new double[]{ 0.0625, .5, 0.125 };
+        ud.simpleBlkPrt3 = mu.add.geometry.block(aps, blkCoord1, blkCoord2);
         ud.simpleBlkPrt3.setPresentationName("VC4");
         ud.geometryParts.clear();
         ud.geometryParts.add(ud.simpleBlkPrt);
@@ -145,27 +165,31 @@ public class Demo8_Half_Wing extends StarMacro {
         ud.mshCtrl.setPresentationName("VC1");
         ud.geometryParts.clear();
         ud.geometryParts.add(ud.simpleBlkPrt1);
-        ud.mshCtrl = mu.add.meshOperation.volumetricControl(ud.mshOp, ud.geometryParts, 0, new double[]{800, 400, 1600});
+        ud.mshCtrl = mu.add.meshOperation.volumetricControl(ud.mshOp, ud.geometryParts, 0,
+                new double[]{ 800, 400, 1600 });
         ud.mshCtrl.setPresentationName("VC2");
         ud.geometryParts.clear();
         ud.geometryParts.add(ud.simpleBlkPrt2);
-        ud.mshCtrl = mu.add.meshOperation.volumetricControl(ud.mshOp, ud.geometryParts, 0, new double[]{400, 100, 400});
+        ud.mshCtrl = mu.add.meshOperation.volumetricControl(ud.mshOp, ud.geometryParts, 0,
+                new double[]{ 400, 100, 400 });
         ud.mshCtrl.setPresentationName("VC3");
         ud.geometryParts.clear();
         ud.geometryParts.add(ud.simpleBlkPrt3);
-        ud.mshCtrl = mu.add.meshOperation.volumetricControl(ud.mshOp, ud.geometryParts, 0, new double[]{200, 25, 200});
+        ud.mshCtrl = mu.add.meshOperation.volumetricControl(ud.mshOp, ud.geometryParts, 0,
+                new double[]{ 200, 25, 200 });
         ud.mshCtrl.setPresentationName("VC4");
         //--
         //-- Create Physics Continua and convert to Coupled Solver
         ud.refT = 22.;
         ud.CFL = 150;
-        ud.v0 = new double[]{0, 0, -wingVel};
+        ud.v0 = new double[]{ 0, 0, -wingVel };
         ud.physCont = mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL,
                 StaticDeclarations.Time.STEADY, StaticDeclarations.Material.GAS,
                 StaticDeclarations.Solver.COUPLED, StaticDeclarations.Density.IDEAL_GAS,
                 StaticDeclarations.Energy.THERMAL, StaticDeclarations.Viscous.RKE_2LAYER);
         mu.enable.expertInitialization(5, true);
         mu.enable.expertDriver(true);
+        //--
         //****************************************
         //-- BOUNDARY CONDITIONS
         //****************************************
@@ -177,10 +201,12 @@ public class Demo8_Half_Wing extends StarMacro {
         //-- Trail
         ud.bdry = mu.get.boundaries.byREGEX(".*" + bcTrail + ".*", true);
         ud.geometryObjects.addAll(mu.get.partSurfaces.fromBoundary(ud.bdry));
-        ud.mshCtrl = mu.add.meshOperation.surfaceControl(ud.mshOp, ud.geometryObjects, ud.mshSrfSizeMin, ud.mshSrfSizeMin);
+        ud.mshCtrl = mu.add.meshOperation.surfaceControl(ud.mshOp, ud.geometryObjects,
+                ud.mshSrfSizeMin, ud.mshSrfSizeMin);
         ud.mshCtrl.setPresentationName("Control Trail");
         mu.enable.trimmerWakeRefinement((SurfaceCustomMeshControl) ud.mshCtrl, 250, 5,
-                flowDirection, new double[]{25, ud.mshSrfSizeMin, 25}, PartsGrowthRateOption.Type.MEDIUM);
+                flowDirection, new double[]{ 25, ud.mshSrfSizeMin, 25 },
+                PartsGrowthRateOption.Type.MEDIUM);
         ud.geometryObjects.clear();
         //--
         //-- Airfoil
@@ -217,7 +243,7 @@ public class Demo8_Half_Wing extends StarMacro {
         ud.namedObjects.add(mu.get.boundaries.byREGEX(".*" + ud.bcSym + ".*", true));
         //--
         //-- Mesh Scene
-        ud.coord1 = new double[]{0, 0, -300};
+        ud.coord1 = new double[]{ 0, 0, -300 };
         ud.plane = mu.add.derivedPart.sectionPlaneZ(ud.coord1);
         ud.namedObjects2.add(ud.plane);
         ud.cellSrf = mu.add.derivedPart.cellSurface(ud.namedObjects2);
@@ -240,26 +266,24 @@ public class Demo8_Half_Wing extends StarMacro {
         //--
         //-- Reports and Stopping Criterias
         ud.rep1 = mu.add.report.frontalArea(getWingBoundaries(), "Frontal Area",
-                new double[]{0, 1, 0}, new double[]{0, 0, -1}, true);
+                new double[]{ 0, 1, 0 }, new double[]{ 0, 0, -1 }, true);
         ud.rep2 = mu.add.report.frontalArea(getWingBoundaries(), "Upper Area",
-                new double[]{0, 0, 1}, new double[]{0, -1, 0}, true);
+                new double[]{ 0, 0, 1 }, new double[]{ 0, -1, 0 }, true);
         //-- Cd
         ud.rep = mu.add.report.forceCoefficient(getWingBoundaries(), "C_d", 0.0, 1.196, wingVel,
-                ud.rep1.getReportMonitorValue(), new double[]{0, 0, -1}, true);
+                ud.rep1.getReportMonitorValue(), new double[]{ 0, 0, -1 }, true);
         ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
         mu.set.object.updateEvent(ud.mon, ud.updEvent2, true);
-        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 25);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC,
+                0.001, 25);
         //-- Cl
         ud.rep = mu.add.report.forceCoefficient(getWingBoundaries(), "C_l", 0.0, 1.196, wingVel,
-                ud.rep2.getReportMonitorValue(), new double[]{0, 1, 0}, true);
+                ud.rep2.getReportMonitorValue(), new double[]{ 0, 1, 0 }, true);
         ud.mon = mu.get.monitors.byREGEX(ud.rep.getPresentationName(), true);
         mu.set.object.updateEvent(ud.mon, ud.updEvent2, true);
-        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC, 0.001, 25);
+        mu.add.solver.stoppingCriteria(ud.mon, StaticDeclarations.StopCriteria.ASYMPTOTIC,
+                0.001, 25);
         // mu.saveSim("c_Ready");
-    }
-
-    private ArrayList<NamedObject> getWingBoundaries() {
-        return new ArrayList<>(mu.get.boundaries.allByREGEX(".*wing.*", false));
     }
 
     private void updateGlobalObjects() {
@@ -270,21 +294,5 @@ public class Demo8_Half_Wing extends StarMacro {
         }
         ud.partSurfaces.addAll(ud.geomPrt.getPartSurfaces());
     }
-
-    //--
-    //-- Private variables
-    //--
-    private MacroUtils mu;
-    private Simulation sim;
-    private UserDeclarations ud;
-    //--
-    //-- Boundary Condition Names and other Misc stuff
-    private final String bcWing = "wing body";
-    private final String bcAirfoil = "wing airfoil";
-    private final String bcAirfoil2 = "wing airfoil NotUsed";
-    private final String bcTrail = "wing trail";
-    private final String regionName = "FarField";
-    private final double[] flowDirection = {0, 0, -1};
-    double wingVel = 10.;
 
 }

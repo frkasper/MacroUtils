@@ -11,6 +11,19 @@ import macroutils.MacroUtils;
 public class MainChecker {
 
     /**
+     * This class is responsible for assessing is-type comparisons.
+     */
+    public CheckHas has = null;
+
+    /**
+     * This class is responsible for assessing is-type comparisons.
+     */
+    public CheckIs is = null;
+
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+
+    /**
      * Main constructor for this class.
      *
      * @param m given MacroUtils object.
@@ -29,23 +42,8 @@ public class MainChecker {
         has.updateInstances();
         is.updateInstances();
         _io = _mu.io;
-        _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
+        _io.print.msgDebug("" + this.getClass().getSimpleName()
+                + " instances updated succesfully.");
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-
-    /**
-     * This class is responsible for assessing is-type comparisons.
-     */
-    public CheckHas has = null;
-
-    /**
-     * This class is responsible for assessing is-type comparisons.
-     */
-    public CheckIs is = null;
 
 }

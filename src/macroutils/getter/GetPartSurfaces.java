@@ -19,7 +19,6 @@ import star.meshing.MeshOperationPart;
 import star.meshing.PartSurfaceMeshWidget;
 import star.meshing.SimpleBlockPart;
 import star.meshing.SimpleCylinderPart;
-import star.meshing.SurfaceMeshWidgetDiagnosticsController;
 import star.meshing.SurfaceMeshWidgetDisplayController;
 import star.meshing.SurfaceMeshWidgetQueryController;
 import star.meshing.SurfaceMeshWidgetSelectController;
@@ -33,6 +32,13 @@ import star.vis.Scene;
  */
 public class GetPartSurfaces {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -41,20 +47,6 @@ public class GetPartSurfaces {
     public GetPartSurfaces(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    private SurfaceMeshWidgetDiagnosticsController _initPartSurfaceMeshWidget(PartSurfaceMeshWidget psmw) {
-        psmw.startSurfaceMeshDiagnostics();
-        psmw.startSurfaceMeshRepair();
-        psmw.startMergeImprintController();
-        psmw.startIntersectController();
-        psmw.startLeakFinderController();
-        psmw.startSurfaceMeshQueryController();
-        Class<SurfaceMeshWidgetDiagnosticsController> wdcl = SurfaceMeshWidgetDiagnosticsController.class;
-        SurfaceMeshWidgetDiagnosticsController smwdc = psmw.getControllers().getController(wdcl);
-        smwdc.setSoftFeatureErrorsActive(true);
-        smwdc.setHardFeatureErrorsActive(true);
-        return smwdc;
     }
 
     /**
@@ -85,70 +77,32 @@ public class GetPartSurfaces {
     }
 
     /**
-     * Gets all Part Surfaces that matches the REGEX search pattern from all Geometries available in the model.
+     * Gets all Part Surfaces that matches the REGEX search pattern from all Geometries available in
+     * the model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Surfaces", new ArrayList<>(all(false)), vo));
+        return new ArrayList<>(
+                _get.objects.allByREGEX(regexPatt, "all Part Surfaces",
+                        new ArrayList<>(all(false)), vo)
+        );
     }
 
     /**
-     * Gets all Part Surfaces that matches the REGEX search pattern from the Part Surfaces available in the Geometry
-     * Part.
+     * Gets all Part Surfaces that matches the REGEX search pattern from the Part Surfaces available
+     * in the Geometry Part.
      *
-     * @param gp given GeometryPart.
+     * @param gp        given GeometryPart.
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(GeometryPart gp, String regexPatt, boolean vo) {
         return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Surfaces",
                 new ArrayList<>(gp.getPartSurfaces()), vo));
-    }
-
-    private PartSurface byArea(ArrayList<PartSurface> aps, RangeOpts opt) {
-        HashMap<PartSurface, NeoProperty> stats = statistics(aps);
-        //-- Remove total data from the HashMap.
-        stats.remove(null);
-        _io.say.action(String.format("Getting Part Surface with %s Area", opt.toString()), true);
-        _io.say.objects(aps, "Part Surfaces", true);
-        HashMap<PartSurface, Double> areas = new HashMap<>();
-        for (Map.Entry<PartSurface, NeoProperty> entry : stats.entrySet()) {
-            PartSurface ps = entry.getKey();
-            NeoProperty np = entry.getValue();
-            areas.put(ps, np.getDouble("TotalFaceArea"));
-        }
-        double minA = StaticDeclarations.BIG_NUMBER, maxA = -1 * StaticDeclarations.BIG_NUMBER;
-        PartSurface minPS = null, maxPS = null;
-        for (Map.Entry<PartSurface, Double> entry : areas.entrySet()) {
-            PartSurface ps = entry.getKey();
-            Double area = entry.getValue();
-            if (area < minA) {
-                minA = area;
-                minPS = ps;
-            }
-            if (area > maxA) {
-                maxA = area;
-                maxPS = ps;
-            }
-        }
-        double retA = minA;
-        PartSurface retPS = minPS;
-        switch (opt) {
-            case MAX:
-                retA = maxA;
-                retPS = maxPS;
-                break;
-            case MIN:
-                break;
-        }
-        _io.say.msg(true, "%s Area found: %g [m^2].", opt.toString(), retA);
-        _io.say.object(retPS, true);
-        _io.say.ok(true);
-        return retPS;
     }
 
     /**
@@ -172,114 +126,67 @@ public class GetPartSurfaces {
     }
 
     /**
-     * @param tol given Tolerance in meters.
+     * Gets a Part Surface that matches the REGEX search pattern among all Part Surfaces available
+     * in the model.
+     *
+     * @param regexPatt given Regular Expression (REGEX) pattern.
+     * @param vo        given verbose option. False will not print anything.
+     * @return The PartSurface. Null if nothing is found.
      */
-    private ArrayList<PartSurface> byRange(ArrayList<PartSurface> aps, RangeOpts opt,
-            StaticDeclarations.Axis axis, double tol, boolean vo) {
-        HashMap<PartSurface, NeoProperty> stats = statistics(aps);
-        _io.say.action("Getting Part Surfaces Range", vo);
-        DoubleVector globalMin = stats.get(null).getDoubleVector("LabMinRange");
-        DoubleVector globalMax = stats.get(null).getDoubleVector("LabMaxRange");
-        ArrayList<PartSurface> aps2 = new ArrayList<>();
-        for (PartSurface ps : aps) {
-            DoubleVector localMin = stats.get(ps).getDoubleVector("LabMinRange");
-            DoubleVector localMax = stats.get(ps).getDoubleVector("LabMaxRange");
-            int i = 0;
-            switch (axis) {
-                case X:
-                    break;
-                case Y:
-                    i = 1;
-                    break;
-                case Z:
-                    i = 2;
-                    break;
-            }
-            boolean isLocal = _chk.is.differenceWithinTolerance(localMin.get(i), localMax.get(i), tol);
-            if (isLocal) {
-                _io.say.msg(vo, "Found Local %s = %g [m].", axis.toString(), localMin.get(i));
-            }
-            boolean isGlobal = _chk.is.differenceWithinTolerance(localMin.get(i), globalMin.get(i), tol);
-            double val = localMin.get(i);
-            switch (opt) {
-                case MIN:
-                    break;
-                case MAX:
-                    isGlobal = _chk.is.differenceWithinTolerance(localMax.get(i), globalMax.get(i), tol);
-                    val = globalMax.get(i);
-                    break;
-            }
-            if (isLocal && isGlobal) {
-                _io.say.msg(vo, "Found Global %s of %s = %g [m].", opt.toString(), axis.toString(), val);
-                aps2.add(ps);
-            }
-        }
-        _io.say.line(vo);
-        _io.say.msg(vo, "Part Surfaces that matches %s %s:", opt.toString(), axis.toString());
-        _io.say.objects(aps2, "Part Surfaces", vo);
-        _io.say.line(vo);
-        return aps2;
+    public PartSurface byREGEX(String regexPatt, boolean vo) {
+        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface",
+                new ArrayList<>(all(false)), vo);
     }
 
-    private PartSurface byRange(ArrayList<PartSurface> aps, RangeOpts opt, StaticDeclarations.Axis axis, double tol) {
-        PartSurface ps = byRange(aps, opt, axis, tol * _ud.defUnitLength.getConversion(), true).get(0);
-        _io.say.value("Found Part Surface", ps.getPresentationName(), true, true);
-        return ps;
+    /**
+     * Gets a Part Surface that matches the REGEX search pattern from the Part Surfaces available in
+     * the Geometry Part.
+     *
+     * @param gp        given GeometryPart.
+     * @param regexPatt given Regular Expression (REGEX) pattern.
+     * @param vo        given verbose option. False will not print anything.
+     * @return The PartSurface. Null if nothing is found.
+     */
+    public PartSurface byREGEX(GeometryPart gp, String regexPatt, boolean vo) {
+        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface",
+                new ArrayList<>(gp.getPartSurfaces()), vo);
     }
 
     /**
      * Gets a Part Surface based on a Geometric Range of the Part Surfaces provided.
      *
-     * @param aps given ArrayList of Part Surfaces.
+     * @param aps  given ArrayList of Part Surfaces.
      * @param axis what will be queried? See {@link macroutils.StaticDeclarations.Axis} for options.
-     * @param tol given absolute tolerance for searching in default units ({@link UserDeclarations#defUnitLength}).
+     * @param tol  given absolute tolerance for searching in default units
+     *             ({@link UserDeclarations#defUnitLength}).
      * @return The PartSurface that has the maximum axis within the given tolerance.
      */
-    public PartSurface byRangeMax(ArrayList<PartSurface> aps, StaticDeclarations.Axis axis, double tol) {
+    public PartSurface byRangeMax(ArrayList<PartSurface> aps, StaticDeclarations.Axis axis,
+            double tol) {
         return byRange(aps, RangeOpts.MAX, axis, tol);
     }
 
     /**
      * Gets a Part Surface based on a Geometric Range of the Part Surfaces provided.
      *
-     * @param aps given ArrayList of Part Surfaces.
+     * @param aps  given ArrayList of Part Surfaces.
      * @param axis what will be queried? See {@link macroutils.StaticDeclarations.Axis} for options.
-     * @param tol given absolute tolerance for searching in default units ({@link UserDeclarations#defUnitLength}).
+     * @param tol  given absolute tolerance for searching in default units
+     *             ({@link UserDeclarations#defUnitLength}).
      * @return The PartSurface that has the minimum axis within the given tolerance.
      */
-    public PartSurface byRangeMin(ArrayList<PartSurface> aps, StaticDeclarations.Axis axis, double tol) {
+    public PartSurface byRangeMin(ArrayList<PartSurface> aps, StaticDeclarations.Axis axis,
+            double tol) {
         return byRange(aps, RangeOpts.MIN, axis, tol);
     }
 
     /**
-     * Gets a Part Surface that matches the REGEX search pattern among all Part Surfaces available in the model.
-     *
-     * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
-     * @return The PartSurface. Null if nothing is found.
-     */
-    public PartSurface byREGEX(String regexPatt, boolean vo) {
-        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface", new ArrayList<>(all(false)), vo);
-    }
-
-    /**
-     * Gets a Part Surface that matches the REGEX search pattern from the Part Surfaces available in the Geometry Part.
-     *
-     * @param gp given GeometryPart.
-     * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
-     * @return The PartSurface. Null if nothing is found.
-     */
-    public PartSurface byREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface", new ArrayList<>(gp.getPartSurfaces()), vo);
-    }
-
-    /**
-     * Get the Geometric Range from a ArrayList of Part Surfaces. Note that the resulting output will be given in
-     * default length units. See {@link UserDeclarations#defUnitLength}.
+     * Get the Geometric Range from a ArrayList of Part Surfaces. Note that the resulting output
+     * will be given in default length units. See {@link UserDeclarations#defUnitLength}.
      *
      * @param aps given ArrayList of Part Surfaces.
-     * @return A DoubleVector with 9 components in the following order (minX, maxX, minY, maxY, minZ, maxZ, dX, dY, dZ).
+     * @return A DoubleVector with 9 components in the following order (minX, maxX, minY, maxY,
+     *         minZ, maxZ, dX, dY, dZ).
      */
     public DoubleVector extents(ArrayList<PartSurface> aps) {
         HashMap<PartSurface, NeoProperty> stats = statistics(aps);
@@ -299,20 +206,11 @@ public class GetPartSurfaces {
         for (int i = 0; i < globalMin.size(); i++) {
             dv.add(globalDelta.get(i) / _ud.defUnitLength.getConversion());
         }
-        _io.say.msg(true, "Extents: x0, x1, y0, y1, z0, z1, dx, dy, dz [%s]", _get.strings.fromUnit(_ud.defUnitLength));
+        _io.say.msg(true, "Extents: x0, x1, y0, y1, z0, z1, dx, dy, dz [%s]",
+                _get.strings.fromUnit(_ud.defUnitLength));
         _io.say.msg(true, dv.toString());
         _io.say.ok(true);
         return dv;
-    }
-
-    /**
-     * Gets all Part Surfaces associated with a Boundary.
-     *
-     * @param b given Boundary.
-     * @return The ArrayList of Part Surfaces.
-     */
-    public ArrayList<PartSurface> fromBoundary(Boundary b) {
-        return fromBoundaries(_get.objects.arrayList(b));
     }
 
     /**
@@ -331,6 +229,16 @@ public class GetPartSurfaces {
         _io.say.objects(aps, "Part Surfaces", true);
         _io.say.ok(true);
         return aps;
+    }
+
+    /**
+     * Gets all Part Surfaces associated with a Boundary.
+     *
+     * @param b given Boundary.
+     * @return The ArrayList of Part Surfaces.
+     */
+    public ArrayList<PartSurface> fromBoundary(Boundary b) {
+        return fromBoundaries(_get.objects.arrayList(b));
     }
 
     /**
@@ -361,15 +269,15 @@ public class GetPartSurfaces {
     }
 
     /**
-     * Gets global and local statistics on the given Part Surfaces. This method is useful for querying the extents of
-     * the PartSurfaces as well area. The item with a NULL item means the global stats for all of them.
+     * Gets global and local statistics on the given Part Surfaces. This method is useful for
+     * querying the extents of the PartSurfaces as well area. The item with a NULL item means the
+     * global stats for all of them.
      *
      * @param aps the given ArrayList of Part Surfaces.
      * @return a {@link java.util.HashMap} containing properties and values.
      */
     public HashMap<PartSurface, NeoProperty> statistics(ArrayList<PartSurface> aps) {
-        //-- A null PartSurface items means the collection as a whole, i.e., ArrayList<PartSurface> aps.
-        HashMap<PartSurface, NeoProperty> hms = new HashMap<PartSurface, NeoProperty>();
+        HashMap<PartSurface, NeoProperty> hms = new HashMap<>();
         if (aps.isEmpty()) {
             _io.say.msg("No Part Surfaces Provided for Querying. Returning NULL HashMap!");
             return null;
@@ -383,7 +291,8 @@ public class GetPartSurfaces {
         psmw.setActiveParts(agp, _get.geometries.rootDescriptionSource());
         psmw.startSurfaceRepairControllers();
         scn.setAdvancedRenderingEnabled(false);
-        psmw.getControllers().getController(SurfaceMeshWidgetDisplayController.class).showAllFaces();
+        psmw.getControllers().getController(SurfaceMeshWidgetDisplayController.class)
+                .showAllFaces();
         scn.open();
         SurfaceMeshWidgetSelectController smwsc = psmw.getControllers()
                 .getController(SurfaceMeshWidgetSelectController.class);
@@ -430,19 +339,112 @@ public class GetPartSurfaces {
         _ud = _mu.userDeclarations;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private static enum RangeOpts {
-
-        MIN, MAX
+    private PartSurface byArea(ArrayList<PartSurface> aps, RangeOpts opt) {
+        HashMap<PartSurface, NeoProperty> stats = statistics(aps);
+        //-- Remove total data from the HashMap.
+        stats.remove(null);
+        _io.say.action(String.format("Getting Part Surface with %s Area", opt.toString()), true);
+        _io.say.objects(aps, "Part Surfaces", true);
+        HashMap<PartSurface, Double> areas = new HashMap<>();
+        for (Map.Entry<PartSurface, NeoProperty> entry : stats.entrySet()) {
+            PartSurface ps = entry.getKey();
+            NeoProperty np = entry.getValue();
+            areas.put(ps, np.getDouble("TotalFaceArea"));
+        }
+        double minA = StaticDeclarations.BIG_NUMBER, maxA = -1 * StaticDeclarations.BIG_NUMBER;
+        PartSurface minPS = null, maxPS = null;
+        for (Map.Entry<PartSurface, Double> entry : areas.entrySet()) {
+            PartSurface ps = entry.getKey();
+            Double area = entry.getValue();
+            if (area < minA) {
+                minA = area;
+                minPS = ps;
+            }
+            if (area > maxA) {
+                maxA = area;
+                maxPS = ps;
+            }
+        }
+        double retA = minA;
+        PartSurface retPS = minPS;
+        switch (opt) {
+            case MAX:
+                retA = maxA;
+                retPS = maxPS;
+                break;
+            case MIN:
+                break;
+        }
+        _io.say.msg(true, "%s Area found: %g [m^2].", opt.toString(), retA);
+        _io.say.object(retPS, true);
+        _io.say.ok(true);
+        return retPS;
     }
 
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
+    /**
+     * @param tol given Tolerance in meters.
+     */
+    private ArrayList<PartSurface> byRange(ArrayList<PartSurface> aps, RangeOpts opt,
+            StaticDeclarations.Axis axis, double tol, boolean vo) {
+        HashMap<PartSurface, NeoProperty> stats = statistics(aps);
+        _io.say.action("Getting Part Surfaces Range", vo);
+        DoubleVector globalMin = stats.get(null).getDoubleVector("LabMinRange");
+        DoubleVector globalMax = stats.get(null).getDoubleVector("LabMaxRange");
+        ArrayList<PartSurface> aps2 = new ArrayList<>();
+        for (PartSurface ps : aps) {
+            DoubleVector localMin = stats.get(ps).getDoubleVector("LabMinRange");
+            DoubleVector localMax = stats.get(ps).getDoubleVector("LabMaxRange");
+            int i = 0;
+            switch (axis) {
+                case X:
+                    break;
+                case Y:
+                    i = 1;
+                    break;
+                case Z:
+                    i = 2;
+                    break;
+            }
+            boolean isLocal = _chk.is.differenceWithinTolerance(localMin.get(i), localMax.get(i),
+                    tol);
+            if (isLocal) {
+                _io.say.msg(vo, "Found Local %s = %g [m].", axis.toString(), localMin.get(i));
+            }
+            boolean isGlobal = _chk.is.differenceWithinTolerance(localMin.get(i), globalMin.get(i),
+                    tol);
+            double val = localMin.get(i);
+            switch (opt) {
+                case MIN:
+                    break;
+                case MAX:
+                    isGlobal = _chk.is.differenceWithinTolerance(localMax.get(i), globalMax.get(i),
+                            tol);
+                    val = globalMax.get(i);
+                    break;
+            }
+            if (isLocal && isGlobal) {
+                _io.say.msg(vo, "Found Global %s of %s = %g [m].", opt.toString(), axis.toString(),
+                        val);
+                aps2.add(ps);
+            }
+        }
+        _io.say.line(vo);
+        _io.say.msg(vo, "Part Surfaces that matches %s %s:", opt.toString(), axis.toString());
+        _io.say.objects(aps2, "Part Surfaces", vo);
+        _io.say.line(vo);
+        return aps2;
+    }
+
+    private PartSurface byRange(ArrayList<PartSurface> aps, RangeOpts opt,
+            StaticDeclarations.Axis axis, double tol) {
+        PartSurface ps = byRange(aps, opt, axis, tol * _ud.defUnitLength.getConversion(), true)
+                .get(0);
+        _io.say.value("Found Part Surface", ps.getPresentationName(), true, true);
+        return ps;
+    }
+
+    private static enum RangeOpts {
+        MIN, MAX
+    }
 
 }

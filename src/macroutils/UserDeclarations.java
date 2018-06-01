@@ -81,7 +81,8 @@ public class UserDeclarations {
     }
 
     /**
-     * This method is called automatically by {@link MacroUtils} class. It is internal to MacroUtils.
+     * This method is called automatically by {@link MacroUtils} class. It is internal to
+     * MacroUtils.
      */
     public void updateInstances() {
     }
@@ -92,22 +93,22 @@ public class UserDeclarations {
     /**
      * Useful predefined variable for storing Coordinates.
      */
-    public double[] coord1 = {0., 0., 0.};
+    public double[] coord1 = { 0., 0., 0. };
 
     /**
      * Useful predefined variable for storing Coordinates.
      */
-    public double[] coord2 = {0., 0., 0.};
+    public double[] coord2 = { 0., 0., 0. };
 
     /**
      * Useful predefined variable for storing Coordinates.
      */
-    public double[] coord3 = {0., 0., 0.};
+    public double[] coord3 = { 0., 0., 0. };
 
     /**
      * Useful predefined variable for storing Coordinates.
      */
-    public double[] coord4 = {0., 0., 0.};
+    public double[] coord4 = { 0., 0., 0. };
 
     //--
     //-- Public Physics variables that can be changed.
@@ -115,7 +116,7 @@ public class UserDeclarations {
     /**
      * Gravity vector defined as double. Change accordingly. Default = {0, -9.81, 0} [m/s^2]
      */
-    public double[] gravity = {0., -9.81, 0.};
+    public double[] gravity = { 0., -9.81, 0. };
 
     /**
      * Initial Pressure value in default units. See {@link #defUnitPress}. Default is 0Pa.
@@ -145,7 +146,7 @@ public class UserDeclarations {
     /**
      * Initial Velocity Array in default units. See {@link #defUnitVel}.
      */
-    public double[] v0 = {0., 0., 0.};
+    public double[] v0 = { 0., 0., 0. };
 
     /**
      * Minimum clipping Temperature in default units.
@@ -170,7 +171,7 @@ public class UserDeclarations {
     /**
      * Reference Altitude array of values in default units. See {@link #defUnitLength}.
      */
-    public double[] refAlt = new double[]{0, 0, 0};
+    public double[] refAlt = new double[]{ 0, 0, 0 };
 
     /**
      * Reference Density value in default units. See {@link #defUnitDen}.
@@ -223,7 +224,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Auto Mesh Operations.
      */
-    public AutoMeshOperation autoMshOp = null, autoMshOp1 = null, autoMshOp2 = null, autoMshOp3 = null;
+    public AutoMeshOperation autoMshOp = null, autoMshOp1 = null, autoMshOp2 = null,
+            autoMshOp3 = null;
 
     /**
      * A Global Boundary variable. Useful somewhere.
@@ -233,7 +235,8 @@ public class UserDeclarations {
     /**
      * A Global Boundary Interface variable. Useful somewhere.
      */
-    public BoundaryInterface bdryIntrf = null, bdryIntrf1 = null, bdryIntrf2 = null, bdryIntrf3 = null;
+    public BoundaryInterface bdryIntrf = null, bdryIntrf1 = null, bdryIntrf2 = null,
+            bdryIntrf3 = null;
 
     /**
      * A Global 3D-CAD Body variable. Useful somewhere.
@@ -273,8 +276,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Delta Monitor Update Event.
      */
-    public DeltaMonitorUpdateEvent updEventDelta = null, updEventDelta1 = null, updEventDelta2 = null,
-            updEventDelta3 = null;
+    public DeltaMonitorUpdateEvent updEventDelta = null, updEventDelta1 = null,
+            updEventDelta2 = null, updEventDelta3 = null;
 
     /**
      * Some useful Global Variables: Displayer.
@@ -299,8 +302,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Frequency Monitor Update Event.
      */
-    public FrequencyMonitorUpdateEvent updEventFreq = null, updEventFreq1 = null, updEventFreq2 = null,
-            updEventFreq3 = null;
+    public FrequencyMonitorUpdateEvent updEventFreq = null, updEventFreq1 = null,
+            updEventFreq2 = null, updEventFreq3 = null;
 
     /**
      * Some useful Global Variables: Geometry Parts.
@@ -325,7 +328,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Leaf Mesh Parts.
      */
-    public LeafMeshPart leafMshPrt = null, leafMshPrt1 = null, leafMshPrt2 = null, leafMshPrt3 = null;
+    public LeafMeshPart leafMshPrt = null, leafMshPrt1 = null, leafMshPrt2 = null,
+            leafMshPrt3 = null;
 
     /**
      * Some useful Global Variables: Lines.
@@ -335,7 +339,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Logic Update Event.
      */
-    public LogicUpdateEvent updEventLogic = null, updEventLogic1 = null, updEventLogic2 = null, updEventLogic3 = null;
+    public LogicUpdateEvent updEventLogic = null, updEventLogic1 = null, updEventLogic2 = null,
+            updEventLogic3 = null;
 
     /**
      * Default Colormap for Scalar Displayers.
@@ -385,7 +390,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Points.
      */
-    public PointPart point = null, point1 = null, point2 = null, point3 = null, point4 = null, point5 = null;
+    public PointPart point = null, point1 = null, point2 = null, point3 = null, point4 = null,
+            point5 = null;
 
     /**
      * Some useful Global Variables: Physics Continuas.
@@ -395,13 +401,14 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Range Monitor Update Event.
      */
-    public RangeMonitorUpdateEvent updEventRange = null, updEventRange1 = null, updEventRange2 = null,
-            updEventRange3 = null;
+    public RangeMonitorUpdateEvent updEventRange = null, updEventRange1 = null,
+            updEventRange2 = null, updEventRange3 = null;
 
     /**
      * Some useful Global Variables: Recorded Solution View.
      */
-    public RecordedSolutionView recSolView = null, recSolView1 = null, recSolView2 = null, recSolView3 = null;
+    public RecordedSolutionView recSolView = null, recSolView1 = null, recSolView2 = null,
+            recSolView3 = null;
 
     /**
      * Some useful Global Variables: Regions.
@@ -421,7 +428,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Scalar Global Parameters.
      */
-    public ScalarGlobalParameter scalParam = null, scalParam1 = null, scalParam2 = null, scalParam3 = null;
+    public ScalarGlobalParameter scalParam = null, scalParam1 = null, scalParam2 = null,
+            scalParam3 = null;
 
     /**
      * Some useful Global Variables: Scenes.
@@ -431,17 +439,20 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Simple Block Parts.
      */
-    public SimpleBlockPart simpleBlkPrt = null, simpleBlkPrt1 = null, simpleBlkPrt2 = null, simpleBlkPrt3 = null;
+    public SimpleBlockPart simpleBlkPrt = null, simpleBlkPrt1 = null, simpleBlkPrt2 = null,
+            simpleBlkPrt3 = null;
 
     /**
      * Some useful Global Variables: Simple Cylinder Parts.
      */
-    public SimpleCylinderPart simpleCylPrt = null, simpleCylPrt1 = null, simpleCylPrt2 = null, simpleCylPrt3 = null;
+    public SimpleCylinderPart simpleCylPrt = null, simpleCylPrt1 = null, simpleCylPrt2 = null,
+            simpleCylPrt3 = null;
 
     /**
      * Some useful Global Variables: Simple Sphere Parts.
      */
-    public SimpleSpherePart simpleSphPrt = null, simpleSphPrt1 = null, simpleSphPrt2 = null, simpleSphPrt3 = null;
+    public SimpleSpherePart simpleSphPrt = null, simpleSphPrt1 = null, simpleSphPrt2 = null,
+            simpleSphPrt3 = null;
 
     /**
      * A Global SolidModelPart variable. Useful somewhere.
@@ -471,7 +482,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Surface Wrapper Mesh Operation.
      */
-    public SurfaceWrapperAutoMeshOperation wrapMshOp = null, wrapMshOp1 = null, wrapMshOp2 = null, wrapMshOp3 = null;
+    public SurfaceWrapperAutoMeshOperation wrapMshOp = null, wrapMshOp1 = null, wrapMshOp2 = null,
+            wrapMshOp3 = null;
 
     /**
      * Some useful Global Variables: Tables.
@@ -486,7 +498,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Vector Global Parameters.
      */
-    public VectorGlobalParameter vecParam = null, vecParam1 = null, vecParam2 = null, vecParam3 = null;
+    public VectorGlobalParameter vecParam = null, vecParam1 = null, vecParam2 = null,
+            vecParam3 = null;
 
     /**
      * Some useful Global Variables: Visualization View (Camera View).
@@ -501,7 +514,8 @@ public class UserDeclarations {
     /**
      * Some useful Global Variables: Visualization View (Camera View).
      */
-    public VisView vv = null, vv1 = null, vv2 = null, vv3 = null, vv4 = null, vv5 = null, vv6 = null;
+    public VisView vv = null, vv1 = null, vv2 = null, vv3 = null, vv4 = null, vv5 = null,
+            vv6 = null;
 
     //--
     //-- Public Mesh Parameters
@@ -519,14 +533,14 @@ public class UserDeclarations {
     public int dmDiv = 0;
 
     /**
-     * Directed Mesh O-Grid Factor, when using {@link CreateMeshOperation#directedMeshing_Pipe}. Change with care.
-     * Default = 1. / 1.10.
+     * Directed Mesh O-Grid Factor, when using {@link CreateMeshOperation#directedMeshing_Pipe}.
+     * Change with care. Default = 1. / 1.10.
      */
     public double dmOGF = 1. / 1.10;
 
     /**
-     * Directed Mesh Smooths in Patch mesh, when using {@link CreateMeshOperation#directedMeshing_Pipe}. Change with
-     * care. Default = 0.
+     * Directed Mesh Smooths in Patch mesh, when using
+     * {@link CreateMeshOperation#directedMeshing_Pipe}. Change with care. Default = 0.
      */
     public int dmSmooths = 0;
 
@@ -591,9 +605,11 @@ public class UserDeclarations {
     public double mshTrimmerMaxCellSize = 10000;
 
     /**
-     * Trimmer Volume Growth Rate when meshing. Default is {@link macroutils.StaticDeclarations.GrowthRate#MEDIUM}.
+     * Trimmer Volume Growth Rate when meshing. Default is
+     * {@link macroutils.StaticDeclarations.GrowthRate#MEDIUM}.
      */
-    public StaticDeclarations.GrowthRate mshTrimmerGrowthRate = StaticDeclarations.GrowthRate.MEDIUM;
+    public StaticDeclarations.GrowthRate mshTrimmerGrowthRate
+            = StaticDeclarations.GrowthRate.MEDIUM;
 
     /**
      * Surface Wrapper Feature Angle. Default = 30deg.
@@ -621,7 +637,8 @@ public class UserDeclarations {
     public double prismsMinThickn = 1.0;
 
     /**
-     * Prism Layers Near Core Aspect Ratio (NCLAR). Default is 0.0 in STAR-CCM+. In Macro Utils is 0.5.
+     * Prism Layers Near Core Aspect Ratio (NCLAR). Default is 0.0 in STAR-CCM+. In Macro Utils is
+     * 0.5.
      */
     public double prismsNearCoreAspRat = 0.5;
 
@@ -689,18 +706,21 @@ public class UserDeclarations {
     public double trnTimestep = 0.001;
 
     /**
-     * URF for Energy. Use this value for changing both Fluid and Solid URFs simultaneously. Otherwise, use
-     * {@link #urfFluidEnrgy} and/or {@link #urfSolidEnrgy} individually. Default = 0 (unused).
+     * URF for Energy. Use this value for changing both Fluid and Solid URFs simultaneously.
+     * Otherwise, use {@link #urfFluidEnrgy} and/or {@link #urfSolidEnrgy} individually. Default = 0
+     * (unused).
      */
     public double urfEnergy = 0.;
 
     /**
-     * URF for Fluid Energy. Default: {@link macroutils.StaticDeclarations.DefaultURFs#FLUID_ENERGY}.
+     * URF for Fluid Energy. Default:
+     * {@link macroutils.StaticDeclarations.DefaultURFs#FLUID_ENERGY}.
      */
     public double urfFluidEnrgy = StaticDeclarations.DefaultURFs.FLUID_ENERGY.getValue();
 
     /**
-     * URF for Granular Temperature. Default: {@link macroutils.StaticDeclarations.DefaultURFs#GRANULAR_TEMPERATURE}.
+     * URF for Granular Temperature. Default:
+     * {@link macroutils.StaticDeclarations.DefaultURFs#GRANULAR_TEMPERATURE}.
      */
     public double urfGranTemp = StaticDeclarations.DefaultURFs.GRANULAR_TEMPERATURE.getValue();
 
@@ -725,7 +745,8 @@ public class UserDeclarations {
     public double urfKOmegaTurbVisc = 1.0;
 
     /**
-     * URF for Phase Couple Velocity. Default: {@link macroutils.StaticDeclarations.DefaultURFs#PHASE_COUPLED_VELOCITY}.
+     * URF for Phase Couple Velocity. Default:
+     * {@link macroutils.StaticDeclarations.DefaultURFs#PHASE_COUPLED_VELOCITY}.
      */
     public double urfPhsCplVel = StaticDeclarations.DefaultURFs.PHASE_COUPLED_VELOCITY.getValue();
 
@@ -735,12 +756,14 @@ public class UserDeclarations {
     public double urfP = StaticDeclarations.DefaultURFs.PRESSURE.getValue();
 
     /**
-     * URF for PPDF Combustion. Default: {@link macroutils.StaticDeclarations.DefaultURFs#PPDF_COMBUSTION}.
+     * URF for PPDF Combustion. Default:
+     * {@link macroutils.StaticDeclarations.DefaultURFs#PPDF_COMBUSTION}.
      */
     public double urfPPDFComb = StaticDeclarations.DefaultURFs.PPDF_COMBUSTION.getValue();
 
     /**
-     * URF for Reynolds Stress Models. Default: {@link macroutils.StaticDeclarations.DefaultURFs#REYNOLDS_STRESS_MODEL}.
+     * URF for Reynolds Stress Models. Default:
+     * {@link macroutils.StaticDeclarations.DefaultURFs#REYNOLDS_STRESS_MODEL}.
      */
     public double urfRS = StaticDeclarations.DefaultURFs.REYNOLDS_STRESS_MODEL.getValue();
 
@@ -750,13 +773,15 @@ public class UserDeclarations {
     public double urfRSTurbVisc = 1.0;
 
     /**
-     * URF for Solid Energy. Default: {@link macroutils.StaticDeclarations.DefaultURFs#SOLID_ENERGY}.
+     * URF for Solid Energy. Default:
+     * {@link macroutils.StaticDeclarations.DefaultURFs#SOLID_ENERGY}.
      */
     public double urfSolidEnrgy = StaticDeclarations.DefaultURFs.SOLID_ENERGY.getValue();
-    ;
 
-  /** URF for Species. Default: {@link macroutils.StaticDeclarations.DefaultURFs#SPECIES}. */
-  public double urfSpecies = StaticDeclarations.DefaultURFs.SPECIES.getValue();
+    /**
+     * URF for Species. Default: {@link macroutils.StaticDeclarations.DefaultURFs#SPECIES}.
+     */
+    public double urfSpecies = StaticDeclarations.DefaultURFs.SPECIES.getValue();
 
     /**
      * URF for Velocity. Default: {@link macroutils.StaticDeclarations.DefaultURFs#VELOCITY}.
@@ -764,7 +789,8 @@ public class UserDeclarations {
     public double urfVel = StaticDeclarations.DefaultURFs.VELOCITY.getValue();
 
     /**
-     * URF for Volume Fraction. Default: {@link macroutils.StaticDeclarations.DefaultURFs#VOLUME_FRACTION}.
+     * URF for Volume Fraction. Default:
+     * {@link macroutils.StaticDeclarations.DefaultURFs#VOLUME_FRACTION}.
      */
     public double urfVolFrac = StaticDeclarations.DefaultURFs.VOLUME_FRACTION.getValue();
 
@@ -822,7 +848,8 @@ public class UserDeclarations {
     /**
      * Useful Variable for storing Composite Parts.
      */
-    public ArrayList<CompositePart> compositeParts = new ArrayList<>(), compositeParts2 = new ArrayList<>();
+    public ArrayList<CompositePart> compositeParts = new ArrayList<>(),
+            compositeParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Double Vectors.
@@ -832,82 +859,98 @@ public class UserDeclarations {
     /**
      * Useful Variable for storing Field Functions.
      */
-    public ArrayList<FieldFunction> fieldFunctions = new ArrayList<>(), fieldFunctions2 = new ArrayList<>();
+    public ArrayList<FieldFunction> fieldFunctions = new ArrayList<>(),
+            fieldFunctions2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Geometry Objects (STAR-CCM+ Geometry Object).
      */
-    public ArrayList<GeometryObject> geometryObjects = new ArrayList<>(), geometryObjects2 = new ArrayList<>();
+    public ArrayList<GeometryObject> geometryObjects = new ArrayList<>(),
+            geometryObjects2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Geometry Parts.
      */
-    public ArrayList<GeometryPart> geometryParts = new ArrayList<>(), geometryParts2 = new ArrayList<>();
+    public ArrayList<GeometryPart> geometryParts = new ArrayList<>(),
+            geometryParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Leaf Mesh Parts.
      */
-    public ArrayList<LeafMeshPart> leafMeshParts = new ArrayList<>(), leafMeshParts2 = new ArrayList<>();
+    public ArrayList<LeafMeshPart> leafMeshParts = new ArrayList<>(),
+            leafMeshParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Meshers.
      */
-    public ArrayList<String> meshers = new ArrayList<>(), meshers2 = new ArrayList<>();
+    public ArrayList<String> meshers = new ArrayList<>(),
+            meshers2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Mesh Parts.
      */
-    public ArrayList<MeshPart> meshParts = new ArrayList<>(), meshParts2 = new ArrayList<>();
+    public ArrayList<MeshPart> meshParts = new ArrayList<>(),
+            meshParts2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Monitors.
      */
-    public ArrayList<Monitor> monitors = new ArrayList<>(), monitors2 = new ArrayList<>();
+    public ArrayList<Monitor> monitors = new ArrayList<>(),
+            monitors2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Named Objects (STAR-CCM+ Object).
      */
-    public ArrayList<NamedObject> namedObjects = new ArrayList<>(), namedObjects2 = new ArrayList<>();
+    public ArrayList<NamedObject> namedObjects = new ArrayList<>(),
+            namedObjects2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Objects.
      */
-    public ArrayList<Object> objects = new ArrayList<>(), objects2 = new ArrayList<>();
+    public ArrayList<Object> objects = new ArrayList<>(),
+            objects2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Part Curves.
      */
-    public ArrayList<PartCurve> partCurves = new ArrayList<>(), partCurves2 = new ArrayList<>();
+    public ArrayList<PartCurve> partCurves = new ArrayList<>(),
+            partCurves2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Part Surfaces.
      */
-    public ArrayList<PartSurface> partSurfaces = new ArrayList<>(), partSurfaces2 = new ArrayList<>();
+    public ArrayList<PartSurface> partSurfaces = new ArrayList<>(),
+            partSurfaces2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Planes.
      */
-    public ArrayList<PlaneSection> planes = new ArrayList<>(), planes2 = new ArrayList<>();
+    public ArrayList<PlaneSection> planes = new ArrayList<>(),
+            planes2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Regions.
      */
-    public ArrayList<Region> regions = new ArrayList<>(), regions2 = new ArrayList<>();
+    public ArrayList<Region> regions = new ArrayList<>(),
+            regions2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Reports.
      */
-    public ArrayList<Report> reports = new ArrayList<>(), reports2 = new ArrayList<>();
+    public ArrayList<Report> reports = new ArrayList<>(),
+            reports2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Scenes.
      */
-    public ArrayList<Scene> scenes = new ArrayList<>(), scenes2 = new ArrayList<>();
+    public ArrayList<Scene> scenes = new ArrayList<>(),
+            scenes2 = new ArrayList<>();
 
     /**
      * Useful Variable for storing Camera Views.
      */
-    public ArrayList<VisView> cameras = new ArrayList<>(), cameras2 = new ArrayList<>();
+    public ArrayList<VisView> cameras = new ArrayList<>(),
+            cameras2 = new ArrayList<>();
 
     //--
     //-- Strings
@@ -1104,7 +1147,8 @@ public class UserDeclarations {
     public Units defUnitForce = null;
 
     /**
-     * Default unit of Heat Transfer Coefficient, when using MacroUtils. Default is {@link #unit_Wpm2K}.
+     * Default unit of Heat Transfer Coefficient, when using MacroUtils. Default is
+     * {@link #unit_Wpm2K}.
      */
     public Units defUnitHTC = null;
 
@@ -1480,7 +1524,8 @@ public class UserDeclarations {
     public boolean picAntiAliasing = false;
 
     /**
-     * Default picture path/folder for writing pictures with MacroUtils. Default is {@link #simPath}.
+     * Default picture path/folder for writing pictures with MacroUtils. Default is
+     * {@link #simPath}.
      */
     public String picPath = simPath;
 
@@ -1508,7 +1553,8 @@ public class UserDeclarations {
     public Color defColor = StaticDeclarations.Colors.LIGHT_GRAY.getColor();
 
     /**
-     * MacroUtils variable for controlling the Tubes width when using a Streamline Displayer. Default = 0.005.
+     * MacroUtils variable for controlling the Tubes width when using a Streamline Displayer.
+     * Default = 0.005.
      */
     public double postStreamlinesTubesWidth = 0.005;
 

@@ -14,6 +14,56 @@ import star.common.UpdateEvent;
 public class MainSetter {
 
     /**
+     * This class is responsible for setting Boundary conditions (BCs) parameters.
+     */
+    public SetBoundaries boundary = null;
+
+    /**
+     * This class is responsible for setting Geometry parameters.
+     */
+    public SetGeometry geometry = null;
+
+    /**
+     * This class is responsible for setting mesh parameters.
+     */
+    public SetMesh mesh = null;
+
+    /**
+     * This class is responsible for setting objects in general.
+     */
+    public SetObjects object = null;
+
+    /**
+     * This class is responsible for setting physics parameters.
+     */
+    public SetPhysics physics = null;
+
+    /**
+     * This class is responsible for setting Region parameters.
+     */
+    public SetRegions region = null;
+
+    /**
+     * This class is responsible for setting Scene parameters.
+     */
+    public SetScenes scene = null;
+    /**
+     * This class is responsible for setting solver parameters.
+     */
+    public SetSolver solver = null;
+
+    /**
+     * This class is responsible for setting MacroUtils defaults.
+     */
+    public SetDefaults userDefault = null;
+    private macroutils.checker.MainChecker _chk = null;
+    private macroutils.misc.MainDisabler _dis = null;
+    private macroutils.misc.MainEnabler _ena = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
+    /**
      * Main constructor for this class.
      *
      * @param m given MacroUtils object.
@@ -39,7 +89,7 @@ public class MainSetter {
     /**
      * Set the Auto Save functionality based on an Update Event.
      *
-     * @param ue given Update Event.
+     * @param ue            given Update Event.
      * @param maxSavedFiles given number of Simulation files to keep.
      */
     public void autoSave(UpdateEvent ue, int maxSavedFiles) {
@@ -90,62 +140,8 @@ public class MainSetter {
         _dis.updateInstances();
         _ena.updateInstances();
         _io = _mu.io;
-        _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
+        _io.print.msgDebug("" + this.getClass().getSimpleName()
+                + " instances updated succesfully.");
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.misc.MainDisabler _dis = null;
-    private macroutils.misc.MainEnabler _ena = null;
-    private Simulation _sim = null;
-
-    /**
-     * This class is responsible for setting Boundary conditions (BCs) parameters.
-     */
-    public SetBoundaries boundary = null;
-
-    /**
-     * This class is responsible for setting Geometry parameters.
-     */
-    public SetGeometry geometry = null;
-
-    /**
-     * This class is responsible for setting mesh parameters.
-     */
-    public SetMesh mesh = null;
-
-    /**
-     * This class is responsible for setting objects in general.
-     */
-    public SetObjects object = null;
-
-    /**
-     * This class is responsible for setting physics parameters.
-     */
-    public SetPhysics physics = null;
-
-    /**
-     * This class is responsible for setting Region parameters.
-     */
-    public SetRegions region = null;
-
-    /**
-     * This class is responsible for setting solver parameters.
-     */
-    public SetSolver solver = null;
-
-    /**
-     * This class is responsible for setting Scene parameters.
-     */
-    public SetScenes scene = null;
-
-    /**
-     * This class is responsible for setting MacroUtils defaults.
-     */
-    public SetDefaults userDefault = null;
 
 }

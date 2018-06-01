@@ -34,6 +34,16 @@ import star.vis.StreamPart;
  */
 public class CreateDerivedPart {
 
+    private final double[] _X = new double[]{ 1., 0., 0. };
+    private final double[] _Y = new double[]{ 0., 1., 0. };
+    private final double[] _Z = new double[]{ 0., 0., 1. };
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private macroutils.setter.MainSetter _set = null;
+    private Simulation _sim = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -42,48 +52,6 @@ public class CreateDerivedPart {
     public CreateDerivedPart(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    private PlaneSection _createPlane(double[] origin, double[] normal, String axis) {
-        PlaneSection pln = _sectionPlane(new ArrayList<>(_get.regions.all(false)), origin, normal, axis);
-        pln.setPresentationName("Plane " + axis);
-        return pln;
-    }
-
-    private void _creating(ArrayList<NamedObject> ano, String what) {
-        _io.say.action("Creating a " + what, true);
-        if (ano == null) {
-            return;
-        }
-        _io.say.objects(ano, "Parts", true);
-    }
-
-    private PlaneSection _sectionPlane(ArrayList<NamedObject> ano, double[] origin, double[] orientation, String axis) {
-        _creating(ano, "Section Plane");
-        if (axis != null) {
-            _io.say.msg(true, "Normal to %s direction.", axis);
-        }
-        NeoObjectVector where = new NeoObjectVector(ano.toArray());
-        DoubleVector vecOrient = new DoubleVector(orientation);
-        DoubleVector vecOrigin = new DoubleVector(origin);
-        DoubleVector vecOffsets = new DoubleVector(new double[]{0.0});
-        ImplicitPart ip = _sim.getPartManager().createImplicitPart(where, vecOrient, vecOrigin, 0, 1, vecOffsets);
-        PlaneSection ps = (PlaneSection) ip;
-        ps.getOriginCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength, vecOrigin);
-        _io.say.created(ps, true);
-        return ps;
-    }
-
-    private StreamPart _streamlinePartSeed(ArrayList<NamedObject> anoIP, ArrayList<NamedObject> anoSP, boolean vo) {
-        _io.say.objects(anoIP, "Input Parts", vo);
-        _io.say.objects(anoSP, "Seed Parts", vo);
-        FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), false);
-        StreamPart sp = _sim.getPartManager().createStreamPart(new NeoObjectVector(anoIP.toArray()),
-                new NeoObjectVector(anoSP.toArray()), ff,
-                _ud.postStreamlineResolution, _ud.postStreamlineResolution, 0);
-        _io.say.object(sp.getFieldFunction(), true);
-        _io.say.created(sp, true);
-        return sp;
     }
 
     /**
@@ -103,11 +71,12 @@ public class CreateDerivedPart {
      * Creates a Field Mean Monitor with the selected Objects.
      *
      * @param ano given ArrayList of NamedObjects.
-     * @param ff given Field Function.
-     * @param ue given Update Event for triggering the monitor.
+     * @param ff  given Field Function.
+     * @param ue  given Update Event for triggering the monitor.
      * @return The FieldMeanMonitor.
      */
-    public FieldMeanMonitor fieldMeanMonitor(ArrayList<NamedObject> ano, FieldFunction ff, UpdateEvent ue) {
+    public FieldMeanMonitor fieldMeanMonitor(ArrayList<NamedObject> ano, FieldFunction ff,
+            UpdateEvent ue) {
         _creating(ano, "Cell a Field Mean Monitor");
         FieldMeanMonitor fmm = _sim.getMonitorManager().createMonitor(FieldMeanMonitor.class);
         _io.say.object(ff, true);
@@ -122,9 +91,9 @@ public class CreateDerivedPart {
      * Creates a single-value Isosurface.
      *
      * @param ano given ArrayList of NamedObjects.
-     * @param ff given Field Function.
+     * @param ff  given Field Function.
      * @param val given Isosurface value.
-     * @param u given unit.
+     * @param u   given unit.
      * @return The IsoPart.
      */
     public IsoPart isosurface(ArrayList<NamedObject> ano, FieldFunction ff, double val, Units u) {
@@ -132,7 +101,8 @@ public class CreateDerivedPart {
         _io.say.object(ff, true);
         IsoPart ip = _sim.getPartManager().createIsoPart(new NeoObjectVector(ano.toArray()), ff);
         ip.setMode(IsoMode.ISOVALUE_SINGLE);
-        _set.object.physicalQuantity(ip.getSingleIsoValue().getValueQuantity(), val, u, "Iso Value", true);
+        _set.object.physicalQuantity(ip.getSingleIsoValue().getValueQuantity(), val, u,
+                "Iso Value", true);
         _io.say.created(ip, true);
         return ip;
     }
@@ -141,8 +111,10 @@ public class CreateDerivedPart {
      * Creates a Line Probe.
      *
      * @param ano given ArrayList of NamedObjects.
-     * @param c1 given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[] {0., 0., 0.}
-     * @param c2 given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[] {0., 1., 0.}
+     * @param c1  given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[]
+     *            {0., 0., 0.}
+     * @param c2  given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[]
+     *            {0., 1., 0.}
      * @param res given resolution for the line, i.e., the number of points.
      * @return The created Line.
      */
@@ -152,8 +124,10 @@ public class CreateDerivedPart {
         DoubleVector from = new DoubleVector(c1);
         DoubleVector to = new DoubleVector(c2);
         LinePart lp = _sim.getPartManager().createLinePart(where, from, to, res);
-        lp.getPoint1Coordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength, from);
-        lp.getPoint2Coordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength, to);
+        lp.getPoint1Coordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength,
+                _ud.defUnitLength, from);
+        lp.getPoint2Coordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength,
+                _ud.defUnitLength, to);
         _io.say.created(lp, true);
         return lp;
     }
@@ -162,14 +136,16 @@ public class CreateDerivedPart {
      * Creates a Point Probe.
      *
      * @param ano given ArrayList of NamedObjects.
-     * @param c given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[] {0, 0, 0}.
+     * @param c   given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[]
+     *            {0, 0, 0}.
      * @return The PointPart.
      */
     public PointPart point(ArrayList<NamedObject> ano, double[] c) {
         _creating(ano, "Point Probe");
-        PointPart pp = _sim.getPartManager().createPointPart(new NeoObjectVector(ano.toArray()), new DoubleVector(c));
-        pp.getPointCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
+        PointPart pp = _sim.getPartManager().createPointPart(new NeoObjectVector(ano.toArray()),
                 new DoubleVector(c));
+        pp.getPointCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength,
+                _ud.defUnitLength, new DoubleVector(c));
         _io.say.created(pp, true);
         return pp;
     }
@@ -177,8 +153,9 @@ public class CreateDerivedPart {
     /**
      * Creates a Section Plane using All Regions.
      *
-     * @param origin given origin coordinates. E.g.: new double[] {0., 0., 0.}
-     * @param orientation given normal orientation coordinates. E.g.: Normal to X is new double[] {1., 0., 0.}
+     * @param origin      given origin coordinates. E.g.: new double[] {0., 0., 0.}
+     * @param orientation given normal orientation coordinates. E.g.: Normal to X is new double[]
+     *                    {1., 0., 0.}
      * @return The PlaneSection.
      */
     public PlaneSection sectionPlane(double[] origin, double[] orientation) {
@@ -186,14 +163,17 @@ public class CreateDerivedPart {
     }
 
     /**
-     * Creates a Section Plane with based on a list of objects, which can be Parts, Regions, Boundaries, etc...
+     * Creates a Section Plane with based on a list of objects, which can be Parts, Regions,
+     * Boundaries, etc...
      *
-     * @param ano given ArrayList of NamedObjects.
-     * @param origin given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new double[] {0., 0., 0.}
+     * @param ano         given ArrayList of NamedObjects.
+     * @param origin      given coordinates using {@link UserDeclarations#defUnitLength}. E.g.: new
+     *                    double[] {0., 0., 0.}
      * @param orientation given coordinates. E.g.: Normal to X is new double[] {1., 0., 0.}
      * @return The PlaneSection.
      */
-    public PlaneSection sectionPlane(ArrayList<NamedObject> ano, double[] origin, double[] orientation) {
+    public PlaneSection sectionPlane(ArrayList<NamedObject> ano, double[] origin,
+            double[] orientation) {
         return _sectionPlane(ano, origin, orientation, null);
     }
 
@@ -231,7 +211,8 @@ public class CreateDerivedPart {
      * Creates a Part Seed type Streamline with the given Objects, such as:
      * <ul>
      * <li> Objects that are 3D in Space will be assigned as Input Parts. E.g.: Regions or Parts;
-     * <li> Objects that are 2D in Space will be assigned as Seed Parts. E.g.: Boundaries or Part Surfaces;
+     * <li> Objects that are 2D in Space will be assigned as Seed Parts. E.g.: Boundaries or Part
+     * Surfaces;
      * <li> The Streamline will be based on the Velocity field;
      * </ul>
      *
@@ -262,10 +243,12 @@ public class CreateDerivedPart {
      * Creates a Part Seed type Streamline on all Regions based on a list of objects.
      *
      * @param anoIP given ArrayList of NamedObjects for the Input Parts. E.g.: Regions or Parts.
-     * @param anoSP given ArrayList of NamedObjects for the Seed Parts. E.g.: Part Surfaces or Boundaries.
+     * @param anoSP given ArrayList of NamedObjects for the Seed Parts. E.g.: Part Surfaces or
+     *              Boundaries.
      * @return The StreamPart.
      */
-    public StreamPart streamline_PartSeed(ArrayList<NamedObject> anoIP, ArrayList<NamedObject> anoSP) {
+    public StreamPart streamline_PartSeed(ArrayList<NamedObject> anoIP,
+            ArrayList<NamedObject> anoSP) {
         _creating(null, "Streamline Derived Part");
         return _streamlinePartSeed(anoIP, anoSP, true);
     }
@@ -280,18 +263,51 @@ public class CreateDerivedPart {
         _ud = _mu.userDeclarations;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private final double[] _X = new double[]{1., 0., 0.};
-    private final double[] _Y = new double[]{0., 1., 0.};
-    private final double[] _Z = new double[]{0., 0., 1.};
+    private PlaneSection _createPlane(double[] origin, double[] normal, String axis) {
+        PlaneSection pln = _sectionPlane(new ArrayList<>(_get.regions.all(false)),
+                origin, normal, axis);
+        pln.setPresentationName("Plane " + axis);
+        return pln;
+    }
 
-    private MacroUtils _mu = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
+    private void _creating(ArrayList<NamedObject> ano, String what) {
+        _io.say.action("Creating a " + what, true);
+        if (ano == null) {
+            return;
+        }
+        _io.say.objects(ano, "Parts", true);
+    }
+
+    private PlaneSection _sectionPlane(ArrayList<NamedObject> ano, double[] origin,
+            double[] orientation, String axis) {
+        _creating(ano, "Section Plane");
+        if (axis != null) {
+            _io.say.msg(true, "Normal to %s direction.", axis);
+        }
+        NeoObjectVector where = new NeoObjectVector(ano.toArray());
+        DoubleVector vecOrient = new DoubleVector(orientation);
+        DoubleVector vecOrigin = new DoubleVector(origin);
+        DoubleVector vecOffsets = new DoubleVector(new double[]{ 0.0 });
+        ImplicitPart ip = _sim.getPartManager().createImplicitPart(where, vecOrient,
+                vecOrigin, 0, 1, vecOffsets);
+        PlaneSection ps = (PlaneSection) ip;
+        ps.getOriginCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength,
+                _ud.defUnitLength, vecOrigin);
+        _io.say.created(ps, true);
+        return ps;
+    }
+
+    private StreamPart _streamlinePartSeed(ArrayList<NamedObject> anoIP,
+            ArrayList<NamedObject> anoSP, boolean vo) {
+        _io.say.objects(anoIP, "Input Parts", vo);
+        _io.say.objects(anoSP, "Seed Parts", vo);
+        FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), false);
+        StreamPart sp = _sim.getPartManager().createStreamPart(new NeoObjectVector(anoIP.toArray()),
+                new NeoObjectVector(anoSP.toArray()), ff, _ud.postStreamlineResolution,
+                _ud.postStreamlineResolution, 0);
+        _io.say.object(sp.getFieldFunction(), true);
+        _io.say.created(sp, true);
+        return sp;
+    }
 
 }

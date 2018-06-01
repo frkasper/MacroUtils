@@ -1,4 +1,3 @@
-
 import macroutils.MacroUtils;
 import star.common.StarMacro;
 import star.vis.Scene;
@@ -6,6 +5,7 @@ import star.vis.VisView;
 
 public class Demo6c_Read_Camera_Views extends StarMacro {
 
+    @Override
     public void execute() {
 
         MacroUtils mu = new MacroUtils(getActiveSimulation());

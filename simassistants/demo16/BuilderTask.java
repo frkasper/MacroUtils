@@ -19,6 +19,10 @@ import star.common.ScalarGlobalParameter;
 )
 public class BuilderTask extends Task {
 
+    private macroutils.templates.demos.Demo16 _demo16 = null;
+    private final MacroUtils _mu;
+    private macroutils.UserDeclarations _ud = null;
+
     public BuilderTask(MacroUtils m) {
         _mu = m;
     }
@@ -83,12 +87,5 @@ public class BuilderTask extends Task {
         }
 
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private final MacroUtils _mu;
-    private macroutils.templates.demos.Demo16 _demo16 = null;
-    private macroutils.UserDeclarations _ud = null;
 
 }

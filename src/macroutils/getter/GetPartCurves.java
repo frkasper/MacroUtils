@@ -19,6 +19,10 @@ import star.meshing.SimpleCylinderPart;
  */
 public class GetPartCurves {
 
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+
     /**
      * Main constructor for this class.
      *
@@ -56,50 +60,61 @@ public class GetPartCurves {
     }
 
     /**
-     * Gets all Part Curves that matches the REGEX search pattern from all Geometries available in the model.
+     * Gets all Part Curves that matches the REGEX search pattern from all Geometries available in
+     * the model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Part Curves.
      */
     public ArrayList<PartCurve> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Curves", new ArrayList<>(all(false)), true));
+        return new ArrayList<>(
+                _get.objects.allByREGEX(regexPatt, "all Part Curves",
+                        new ArrayList<>(all(false)), true)
+        );
     }
 
     /**
-     * Gets all Part Curves that matches the REGEX search pattern from the Part Curves available in the Geometry Part.
+     * Gets all Part Curves that matches the REGEX search pattern from the Part Curves available in
+     * the Geometry Part.
      *
-     * @param gp given GeometryPart.
+     * @param gp        given GeometryPart.
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Part Curves.
      */
     public ArrayList<PartCurve> allByREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Curves",
-                new ArrayList<>(gp.getPartCurves()), true));
+        return new ArrayList<>(
+                _get.objects.allByREGEX(regexPatt, "all Part Curves",
+                        new ArrayList<>(gp.getPartCurves()), true)
+        );
     }
 
     /**
-     * Gets a Part Curve that matches the REGEX search pattern among all Part Curves available in the model.
+     * Gets a Part Curve that matches the REGEX search pattern among all Part Curves available in
+     * the model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The PartCurve. Null if nothing is found.
      */
     public PartCurve byREGEX(String regexPatt, boolean vo) {
-        return (PartCurve) _get.objects.byREGEX(regexPatt, "Part Curve", new ArrayList<>(all(false)), vo);
+        return (PartCurve) _get.objects.byREGEX(regexPatt, "Part Curve",
+                new ArrayList<>(all(false)), vo);
     }
 
     /**
-     * Gets a Part Curve that matches the REGEX search pattern from the Part Curves available in the Geometry Part.
+     * Gets a Part Curve that matches the REGEX search pattern from the Part Curves available in the
+     * Geometry Part.
      *
-     * @param gp given GeometryPart.
+     * @param gp        given GeometryPart.
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The PartCurve. Null if nothing is found.
      */
     public PartCurve byREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return (PartCurve) _get.objects.byREGEX(regexPatt, "Part Curve", new ArrayList<>(gp.getPartCurves()), vo);
+        return (PartCurve) _get.objects.byREGEX(regexPatt, "Part Curve",
+                new ArrayList<>(gp.getPartCurves()), vo);
     }
 
     /**
@@ -136,12 +151,5 @@ public class GetPartCurves {
         _get = _mu.get;
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
 
 }

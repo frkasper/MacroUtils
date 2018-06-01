@@ -41,6 +41,14 @@ import star.turbulence.synturb.PseudoTurbulenceSpecOption;
  */
 public class MainEnabler {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private macroutils.setter.MainSetter _set = null;
+    private Simulation _sim = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -50,51 +58,6 @@ public class MainEnabler {
         _mu = m;
         _sim = m.getSimulation();
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
-    }
-
-    private void _enabling(String what, ClientServerObject cso, boolean vo) {
-        _enabling(vo, what, cso, null, (Object) null);
-    }
-
-    private void _enabling(boolean vo, String what, ClientServerObject cso, String fmt2, Object... args2) {
-        _io.say.action(String.format("Enabling %s...", what), vo);
-        if (cso != null) {
-            _io.say.object(cso, vo);
-        }
-        _io.say.msg(vo, fmt2, args2);
-        _io.say.ok(vo);
-    }
-
-    private CoupledImplicitSolver _getCIS() {
-        return _sim.getSolverManager().getSolver(CoupledImplicitSolver.class);
-    }
-
-    private ExpertInitManager _getEIM() {
-        return _getCIS().getExpertInitManager();
-    }
-
-    private GridSequencingInit _getGSI() {
-        return (GridSequencingInit) _getEIM().getInit();
-    }
-
-    private boolean _isCoupled(boolean vo) {
-        if (_chk.has.coupledImplicit()) {
-            return true;
-        }
-        _io.say.msg(vo, "Not a Coupled Solver simulation.");
-        return false;
-    }
-
-    private <T extends Model> void _toggleTime(PhysicsContinuum pc, Class<T> dClz, Class eClz, boolean vo) {
-        _io.say.action(String.format("Enabling %s analysis", eClz.getName()), vo);
-        if (pc == null) {
-            _io.say.msg("Physics Continua not provided. Skipping...", vo);
-            return;
-        }
-        _io.say.object(pc, vo);
-        pc.disableModel(pc.getModelManager().getModel(dClz));
-        pc.enable(eClz);
-        _io.say.ok(vo);
     }
 
     /**
@@ -118,29 +81,34 @@ public class MainEnabler {
         if (!_isCoupled(vo)) {
             return;
         }
-        _getCIS().getSolutionDriverManager().getExpertDriverOption().setSelected(ExpertDriverOption.Type.EXPERT_DRIVER);
-        ExpertDriverCoupledSolver ed = (ExpertDriverCoupledSolver) _getCIS().getSolutionDriverManager().getDriver();
+        _getCoupledImplicitSolver().getSolutionDriverManager().getExpertDriverOption()
+                .setSelected(ExpertDriverOption.Type.EXPERT_DRIVER);
+        ExpertDriverCoupledSolver ed = (ExpertDriverCoupledSolver) _getCoupledImplicitSolver()
+                .getSolutionDriverManager().getDriver();
         ed.setRelativeResidualCutoff(StaticDeclarations.SMALL_NUMBER);
-        if (_getEIM().getExpertInitOption().getSelectedElement() == ExpertInitOption.Type.GRID_SEQ_METHOD) {
-            ed.setInitialRampValue(_getGSI().getGSCfl());
-            _io.say.msg(vo, "Initial Ramp CFL value set to: %g.", _getGSI().getGSCfl());
+        if (_getExpertInitOption().getSelectedElement() == ExpertInitOption.Type.GRID_SEQ_METHOD) {
+            ed.setInitialRampValue(_getGridSequencingInit().getGSCfl());
+            _io.say.msg(vo, "Initial Ramp CFL value set to: %g.", 
+                    _getGridSequencingInit().getGSCfl());
         }
         _io.say.ok(vo);
     }
 
     /**
-     * Enables the Expert Initialization for the Coupled Solver also known as Grid Sequencing method.
+     * Enables the Expert Initialization for the Coupled Solver also known as Grid Sequencing
+     * method.
      *
      * @param cfl0 given initial CFL.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo   given verbose option. False will not print anything.
      */
     public void expertInitialization(double cfl0, boolean vo) {
         if (!_isCoupled(vo)) {
             return;
         }
-        _getEIM().getExpertInitOption().setSelected(ExpertInitOption.Type.GRID_SEQ_METHOD);
-        _getGSI().setGSCfl(cfl0);
-        _enabling(vo, "Expert Initialization", null, "Initial CFL set to: %g.", _getGSI().getGSCfl());
+        _getExpertInitOption().setSelected(ExpertInitOption.Type.GRID_SEQ_METHOD);
+        _getGridSequencingInit().setGSCfl(cfl0);
+        _enabling(vo, "Expert Initialization", null, "Initial CFL set to: %g.", 
+                _getGridSequencingInit().getGSCfl());
     }
 
     /**
@@ -188,7 +156,8 @@ public class MainEnabler {
     }
 
     /**
-     * Enables Synthetic Eddy Method for a given Boundary. <b>Note:</b> only valid for LES/DES models.
+     * Enables Synthetic Eddy Method for a given Boundary. <b>Note:</b> only valid for LES/DES
+     * models.
      *
      * @param b given Boundary.
      */
@@ -207,13 +176,13 @@ public class MainEnabler {
     /**
      * Creates an Isotropic Wake Refinement in the given Boundary. <b>Only for Trimmer</b>.
      *
-     * @param scmc given Surface Mesh Control.
+     * @param scmc     given Surface Mesh Control.
      * @param distance given distance in default units. See {@link UserDeclarations#defUnitLength}.
-     * @param angle given spread angle in degrees.
-     * @param dir given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
-     * @param relSize given isotropic relative size in (<b>%</b>). E.g.: 50. If any anisotropic value is used isotropic
-     * size will be ignored.
-     * @param gr given Growth Rate.
+     * @param angle    given spread angle in degrees.
+     * @param dir      given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
+     * @param relSize  given isotropic relative size in (<b>%</b>). E.g.: 50. If any anisotropic
+     *                 value is used isotropic size will be ignored.
+     * @param gr       given Growth Rate.
      */
     public void trimmerWakeRefinement(SurfaceCustomMeshControl scmc, double distance, double angle,
             double[] dir, double relSize, PartsGrowthRateOption.Type gr) {
@@ -223,17 +192,82 @@ public class MainEnabler {
     /**
      * Creates an Anisotropic Wake Refinement in the given Boundary. <b>Only for Trimmer</b>.
      *
-     * @param scmc given Surface Mesh Control.
+     * @param scmc     given Surface Mesh Control.
      * @param distance given distance in default units. See {@link UserDeclarations#defUnitLength}.
-     * @param angle given spread angle in degrees.
-     * @param dir given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
-     * @param relSizes given anisotropic 3-component relative sizes in (<b>%</b>). E.g.: {0, 25, 0}. Zeros will be
-     * ignored. Use {@link macroutils.StaticDeclarations#COORD0} if convenient.
-     * @param gr given Growth Rate.
+     * @param angle    given spread angle in degrees.
+     * @param dir      given 3-components direction of the refinement. E.g., in X: {1, 0, 0}.
+     * @param relSizes given anisotropic 3-component relative sizes in (<b>%</b>). E.g.: {0, 25, 0}.
+     *                 Zeros will be ignored. Use {@link macroutils.StaticDeclarations#COORD0} if
+     *                 convenient.
+     * @param gr       given Growth Rate.
      */
     public void trimmerWakeRefinement(SurfaceCustomMeshControl scmc, double distance, double angle,
             double[] dir, double[] relSizes, PartsGrowthRateOption.Type gr) {
         trimmerWakeRefinement(scmc, distance, angle, dir, 0., relSizes, gr);
+    }
+
+    /**
+     * This method is called automatically by {@link MacroUtils}.
+     */
+    public void updateInstances() {
+        _chk = _mu.check;
+        _get = _mu.get;
+        _io = _mu.io;
+        _set = _mu.set;
+        _ud = _mu.userDeclarations;
+        _io.print.msgDebug("" + this.getClass().getSimpleName()
+                + " instances updated succesfully.");
+    }
+
+    private void _enabling(String what, ClientServerObject cso, boolean vo) {
+        _enabling(vo, what, cso, null, (Object) null);
+    }
+
+    private void _enabling(boolean vo, String what, ClientServerObject cso,
+            String fmt2, Object... args2) {
+        _io.say.action(String.format("Enabling %s...", what), vo);
+        if (cso != null) {
+            _io.say.object(cso, vo);
+        }
+        _io.say.msg(vo, fmt2, args2);
+        _io.say.ok(vo);
+    }
+
+    private CoupledImplicitSolver _getCoupledImplicitSolver() {
+        return _sim.getSolverManager().getSolver(CoupledImplicitSolver.class);
+    }
+
+    private ExpertInitManager _getExpertInitManager() {
+        return _getCoupledImplicitSolver().getExpertInitManager();
+    }
+
+    private ExpertInitOption _getExpertInitOption() {
+        return _getExpertInitManager().getExpertInitOption();
+    }
+
+    private GridSequencingInit _getGridSequencingInit() {
+        return (GridSequencingInit) _getExpertInitManager().getInit();
+    }
+
+    private boolean _isCoupled(boolean vo) {
+        if (_chk.has.coupledImplicit()) {
+            return true;
+        }
+        _io.say.msg(vo, "Not a Coupled Solver simulation.");
+        return false;
+    }
+
+    private <T extends Model> void _toggleTime(PhysicsContinuum pc, Class<T> dClz,
+            Class eClz, boolean vo) {
+        _io.say.action(String.format("Enabling %s analysis", eClz.getName()), vo);
+        if (pc == null) {
+            _io.say.msg("Physics Continua not provided. Skipping...", vo);
+            return;
+        }
+        _io.say.object(pc, vo);
+        pc.disableModel(pc.getModelManager().getModel(dClz));
+        pc.enable(eClz);
+        _io.say.ok(vo);
     }
 
     private void trimmerWakeRefinement(SurfaceCustomMeshControl scmc, double distance, double angle,
@@ -247,12 +281,15 @@ public class MainEnabler {
         }
         _io.say.object(amo, true);
         _io.say.object(scmc, true);
-        scmc.getCustomConditions().get(PartsTrimmerWakeRefinementOption.class).setPartsWakeRefinementOption(true);
+        scmc.getCustomConditions().get(PartsTrimmerWakeRefinementOption.class)
+                .setPartsWakeRefinementOption(true);
         CustomMeshControlValueManager cmcvm = scmc.getCustomValues();
         PartsWakeRefinementValuesManager pwrvm = cmcvm.get(PartsWakeRefinementValuesManager.class);
-        _set.object.physicalQuantity(pwrvm.getDistance(), distance, _ud.defUnitLength, "Distance", true);
+        _set.object.physicalQuantity(pwrvm.getDistance(), distance, _ud.defUnitLength,
+                "Distance", true);
         _set.object.physicalQuantity(pwrvm.getDirection(), dir, null, "Direction", true);
-        _set.object.physicalQuantity(pwrvm.getSpreadAngle(), angle, _ud.unit_deg, "Spread Angle", true);
+        _set.object.physicalQuantity(pwrvm.getSpreadAngle(), angle, _ud.unit_deg,
+                "Spread Angle", true);
         PartsTrimmerWakeRefinementSet ptwrs = pwrvm.get(PartsTrimmerWakeRefinementSet.class);
         PartsGrowthRateOption pgro = ptwrs.getGrowthRateOption();
         pgro.setSelected(gr);
@@ -283,28 +320,5 @@ public class MainEnabler {
         }
         _io.say.ok(true);
     }
-
-    /**
-     * This method is called automatically by {@link MacroUtils}.
-     */
-    public void updateInstances() {
-        _chk = _mu.check;
-        _get = _mu.get;
-        _io = _mu.io;
-        _set = _mu.set;
-        _ud = _mu.userDeclarations;
-        _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
-    }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
 
 }
