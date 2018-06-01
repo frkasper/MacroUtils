@@ -54,8 +54,7 @@ public class GetPlots {
      * @return An ArrayList of StarPlots.
      */
     public ArrayList<StarPlot> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "Plots", new ArrayList<>(all(false)), vo));
+        return _get.objects.allByREGEX(regexPatt, "Plots", all(false), vo);
     }
 
     /**
@@ -86,7 +85,7 @@ public class GetPlots {
      * @return The StarPlot. Null if nothing is found.
      */
     public StarPlot byREGEX(String regexPatt, boolean vo) {
-        return (StarPlot) _get.objects.byREGEX(regexPatt, "Plot", new ArrayList<>(all(false)), vo);
+        return _get.objects.byREGEX(regexPatt, "Plot", all(false), vo);
     }
 
     /**

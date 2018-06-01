@@ -258,7 +258,7 @@ public class CreateMeshOperation {
         _io.say.object(src, true);
         _io.say.object(tgt, true);
         _io.say.msg(true, "Number of Layers: %d.", nVol);
-        DirectedMeshOperation dmo = _createDMO(src, tgt);
+        DirectedMeshOperation dmo = _createDirectedMeshOperation(src, tgt);
         //--
         String pn = src.getPart().getPresentationName();
         DirectedMeshPartCollectionManager dmpcm = dmo.getGuidedMeshPartCollectionManager();
@@ -295,7 +295,7 @@ public class CreateMeshOperation {
         _io.say.msg(true, "  - X Direction: %d;", nX);
         _io.say.msg(true, "  - Y Direction: %d;", nY);
         _io.say.msg(true, "  - Z Direction: %d.", nZ);
-        DirectedMeshOperation dmo = _createDMO(src, tgt);
+        DirectedMeshOperation dmo = _createDirectedMeshOperation(src, tgt);
         int isX = 0, isY = 0, isZ = 0;
         int nP1 = 2, nP2 = 2, nVol = 2;
         PatchCurve pcX = null, pcY = null, pcZ = null, pc1 = null, pc2 = null;
@@ -311,7 +311,7 @@ public class CreateMeshOperation {
         DirectedPatchSourceMesh patchMsh = dmo.getGuidedSurfaceMeshBaseManager()
                 .createPatchSourceMesh(vpsSrc, dmpc);
         NeoProperty np = patchMsh.autopopulateFeatureEdges();
-        ArrayList<PatchCurve> pcs = _getPCs(patchMsh);
+        ArrayList<PatchCurve> pcs = _getPatchCurves(patchMsh);
         //--
         double err = 0.05;
         for (PatchCurve p : pcs) {
@@ -392,7 +392,7 @@ public class CreateMeshOperation {
         _io.say.msg(true, "  - Tangent Direction (theta): %d;", nT);
         _io.say.msg(true, "  - Radial Direction (r): %d;", nR);
         _io.say.msg(true, "  - Along Pipe (axially): %d.", nVol);
-        DirectedMeshOperation dmo = _createDMO(src, tgt);
+        DirectedMeshOperation dmo = _createDirectedMeshOperation(src, tgt);
         CylindricalCoordinateSystem ccs = (CylindricalCoordinateSystem) c;
         //--
         String s = src.getPart().getPresentationName();
@@ -408,12 +408,12 @@ public class CreateMeshOperation {
         //_io.say.msg("NeoProperty np = patchMsh.autopopulateFeatureEdges();");
         //_io.say.msg(np.getHashtable().toString());
         //--
-        boolean isBackwards = _createDM_Pipe_buildExternalPatchCurves(patchMsh, ccs, false);
+        boolean isBackwards = _meshPipe_buildExternalPatchCurves(patchMsh, ccs, false);
         if (isBackwards) {
-            _createDM_Pipe_buildExternalPatchCurves(patchMsh, ccs, isBackwards);
+            _meshPipe_buildExternalPatchCurves(patchMsh, ccs, isBackwards);
         }
-        ArrayList<PatchCurve> pcExts = _getPCs(patchMsh);
-        PatchCurve pcInt = _createDM_Pipe_buildInternalPatchCurves(patchMsh, ccs, rR, isBackwards);
+        ArrayList<PatchCurve> pcExts = _getPatchCurves(patchMsh);
+        PatchCurve pcInt = _meshPipe_buildInternalPatchCurves(patchMsh, ccs, rR, isBackwards);
         //--
         if (pcInt == null) {
             return null;
@@ -531,7 +531,7 @@ public class CreateMeshOperation {
      * @return The SurfaceCustomMeshControl.
      */
     public SurfaceCustomMeshControl surfaceControl(MeshOperation mo) {
-        return _createSC(mo, true);
+        return _createSurfaceCustomMeshControl(mo, true);
     }
 
     /**
@@ -546,7 +546,7 @@ public class CreateMeshOperation {
         _io.say.action("Creating a Custom Surface Mesh Control", true);
         _io.say.object(scmc, true);
         _io.say.object(mo, true);
-        SurfaceCustomMeshControl scmc2 = _createSC(mo, false);
+        SurfaceCustomMeshControl scmc2 = _createSurfaceCustomMeshControl(mo, false);
         scmc2.setPresentationName(scmc.getPresentationName());
         scmc2.copyProperties(scmc);
         _io.say.msg("Properties copied succesfully.");
@@ -568,7 +568,7 @@ public class CreateMeshOperation {
         _io.say.action("Creating a Custom Surface Mesh Control", true);
         _io.say.object(mo, true);
         _io.say.objects(ago, "Geometry Objects", true);
-        SurfaceCustomMeshControl scmc = _createSC(mo, false);
+        SurfaceCustomMeshControl scmc = _createSurfaceCustomMeshControl(mo, false);
         scmc.getGeometryObjects().setObjects(ago);
         _set.mesh.surfaceSizes(scmc, min, tgt, true);
         _io.say.created(scmc, true);
@@ -759,7 +759,7 @@ public class CreateMeshOperation {
         return bsco;
     }
 
-    private DirectedMeshOperation _createDMO(PartSurface src, PartSurface tgt) {
+    private DirectedMeshOperation _createDirectedMeshOperation(PartSurface src, PartSurface tgt) {
         _io.say.object(src.getPart(), true);
         if (!_chk.is.directedMeshable(src, tgt)) {
             return null;
@@ -773,11 +773,63 @@ public class CreateMeshOperation {
         return dmo;
     }
 
-    private boolean _createDM_Pipe_buildExternalPatchCurves(DirectedPatchSourceMesh patchMsh,
+    private SurfaceCustomMeshControl _createSurfaceCustomMeshControl(MeshOperation mo, boolean vo) {
+        _io.say.action("Creating a Custom Surface Mesh Control", vo);
+        _io.say.object(mo, vo);
+        if (!_isCustomControllable(mo)) {
+            return null;
+        }
+        AutoMeshOperation amo = (AutoMeshOperation) mo;
+        SurfaceCustomMeshControl scmc = amo.getCustomMeshControls().createSurfaceControl();
+        _io.say.created(scmc, vo);
+        return scmc;
+    }
+
+    private Object _getNewObject(ArrayList objOld, ArrayList objNew) {
+        for (Object o : objNew) {
+            if (!objOld.contains(o)) {
+                return o;
+            }
+        }
+        return null;
+    }
+
+    private ArrayList<PatchCurve> _getPatchCurves(DirectedPatchSourceMesh patchMsh) {
+        return new ArrayList<>(patchMsh.getPatchCurveManager().getObjects());
+    }
+
+    private ArrayList<PatchVertex> _getPatchVertices(DirectedPatchSourceMesh patchMsh) {
+        return new ArrayList<>(patchMsh.getPatchVertexManager().getObjects());
+    }
+
+    private double _getRadius(DirectedPatchSourceMesh patchMsh, CylindricalCoordinateSystem c) {
+        double maxR = 0.;
+        for (PatchVertex pv : _getPatchVertices(patchMsh)) {
+            Vector3 xyz = _getVector3(pv, c);
+            //_io.say.msg(pv.getPresentationName() + " in Cyl CSYS: " + xyz.toString());
+            maxR = Math.max(maxR, xyz.x);
+        }
+        _io.say.value("Pipe Radius", maxR, _ud.unit_m, true);
+        return maxR;
+    }
+
+    private Vector3 _getVector3(PatchVertex pv, CylindricalCoordinateSystem c) {
+        return c.transformLabCoordinate(new Vector3(pv.getCoordinate().toDoubleArray()));
+    }
+
+    private boolean _isCustomControllable(MeshOperation mo) {
+        if (_chk.is.autoMeshOperation(mo) || _chk.is.surfaceWrapperOperation(mo)) {
+            return true;
+        }
+        _io.say.msg(true, "This Mesh Operation can not have Custom Controls. Skipping...");
+        return false;
+    }
+
+    private boolean _meshPipe_buildExternalPatchCurves(DirectedPatchSourceMesh patchMsh,
             CylindricalCoordinateSystem c, boolean backwards) {
         double r = _getRadius(patchMsh, c);
         _io.say.msg("Erasing original Patch Curves...");
-        for (PatchCurve pc : _getPCs(patchMsh)) {
+        for (PatchCurve pc : _getPatchCurves(patchMsh)) {
             patchMsh.deletePatchCurve(pc);
         }
         _io.say.msg("Rebuilding external Patch Curves...");
@@ -807,7 +859,7 @@ public class CreateMeshOperation {
                     dv = new DoubleVector(new double[]{ p1.x, p1.y, p1.z, p2.x, p2.y, p2.z });
                     patchMsh.createPatchCurve(null, null, dv,
                             new StringVector(new String[]{ "ON_FEATURE_EDGE", "ON_FEATURE_EDGE" }));
-                    placedVs.addAll(_getPVs(patchMsh));
+                    placedVs.addAll(_getPatchVertices(patchMsh));
                     continue;
                 case 1:
                     dv = new DoubleVector(new double[]{ p3.x, p3.y, p3.z });
@@ -819,7 +871,7 @@ public class CreateMeshOperation {
             oldPv = placedVs.get(placedVs.size() - 1);
             patchMsh.createPatchCurve(oldPv, null, dv,
                     new StringVector(new String[]{ "ON_FEATURE_EDGE" }));
-            for (PatchVertex pv : _getPVs(patchMsh)) {
+            for (PatchVertex pv : _getPatchVertices(patchMsh)) {
                 if (!placedVs.contains(pv)) {
                     placedVs.add(pv);
                 }
@@ -836,7 +888,7 @@ public class CreateMeshOperation {
         return true;
     }
 
-    private PatchCurve _createDM_Pipe_buildInternalPatchCurves(DirectedPatchSourceMesh patchMsh,
+    private PatchCurve _meshPipe_buildInternalPatchCurves(DirectedPatchSourceMesh patchMsh,
             CylindricalCoordinateSystem c,
             double rR, boolean backwards) {
         double r = _getRadius(patchMsh, c);
@@ -844,8 +896,8 @@ public class CreateMeshOperation {
         DoubleVector dv = new DoubleVector();
         _io.say.msg("Building internal Patch Curves...");
         //-- Building is always clock-wise (0, 90, 180, 270)
-        ArrayList<PatchCurve> placedCs = _getPCs(patchMsh);
-        ArrayList<PatchVertex> placedVs = _getPVs(patchMsh);
+        ArrayList<PatchCurve> placedCs = _getPatchCurves(patchMsh);
+        ArrayList<PatchVertex> placedVs = _getPatchVertices(patchMsh);
         _io.say.msg("   Placed Curves: " + placedCs.size());
         _io.say.msg("   Placed Vertices: " + placedVs.size());
         if (placedVs.size() != 4) {
@@ -897,11 +949,11 @@ public class CreateMeshOperation {
             //_io.say.msg("PV = " + pv.getCoordinate().toString());
             //_io.say.msg("PV = " + pv.toString());
             patchMsh.createPatchCurve(pv, null, dv, new StringVector(new String[]{ "ON_SURFACE" }));
-            PatchVertex p = (PatchVertex) _getNewObject(placedVs, _getPVs(patchMsh));
+            PatchVertex p = (PatchVertex) _getNewObject(placedVs, _getPatchVertices(patchMsh));
             placedVs.add(p);
         }
         //--
-        PatchCurve pcInt = (PatchCurve) _getNewObject(placedCs, _getPCs(patchMsh));
+        PatchCurve pcInt = (PatchCurve) _getNewObject(placedCs, _getPatchCurves(patchMsh));
         //--
         PatchVertex pv1r = placedVs.get(4);
         PatchVertex pv2r = placedVs.get(5);
@@ -945,58 +997,6 @@ public class CreateMeshOperation {
             patchMsh.createPatchCurve(px, py, dv, sv);
         }
         return pcInt;
-    }
-
-    private SurfaceCustomMeshControl _createSC(MeshOperation mo, boolean vo) {
-        _io.say.action("Creating a Custom Surface Mesh Control", vo);
-        _io.say.object(mo, vo);
-        if (!_isCustomControllable(mo)) {
-            return null;
-        }
-        AutoMeshOperation amo = (AutoMeshOperation) mo;
-        SurfaceCustomMeshControl scmc = amo.getCustomMeshControls().createSurfaceControl();
-        _io.say.created(scmc, vo);
-        return scmc;
-    }
-
-    private Object _getNewObject(ArrayList objOld, ArrayList objNew) {
-        for (Object o : objNew) {
-            if (!objOld.contains(o)) {
-                return o;
-            }
-        }
-        return null;
-    }
-
-    private ArrayList<PatchCurve> _getPCs(DirectedPatchSourceMesh patchMsh) {
-        return new ArrayList<>(patchMsh.getPatchCurveManager().getObjects());
-    }
-
-    private ArrayList<PatchVertex> _getPVs(DirectedPatchSourceMesh patchMsh) {
-        return new ArrayList<>(patchMsh.getPatchVertexManager().getObjects());
-    }
-
-    private double _getRadius(DirectedPatchSourceMesh patchMsh, CylindricalCoordinateSystem c) {
-        double maxR = 0.;
-        for (PatchVertex pv : _getPVs(patchMsh)) {
-            Vector3 xyz = _getVector3(pv, c);
-            //_io.say.msg(pv.getPresentationName() + " in Cyl CSYS: " + xyz.toString());
-            maxR = Math.max(maxR, xyz.x);
-        }
-        _io.say.value("Pipe Radius", maxR, _ud.unit_m, true);
-        return maxR;
-    }
-
-    private Vector3 _getVector3(PatchVertex pv, CylindricalCoordinateSystem c) {
-        return c.transformLabCoordinate(new Vector3(pv.getCoordinate().toDoubleArray()));
-    }
-
-    private boolean _isCustomControllable(MeshOperation mo) {
-        if (_chk.is.autoMeshOperation(mo) || _chk.is.surfaceWrapperOperation(mo)) {
-            return true;
-        }
-        _io.say.msg(true, "This Mesh Operation can not have Custom Controls. Skipping...");
-        return false;
     }
 
     private void _setAnisotropicSizes(VolumeCustomMeshControl vcmc, double[] relSizes) {

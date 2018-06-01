@@ -57,11 +57,8 @@ public class GetPartSurfaces {
      */
     public ArrayList<PartSurface> all(boolean vo) {
         ArrayList<PartSurface> aps = new ArrayList<>();
-        _io.say.msg(vo, "Getting all Part Surfaces from all Geometries...");
-        for (GeometryPart gp : _get.geometries.all(false)) {
-            aps.addAll(gp.getPartSurfaces());
-        }
-        _io.say.msg(vo, "Part Surfaces found: %d", aps.size());
+        _get.geometries.all(false).forEach(gp -> aps.addAll(all(gp, false)));
+        _io.say.objects(aps, "Getting all Part Surfaces from all Geometries", vo);
         return aps;
     }
 
@@ -73,7 +70,9 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> all(GeometryPart gp, boolean vo) {
-        return allByREGEX(gp, ".*", vo);
+        ArrayList<PartSurface> aps = new ArrayList<>(gp.getPartSurfaces());
+        _io.say.objects(aps, "Getting all Part Surfaces", vo);
+        return aps;
     }
 
     /**
@@ -85,10 +84,7 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "all Part Surfaces",
-                        new ArrayList<>(all(false)), vo)
-        );
+        return _get.objects.allByREGEX(regexPatt, "all Part Surfaces", all(false), vo);
     }
 
     /**
@@ -101,8 +97,7 @@ public class GetPartSurfaces {
      * @return An ArrayList of Part Surfaces.
      */
     public ArrayList<PartSurface> allByREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "all Part Surfaces",
-                new ArrayList<>(gp.getPartSurfaces()), vo));
+        return _get.objects.allByREGEX(regexPatt, "all Part Surfaces", all(gp, false), vo);
     }
 
     /**
@@ -134,8 +129,7 @@ public class GetPartSurfaces {
      * @return The PartSurface. Null if nothing is found.
      */
     public PartSurface byREGEX(String regexPatt, boolean vo) {
-        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface",
-                new ArrayList<>(all(false)), vo);
+        return _get.objects.byREGEX(regexPatt, "Part Surface", all(false), vo);
     }
 
     /**
@@ -148,8 +142,7 @@ public class GetPartSurfaces {
      * @return The PartSurface. Null if nothing is found.
      */
     public PartSurface byREGEX(GeometryPart gp, String regexPatt, boolean vo) {
-        return (PartSurface) _get.objects.byREGEX(regexPatt, "Part Surface",
-                new ArrayList<>(gp.getPartSurfaces()), vo);
+        return _get.objects.byREGEX(regexPatt, "Part Surface", all(gp, false), vo);
     }
 
     /**
@@ -223,9 +216,7 @@ public class GetPartSurfaces {
         _io.say.action("Getting Part Surfaces", true);
         _io.say.objects(ab, "Boundaries", true);
         ArrayList<PartSurface> aps = new ArrayList<>();
-        for (Boundary b : ab) {
-            aps.addAll(b.getPartSurfaceGroup().getObjects());
-        }
+        ab.forEach(b -> aps.addAll(b.getPartSurfaceGroup().getObjects()));
         _io.say.objects(aps, "Part Surfaces", true);
         _io.say.ok(true);
         return aps;

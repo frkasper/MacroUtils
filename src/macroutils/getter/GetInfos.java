@@ -114,8 +114,6 @@ public class GetInfos {
         //--
         int n = ax.size();
         double fp1, fpn, h, p;
-        final double zero = 0.0, two = 2.0, three = 3.0;
-        boolean uniform = true;
         _lastInterval = 0;
         double[] x = new double[n];
         double[] f = new double[n];
@@ -131,16 +129,13 @@ public class GetInfos {
         //-- sub-diagonal in b, diagonal in d, difference quotient in c.
         b[0] = x[1] - x[0];
         c[0] = (f[1] - f[0]) / b[0];
-        d[0] = two * b[0];
+        d[0] = 2.0 * b[0];
         for (int i = 1; i < n - 1; i++) {
             b[i] = x[i + 1] - x[i];
-            if (Math.abs(b[i] - b[0]) / b[0] > 1.0E-5) {
-                uniform = false;
-            }
             c[i] = (f[i + 1] - f[i]) / b[i];
-            d[i] = two * (b[i] + b[i - 1]);
+            d[i] = 2.0 * (b[i] + b[i - 1]);
         }
-        d[n - 1] = two * b[n - 2];
+        d[n - 1] = 2.0 * b[n - 2];
         //-- Calculate estimates for the end slopes.  Use polynomials
         //-- interpolating data nearest the end.
         fp1 = c[0] - b[0] * (c[1] - c[0]) / (b[0] + b[1]);
@@ -156,11 +151,11 @@ public class GetInfos {
         }
         //--
         //-- Calculate the right-hand-side and store it in c.
-        c[n - 1] = three * (fpn - c[n - 2]);
+        c[n - 1] = 3.0 * (fpn - c[n - 2]);
         for (int i = n - 2; i > 0; i--) {
-            c[i] = three * (c[i] - c[i - 1]);
+            c[i] = 3.0 * (c[i] - c[i - 1]);
         }
-        c[0] = three * (c[0] - fp1);
+        c[0] = 3.0 * (c[0] - fp1);
         //--
         //-- Solve the tridiagonal system.
         for (int k = 1; k < n; k++) {
@@ -177,10 +172,10 @@ public class GetInfos {
         h = x[1] - x[0];
         for (int i = 0; i < n - 1; i++) {
             h = x[i + 1] - x[i];
-            d[i] = (c[i + 1] - c[i]) / (three * h);
+            d[i] = (c[i + 1] - c[i]) / (3.0 * h);
             b[i] = (f[i + 1] - f[i]) / h - h * (c[i] + h * d[i]);
         }
-        b[n - 1] = b[n - 2] + h * (two * c[n - 2] + h * three * d[n - 2]);
+        b[n - 1] = b[n - 2] + h * (2.0 * c[n - 2] + h * 3.0 * d[n - 2]);
         _io.say.msgDebug("spline coefficients");
         return new double[][]{ f, x, b, c, d };
     }

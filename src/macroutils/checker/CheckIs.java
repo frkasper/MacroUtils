@@ -432,11 +432,13 @@ public class CheckIs {
     public boolean withinSamePart(ArrayList<NamedObject> ano) {
         ArrayList<GeometryPart> agp = new ArrayList<>();
         for (NamedObject no : ano) {
-            GeometryPart gp = null;
+            GeometryPart gp;
             if (no instanceof PartSurface) {
                 gp = ((PartSurface) no).getPart();
             } else if (no instanceof PartCurve) {
                 gp = ((PartCurve) no).getPart();
+            } else {
+                continue;
             }
             if (agp.contains(gp)) {
                 return false;

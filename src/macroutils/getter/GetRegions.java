@@ -48,8 +48,7 @@ public class GetRegions {
      * @return An ArrayList of Regions.
      */
     public ArrayList<Region> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "Regions", new ArrayList<>(all(false)), vo));
+        return _get.objects.allByREGEX(regexPatt, "Regions", all(false), vo);
     }
 
     /**
@@ -60,8 +59,7 @@ public class GetRegions {
      * @return The Region.
      */
     public Region byREGEX(String regexPatt, boolean vo) {
-        return (Region) _get.objects.allByREGEX(regexPatt, "Region",
-                new ArrayList<>(all(false)), vo).get(0);
+        return _get.objects.byREGEX(regexPatt, "Region", all(false), vo);
     }
 
     /**

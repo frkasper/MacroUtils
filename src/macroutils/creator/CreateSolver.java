@@ -70,13 +70,7 @@ public class CreateSolver {
                 .createForFile(simhf.toString(), false);
         sh.getRegions().setObjects(ano);
         sh.setFunctions(new Vector<>(aff));
-        for (NamedObject no : ano) {
-            if (no instanceof Region) {
-                sh.getRegions().add(no);
-                continue;
-            }
-            sh.getInputs().add(no);
-        }
+        ano.forEach(no -> _addInput(sh, no));
         _io.say.objects(new ArrayList<>(sh.getFunctions()), "Functions", true);
         _io.say.objects(new ArrayList<>(sh.getRegions().getParts()), "Regions", true);
         _io.say.objects(new ArrayList<>(sh.getInputs().getParts()), "Inputs", true);
@@ -175,6 +169,14 @@ public class CreateSolver {
         _io = _mu.io;
         _set = _mu.set;
         _ud = _mu.userDeclarations;
+    }
+
+    private void _addInput(SolutionHistory sh, NamedObject no) {
+        if (no instanceof Region) {
+            sh.getRegions().add(no);
+        } else {
+            sh.getInputs().add(no);
+        }
     }
 
 }

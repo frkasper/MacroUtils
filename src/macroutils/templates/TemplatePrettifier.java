@@ -198,7 +198,8 @@ public class TemplatePrettifier {
     }
 
     private void _sayGeneric(String action, NamedObject no, boolean vo) {
-        _io.say.msg(vo, "  - %s \"%s\"...", action, no.getPresentationName());
+        _io.say.msg(vo, "  - %s \"%s\" %s...", action, no.getPresentationName(),
+                _get.strings.parentName(no));
     }
 
     private void _sayPrettifying(NamedObject no, boolean vo) {

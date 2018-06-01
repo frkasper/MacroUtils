@@ -35,9 +35,8 @@ public class GetParts {
      * @return An ArrayList of Parts.
      */
     public ArrayList<Part> all(boolean vo) {
-        _io.say.msg(vo, "Getting all Parts...");
         ArrayList<Part> ap = new ArrayList<>(_sim.getPartManager().getObjects());
-        _io.say.msg(vo, "Parts found: %d", ap.size());
+        _io.say.objects(ap, "Getting all Parts", vo);
         return ap;
     }
 
@@ -49,8 +48,7 @@ public class GetParts {
      * @return An ArrayList of Parts.
      */
     public ArrayList<Part> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "all Parts", new ArrayList<>(all(false)), vo));
+        return _get.objects.allByREGEX(regexPatt, "all Parts", all(false), vo);
     }
 
     /**
@@ -61,8 +59,7 @@ public class GetParts {
      * @return The Part. Null if nothing is found.
      */
     public Part byREGEX(String regexPatt, boolean vo) {
-        return (Part) _get.objects.byREGEX(regexPatt, "Part Surface",
-                new ArrayList<>(all(false)), vo);
+        return _get.objects.byREGEX(regexPatt, "Part Surface", all(false), vo);
     }
 
     /**

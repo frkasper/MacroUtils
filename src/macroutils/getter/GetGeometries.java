@@ -1,6 +1,7 @@
 package macroutils.getter;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import star.cadmodeler.Body;
 import star.cadmodeler.SolidModelPart;
@@ -42,10 +43,9 @@ public class GetGeometries {
      * @return An ArrayList with Geometry Parts.
      */
     public ArrayList<GeometryPart> all(boolean vo) {
-        _io.say.msg(vo, "Getting all Leaf Parts...");
         ArrayList<GeometryPart> agp = new ArrayList<>(
                 _sim.get(SimulationPartManager.class).getLeafParts());
-        _io.say.msg(vo, "Leaf Parts found: %d", agp.size());
+        _io.say.objects(agp, "Getting all Leaf Parts", vo);
         return agp;
     }
 
@@ -57,8 +57,7 @@ public class GetGeometries {
      * @return The Geometry Part.
      */
     public GeometryPart byREGEX(String regexPatt, boolean vo) {
-        return (GeometryPart) _get.objects.allByREGEX(regexPatt, "Geometry Part",
-                new ArrayList<>(all(false)), vo).get(0);
+        return _get.objects.byREGEX(regexPatt, "Geometry Part", all(false), vo);
     }
 
     /**
@@ -79,14 +78,10 @@ public class GetGeometries {
      * @return An ArrayList with Geometry Parts.
      */
     public ArrayList<GeometryPart> fromPartSurfaces(ArrayList<PartSurface> aps) {
-        ArrayList<GeometryPart> agp = new ArrayList<>();
-        for (PartSurface ps : aps) {
-            if (agp.contains(ps.getPart())) {
-                continue;
-            }
-            agp.add(ps.getPart());
-        }
-        return agp;
+        return new ArrayList<>(
+                aps.stream()
+                        .map(ps -> ps.getPart())
+                        .collect(Collectors.toSet()));
     }
 
     /**

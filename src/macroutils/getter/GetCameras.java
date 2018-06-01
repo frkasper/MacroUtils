@@ -50,9 +50,7 @@ public class GetCameras {
      * @return An ArrayList of Camera Views.
      */
     public ArrayList<VisView> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "Camera Views", new ArrayList<>(all(false)), vo)
-        );
+        return _get.objects.allByREGEX(regexPatt, "Camera Views", all(false), vo);
     }
 
     /**
@@ -63,8 +61,7 @@ public class GetCameras {
      * @return The VisView.
      */
     public VisView byREGEX(String regexPatt, boolean vo) {
-        return (VisView) _get.objects.allByREGEX(regexPatt, "Camera View",
-                new ArrayList<>(all(false)), vo).get(0);
+        return _get.objects.byREGEX(regexPatt, "Camera View", all(false), vo);
     }
 
     /**

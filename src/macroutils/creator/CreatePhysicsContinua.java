@@ -1,6 +1,7 @@
 package macroutils.creator;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
@@ -10,7 +11,6 @@ import star.common.ExplicitUnsteadyModel;
 import star.common.FunctionScalarProfileMethod;
 import star.common.FunctionVectorProfileMethod;
 import star.common.ImplicitUnsteadyModel;
-import star.common.Model;
 import star.common.PhysicsContinuum;
 import star.common.ScalarProfile;
 import star.common.Simulation;
@@ -41,7 +41,6 @@ import star.kwturb.KwTurbRealizabilityOption;
 import star.kwturb.SkwTurbModel;
 import star.kwturb.SstKwTurbDesModel;
 import star.kwturb.SstKwTurbModel;
-import star.material.ConstantMaterialPropertyMethod;
 import star.material.EulerianMultiPhaseModel;
 import star.material.SingleComponentGasModel;
 import star.material.SingleComponentLiquidModel;
@@ -118,22 +117,12 @@ public class CreatePhysicsContinua {
         _set.object.physicalQuantity(fvw.getWind(), wind, _ud.defUnitVel, "Wind", true);
         //--
         //-- Try to Set Light and Heavy Fluids Automatically
-        ArrayList<Double> dens = new ArrayList<>();
-        EulerianMultiPhaseModel empm = pc.getModelManager().getModel(EulerianMultiPhaseModel.class);
-        //--
         //-- Match the data defined in the Physics Continua
         _io.say.msg("Matching Eulerian Phase Densities...");
-        for (Object obj : empm.getPhaseManager().getObjects()) {
-            EulerianPhase phase = (EulerianPhase) obj;
-            for (Model m : phase.getModelManager().getObjects()) {
-                if (!m.getBeanDisplayName().matches("Gas|Liquid")) {
-                    continue;
-                }
-                ConstantMaterialPropertyMethod cmpm = _get.objects.constantMaterialProperty(m,
-                        ConstantDensityProperty.class);
-                dens.add(cmpm.getQuantity().getSIValue());
-            }
-        }
+        ArrayList<Double> dens = new ArrayList<>(
+                _getPhases(pc).stream()
+                        .map(ep -> _getDensity(ep))
+                        .collect(Collectors.toList()));
         _set.object.physicalQuantity(fvw.getLightFluidDensity(), Math.min(dens.get(0), dens.get(1)),
                 _ud.unit_kgpm3, "Light Fluid Density", true);
         _set.object.physicalQuantity(fvw.getHeavyFluidDensity(), Math.max(dens.get(0), dens.get(1)),
@@ -234,9 +223,7 @@ public class CreatePhysicsContinua {
     }
 
     private void _enable(ArrayList<Class> aclz) {
-        for (Class cl : aclz) {
-            _pc.enable(cl);
-        }
+        aclz.forEach(cl -> _pc.enable(cl));
     }
 
     private void _enableCDM() {
@@ -273,8 +260,24 @@ public class CreatePhysicsContinua {
         return aclz;
     }
 
+    private double _getDensity(EulerianPhase phase) {
+        return phase.getModelManager().getObjects().stream()
+                .filter(m -> m.getBeanDisplayName().matches("Gas|Liquid"))
+                .map(m -> _get.objects.constantMaterialProperty(m, ConstantDensityProperty.class))
+                .map(cmpm -> cmpm.getQuantity().getSIValue())
+                .findFirst().get();
+    }
+
     private String _getPCName() {
         return _get.strings.withinTheBrackets(_s.toString()).replaceAll(", ", " / ");
+    }
+
+    @SuppressWarnings(value = "unchecked")
+    private ArrayList<EulerianPhase> _getPhases(PhysicsContinuum pc) {
+        ArrayList<EulerianPhase> phases = new ArrayList<>();
+        EulerianMultiPhaseModel empm = pc.getModelManager().getModel(EulerianMultiPhaseModel.class);
+        empm.getPhaseManager().getObjects().forEach((obj) -> phases.add((EulerianPhase) obj));
+        return phases;
     }
 
     private void _resetData() {

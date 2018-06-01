@@ -40,8 +40,7 @@ public class GetMonitors {
      * @return An ArrayList of Monitors.
      */
     public ArrayList<Monitor> all(boolean vo) {
-        ArrayList<Monitor> ar = new ArrayList<>();
-        ar.addAll(_sim.getMonitorManager().getObjects());
+        ArrayList<Monitor> ar = new ArrayList<>(_sim.getMonitorManager().getObjects());
         _io.say.objects(ar, "Getting all Monitors", vo);
         return ar;
     }
@@ -54,8 +53,7 @@ public class GetMonitors {
      * @return An ArrayList of Monitors.
      */
     public ArrayList<Monitor> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "Monitors", new ArrayList<>(all(false)), vo));
+        return _get.objects.allByREGEX(regexPatt, "Monitors", all(false), vo);
     }
 
     /**
@@ -66,8 +64,7 @@ public class GetMonitors {
      * @return The Monitor.
      */
     public Monitor byREGEX(String regexPatt, boolean vo) {
-        return (Monitor) _get.objects.allByREGEX(regexPatt, "Monitor",
-                new ArrayList<>(all(false)), vo).get(0);
+        return _get.objects.byREGEX(regexPatt, "Monitor", all(false), vo);
     }
 
     /**
@@ -79,7 +76,7 @@ public class GetMonitors {
      */
     public ReportMonitor fromReport(Report rep, boolean vo) {
         _io.say.action("Getting a Monitor from a Report", vo);
-        for (ReportMonitor rm : _getAllReportMonitors()) {
+        for (ReportMonitor rm : _sim.getMonitorManager().getObjectsOf(ReportMonitor.class)) {
             if (rm.getReport() == rep) {
                 _io.say.value("Found", rm.getPresentationName(), true, vo);
                 return rm;
@@ -95,7 +92,7 @@ public class GetMonitors {
      * @return The Iteration Monitor.
      */
     public IterationMonitor iteration() {
-        return ((IterationMonitor) _getMonitor("Iteration"));
+        return (IterationMonitor) _getMonitor("Iteration");
     }
 
     /**
@@ -104,7 +101,7 @@ public class GetMonitors {
      * @return The Physical Time Monitor.
      */
     public PhysicalTimeMonitor physicalTime() {
-        return ((PhysicalTimeMonitor) _getMonitor("Physical Time"));
+        return (PhysicalTimeMonitor) _getMonitor("Physical Time");
     }
 
     /**
@@ -113,16 +110,6 @@ public class GetMonitors {
     public void updateInstances() {
         _get = _mu.get;
         _io = _mu.io;
-    }
-
-    private ArrayList<ReportMonitor> _getAllReportMonitors() {
-        ArrayList<ReportMonitor> ar = new ArrayList<>();
-        for (Monitor m : all(false)) {
-            if (m instanceof ReportMonitor) {
-                ar.add((ReportMonitor) m);
-            }
-        }
-        return ar;
     }
 
     private Monitor _getMonitor(String name) {

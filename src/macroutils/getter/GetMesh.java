@@ -147,7 +147,7 @@ public class GetMesh {
      * @return The MeshOperation. Null if nothing is found.
      */
     public MeshOperation operation(String regexPatt, boolean vo) {
-        return (MeshOperation) _get.objects.byREGEX(regexPatt,
+        return _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(_sim.get(MeshOperationManager.class).getObjects()), vo);
     }
 

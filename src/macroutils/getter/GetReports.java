@@ -48,8 +48,7 @@ public class GetReports {
      * @return An ArrayList of Reports.
      */
     public ArrayList<Report> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "Reports", new ArrayList<>(all(false)), vo));
+        return _get.objects.allByREGEX(regexPatt, "Reports", all(false), vo);
     }
 
     /**
@@ -60,8 +59,7 @@ public class GetReports {
      * @return The Report.
      */
     public Report byREGEX(String regexPatt, boolean vo) {
-        return (Report) _get.objects.allByREGEX(regexPatt, "Report",
-                new ArrayList<>(all(false)), vo).get(0);
+        return _get.objects.byREGEX(regexPatt, "Report", all(false), vo);
     }
 
     /**

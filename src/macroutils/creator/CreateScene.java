@@ -143,7 +143,7 @@ public class CreateScene {
      * @return The PartDisplayer.
      */
     public PartDisplayer displayer_Geometry(Scene scn) {
-        return _createDisplayer_Part(scn, _getGeometryNOs(), true);
+        return _createDisplayer_Part(scn, _getGeometryObjects(), true);
     }
 
     /**
@@ -241,7 +241,7 @@ public class CreateScene {
      * @return The Scene.
      */
     public Scene scalar(ArrayList<NamedObject> ano, FieldFunction ff, Units u, boolean sf) {
-        Scene scn = _createScene(StaticDeclarations.Scene.SCALAR, _getScalarNOs(ano), ff, u, true);
+        Scene scn = _createScene(StaticDeclarations.Scene.SCALAR, _getScalarObjects(ano), ff, u, true);
         if (sf) {
             ScalarDisplayer sd = (ScalarDisplayer) _get.scenes.displayerByREGEX(scn,
                     "Scalar.*", false);
@@ -409,7 +409,7 @@ public class CreateScene {
             FieldFunction ff, Units u, boolean vo) {
         Scene scn = _initScene(type, vo);
         if (ano.isEmpty()) {
-            ano.addAll(_getGeometryNOs());
+            ano.addAll(_getGeometryObjects());
         }
         switch (type) {
             case EMPTY:
@@ -469,18 +469,16 @@ public class CreateScene {
         return scn.getDisplayerManager();
     }
 
-    private ArrayList<NamedObject> _getGeometryNOs() {
-        if (_sim.getRegionManager().isEmpty()) {
-            return new ArrayList<>(_get.partSurfaces.all(false));
-        }
-        return new ArrayList<>(_get.boundaries.all(false));
+    private ArrayList<NamedObject> _getGeometryObjects() {
+        boolean isEmpty = _sim.getRegionManager().isEmpty();
+        return new ArrayList<>(isEmpty ? _get.partSurfaces.all(false) : _get.boundaries.all(false));
     }
 
     private ArrayList<NamedObject> _getInputPartsChildren(StreamPart sp) {
         return _get.objects.children(new ArrayList<>(sp.getInputPartsCollection()), false);
     }
 
-    private ArrayList<NamedObject> _getScalarNOs(ArrayList<NamedObject> ano) {
+    private ArrayList<NamedObject> _getScalarObjects(ArrayList<NamedObject> ano) {
         ArrayList<NamedObject> ano2 = new ArrayList<>();
         for (NamedObject no : ano) {
             if (no instanceof Region) {

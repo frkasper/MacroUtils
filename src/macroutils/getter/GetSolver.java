@@ -81,7 +81,7 @@ public class GetSolver {
      * @return The SolutionHistory.
      */
     public SolutionHistory solutionHistory(String regexPatt, boolean vo) {
-        return (SolutionHistory) _get.objects.byREGEX(regexPatt,
+        return _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(_sim.get(SolutionHistoryManager.class).getObjects()), vo);
     }
 
@@ -93,7 +93,7 @@ public class GetSolver {
      * @return The SolutionView.
      */
     public SolutionView solutionView(String regexPatt, boolean vo) {
-        return (SolutionView) _get.objects.byREGEX(regexPatt,
+        return _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(_sim.get(SolutionViewManager.class).getObjects()), vo);
     }
 
@@ -105,7 +105,7 @@ public class GetSolver {
      * @return The SolverStoppingCriterion object.
      */
     public SolverStoppingCriterion stoppingCriteria(String regexPatt, boolean vo) {
-        return (SolverStoppingCriterion) _get.objects.byREGEX(regexPatt,
+        return _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(_sim.getSolverStoppingCriterionManager().getObjects()), vo);
     }
 

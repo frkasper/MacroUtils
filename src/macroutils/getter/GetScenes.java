@@ -55,8 +55,7 @@ public class GetScenes {
      * @return An ArrayList of Scenes.
      */
     public ArrayList<Scene> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "Scenes", new ArrayList<>(all(false)), vo));
+        return _get.objects.allByREGEX(regexPatt, "Scenes", all(false), vo);
     }
 
     /**
@@ -67,9 +66,7 @@ public class GetScenes {
      */
     public ArrayList<Displayer> allDisplayers(boolean vo) {
         ArrayList<Displayer> ad = new ArrayList<>();
-        for (Scene scn : all(false)) {
-            ad.addAll(scn.getDisplayerManager().getObjects());
-        }
+        all(false).forEach(scn -> ad.addAll(allDisplayers(scn, false)));
         _io.say.objects(ad, "Getting all Displayers", vo);
         return ad;
     }
@@ -82,7 +79,6 @@ public class GetScenes {
      * @return An ArrayList of Displayers.
      */
     public ArrayList<Displayer> allDisplayers(Scene scn, boolean vo) {
-        String sn = scn.getPresentationName();
         ArrayList<Displayer> ad = new ArrayList<>(scn.getDisplayerManager().getObjects());
         _io.say.objects(ad, String.format("Getting all Displayers from Scene \"%s\"",
                 scn.getPresentationName()), vo);
@@ -98,10 +94,7 @@ public class GetScenes {
      * @return An ArrayList of Displayers.
      */
     public ArrayList<Displayer> allDisplayersByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(
-                _get.objects.allByREGEX(regexPatt, "Displayers",
-                        new ArrayList<>(allDisplayers(false)), vo)
-        );
+        return _get.objects.allByREGEX(regexPatt, "Displayers", allDisplayers(false), vo);
     }
 
     /**
@@ -112,7 +105,7 @@ public class GetScenes {
      * @return The Scene. Null if nothing is found.
      */
     public Scene byREGEX(String regexPatt, boolean vo) {
-        return (Scene) _get.objects.byREGEX(regexPatt, "Scene", new ArrayList<>(all(false)), vo);
+        return _get.objects.byREGEX(regexPatt, "Scene", all(false), vo);
     }
 
     /**
@@ -124,8 +117,7 @@ public class GetScenes {
      * @return The Scene. Null if nothing is found.
      */
     public Displayer displayerByREGEX(Scene scn, String regexPatt, boolean vo) {
-        return (Displayer) _get.objects.byREGEX(regexPatt, "Scene",
-                new ArrayList<>(allDisplayers(scn, false)), vo);
+        return _get.objects.byREGEX(regexPatt, "Scene", allDisplayers(scn, false), vo);
     }
 
     /**
