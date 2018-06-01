@@ -11,7 +11,7 @@ class ExecutionTime():
 
     """A very useful information to have"""
 
-    def __init__(self, t0=None, verbose=True):
+    def __init__(self, t0=None, key=None, verbose=True):
         """Initialize with no argument as a start"""
         self.verbose = verbose
         if t0 is None:
@@ -19,7 +19,10 @@ class ExecutionTime():
         self.t0 = t0
         self.s_t0 = t0.strftime('%H:%M:%S')
         if verbose:
-            print('Execution started at %s.' % self.s_t0)
+            if key is None:
+                print('Execution started at %s.' % self.s_t0)
+            else:
+                print('Execution of %s started at %s.' % (key, self.s_t0))
 
     def __delta(self, t1):
         return int((t1 - self.t0).total_seconds())

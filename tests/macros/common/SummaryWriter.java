@@ -66,21 +66,25 @@ public final class SummaryWriter {
      * Collect information concerning geometry Parts.
      */
     public void collectGeometry() {
+        int n = printCollecting("Geometry");
         List<String> parts = mu.get.geometries.all(true).stream()
                 .map(part -> getPartInfo(part))
                 .collect(Collectors.toList());
         INFORMATION.addAll(parts);
+        printCollected(n);
     }
 
     /**
      * Collect all information concerning mesh.
      */
     public void collectMesh() {
+        int n = printCollecting("Mesh");
         if (mu.check.has.volumeMesh()) {
             collectVolumeMeshInfo();
         } else {
             collectSurfaceMeshInfo();
         }
+        printCollected(n);
     }
 
     /**
@@ -101,33 +105,41 @@ public final class SummaryWriter {
      * Collect information concerning XYPlots.
      */
     public void collectPlots() {
+        int n = printCollecting("Plots");
         sim.getPlotManager().getObjectsOf(XYPlot.class).stream().forEach(xyp -> collectPlot(xyp));
+        printCollected(n);
     }
 
     /**
      * Collect all information concerning Regions and its Boundaries.
      */
     public void collectRegions() {
+        int n = printCollecting("Region");
         sim.getRegionManager().getRegions().stream().forEach(r -> collectRegion(r));
+        printCollected(n);
     }
 
     /**
      * Collect information concerning Reports.
      */
     public void collectReports() {
+        int n = printCollecting("Reports");
         List<String> reports = sim.getReportManager().getObjects().stream()
                 .map(r -> getPair(mu.get.strings.information(r), r.getReportMonitorValue()))
                 .collect(Collectors.toList());
         INFORMATION.addAll(reports);
+        printCollected(n);
     }
 
     /**
      * Collect information concerning Scenes and its dependents.
      */
     public void collectScenes() {
+        int n = printCollecting("Scenes");
         Collection<Scene> allScenes = sim.getSceneManager().getObjects();
         allScenes.forEach(scene -> scene.open());
         allScenes.forEach(scene -> collectDisplayers(scene));
+        printCollected(n);
     }
 
     /**
@@ -284,15 +296,26 @@ public final class SummaryWriter {
     private String getPartInfo(GeometryPart gp) {
         String key = mu.get.strings.information(gp);
         List<PartSurface> allPS = mu.get.partSurfaces.all(gp, true);
-        String plural = (allPS.size() > 1) ? "s" : "";
-        return getPair(key, String.format("%d Part Surface%s", allPS.size(), plural));
+        int nps = allPS.size();
+        return getPair(key, String.format("%d Part Surface%s", nps, nps > 1 ? "s" : ""));
     }
 
     private String getString(double value) {
         return String.format("%.6e", value);
     }
 
+    private void printCollected(int initialSize) {
+        int net = INFORMATION.size() - initialSize;
+        mu.io.print.msg(true, "Collected %d entr%s.", net, net > 1 ? "ies" : "y");
+    }
+
+    private int printCollecting(String key) {
+        mu.io.print.action("Collecting " + key + " data", true);
+        return INFORMATION.size();
+    }
+
     private void writeInformation() {
+        mu.io.print.action("Writing summary file", true);
         File file = new File(sim.getSessionDir(), "Summary_" + sim.getPresentationName() + ".ref");
         mu.io.write.data(file, new ArrayList<>(INFORMATION), true);
     }

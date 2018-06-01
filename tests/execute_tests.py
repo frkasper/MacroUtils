@@ -30,6 +30,7 @@ import common.executor as executor
 import common.set_up as set_up
 import common.star as star
 import common.strings as strings
+import common.timer as timer
 
 from collections import namedtuple
 
@@ -301,6 +302,10 @@ def run_step2(options, test_cases):
 def run_tests(options):
     print_overview(options)
 
+    print(strings.line())
+    overall_time = timer.ExecutionTime(key='All Tests')
+    print(strings.line() + '\n')
+
     # Bug files are not copied at this time.
     demos = [nt for nt in options.test_cases if tests_definition.is_demo(nt)]
     demo_files_2d = [_demo_files(options, nt) for nt in demos]
@@ -312,6 +317,8 @@ def run_tests(options):
 
     run_step1(options, options.test_cases)
     run_step2(options, options.test_cases)
+
+    overall_time.finalize(extra_info='All Tests')
 
 
 if __name__ == "__main__":
