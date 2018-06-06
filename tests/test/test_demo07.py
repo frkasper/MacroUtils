@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import movie
 import test_utils
 
 
 DEMO_ID = test_utils.demo_id(__file__)
+MOVIE_FOLDER = 'pics_Demo7_VOF'
 
 
 def test_write_summary():
@@ -49,7 +51,13 @@ def test_scalar_max():
 
 
 def test_pictures_count():
-    test_utils.assert_pictures_count_in_folder('pics_Demo7_VOF/*.png', 1599)
+    folder = '%s/*.png' % MOVIE_FOLDER
+    test_utils.assert_pictures_count_in_folder(folder, 1599)
+
+
+def test_write_movie():
+    movie.write(MOVIE_FOLDER)
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 3084966)
 
 
 if __name__ == "__main__":

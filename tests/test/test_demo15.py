@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
+import movie
 import test_utils
 
 
 DEMO_ID = test_utils.demo_id(__file__)
+MOVIE_FOLDERS = {
+        'pics_Demo15_Run_DES_Structures': 3752369,
+        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 10254741,
+        'pics_Demo15_Run_DES_Velocity': 8699151,
+        'pics_Demo15_Run_DES_Wall_Y+': 6132183,
+        }
 
 
 def _grid_des():
@@ -95,6 +102,19 @@ def test_vector_min_des():
 
 def test_vector_max_des():
     test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.6477)
+
+
+def test_pictures_count():
+    for movie_folder in MOVIE_FOLDERS:
+        folder = '%s/*.png' % movie_folder
+        test_utils.assert_pictures_count_in_folder(folder, 999)
+
+
+def test_write_movies():
+    for movie_folder in MOVIE_FOLDERS:
+        movie.write(movie_folder)
+        file_size = MOVIE_FOLDERS[movie_folder]
+        test_utils.assert_file_size(movie.name(movie_folder), file_size)
 
 
 if __name__ == "__main__":

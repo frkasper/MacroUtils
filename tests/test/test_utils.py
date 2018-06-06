@@ -47,7 +47,7 @@ def _assert_value(actual, expected, tolerance, relative):
         relative = False  # Revert to absolute
     if relative:
         assert tolerance > 0, 'Relative tolerance must be positive'
-        error /= expected
+        error /= float(expected)
         s_error = _perc('error', error)
         s_tol = _perc('tolerance', tolerance)
     else:
@@ -217,6 +217,12 @@ def assert_cell_count(argument, expected, tolerance=0.005, relative=True):
 
 def assert_face_count(argument, expected, tolerance=0.005, relative=True):
     _assert_content_count('Face', argument, expected, tolerance, relative)
+
+
+def assert_file_size(filename, expected):
+    actual = os.path.getsize(filename)
+    print('\n[assert on file size "%g"]: ' % actual),
+    assert_value(actual, expected, 0.001, relative=True)
 
 
 def assert_files_count(glob_pattern, expected, tolerance=0, relative=False):

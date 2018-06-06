@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import movie
 import test_utils
 
 
 DEMO_ID = test_utils.demo_id(__file__)
+MOVIE_FOLDER = 'pics_Demo12_Solution_History_And_Cameras'
 
 
 def test_write_summary():
@@ -58,6 +60,16 @@ def test_scalar_min():
 def test_scalar_max():
     test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 0.4,
                                 tolerance=0, relative=False)
+
+
+def test_pictures_count():
+    folder = '%s/*.png' % MOVIE_FOLDER
+    test_utils.assert_pictures_count_in_folder(folder, 1190)
+
+
+def test_write_movie():
+    movie.write(MOVIE_FOLDER)
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 7554160)
 
 
 if __name__ == "__main__":

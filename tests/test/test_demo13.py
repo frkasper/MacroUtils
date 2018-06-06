@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import movie
 import test_utils
 
 
 DEMO_ID = test_utils.demo_id(__file__)
+MOVIE_FOLDER = 'pics_Demo13_Streamlines'
 
 
 def test_write_summary():
@@ -42,6 +44,16 @@ def test_streamline_min():
 def test_streamline_max():
     test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Streamline', 3.0,
                                 tolerance=0, relative=False)
+
+
+def test_pictures_count():
+    folder = '%s/*.png' % MOVIE_FOLDER
+    test_utils.assert_pictures_count_in_folder(folder, 1548)
+
+
+def test_write_movie():
+    movie.write(MOVIE_FOLDER)
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 8315947)
 
 
 if __name__ == "__main__":
