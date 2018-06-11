@@ -60,6 +60,7 @@ public final class SummaryWriter {
         this.mu = mu;
         this.sim = mu.getSimulation();
         this.collectAll = collectAll;
+        INFORMATION.clear();
     }
 
     /**

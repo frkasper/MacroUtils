@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri May 11 16:27:42 2018
-
-@author: fabiok
-"""
 import glob
 import os
 import re

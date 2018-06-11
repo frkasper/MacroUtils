@@ -81,7 +81,6 @@ def _copy_test_macros(options):
     # Then auxiliary macros
     aux_folder = 'common'
     aux_macros_home = os.path.join(test_macros_home, aux_folder)
-    java_files.extend(glob.glob(os.path.join(aux_macros_home, '*.java')))
 
     aux_in_testhome = os.path.join(options.testhome, aux_folder)
     if os.path.isdir(aux_in_testhome):
@@ -123,16 +122,50 @@ def _is_error(key, value):
 def _itemized(tests):
     bugs = [nt.macro_name for nt in tests if tests_definition.is_bug(nt)]
     demos = ['Demo%d' % nt.id for nt in tests if tests_definition.is_demo(nt)]
-    all_tests = itertools.chain.from_iterable([demos, bugs])
+    sas = [nt.macro_name for nt in tests if tests_definition.is_sa(nt)]
+    all_tests = itertools.chain.from_iterable([demos, bugs, sas])
     return strings.itemized(list(all_tests))
+
+
+def _test_cases(parser):
+    opts, args = parser.parse_args()
+    execute_all = sum([opts.bugs, opts.sas, opts.demo is not None]) == 0
+    test_cases = []
+
+    if opts.bugs and opts.demo is not None:
+            parser.error('--demo and --bugs are mutually exclusive')
+    if opts.sas and opts.demo is not None:
+            parser.error('--sas and --bugs are mutually exclusive')
+
+    if execute_all:
+            test_cases.extend(tests_definition.DEMOS)
+            test_cases.extend(tests_definition.BUGS)
+            test_cases.extend(tests_definition.SAS)
+    else:
+        if opts.bugs:
+            test_cases.extend(tests_definition.BUGS)
+        if opts.sas:
+            test_cases.extend(tests_definition.SAS)
+        if opts.demo is not None:
+            try:
+                demo_id = int(opts.demo)
+                test_cases.append(tests_definition.demo(demo_id))
+            except ValueError:
+                parser.error('demo must be an integer: "%s"' % opts.demo)
+
+    return test_cases
 
 
 def _test_files(test_cases):
     bugs = [nt for nt in test_cases if tests_definition.is_bug(nt)]
     demos = [nt for nt in test_cases if tests_definition.is_demo(nt)]
+    sas = [nt for nt in test_cases if tests_definition.is_sa(nt)]
     files = ['test/test_demo%02d.py' % nt.id for nt in demos]
     if len(bugs) > 0:
         files.append('test/test_bugs.py')
+    if len(sas) > 0:
+        files.append('test/test_simulation_assistants.py')
+    assert len(files) > 0, 'No test file retrieved'
     return ' '.join(files)
 
 
@@ -178,6 +211,9 @@ def parse_options():
     gr_r.add_option('--jarhome', dest='jarhome', action='store',
                     help='path to MacroUtils.jar file',
                     default=None)
+    gr_r.add_option('--sas', dest='sas', action='store_true',
+                    help='execute simulation assistant tests only',
+                    default=False)
     gr_r.add_option('--starhome', dest='starhome', action='store',
                     help='path to STAR-CCM+ installation',
                     default=None)
@@ -203,7 +239,7 @@ def parse_options():
                     help='stop at first failure',
                     default=False)
 
-    (opts, args) = parser.parse_args()
+    opts, args = parser.parse_args()
 
     #
     # Assert all arguments are in place
@@ -233,20 +269,7 @@ def parse_options():
     today = datetime.datetime.now().strftime('%Y%m%d')
     testhome = os.path.join(testhome, 'tests_%s' % today)
 
-    if opts.bugs and opts.demo is not None:
-            parser.error('--demo and --bugs are mutually exclusive')
-
-    test_cases = []
-    if opts.demo is None:
-        if not opts.bugs:
-            test_cases.extend(tests_definition.DEMOS)
-        test_cases.extend(tests_definition.BUGS)
-    else:
-        try:
-            demo_id = int(opts.demo)
-            test_cases.append(tests_definition.demo(demo_id))
-        except ValueError:
-            parser.error('demo must be an integer: "%s"' % opts.demo)
+    test_cases = _test_cases(parser)
 
     pytest_args = []
     if opts.capture_no:
@@ -306,7 +329,7 @@ def run_tests(options):
     overall_time = timer.ExecutionTime(key='All Tests')
     print(strings.line() + '\n')
 
-    # Bug files are not copied at this time.
+    # Bug and SimAssistant files are not copied at this time.
     demos = [nt for nt in options.test_cases if tests_definition.is_demo(nt)]
     demo_files_2d = [_demo_files(options, nt) for nt in demos]
     files = list(itertools.chain.from_iterable(demo_files_2d))
@@ -323,6 +346,4 @@ def run_tests(options):
 
 if __name__ == "__main__":
     options = parse_options()
-#    for tc in options.test_cases:
-#        print tc
     run_tests(options)

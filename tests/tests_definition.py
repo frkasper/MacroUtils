@@ -21,6 +21,7 @@ from collections import namedtuple
 
 Bug = namedtuple('Bug', ['load_demo', 'macro_name'])
 Demo = namedtuple('Demo', ['id', 'np', 'batch', 'files'])
+SimAssistant = namedtuple('SimAssistant', ['macro_name'])
 
 
 # Declare individual demos here
@@ -46,9 +47,14 @@ DEMO_16 = Demo(id=16, np=4, batch=True, files=[])
 BUG_014 = Bug(load_demo=1, macro_name='BugCreateStreamlineSceneTest')
 
 
+# Declare individual simulation assistants here
+SA_01 = SimAssistant(macro_name='SimAssistantBlockMesherTest')
+
+
 # Then collect them all using Python magic
-DEMOS = [v for k, v in sorted(vars().items()) if re.match('DEMO_\d{2}', k)]
 BUGS = [v for k, v in sorted(vars().items()) if re.match('BUG_\d{3}', k)]
+DEMOS = [v for k, v in sorted(vars().items()) if re.match('DEMO_\d{2}', k)]
+SAS = [v for k, v in sorted(vars().items()) if re.match('SA_\d{2}', k)]
 
 
 def _is_nt(nt, key):
@@ -88,6 +94,10 @@ def is_bug(nt):
 
 def is_demo(nt):
     return _is_nt(nt, 'Demo')
+
+
+def is_sa(nt):
+    return _is_nt(nt, 'SimAssistant')
 
 
 def java_files(number, demohome):
