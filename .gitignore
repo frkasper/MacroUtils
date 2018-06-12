@@ -11,13 +11,6 @@ manifest.mf
 *.sim~
 *.simh
 
-# Support files
-*.stp
-*.x_b
-*.txt
-*.csv
-*.png
-
 # Python files 
 .cache
 .spyproject
