@@ -24,7 +24,7 @@ public class Demo16_1D_Sound_Propagation extends StarMacro {
 
         ud.simTitle = "Demo16_1D_Sound_Propagation";
 
-        Demo16 demo16 = mu.templates.demos.demo16;
+        Demo16 demo16 = new Demo16(mu);
 
         demo16.updateCaseParameters();
 

@@ -40,6 +40,13 @@ public class Demo16 {
     public Demo16(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
+        _add = _mu.add;
+        _get = _mu.get;
+        _io = _mu.io;
+        _set = _mu.set;
+        _templ = _mu.templates;
+        _ud = _mu.userDeclarations;
+        _upd = _mu.update;
     }
 
     /**
@@ -111,19 +118,6 @@ public class Demo16 {
         _ud.v0 = new double[]{ 1E-4 * _C, 0, 0 };
         _io.say.ok(true);
         _upd.solverSettings();
-    }
-
-    /**
-     * This method is called automatically by {@link MacroUtils}.
-     */
-    public void updateInstances() {
-        _add = _mu.add;
-        _get = _mu.get;
-        _io = _mu.io;
-        _set = _mu.set;
-        _templ = _mu.templates;
-        _ud = _mu.userDeclarations;
-        _upd = _mu.update;
     }
 
     private void _setupMesh() {

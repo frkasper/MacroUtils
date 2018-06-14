@@ -11,11 +11,6 @@ import macroutils.MacroUtils;
 public class MainTemplates {
 
     /**
-     * This class is responsible for some templated demos.
-     */
-    public TemplateDemos demos = null;
-
-    /**
      * This class is responsible for assessing the Grid Convergence Index (GCI) metric.
      */
     public TemplateGCI gci = null;
@@ -29,6 +24,7 @@ public class MainTemplates {
      * This class is responsible for some templated meshes.
      */
     public TemplateMesh mesh = null;
+    
     /**
      * This class is responsible for creating useful postprocessing objects in general.
      */
@@ -49,7 +45,6 @@ public class MainTemplates {
      */
     public MainTemplates(MacroUtils m) {
         _mu = m;
-        demos = new TemplateDemos(m);
         gci = new TemplateGCI(m);
         geometry = new TemplateGeometry(m);
         mesh = new TemplateMesh(m);
@@ -62,7 +57,6 @@ public class MainTemplates {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
-        demos.updateInstances();
         gci.updateInstances();
         geometry.updateInstances();
         mesh.updateInstances();
