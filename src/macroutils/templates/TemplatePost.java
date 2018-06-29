@@ -82,25 +82,27 @@ public class TemplatePost {
     }
 
     /**
-     * This method is in conjunction with {@link #flyOver} and it only works along with an
+     * This method is in conjunction with {@link #flyOver} and it only works along with an override
+     * annotation.
      *
-     * @Override. Useful for changing global stuff.
+     * Useful for changing global stuff.
      *
      * It is invoked outside the loop after the last printed picture.
      */
     public void flyOver_postPrintPicture() {
-        //-- Use with @override
+        //-- Use it with @Override annotation
     }
 
     /**
-     * This method is in conjunction with {@link #flyOver} and it only works along with an
+     * This method is in conjunction with {@link #flyOver} and it only works along with an override
+     * annotation.
      *
-     * @Override. Useful for changing Displayer opacities, colors and other local stuff.
+     * Useful for changing Displayer opacities, colors and other local stuff.
      *
      * It is invoked within the loop prior to printing the pictures.
      */
     public void flyOver_prePrintPicture() {
-        //-- Use with @override
+        //-- Use it with @Override annotation
     }
 
     /**

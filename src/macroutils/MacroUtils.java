@@ -18,12 +18,11 @@ import macroutils.setter.MainSetter;
 import macroutils.templates.MainTemplates;
 import star.common.LabCoordinateSystem;
 import star.common.Simulation;
-import star.common.SimulationIterator;
 
 /**
  * MacroUtils is a library that can be used for writing macros, Simulation Assistants and other
- * third party applications related to STAR-CCM+.
- * <p>
+ * third party applications related to STAR-CCM+.<p>
+ * 
  * <b>Requires:</b>
  * <ul>
  * <li> STAR-CCM+ v13.04 libraries. <u>It may not run in other versions</u>;
@@ -31,7 +30,7 @@ import star.common.SimulationIterator;
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v13.04, June 01, 2018.
+ * @version v13.04, June 29, 2018.
  */
 public final class MacroUtils {
 
@@ -287,30 +286,27 @@ public final class MacroUtils {
         io.say.value("Simulation Path", userDeclarations.simPath, true, true);
         userDeclarations.csys0 = _sim.getCoordinateSystemManager().getLabCoordinateSystem();
         userDeclarations.lab0 = (LabCoordinateSystem) userDeclarations.csys0;
-        userDeclarations.defColormap = get.objects.colormap(StaticDeclarations.Colormaps.BLUE_RED_BALANCED);
+        userDeclarations.defColormap = get.objects
+                .colormap(StaticDeclarations.Colormaps.BLUE_RED_BALANCED);
         update.defaultUnits(true);
         add.all();
     }
 
     private void _step(int n) {
-        SimulationIterator si = _sim.getSimulationIterator();
-        String s = "iterations";
         io.say.action("Running the case", true);
         io.say.cellCount();
         if (!check.has.volumeMesh()) {
             io.say.msg("No volume mesh found. Skipping run.");
             return;
         }
-        if (check.is.unsteady()) {
-            s = "timesteps";
-        }
         set.suggestedPreRun();
         if (n > 0) {
-            io.say.msg(true, "Running for %d %s...", n, s);
-            si.step(n);
-            return;
+            String goal = check.is.unsteady() ? "timesteps" : "iterations";
+            io.say.msg(true, "Running for %d %s...", n, goal);
+            _sim.getSimulationIterator().step(n);
+        } else {
+            _sim.getSimulationIterator().run();
         }
-        si.run();
     }
 
     private void _updateInstances() {

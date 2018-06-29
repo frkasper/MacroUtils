@@ -214,8 +214,9 @@ public class TemplateGCI {
     /**
      * This method is in conjunction with
      * {@link #evaluate(star.common.StarPlot, java.util.ArrayList)} and it only works along with an
+     * override annotation.
      *
-     * @Override call. Useful for adding some code before exporting the CSV file.
+     * Useful for adding some code before exporting the CSV file.
      *
      * It is invoked prior to exporting the CSV file from the Plot.
      *
@@ -224,7 +225,7 @@ public class TemplateGCI {
      * @return A StarPlot. In case one needs to create a brand new on the fly.
      */
     public StarPlot evaluate_preExport(Simulation s, StarPlot sp) {
-        //-- Use it with @override
+        //-- Use it with @Override annotation
         return sp;
     }
 
