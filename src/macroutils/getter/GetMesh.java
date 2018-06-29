@@ -7,13 +7,16 @@ import star.common.FvRepresentation;
 import star.common.Simulation;
 import star.meshing.AutoMeshOperation;
 import star.meshing.BaseSize;
+import star.meshing.CurrentDescriptionSource;
 import star.meshing.CustomMeshControl;
 import star.meshing.MeshOperation;
 import star.meshing.MeshOperationManager;
+import star.meshing.MeshPartDescriptionSource;
 import star.meshing.PartRepresentation;
 import star.meshing.PartsMinimumSurfaceSize;
 import star.meshing.PartsRelativeOrAbsoluteSize;
 import star.meshing.PartsTargetSurfaceSize;
+import star.meshing.SimulationMeshPartDescriptionSourceManager;
 import star.resurfacer.ResurfacerAutoMesher;
 import star.surfacewrapper.SurfaceWrapperAutoMeshOperation;
 
@@ -25,6 +28,12 @@ import star.surfacewrapper.SurfaceWrapperAutoMeshOperation;
  */
 public class GetMesh {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -33,13 +42,6 @@ public class GetMesh {
     public GetMesh(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    private void _checkGotNull(ClientServerObject cso, String what, boolean vo) {
-        if (cso != null) {
-            return;
-        }
-        _io.say.msg(vo, "Mesh Operation does not have %s.", what);
     }
 
     /**
@@ -64,7 +66,7 @@ public class GetMesh {
     /**
      * Gets a Custom Mesh Control from a Mesh Operation using a REGEX search pattern.
      *
-     * @param mo given Mesh Operation.
+     * @param mo        given Mesh Operation.
      * @param regexPatt given Regular Expression (REGEX) pattern.
      * @return The CustomMeshControl. Null if nothing is found.
      */
@@ -77,6 +79,16 @@ public class GetMesh {
         AutoMeshOperation amo = (AutoMeshOperation) mo;
         return (CustomMeshControl) _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(amo.getCustomMeshControls().getObjects()), true);
+    }
+
+    /**
+     * Gets a mesh description as can be seen in user interface.
+     *
+     * @param name given mesh description.
+     * @return The MeshPartDescriptionSource.
+     */
+    public MeshPartDescriptionSource descriptionSource(String name) {
+        return _sim.get(SimulationMeshPartDescriptionSourceManager.class).getObject(name);
     }
 
     /**
@@ -94,14 +106,23 @@ public class GetMesh {
      * @return PartRepresentation.
      */
     public PartRepresentation geometry() {
-        return ((PartRepresentation) _sim.getRepresentationManager().getObject("Geometry"));
+        return (PartRepresentation) _sim.getRepresentationManager().getObject("Geometry");
+    }
+
+    /**
+     * Get the Latest Surface mesh description.
+     *
+     * @return The CurrentDescriptionSource.
+     */
+    public CurrentDescriptionSource latestSurfaceDescriptionSource() {
+        return (CurrentDescriptionSource) descriptionSource("Latest Surface");
     }
 
     /**
      * Gets the mesh Minimum Relative Size for an AutoMeshOperation, if applicable.
      *
      * @param amo given AutoMeshOperation.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      * @return The PartsRelativeOrAbsoluteSize object. Null if not applicable.
      */
     public PartsRelativeOrAbsoluteSize minRelativeSize(AutoMeshOperation amo, boolean vo) {
@@ -122,11 +143,11 @@ public class GetMesh {
      * Gets a Mesh Operation using a REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The MeshOperation. Null if nothing is found.
      */
     public MeshOperation operation(String regexPatt, boolean vo) {
-        return (MeshOperation) _get.objects.byREGEX(regexPatt,
+        return _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(_sim.get(MeshOperationManager.class).getObjects()), vo);
     }
 
@@ -153,7 +174,7 @@ public class GetMesh {
      * Gets the mesh Target Relative Size for an AutoMeshOperation, if applicable.
      *
      * @param amo given AutoMeshOperation.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      * @return The PartsRelativeOrAbsoluteSize object. Null if not applicable.
      */
     public PartsRelativeOrAbsoluteSize targetRelativeSize(AutoMeshOperation amo, boolean vo) {
@@ -171,13 +192,11 @@ public class GetMesh {
         _io = _mu.io;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
+    private void _checkGotNull(ClientServerObject cso, String what, boolean vo) {
+        if (cso != null) {
+            return;
+        }
+        _io.say.msg(vo, "Mesh Operation does not have %s.", what);
+    }
 
 }

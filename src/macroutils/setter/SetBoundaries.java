@@ -33,6 +33,14 @@ import star.flow.WallShearStressOption;
  */
 public class SetBoundaries {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private MainSetter _set = null;
+    private Simulation _sim = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -43,72 +51,14 @@ public class SetBoundaries {
         _sim = m.getSimulation();
     }
 
-    private ScalarProfile _getSP(Boundary b, StaticDeclarations.Vars var) {
-        return _get.objects.scalarProfile(b.getValues(), var.getVar(), false);
-    }
-
-    private void _setEnergyWall(Boundary b, WallThermalOption.Type wtoType, String wallEnrgy) {
-        _io.say.action(String.format("Setting BC as %s", wallEnrgy), b, true);
-        b.setBoundaryType(WallBoundary.class);
-        b.getConditions().get(WallThermalOption.class).setSelected(wtoType);
-    }
-
-    private <T extends BoundaryType> void _setType(Boundary b, Class<T> clz, String what) {
-        _io.say.action(String.format("Setting BC as %s", what), b, true);
-        b.setBoundaryType(clz);
-    }
-
-    private void _setValues(Boundary b, StaticDeclarations.Vars var, double val) {
-        Units u = _ud.unit_Dimensionless;
-        String vn = var.getVar();
-        _io.say.msgDebug("values():");
-        _io.say.msgDebug("  - Var: %s", var.getVar());
-        if (vn.contains("Temperature")) {
-            u = _ud.defUnitTemp;
-            _io.say.msgDebug("  - Contains Temperature");
-        } else if (vn.contains("Velocity")) {
-            u = _ud.defUnitVel;
-            _io.say.msgDebug("  - Contains Velocity");
-        } else if (vn.contains("Pressure")) {
-            u = _ud.defUnitPress;
-            _io.say.msgDebug("  - Contains Pressure");
-        } else if (var.equals(StaticDeclarations.Vars.HTC)) {
-            u = _ud.defUnitHTC;
-        }
-        _io.say.msgDebug("  - Units: %s", _get.strings.fromUnit(u));
-        _setValues(b, vn, val, u, true, false);
-    }
-
-    private void _setValues(Boundary b, String name, double val, Units u, boolean vo, boolean prtAct) {
-        _setValues(b, name, val, null, u, vo, prtAct);
-    }
-
-    private void _setValues(Boundary b, String name, double[] vals, Units u, boolean vo, boolean prtAct) {
-        _setValues(b, name, 0.0, vals, u, vo, prtAct);
-    }
-
-    private void _setValues(Boundary b, String name, double val, double[] vals, Units u, boolean vo, boolean prtAct) {
-        if (!b.getValues().has(name)) {
-            _io.say.msgDebug("b.getValues().has() no \"%s\"", name);
-            return;
-        }
-        _io.say.action("Setting a Constant Boundary Value", b, prtAct);
-        if (vals == null) {
-            ScalarProfile sp = _get.objects.scalarProfile(b.getValues(), name, vo);
-            _set.object.profile(sp, val, u);
-        } else {
-            VectorProfile vp = _get.objects.vectorProfile(b.getValues(), name, vo);
-            _set.object.profile(vp, vals, u);
-        }
-        _io.say.ok(prtAct);
-    }
-
     /**
      * Sets a Boundary as Wall and define Heat Transfer as Convection type.
      *
-     * @param b given Boundary.
-     * @param T given Ambient Temperature in default units. See {@link UserDeclarations#defUnitTemp}.
-     * @param htc given Heat Transfer Coefficient in default units. See {@link UserDeclarations#defUnitHTC}.
+     * @param b   given Boundary.
+     * @param T   given Ambient Temperature in default units. See
+     *            {@link UserDeclarations#defUnitTemp}.
+     * @param htc given Heat Transfer Coefficient in default units. See
+     *            {@link UserDeclarations#defUnitHTC}.
      */
     public void asConvectionWall(Boundary b, double T, double htc) {
         _setEnergyWall(b, WallThermalOption.Type.CONVECTION, "Convection Wall");
@@ -124,22 +74,25 @@ public class SetBoundaries {
      */
     public void asFreeSlipWall(Boundary b) {
         _setType(b, WallBoundary.class, "Free Slip Wall");
-        b.getConditions().get(WallShearStressOption.class).setSelected(WallShearStressOption.Type.SLIP);
+        b.getConditions().get(WallShearStressOption.class)
+                .setSelected(WallShearStressOption.Type.SLIP);
         _io.say.ok(true);
     }
 
     /**
      * Sets the Boundary as Free Stream.
      *
-     * @param b given Boundary.
-     * @param dir given 3-components direction of the flow. E.g., in X: {1, 0, 0}.
+     * @param b    given Boundary.
+     * @param dir  given 3-components direction of the flow. E.g., in X: {1, 0, 0}.
      * @param mach given Mach number.
-     * @param P given Pressure in default units. See {@link UserDeclarations#defUnitPress}.
-     * @param T given Static Temperature in default units. See {@link UserDeclarations#defUnitTemp}.
-     * @param ti given Turbulent Intensity dimensionless, if applicable.
-     * @param tvr given Turbulent Viscosity Ratio dimensionless, if applicable.
+     * @param P    given Pressure in default units. See {@link UserDeclarations#defUnitPress}.
+     * @param T    given Static Temperature in default units. See
+     *             {@link UserDeclarations#defUnitTemp}.
+     * @param ti   given Turbulent Intensity dimensionless, if applicable.
+     * @param tvr  given Turbulent Viscosity Ratio dimensionless, if applicable.
      */
-    public void asFreeStream(Boundary b, double[] dir, double mach, double P, double T, double ti, double tvr) {
+    public void asFreeStream(Boundary b, double[] dir, double mach, double P, double T,
+            double ti, double tvr) {
         _setType(b, FreeStreamBoundary.class, "Free Stream");
         _setValues(b, "Flow Direction", dir, _ud.unit_Dimensionless, true, false);
         _setValues(b, StaticDeclarations.Vars.MACH, mach);
@@ -151,12 +104,14 @@ public class SetBoundaries {
     }
 
     /**
-     * Sets a Boundary as Pressure Outlet. When running Laminar or Isothermal other parameters are ignored.
+     * Sets a Boundary as Pressure Outlet. When running Laminar or Isothermal other parameters are
+     * ignored.
      *
-     * @param b given Boundary.
-     * @param P given Static Pressure in default units. See {@link UserDeclarations#defUnitPress}.
-     * @param T given Static Temperature in default units. See {@link UserDeclarations#defUnitTemp}, if applicable.
-     * @param ti given Turbulent Intensity dimensionless, if applicable.
+     * @param b   given Boundary.
+     * @param P   given Static Pressure in default units. See {@link UserDeclarations#defUnitPress}.
+     * @param T   given Static Temperature in default units. See
+     *            {@link UserDeclarations#defUnitTemp}, if applicable.
+     * @param ti  given Turbulent Intensity dimensionless, if applicable.
      * @param tvr given Turbulent Viscosity Ratio dimensionless, if applicable.
      */
     public void asPressureOutlet(Boundary b, double P, double T, double ti, double tvr) {
@@ -179,12 +134,15 @@ public class SetBoundaries {
     }
 
     /**
-     * Sets a Boundary as Velocity Inlet. When running Laminar or Isothermal other parameters are ignored.
+     * Sets a Boundary as Velocity Inlet. When running Laminar or Isothermal other parameters are
+     * ignored.
      *
-     * @param b given Boundary.
-     * @param vel given Velocity Magnitude in default units. See {@link UserDeclarations#defUnitVel}.
-     * @param T given Static Temperature in default units. See {@link UserDeclarations#defUnitTemp}, if applicable.
-     * @param ti given Turbulent Intensity dimensionless, if applicable.
+     * @param b   given Boundary.
+     * @param vel given Velocity Magnitude in default units. See
+     *            {@link UserDeclarations#defUnitVel}.
+     * @param T   given Static Temperature in default units. See
+     *            {@link UserDeclarations#defUnitTemp}, if applicable.
+     * @param ti  given Turbulent Intensity dimensionless, if applicable.
      * @param tvr given Turbulent Viscosity Ratio dimensionless, if applicable.
      */
     public void asVelocityInlet(Boundary b, double vel, double T, double ti, double tvr) {
@@ -227,7 +185,8 @@ public class SetBoundaries {
             b0.getRegion().getBoundaryManager().removeObjects(ab);
             b0.getPartSurfaceGroup().addObjects(alp);
         }
-        _io.say.objects(new ArrayList<>(r.getBoundaryManager().getObjects()), "Boundaries after Combination", true);
+        _io.say.objects(new ArrayList<>(r.getBoundaryManager().getObjects()),
+                "Boundaries after Combination", true);
         _io.say.ok(true);
         return b0;
     }
@@ -235,7 +194,7 @@ public class SetBoundaries {
     /**
      * Applies a definition to a value in a Boundary.
      *
-     * @param b given Boundary.
+     * @param b   given Boundary.
      * @param var given predefined variable defined in {@link macroutils.StaticDeclarations} class.
      * @param def given definition.
      */
@@ -259,10 +218,10 @@ public class SetBoundaries {
     /**
      * Applies a Physics Value to a Boundary using a constant given value.
      *
-     * @param b given Boundary.
+     * @param b   given Boundary.
      * @param var given predefined variable defined in {@link macroutils.StaticDeclarations} class.
      * @param val given value.
-     * @param u given Units.
+     * @param u   given Units.
      */
     public void values(Boundary b, StaticDeclarations.Vars var, double val, Units u) {
         _setValues(b, var.getVar(), val, u, true, true);
@@ -273,8 +232,8 @@ public class SetBoundaries {
      * <p>
      * <b>Notes:</b>
      * <ul>
-     * <li> The columns to be mapped must have the same name as are given the Physics Values tree. E.g.: "Velocity
-     * Magnitude", "Turbulent Viscosity Ratio", etc...;
+     * <li> The columns to be mapped must have the same name as are given the Physics Values tree.
+     * E.g.: "Velocity Magnitude", "Turbulent Viscosity Ratio", etc...;
      * <li> Current method is limited to Scalar values and XYZ tables only.
      * </ul>
      *
@@ -304,15 +263,67 @@ public class SetBoundaries {
         _io.say.ok(true);
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainSetter _set = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
+    private ScalarProfile _getSP(Boundary b, StaticDeclarations.Vars var) {
+        return _get.objects.scalarProfile(b.getValues(), var.getVar(), false);
+    }
+
+    private void _setEnergyWall(Boundary b, WallThermalOption.Type wtoType, String wallEnrgy) {
+        _io.say.action(String.format("Setting BC as %s", wallEnrgy), b, true);
+        b.setBoundaryType(WallBoundary.class);
+        b.getConditions().get(WallThermalOption.class).setSelected(wtoType);
+    }
+
+    private <T extends BoundaryType> void _setType(Boundary b, Class<T> clz, String what) {
+        _io.say.action(String.format("Setting BC as %s", what), b, true);
+        b.setBoundaryType(clz);
+    }
+
+    private void _setValues(Boundary b, StaticDeclarations.Vars var, double val) {
+        Units u = _ud.unit_Dimensionless;
+        String vn = var.getVar();
+        _io.say.msgDebug("values():");
+        _io.say.msgDebug("  - Var: %s", var.getVar());
+        if (vn.contains("Temperature")) {
+            u = _ud.defUnitTemp;
+            _io.say.msgDebug("  - Contains Temperature");
+        } else if (vn.contains("Velocity")) {
+            u = _ud.defUnitVel;
+            _io.say.msgDebug("  - Contains Velocity");
+        } else if (vn.contains("Pressure")) {
+            u = _ud.defUnitPress;
+            _io.say.msgDebug("  - Contains Pressure");
+        } else if (var.equals(StaticDeclarations.Vars.HTC)) {
+            u = _ud.defUnitHTC;
+        }
+        _io.say.msgDebug("  - Units: %s", _get.strings.fromUnit(u));
+        _setValues(b, vn, val, u, true, false);
+    }
+
+    private void _setValues(Boundary b, String name, double val, Units u, boolean vo,
+            boolean prtAct) {
+        _setValues(b, name, val, null, u, vo, prtAct);
+    }
+
+    private void _setValues(Boundary b, String name, double[] vals, Units u, boolean vo,
+            boolean prtAct) {
+        _setValues(b, name, 0.0, vals, u, vo, prtAct);
+    }
+
+    private void _setValues(Boundary b, String name, double val, double[] vals, Units u,
+            boolean vo, boolean prtAct) {
+        if (!b.getValues().has(name)) {
+            _io.say.msgDebug("b.getValues().has() no \"%s\"", name);
+            return;
+        }
+        _io.say.action("Setting a Constant Boundary Value", b, prtAct);
+        if (vals == null) {
+            ScalarProfile sp = _get.objects.scalarProfile(b.getValues(), name, vo);
+            _set.object.profile(sp, val, u);
+        } else {
+            VectorProfile vp = _get.objects.vectorProfile(b.getValues(), name, vo);
+            _set.object.profile(vp, vals, u);
+        }
+        _io.say.ok(prtAct);
+    }
 
 }

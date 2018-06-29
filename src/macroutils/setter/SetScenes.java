@@ -28,6 +28,13 @@ import star.vis.VisView;
  */
 public class SetScenes {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -40,13 +47,14 @@ public class SetScenes {
     /**
      * Sets the Scene Background as a Solid color.
      *
-     * @param scn given Scene.
+     * @param scn   given Scene.
      * @param color given Color.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo    given verbose option. False will not print anything.
      */
     public void background(Scene scn, Color color, boolean vo) {
         _io.say.action("Setting Solid Background Color", vo);
-        _io.say.value("Setting Solid Background Color on Scene", scn.getPresentationName(), true, vo);
+        _io.say.value("Setting Solid Background Color on Scene", scn.getPresentationName(),
+                true, vo);
         scn.setBackgroundColorMode(BackgroundColorMode.SOLID);
         scn.getSolidBackgroundColor().setColorColor(color);
         _io.say.ok(vo);
@@ -56,8 +64,8 @@ public class SetScenes {
      * Sets the Camera View in the Scene.
      *
      * @param scn given Scene.
-     * @param vv given Camera View setup.
-     * @param vo given verbose option. False will not print anything.
+     * @param vv  given Camera View setup.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void cameraView(Scene scn, VisView vv, boolean vo) {
         if (vv == null) {
@@ -71,9 +79,9 @@ public class SetScenes {
     /**
      * Sets the Geometry Displayer to a custom Solid color.
      *
-     * @param d given Displayer.
+     * @param d     given Displayer.
      * @param color given Color.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo    given verbose option. False will not print anything.
      */
     public void displayer(Displayer d, Color color, boolean vo) {
         _io.say.value("Setting a Solid Color on Displayer", d.getPresentationName(), true, vo);
@@ -104,9 +112,10 @@ public class SetScenes {
         //--
         //-- STAR-CCM+ defaults.
         //--
-        final DoubleVector defLegPos = new DoubleVector(new double[]{0.3, 0.05});
+        final DoubleVector defLegPos = new DoubleVector(new double[]{ 0.3, 0.05 });
         // DoubleVector of -> Width / Height / Title Height / Label Height
-        final DoubleVector defLegSettings = new DoubleVector(new double[]{0.6, 0.044, 0.0275, 0.024});
+        final DoubleVector defLegSettings = new DoubleVector(
+                new double[]{ 0.6, 0.044, 0.0275, 0.024 });
         final int defLegNumberOfLabels = 6;
         final int defLegColorLevels = 32;
         final String defLegFont = "Lucida Sans-italic";
@@ -118,8 +127,8 @@ public class SetScenes {
         int legColorLevels = 128;
         String legLabelFont = "Lucida Sans Typewriter-italic";
         String legLabelFmt = "%-#6.3g";
-        DoubleVector legSettings = new DoubleVector(new double[]{0.6, 0.05, 0.04, 0.03});
-        DoubleVector dvLegPos = new DoubleVector(new double[]{0.225, 0.01});
+        DoubleVector legSettings = new DoubleVector(new double[]{ 0.6, 0.05, 0.04, 0.03 });
+        DoubleVector dvLegPos = new DoubleVector(new double[]{ 0.225, 0.01 });
         LookupTable colormap = _ud.defColormap;
         //--
         ScalarDisplayQuantity sdq = _get.scenes.scalarDisplayQuantity(d, false);
@@ -135,12 +144,13 @@ public class SetScenes {
             boolean isT = fName.matches(".*Temperature.*");
             boolean isTVR = fName.matches(StaticDeclarations.Vars.TVR.getVar());
             boolean isVF = fName.matches("Volume.*Fraction.*");
-            boolean isYP = ff == _get.objects.fieldFunction(StaticDeclarations.Vars.YPLUS.getVar(), false);
+            boolean isYP = ff == _get.objects.fieldFunction(StaticDeclarations.Vars.YPLUS.getVar(),
+                    false);
             if (isVF && _chk.has.VOF()) {
                 legColorLevels = 16;
                 legNumberOfLabels = 3;
                 legSettings.set(0, 0.4);
-                dvLegPos = new DoubleVector(new double[]{0.32, 0.01});
+                dvLegPos = new DoubleVector(new double[]{ 0.32, 0.01 });
                 colormap = _get.objects.colormap(StaticDeclarations.Colormaps.BLUE_RED);
             }
             if (ismmH2O) {
@@ -155,8 +165,8 @@ public class SetScenes {
         //--
         leg.setShadow(false);
         leg.setLookupTable(colormap);
-        DoubleVector dv = new DoubleVector(new double[]{leg.getWidth(),
-            leg.getHeight(), leg.getTitleHeight(), leg.getLabelHeight()});
+        DoubleVector dv = new DoubleVector(new double[]{ leg.getWidth(),
+            leg.getHeight(), leg.getTitleHeight(), leg.getLabelHeight() });
         if (dv.equals(defLegSettings)) {
             leg.setWidth(legSettings.get(0));
             leg.setHeight(legSettings.get(1));
@@ -187,7 +197,7 @@ public class SetScenes {
      * Sets a Scene to save a PNG picture with a given resolution. Pictures will be saved on
      * {@link UserDeclarations#simPath} under a folder called <b>pics_<i>ObjectName</i></b>.
      *
-     * @param scn given Scene.
+     * @param scn  given Scene.
      * @param resx given width pixel resolution.
      * @param resy given height pixel resolution.
      */
@@ -198,7 +208,7 @@ public class SetScenes {
     /**
      * Sets a Transform on a Displayer.
      *
-     * @param d given Displayer.
+     * @param d  given Displayer.
      * @param vt given VisTransform.
      * @param vo given verbose option. False will not print anything.
      */
@@ -217,7 +227,7 @@ public class SetScenes {
      * Sets an Update Event for a Scene.
      *
      * @param scn given Scene.
-     * @param ue given UpdateEvent.
+     * @param ue  given UpdateEvent.
      */
     public void updateEvent(Scene scn, UpdateEvent ue) {
         _set.object.updateEvent(scn, ue, true);
@@ -233,15 +243,5 @@ public class SetScenes {
         _set = _mu.set;
         _ud = _mu.userDeclarations;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainSetter _set = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.UserDeclarations _ud = null;
 
 }

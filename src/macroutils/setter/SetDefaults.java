@@ -13,6 +13,11 @@ import star.vis.VisView;
  */
 public class SetDefaults {
 
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -20,12 +25,6 @@ public class SetDefaults {
      */
     public SetDefaults(MacroUtils m) {
         _mu = m;
-    }
-
-    private void _setting(String what, String opt) {
-        _io.say.action(String.format("Setting Default %s", what), true);
-        _io.say.value(what, opt, true, true);
-        _io.say.ok(true);
     }
 
     /**
@@ -61,8 +60,10 @@ public class SetDefaults {
     /**
      * Sets the default resolution when saving pictures with MacroUtils.
      *
-     * @param resx given resolution in x. This will change {@link UserDeclarations#picResX} variable.
-     * @param resy given resolution in y. This will change {@link UserDeclarations#picResY} variable.
+     * @param resx given resolution in x. This will change {@link UserDeclarations#picResX}
+     *             variable.
+     * @param resy given resolution in y. This will change {@link UserDeclarations#picResY}
+     *             variable.
      */
     public void pictureResolution(int resx, int resy) {
         _setting("Picture resolution", String.format("%d x %d pixels", resx, resy));
@@ -89,12 +90,10 @@ public class SetDefaults {
         _ud = _mu.userDeclarations;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.UserDeclarations _ud = null;
+    private void _setting(String what, String opt) {
+        _io.say.action(String.format("Setting Default %s", what), true);
+        _io.say.value(what, opt, true, true);
+        _io.say.ok(true);
+    }
 
 }

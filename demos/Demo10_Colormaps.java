@@ -1,4 +1,3 @@
-
 import java.awt.Color;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
@@ -14,6 +13,10 @@ import star.vis.ScalarDisplayer;
  */
 public class Demo10_Colormaps extends StarMacro {
 
+    private MacroUtils mu;
+    private UserDeclarations ud;
+
+    @Override
     public void execute() {
 
         mu = new MacroUtils(getActiveSimulation());
@@ -22,7 +25,9 @@ public class Demo10_Colormaps extends StarMacro {
 
         ud.simTitle = "Demo10_Colormaps";
 
-        ud.defCamView = mu.io.read.cameraView("cam|7.698946e-03,-2.109472e-02,7.961378e-02|7.698946e-03,-2.109472e-02,6.679604e-01|0.000000e+00,1.000000e+00,0.000000e+00|1.288606e-01|1", true);
+        ud.defCamView = mu.io.read.cameraView("cam|7.698946e-03,-2.109472e-02,7.961378e-02"
+                + "|7.698946e-03,-2.109472e-02,6.679604e-01|0.000000e+00,1.000000e+00,0.000000e+00"
+                + "|1.288606e-01|1", true);
 
         addColormaps();
 
@@ -42,7 +47,8 @@ public class Demo10_Colormaps extends StarMacro {
         ud.colors.add(Color.YELLOW);
         ud.colors.add(Color.BLACK);
         ud.colors.add(Color.WHITE);
-        ud.defColormap = mu.add.tools.colormap("myColormap2", ud.colors, null, StaticDeclarations.ColorSpace.HSV);
+        ud.defColormap = mu.add.tools.colormap("myColormap2", ud.colors, null,
+                StaticDeclarations.ColorSpace.HSV);
 
         ud.simpleSphPrt = mu.add.geometry.sphere(StaticDeclarations.COORD0, 100, ud.unit_mm);
         ud.simpleSphPrt.setPresentationName("Sphere");
@@ -58,11 +64,9 @@ public class Demo10_Colormaps extends StarMacro {
         ud.namedObjects.addAll(mu.get.boundaries.all(true));
         ud.scene = mu.add.scene.scalar(ud.namedObjects,
                 mu.get.objects.fieldFunction("Centroid", true), ud.unit_mm, true);
-        ((ScalarDisplayer) mu.get.scenes.displayerByREGEX(ud.scene, ".*", true)).setDisplayMeshBoolean(true);
+        ((ScalarDisplayer) mu.get.scenes.displayerByREGEX(ud.scene, ".*", true))
+                .setDisplayMeshBoolean(true);
         ud.scene.open();
     }
-
-    private MacroUtils mu;
-    private UserDeclarations ud;
 
 }

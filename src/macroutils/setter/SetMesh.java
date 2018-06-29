@@ -42,6 +42,13 @@ import star.sweptmesher.DirectedMeshOperation;
  */
 public class SetMesh {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private MainSetter _set = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -51,28 +58,13 @@ public class SetMesh {
         _mu = m;
     }
 
-    private DirectedAutoSourceMesh _getDirectedAutoSourceMesh(NamedObject no) {
-        DirectedMeshOperation dmo = (DirectedMeshOperation) no;
-        for (Object o : dmo.getGuidedSurfaceMeshBaseManager().getObjects()) {
-            if (o instanceof DirectedAutoSourceMesh) {
-                return (DirectedAutoSourceMesh) o;
-            }
-        }
-        return null;
-    }
-
-    private void _settingPrisms(ClientServerObject cso, boolean vo) {
-        _io.say.action("Setting Prism Layers", vo);
-        _io.say.object(cso, vo);
-    }
-
     /**
      * Sets the mesh Base Size for a Mesh Operation, if applicable.
      *
-     * @param no given Named Object, if applicable.
+     * @param no  given Named Object, if applicable.
      * @param val reference size.
-     * @param u given Units.
-     * @param vo given verbose option. False will only print necessary data.
+     * @param u   given Units.
+     * @param vo  given verbose option. False will only print necessary data.
      */
     public void baseSize(NamedObject no, double val, Units u, boolean vo) {
         _io.say.action("Setting the Mesh Base Size", no, vo);
@@ -94,7 +86,7 @@ public class SetMesh {
      *
      * @param amo given AutoMeshOperation.
      * @param val given value.
-     * @param vo given verbose option. False will only print necessary data.
+     * @param vo  given verbose option. False will only print necessary data.
      */
     public void maxCellSize(AutoMeshOperation amo, double val, boolean vo) {
         _io.say.action("Setting the Maximum Cell Size", vo);
@@ -112,8 +104,8 @@ public class SetMesh {
      * Sets the number of Prism Layers.
      *
      * @param npl given NumPrismLayers.
-     * @param n given number of layers.
-     * @param vo given verbose option. False will only print necessary data.
+     * @param n   given number of layers.
+     * @param vo  given verbose option. False will only print necessary data.
      */
     public void numPrismLayers(NumPrismLayers npl, int n, boolean vo) {
         _io.say.action("Setting the Number of Prism Layers", vo);
@@ -131,7 +123,7 @@ public class SetMesh {
      *
      * @param pls given PrismLayerStretching.
      * @param val given value.
-     * @param vo given verbose option. False will only print necessary data.
+     * @param vo  given verbose option. False will only print necessary data.
      */
     public void prismLayerStretching(PrismLayerStretching pls, double val, boolean vo) {
         _io.say.action("Setting Prism Layer Stretching", vo);
@@ -147,9 +139,9 @@ public class SetMesh {
     /**
      * Sets the Prism Layer Total Thickness.
      *
-     * @param pt given PrismThickness.
+     * @param pt  given PrismThickness.
      * @param val given value.
-     * @param vo given verbose option. False will only print necessary data.
+     * @param vo  given verbose option. False will only print necessary data.
      */
     public void prismLayerTotalThickness(PrismThickness pt, double val, boolean vo) {
         _io.say.action("Setting Prism Layer Total Thickness", vo);
@@ -164,13 +156,14 @@ public class SetMesh {
     /**
      * Sets Default Prism Mesh parameters for a Mesh Operation.
      *
-     * @param amo given Automated Mesh Operation.
-     * @param numLayers given number of prisms.
-     * @param stretch given prism stretch relation.
+     * @param amo            given Automated Mesh Operation.
+     * @param numLayers      given number of prisms.
+     * @param stretch        given prism stretch relation.
      * @param totalThickness given total thickness size in (%).
-     * @param vo given verbose option. False will only print necessary data.
+     * @param vo             given verbose option. False will only print necessary data.
      */
-    public void prisms(AutoMeshOperation amo, int numLayers, double stretch, double totalThickness, boolean vo) {
+    public void prisms(AutoMeshOperation amo, int numLayers, double stretch,
+            double totalThickness, boolean vo) {
         _io.say.action("Setting Mesh Prism Parameters", amo, vo);
         if (!_chk.has.prismLayerMesher(amo)) {
             _io.say.msg("Mesh Operation does not have Prism Layers.", vo);
@@ -184,39 +177,45 @@ public class SetMesh {
         pam.setNearCoreLayerAspectRatio(_ud.prismsNearCoreAspRat);
         prisms(amdvm, numLayers, stretch, totalThickness, false);
         _io.say.value("Prism Layer Minimum Thickness", pam.getMinimumThickness(), true);
-        _io.say.percentage("Prism Layer Gap Fill Percentage", pam.getGapFillPercentage(), true);
-        _io.say.percentage("Prism Layer Chopping Percentage", pam.getLayerChoppingPercentage(), true);
-        _io.say.value("Prism Layer Near Core Aspect Ratio", pam.getNearCoreLayerAspectRatio(), true);
+        _io.say.percentage("Prism Layer Gap Fill Percentage", pam.getGapFillPercentage(),
+                true);
+        _io.say.percentage("Prism Layer Chopping Percentage", pam.getLayerChoppingPercentage(),
+                true);
+        _io.say.value("Prism Layer Near Core Aspect Ratio", pam.getNearCoreLayerAspectRatio(),
+                true);
         _io.say.ok(vo);
     }
 
     /**
      * Sets Prism Mesh parameters for a Mesh Operation.
      *
-     * @param cm given Condition Manager.
-     * @param numLayers given number of prisms.
-     * @param stretch given prism stretch relation.
+     * @param cm             given Condition Manager.
+     * @param numLayers      given number of prisms.
+     * @param stretch        given prism stretch relation.
      * @param totalThickness given total thickness size in (%).
-     * @param vo given verbose option. False will only print necessary data.
+     * @param vo             given verbose option. False will only print necessary data.
      */
-    public void prisms(ConditionManager cm, int numLayers, double stretch, double totalThickness, boolean vo) {
+    public void prisms(ConditionManager cm, int numLayers, double stretch,
+            double totalThickness, boolean vo) {
         _settingPrisms(cm, vo);
         numPrismLayers(cm.get(NumPrismLayers.class), numLayers, false);
         prismLayerStretching(cm.get(PrismLayerStretching.class), stretch, false);
-        _set.object.relativeSize(cm.get(PrismThickness.class), "Prism Layer Total Thickness", totalThickness);
+        _set.object.relativeSize(cm.get(PrismThickness.class), "Prism Layer Total Thickness",
+                totalThickness);
         _io.say.ok(vo);
     }
 
     /**
      * Sets Prism Mesh parameters for a Custom Mesh Control -- Surface or Volumetric.
      *
-     * @param cmc given Custom Mesh Control.
-     * @param numLayers given number of prisms. Zero is ignored.
-     * @param stretch given prism stretch relation. Zero is ignored.
+     * @param cmc            given Custom Mesh Control.
+     * @param numLayers      given number of prisms. Zero is ignored.
+     * @param stretch        given prism stretch relation. Zero is ignored.
      * @param totalThickness given total thickness size in (%). Zero is ignored.
-     * @param vo given verbose option. False will only print necessary data.
+     * @param vo             given verbose option. False will only print necessary data.
      */
-    public void prisms(CustomMeshControl cmc, int numLayers, double stretch, double totalThickness, boolean vo) {
+    public void prisms(CustomMeshControl cmc, int numLayers, double stretch,
+            double totalThickness, boolean vo) {
         _settingPrisms(cmc, vo);
         PartsCustomizePrismMesh pcpm;
         VolumeControlPrismsOption vcpo;
@@ -256,7 +255,7 @@ public class SetMesh {
      * Specifies Surface Curvature parameters.
      *
      * @param sc given SurfaceCurvature.
-     * @param n given points per curve value.
+     * @param n  given points per curve value.
      * @param vo given verbose option. False will only print necessary data.
      */
     public void surfaceCurvature(SurfaceCurvature sc, double n, boolean vo) {
@@ -278,7 +277,8 @@ public class SetMesh {
         _io.say.action("Setting Surface Proximity", (NamedObject) sp.getParent().getParent(), vo);
         sp.setNumPointsInGap(np);
         _io.say.value("Number of Points in Gap", sp.getNumPointsInGap(), true);
-        _set.object.physicalQuantity(sp.getFloor(), sf, _ud.defUnitLength, "Proximity Search Floor", true);
+        _set.object.physicalQuantity(sp.getFloor(), sf, _ud.defUnitLength,
+                "Proximity Search Floor", true);
         _io.say.ok(vo);
     }
 
@@ -288,12 +288,14 @@ public class SetMesh {
      * @param amo given AutoMeshOperation.
      * @param min minimum relative size (%).
      * @param tgt target relative size (%).
-     * @param vo given verbose option. False will only print necessary data.
+     * @param vo  given verbose option. False will only print necessary data.
      */
     public void surfaceSizes(AutoMeshOperation amo, double min, double tgt, boolean vo) {
         _io.say.action("Setting Mesh Surface Sizes", amo, vo);
-        _set.object.relativeSize(_get.mesh.targetRelativeSize(amo, false), "Target Surface Size", tgt);
-        _set.object.relativeSize(_get.mesh.minRelativeSize(amo, false), "Minimum Surface Size", min);
+        _set.object.relativeSize(_get.mesh.targetRelativeSize(amo, false),
+                "Target Surface Size", tgt);
+        _set.object.relativeSize(_get.mesh.minRelativeSize(amo, false),
+                "Minimum Surface Size", min);
         _io.say.ok(vo);
     }
 
@@ -301,21 +303,27 @@ public class SetMesh {
      * Specifies Surface Mesh Sizes for a Custom Mesh Control.
      *
      * @param cmc given Custom Mesh Control.
-     * @param min minimum relative size (%) must be greater than zero. Otherwise it assumes the parent value.
-     * @param tgt target relative size (%) must be greater than zero. Otherwise it assumes the parent value.
-     * @param vo given verbose option. False will only print necessary data.
+     * @param min minimum relative size (%) must be greater than zero. Otherwise it assumes the
+     *            parent value.
+     * @param tgt target relative size (%) must be greater than zero. Otherwise it assumes the
+     *            parent value.
+     * @param vo  given verbose option. False will only print necessary data.
      */
     public void surfaceSizes(CustomMeshControl cmc, double min, double tgt, boolean vo) {
         _io.say.action("Setting Custom Surface Sizes", cmc.getManager().getMeshOperation(), vo);
         _io.say.object(cmc, vo);
         CustomMeshControlConditionManager cm = cmc.getCustomConditions();
         if (min > 0) {
-            cm.get(PartsMinimumSurfaceSizeOption.class).setSelected(PartsMinimumSurfaceSizeOption.Type.CUSTOM);
-            _set.object.relativeSize(cmc.getCustomValues().get(PartsMinimumSurfaceSize.class), "Minimum Surface Size", min);
+            cm.get(PartsMinimumSurfaceSizeOption.class)
+                    .setSelected(PartsMinimumSurfaceSizeOption.Type.CUSTOM);
+            _set.object.relativeSize(cmc.getCustomValues().get(PartsMinimumSurfaceSize.class),
+                    "Minimum Surface Size", min);
         }
         if (tgt > 0) {
-            cm.get(PartsTargetSurfaceSizeOption.class).setSelected(PartsTargetSurfaceSizeOption.Type.CUSTOM);
-            _set.object.relativeSize(cmc.getCustomValues().get(PartsTargetSurfaceSize.class), "Target Surface Size", tgt);
+            cm.get(PartsTargetSurfaceSizeOption.class)
+                    .setSelected(PartsTargetSurfaceSizeOption.Type.CUSTOM);
+            _set.object.relativeSize(cmc.getCustomValues().get(PartsTargetSurfaceSize.class),
+                    "Target Surface Size", tgt);
         }
         _io.say.ok(vo);
     }
@@ -323,10 +331,10 @@ public class SetMesh {
     /**
      * Specifies Thin Mesher parameters.
      *
-     * @param amo given Automated Mesh Operation.
+     * @param amo       given Automated Mesh Operation.
      * @param numLayers given number of prisms.
      * @param thicknThr given Custom Thickness Threshold Size in (%).
-     * @param vo given verbose option. False will only print necessary data.
+     * @param vo        given verbose option. False will only print necessary data.
      */
     public void thinMesher(AutoMeshOperation amo, int numLayers, double thicknThr, boolean vo) {
         _io.say.action("Setting Thin Mesh Layers", vo);
@@ -341,7 +349,8 @@ public class SetMesh {
         ThinNumLayers tnl = amdvm.get(ThinNumLayers.class);
         tnl.setLayers(Math.max(2, numLayers));
         _io.say.value("Number of Thin Layers", tnl.getLayers(), true);
-        _set.object.relativeSize(amdvm.get(ThinThicknessThreshold.class), "Thin Layer Thickness Threshold", thicknThr);
+        _set.object.relativeSize(amdvm.get(ThinThicknessThreshold.class),
+                "Thin Layer Thickness Threshold", thicknThr);
         _io.say.ok(vo);
     }
 
@@ -356,14 +365,19 @@ public class SetMesh {
         _ud = _mu.userDeclarations;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainSetter _set = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.UserDeclarations _ud = null;
+    private DirectedAutoSourceMesh _getDirectedAutoSourceMesh(NamedObject no) {
+        DirectedMeshOperation dmo = (DirectedMeshOperation) no;
+        for (Object o : dmo.getGuidedSurfaceMeshBaseManager().getObjects()) {
+            if (o instanceof DirectedAutoSourceMesh) {
+                return (DirectedAutoSourceMesh) o;
+            }
+        }
+        return null;
+    }
+
+    private void _settingPrisms(ClientServerObject cso, boolean vo) {
+        _io.say.action("Setting Prism Layers", vo);
+        _io.say.object(cso, vo);
+    }
 
 }

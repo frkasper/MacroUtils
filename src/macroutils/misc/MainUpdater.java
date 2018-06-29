@@ -15,6 +15,14 @@ import star.meshing.MeshPipelineController;
  */
 public class MainUpdater {
 
+    private macroutils.creator.MainCreator _add = null;
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private macroutils.setter.MainSetter _set = null;
+    private Simulation _sim = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -24,6 +32,80 @@ public class MainUpdater {
         _mu = m;
         _sim = m.getSimulation();
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
+    }
+
+    /**
+     * Updates all units in memory. This method is called automatically by MacroUtils.
+     *
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void allUnits(boolean vo) {
+        defaultUnits(vo);
+        customUnits(vo);
+    }
+
+    /**
+     * Updates the custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within
+     * MacroUtils.
+     *
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void customUnits(boolean vo) {
+        _updateCustomUnits(vo);
+    }
+
+    /**
+     * Updates default units that are shipped with STAR-CCM+.
+     *
+     * @param vo given verbose option. False will not print anything.
+     */
+    public void defaultUnits(boolean vo) {
+        _updateDefaultUnits(vo);
+    }
+
+    /**
+     * Updates the {@link UserDeclarations#simTitle} global variable.
+     */
+    public void simTitle() {
+        _ud.simTitle = _sim.getPresentationName();
+    }
+
+    /**
+     * Updates the Solver settings. This is the same method as
+     * {@link macroutils.setter.SetSolver#settings}.
+     */
+    public void solverSettings() {
+        _set.solver.settings();
+    }
+
+    /**
+     * Updates the Surface Mesh.
+     */
+    public void surfaceMesh() {
+        _io.say.action("Generating Surface Mesh", true);
+        _sim.get(MeshPipelineController.class).generateSurfaceMesh();
+    }
+
+    /**
+     * This method is called automatically by {@link MacroUtils}.
+     */
+    public void updateInstances() {
+        _add = _mu.add;
+        _get = _mu.get;
+        _io = _mu.io;
+        _set = _mu.set;
+        _ud = _mu.userDeclarations;
+        _io.print.msgDebug("" + this.getClass().getSimpleName()
+                + " instances updated succesfully.");
+    }
+
+    /**
+     * Updates the Volume Mesh.
+     */
+    public void volumeMesh() {
+        _io.say.action("Generating Volume Mesh", true);
+        _sim.get(MeshPipelineController.class).generateVolumeMesh();
+        _updateDefaultUnits(false);
     }
 
     private void _updateCustomUnits(boolean vo) {
@@ -45,45 +127,62 @@ public class MainUpdater {
         _ud.dimVolFlow.setVolume(1);
         _ud.dimVolFlow.setTime(-1);
         /*    DENSITY UNITS [M/V]    */
-        _ud.unit_gpcm3 = _add.units.custom("g/cm^3", "gram per cubic centimeter", 1000, _ud.dimDensity, vo);
+        _ud.unit_gpcm3 = _add.units.custom("g/cm^3", "gram per cubic centimeter", 1000,
+                _ud.dimDensity, vo);
         /*    FORCE UNITS [M*L/T^2]    */
         _ud.unit_kN = _add.units.custom("kN", "kilonewton", 1000, _ud.dimForce, vo);
         /*    MASS UNITS [M]    */
         _ud.unit_g = _add.units.custom("g", "gram", 0.001, _ud.dimMass, vo);
         /*    MASS FLOW UNITS [M/T]    */
-        _ud.unit_kgph = _add.units.custom("kg/h", "kilogram per hour", 1. / 3600, _ud.dimMassFlow, vo);
-        _ud.unit_kgpmin = _add.units.custom("kg/min", "kilogram per minute", 1. / 60, _ud.dimMassFlow, vo);
-        _ud.unit_gpmin = _add.units.custom("g/min", "gram per minute", 0.001 / 60, _ud.dimMassFlow, vo);
+        _ud.unit_kgph = _add.units.custom("kg/h", "kilogram per hour", 1. / 3600,
+                _ud.dimMassFlow, vo);
+        _ud.unit_kgpmin = _add.units.custom("kg/min", "kilogram per minute", 1. / 60,
+                _ud.dimMassFlow, vo);
+        _ud.unit_gpmin = _add.units.custom("g/min", "gram per minute", 0.001 / 60,
+                _ud.dimMassFlow, vo);
         _ud.unit_gps = _add.units.custom("g/s", "gram per second", 0.001, _ud.dimMassFlow, vo);
         /*    MOLECULAR FLOW UNITS [Mol/T]    */
-        _ud.unit_kmolps = _add.units.custom("kmol/s", "kilogram-mol per second", 1.0, _ud.dimMolFlow, vo);
+        _ud.unit_kmolps = _add.units.custom("kmol/s", "kilogram-mol per second", 1.0,
+                _ud.dimMolFlow, vo);
         /*    PRESSURE UNITS [P]    */
         //--- http://www.sensorsone.co.uk/pressure-units-conversion.html
         //--- http://www.onlineconversion.com/pressure.htm
-        _ud.unit_cmH2O = _add.units.custom("cmH2O", "centimeter of water", 98.0665, _ud.dimPress, vo);
-        _ud.unit_cmHg = _add.units.custom("cmHg", "centimeter of mercury", 1333.2239, _ud.dimPress, vo);
-        _ud.unit_dynepcm2 = _add.units.custom("dyne/cm^2", "dyne per square centimeter", 0.1, _ud.dimPress, vo);
+        _ud.unit_cmH2O = _add.units.custom("cmH2O", "centimeter of water", 98.0665,
+                _ud.dimPress, vo);
+        _ud.unit_cmHg = _add.units.custom("cmHg", "centimeter of mercury", 1333.2239,
+                _ud.dimPress, vo);
+        _ud.unit_dynepcm2 = _add.units.custom("dyne/cm^2", "dyne per square centimeter", 0.1,
+                _ud.dimPress, vo);
         _ud.unit_kPa = _add.units.custom("kPa", "kilopascal", 1000, _ud.dimPress, vo);
         _ud.unit_mbar = _add.units.custom("mbar", "millibar", 100, _ud.dimPress, vo);
-        _ud.unit_mmH2O = _add.units.custom("mmH2O", "millimeter of water", 9.80665, _ud.dimPress, vo);
-        _ud.unit_mmHg = _add.units.custom("mmHg", "millimeter of mercury", 133.32239, _ud.dimPress, vo);
+        _ud.unit_mmH2O = _add.units.custom("mmH2O", "millimeter of water", 9.80665,
+                _ud.dimPress, vo);
+        _ud.unit_mmHg = _add.units.custom("mmHg", "millimeter of mercury", 133.32239,
+                _ud.dimPress, vo);
         _ud.unit_uPa = _add.units.custom("uPa", "micropascal", 1e-6, _ud.dimPress, vo);
         /*    TIME UNITS [T]    */
         _ud.unit_ms = _add.units.custom("ms", "milliseconds", 0.001, _ud.dimTime, vo);
         /*    VELOCITY UNITS [L/T]    */
         _ud.unit_kt = _add.units.custom("kt", "knot", 1852. / 3600., _ud.dimVel, vo);
-        _ud.unit_mmps = _add.units.custom("mm/s", "millimeter per second", 0.001, _ud.dimVel, vo);
-        _ud.unit_umps = _add.units.custom("um/s", "micrometer per second", 1e-6, _ud.dimVel, vo);
+        _ud.unit_mmps = _add.units.custom("mm/s", "millimeter per second", 0.001,
+                _ud.dimVel, vo);
+        _ud.unit_umps = _add.units.custom("um/s", "micrometer per second", 1e-6,
+                _ud.dimVel, vo);
         /*    VISCOSITY UNITS [P*T]    */
         _ud.unit_P = _add.units.custom("P", "Poise", 0.1, _ud.dimVisc, vo);
         _ud.unit_cP = _add.units.custom("cP", "centipoise", 0.001, _ud.dimVisc, vo);
         /*    VOLUMETRIC FLOW RATE UNITS [V/T]    */
-        _ud.unit_galps = _add.units.custom("gal/s", "gallons per second", 0.00378541, _ud.dimVolFlow, vo);
-        _ud.unit_galpmin = _add.units.custom("gal/min", "gallons per minute", 0.00378541 / 60, _ud.dimVolFlow, vo);
-        _ud.unit_lph = _add.units.custom("l/h", "liter per hour", 0.001 / 3600, _ud.dimVolFlow, vo);
-        _ud.unit_lpmin = _add.units.custom("l/min", "liter per minute", 0.001 / 60, _ud.dimVolFlow, vo);
+        _ud.unit_galps = _add.units.custom("gal/s", "gallons per second", 0.00378541,
+                _ud.dimVolFlow, vo);
+        _ud.unit_galpmin = _add.units.custom("gal/min", "gallons per minute", 0.00378541 / 60,
+                _ud.dimVolFlow, vo);
+        _ud.unit_lph = _add.units.custom("l/h", "liter per hour", 0.001 / 3600,
+                _ud.dimVolFlow, vo);
+        _ud.unit_lpmin = _add.units.custom("l/min", "liter per minute", 0.001 / 60,
+                _ud.dimVolFlow, vo);
         _ud.unit_lps = _add.units.custom("l/s", "liter per second", 0.001, _ud.dimVolFlow, vo);
-        _ud.unit_m3ph = _add.units.custom("m^3/h", "cubic meter per hour", 1. / 3600, _ud.dimVolFlow, vo);
+        _ud.unit_m3ph = _add.units.custom("m^3/h", "cubic meter per hour", 1. / 3600,
+                _ud.dimVolFlow, vo);
         _io.say.ok(vo);
     }
 
@@ -144,7 +243,8 @@ public class MainUpdater {
         _ud.defUnitArea = _updateDefaultUnit(_ud.defUnitArea, _ud.unit_m2, "Area", vo);
         _ud.defUnitDen = _updateDefaultUnit(_ud.defUnitDen, _ud.unit_kgpm3, "Density", vo);
         _ud.defUnitForce = _updateDefaultUnit(_ud.defUnitForce, _ud.unit_N, "Force", vo);
-        _ud.defUnitHTC = _updateDefaultUnit(_ud.defUnitHTC, _ud.unit_Wpm2K, "Heat Transfer Coefficient", vo);
+        _ud.defUnitHTC = _updateDefaultUnit(_ud.defUnitHTC, _ud.unit_Wpm2K,
+                "Heat Transfer Coefficient", vo);
         _ud.defUnitLength = _updateDefaultUnit(_ud.defUnitLength, _ud.unit_mm, "Length", vo);
         _ud.defUnitMFR = _updateDefaultUnit(_ud.defUnitMFR, _ud.unit_kgps, "Mass Flow Rate", vo);
         _ud.defUnitPress = _updateDefaultUnit(_ud.defUnitPress, _ud.unit_Pa, "Pressure", vo);
@@ -159,93 +259,12 @@ public class MainUpdater {
     private Units _updateUnit(String unitString, boolean vo) {
         Units u = _get.units.byName(unitString, false);
         if (u != null) {
-            _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Unit read", unitString, u.getDescription());
+            _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Unit read", unitString,
+                    u.getDescription());
             return u;
         }
         _io.print.value("Unit not read", unitString, true, vo);
         return null;
     }
-
-    /**
-     * Updates all units in memory. This method is called automatically by MacroUtils.
-     *
-     * @param vo given verbose option. False will not print anything.
-     */
-    public void allUnits(boolean vo) {
-        defaultUnits(vo);
-        customUnits(vo);
-    }
-
-    /**
-     * Updates the custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
-     *
-     * @param vo given verbose option. False will not print anything.
-     */
-    public void customUnits(boolean vo) {
-        _updateCustomUnits(vo);
-    }
-
-    /**
-     * Updates default units that are shipped with STAR-CCM+.
-     *
-     * @param vo given verbose option. False will not print anything.
-     */
-    public void defaultUnits(boolean vo) {
-        _updateDefaultUnits(vo);
-    }
-
-    /**
-     * Updates the {@link UserDeclarations#simTitle} global variable.
-     */
-    public void simTitle() {
-        _ud.simTitle = _sim.getPresentationName();
-    }
-
-    /**
-     * Updates the Solver settings. This is the same method as {@link macroutils.setter.SetSolver#settings}.
-     */
-    public void solverSettings() {
-        _set.solver.settings();
-    }
-
-    /**
-     * Updates the Surface Mesh.
-     */
-    public void surfaceMesh() {
-        _io.say.action("Generating Surface Mesh", true);
-        _sim.get(MeshPipelineController.class).generateSurfaceMesh();
-    }
-
-    /**
-     * Updates the Volume Mesh.
-     */
-    public void volumeMesh() {
-        _io.say.action("Generating Volume Mesh", true);
-        _sim.get(MeshPipelineController.class).generateVolumeMesh();
-        _updateDefaultUnits(false);
-    }
-
-    /**
-     * This method is called automatically by {@link MacroUtils}.
-     */
-    public void updateInstances() {
-        _add = _mu.add;
-        _get = _mu.get;
-        _io = _mu.io;
-        _set = _mu.set;
-        _ud = _mu.userDeclarations;
-        _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
-    }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.creator.MainCreator _add = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
 
 }

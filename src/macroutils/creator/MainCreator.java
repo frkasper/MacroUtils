@@ -1,6 +1,7 @@
 package macroutils.creator;
 
 import macroutils.MacroUtils;
+import star.common.ScalarGlobalParameter;
 
 /**
  * Main class for creating STAR-CCM+ objects with MacroUtils.
@@ -9,96 +10,6 @@ import macroutils.MacroUtils;
  * @author Fabio Kasper
  */
 public class MainCreator {
-
-    /**
-     * Main constructor for this class.
-     *
-     * @param m given MacroUtils object.
-     */
-    public MainCreator(MacroUtils m) {
-        _mu = m;
-        contact = new CreatePartContact(m);
-        derivedPart = new CreateDerivedPart(m);
-        geometry = new CreateGeometry(m);
-        intrf = new CreateInterface(m);
-        meshOperation = new CreateMeshOperation(m);
-        physicsContinua = new CreatePhysicsContinua(m);
-        plot = new CreatePlot(m);
-        region = new CreateRegion(m);
-        report = new CreateReport(m);
-        solver = new CreateSolver(m);
-        scene = new CreateScene(m);
-        tools = new CreateTools(m);
-        units = new CreateUnits(m);
-        m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
-    }
-
-    /**
-     * Adds all custom modifications created automatically by MacroUtils, such as:
-     * <ul>
-     * <li> Custom Units;
-     * <li> Global Parameters.
-     * </ul>
-     */
-    public void all() {
-        if (!_mu.getIntrusiveOption()) {
-            _io.print.msg("Intrusive Option is Disabled. Skipping...");
-            return;
-        }
-        customUnits();
-        globalParameters();
-    }
-
-    /**
-     * Adds custom Global Parameters that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
-     */
-    public void globalParameters() {
-        _add.tools.parameter_Scalar("PI", Math.PI, _ud.unit_Dimensionless);
-    }
-
-    /**
-     * Adds custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within MacroUtils.
-     */
-    public void customUnits() {
-        if (!_mu.getIntrusiveOption()) {
-            _io.print.msgDebug("Intrusive Option is Disabled. Skipping add.customUnits()");
-            return;
-        }
-        _upd.customUnits(true);
-    }
-
-    /**
-     * This method is called automatically by {@link MacroUtils}.
-     */
-    public void updateInstances() {
-        contact.updateInstances();
-        derivedPart.updateInstances();
-        geometry.updateInstances();
-        intrf.updateInstances();
-        meshOperation.updateInstances();
-        physicsContinua.updateInstances();
-        plot.updateInstances();
-        region.updateInstances();
-        report.updateInstances();
-        scene.updateInstances();
-        solver.updateInstances();
-        tools.updateInstances();
-        units.updateInstances();
-        _add = _mu.add;
-        _io = _mu.io;
-        _ud = _mu.userDeclarations;
-        _upd = _mu.update;
-        _io.print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
-    }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.creator.MainCreator _add = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.misc.MainUpdater _upd = null;
-    private macroutils.UserDeclarations _ud = null;
 
     /**
      * This class is responsible for creating Part Contacts.
@@ -164,5 +75,97 @@ public class MainCreator {
      * This class is responsible for creating/adding units to STAR-CCM+.
      */
     public CreateUnits units = null;
+
+    private macroutils.creator.MainCreator _add = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private macroutils.UserDeclarations _ud = null;
+    private macroutils.misc.MainUpdater _upd = null;
+
+    /**
+     * Main constructor for this class.
+     *
+     * @param m given MacroUtils object.
+     */
+    public MainCreator(MacroUtils m) {
+        _mu = m;
+        contact = new CreatePartContact(m);
+        derivedPart = new CreateDerivedPart(m);
+        geometry = new CreateGeometry(m);
+        intrf = new CreateInterface(m);
+        meshOperation = new CreateMeshOperation(m);
+        physicsContinua = new CreatePhysicsContinua(m);
+        plot = new CreatePlot(m);
+        region = new CreateRegion(m);
+        report = new CreateReport(m);
+        solver = new CreateSolver(m);
+        scene = new CreateScene(m);
+        tools = new CreateTools(m);
+        units = new CreateUnits(m);
+        m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
+    }
+
+    /**
+     * Adds all custom modifications created automatically by MacroUtils, such as:
+     * <ul>
+     * <li> Custom Units;
+     * <li> Global Parameters.
+     * </ul>
+     */
+    public void all() {
+        if (!_mu.getIntrusiveOption()) {
+            _io.print.msg("Intrusive Option is Disabled. Skipping...");
+            return;
+        }
+        customUnits();
+        globalParameters();
+    }
+
+    /**
+     * Adds custom units that are <b>not</b> shipped with STAR-CCM+. Those are created within
+     * MacroUtils.
+     */
+    public void customUnits() {
+        if (!_mu.getIntrusiveOption()) {
+            _io.print.msgDebug("Intrusive Option is Disabled. Skipping add.customUnits()");
+            return;
+        }
+        _upd.customUnits(true);
+    }
+
+    /**
+     * Adds custom Global Parameters that are <b>not</b> shipped with STAR-CCM+. Those are created
+     * within MacroUtils.
+     */
+    public void globalParameters() {
+        ScalarGlobalParameter pi;
+        pi = _add.tools.parameter_Scalar("PI", Math.PI, _ud.unit_Dimensionless);
+        _add.tools.comment(pi, "The good old PI number");
+    }
+
+    /**
+     * This method is called automatically by {@link MacroUtils}.
+     */
+    public void updateInstances() {
+        contact.updateInstances();
+        derivedPart.updateInstances();
+        geometry.updateInstances();
+        intrf.updateInstances();
+        meshOperation.updateInstances();
+        physicsContinua.updateInstances();
+        plot.updateInstances();
+        region.updateInstances();
+        report.updateInstances();
+        scene.updateInstances();
+        solver.updateInstances();
+        tools.updateInstances();
+        units.updateInstances();
+        _add = _mu.add;
+        _io = _mu.io;
+        _ud = _mu.userDeclarations;
+        _upd = _mu.update;
+        _io.print.msgDebug("" + this.getClass().getSimpleName()
+                + " instances updated succesfully.");
+    }
 
 }

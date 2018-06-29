@@ -10,6 +10,7 @@ import star.common.GeometryPart;
 import star.common.Units;
 import star.meshing.AutoMeshOperation;
 import star.meshing.MesherBase;
+import star.vis.Displayer;
 
 /**
  * Low-level class for several different ways of getting Strings with MacroUtils.
@@ -19,6 +20,10 @@ import star.meshing.MesherBase;
  */
 public class GetStrings {
 
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private final String _s = StaticDeclarations.UNIT_DIMENSIONLESS;
+
     /**
      * Main constructor for this class.
      *
@@ -26,10 +31,6 @@ public class GetStrings {
      */
     public GetStrings(MacroUtils m) {
         _mu = m;
-    }
-
-    private String[] _getTokens(String filename) {
-        return filename.split("\\.(?=[^\\.]+$)");
     }
 
     /**
@@ -53,8 +54,8 @@ public class GetStrings {
     }
 
     /**
-     * Modifies a string in order to be used for filenames, i.e., eliminates special characters (<i>= / #</i>, etc...).
-     * Spaces are replaced by underscores.
+     * Modifies a string in order to be used for filenames, i.e., eliminates special characters
+     * (<i>= / #</i>, etc...). Spaces are replaced by underscores.
      *
      * @param base given base String.
      * @return modified String.
@@ -107,14 +108,21 @@ public class GetStrings {
      * @return A String.
      */
     public String information(ClientServerObject cso) {
-        return String.format("%s -> \"%s\"", parentName(cso), name(cso));
+        String thisCSO = _information(cso);
+        if (cso instanceof Displayer) {
+            Displayer d = (Displayer) cso;
+            String sceneCSO = _information(d.getScene());
+            return String.format("%s -> %s", sceneCSO, thisCSO);
+        } else {
+            return thisCSO;
+        }
     }
 
     /**
      * Gets the current meshers selected in an Automated Mesh Operation.
      *
      * @param amo given AutoMeshOperation.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      * @return An ArrayList of Strings.
      */
     public ArrayList<String> meshers(AutoMeshOperation amo, boolean vo) {
@@ -130,8 +138,10 @@ public class GetStrings {
     /**
      * Gets the necessary Meshers for an Automated Mesh Operation.
      *
-     * @param meshers given meshers separated by comma. See {@link macroutils.StaticDeclarations.Meshers} for options.
-     * @return An ArrayList of Strings. Useful with {@link macroutils.creator.CreateMeshOperation#automatedMesh}.
+     * @param meshers given meshers separated by comma. See
+     *                {@link macroutils.StaticDeclarations.Meshers} for options.
+     * @return An ArrayList of Strings. Useful with
+     *         {@link macroutils.creator.CreateMeshOperation#automatedMesh}.
      */
     public ArrayList<String> meshers(StaticDeclarations.Meshers... meshers) {
         ArrayList<String> as = new ArrayList<>();
@@ -169,15 +179,7 @@ public class GetStrings {
         if (cso == null) {
             return "NULL";
         }
-        String name = cso.getParent().getBeanDisplayName();
-        String[] split = name.split(" ");
-        String lastWord = split[split.length - 1];
-        if (lastWord.endsWith("ies")) {
-            lastWord = lastWord.replace("ies", "y");
-        } else if (lastWord.endsWith("s")) {
-            lastWord = lastWord.replace("s", "");
-        }
-        return name.replace(split[split.length - 1], lastWord);
+        return _getSingular(cso.getParent().getBeanDisplayName());
     }
 
     /**
@@ -189,6 +191,13 @@ public class GetStrings {
      */
     public String repeated(String s, int n) {
         return new String(new char[n]).replace("\0", s);
+    }
+
+    /**
+     * This method is called automatically by {@link MacroUtils}.
+     */
+    public void updateInstances() {
+        _io = _mu.io;
     }
 
     /**
@@ -206,19 +215,27 @@ public class GetStrings {
         return macroutils.StaticDeclarations.NONE_STRING;
     }
 
-    /**
-     * This method is called automatically by {@link MacroUtils}.
-     */
-    public void updateInstances() {
-        _io = _mu.io;
+    private String _getSingular(String name) {
+        int lastChars = 3;
+        if (name.length() < lastChars) {
+            return name;  // There should not be such cases
+        }
+        String firstSlice = name.substring(0, name.length() - lastChars);
+        String secondSlice = name.substring(name.length() - lastChars);
+        if (secondSlice.endsWith("ies")) {
+            secondSlice = secondSlice.replace("ies", "y");
+        } else if (secondSlice.endsWith("s")) {
+            secondSlice = secondSlice.replace("s", "");
+        }
+        return firstSlice + secondSlice;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private final String _s = StaticDeclarations.UNIT_DIMENSIONLESS;
+    private String[] _getTokens(String filename) {
+        return filename.split("\\.(?=[^\\.]+$)");
+    }
 
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
+    private String _information(ClientServerObject cso) {
+        return String.format("%s -> %s", parentName(cso), name(cso));
+    }
 
 }

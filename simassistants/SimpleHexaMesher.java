@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import macroutils.MacroUtils;
 import simplehexamesher.BlockTask;

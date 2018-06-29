@@ -1,6 +1,7 @@
 package demo16;
 
 import macroutils.MacroUtils;
+import macroutils.templates.demos.Demo16;
 import star.assistant.Task;
 import star.assistant.annotation.StarAssistantTask;
 import star.assistant.ui.FunctionTaskController;
@@ -18,6 +19,10 @@ import star.common.ScalarGlobalParameter;
         controller = BuilderTask.BuilderController.class
 )
 public class BuilderTask extends Task {
+
+    private macroutils.templates.demos.Demo16 _demo16 = null;
+    private final MacroUtils _mu;
+    private macroutils.UserDeclarations _ud = null;
 
     public BuilderTask(MacroUtils m) {
         _mu = m;
@@ -79,16 +84,9 @@ public class BuilderTask extends Task {
             _mu.setSimulation(getActiveSimulation(), true);
             _mu.setDebugMode(true);
             _ud = _mu.userDeclarations;
-            _demo16 = _mu.templates.demos.demo16;
+            _demo16 = new Demo16(_mu);
         }
 
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private final MacroUtils _mu;
-    private macroutils.templates.demos.Demo16 _demo16 = null;
-    private macroutils.UserDeclarations _ud = null;
 
 }

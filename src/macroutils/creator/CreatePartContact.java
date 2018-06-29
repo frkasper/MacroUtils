@@ -13,6 +13,10 @@ import star.common.Simulation;
  */
 public class CreatePartContact {
 
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -21,10 +25,6 @@ public class CreatePartContact {
     public CreatePartContact(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    private PartContactManager _getPCM() {
-        return _sim.get(PartContactManager.class);
     }
 
     /**
@@ -48,11 +48,8 @@ public class CreatePartContact {
         _io = _mu.io;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
+    private PartContactManager _getPCM() {
+        return _sim.get(PartContactManager.class);
+    }
 
 }

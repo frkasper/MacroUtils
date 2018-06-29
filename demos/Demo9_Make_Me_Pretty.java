@@ -1,4 +1,3 @@
-
 import macroutils.MacroUtils;
 import star.common.StarMacro;
 
@@ -10,6 +9,7 @@ import star.common.StarMacro;
  */
 public class Demo9_Make_Me_Pretty extends StarMacro {
 
+    @Override
     public void execute() {
         MacroUtils mu = new MacroUtils(getActiveSimulation());
         mu.templates.prettify.all();

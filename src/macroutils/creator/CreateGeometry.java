@@ -28,6 +28,14 @@ import star.meshing.SimpleSpherePart;
  */
 public class CreateGeometry {
 
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private macroutils.setter.MainSetter _set = null;
+    private Simulation _sim = null;
+    private macroutils.templates.MainTemplates _templ = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -39,15 +47,15 @@ public class CreateGeometry {
     }
 
     /**
-     * Creates a Simple Block based on the relative dimensions of the given Part Surfaces. This method collects Minimums
-     * and Maximums X, Y and Z and then computes Deltas to be used for creating a block based on the extents of the
-     * supplied Part Surfaces.
+     * Creates a Simple Block based on the relative dimensions of the given Part Surfaces. This
+     * method collects Minimums and Maximums X, Y and Z and then computes Deltas to be used for
+     * creating a block based on the extents of the supplied Part Surfaces.
      *
-     * @param aps given ArrayList of Part Surfaces.
-     * @param crs1 given 3-components array, relative to the collection. E.g.: {-1, 0, 0.5} will create the following
-     * coordinates: [minX - 1 * dX, minY, minZ + 0.5 * dZ].
-     * @param crs2 given 3-components array, relative to the collection. E.g.: {1, 2, 3} will create the following
-     * coordinates: [maxX + 1 * dX, maxY + 2 * dY, maxZ + 3 * dX].
+     * @param aps  given ArrayList of Part Surfaces.
+     * @param crs1 given 3-components array, relative to the collection. E.g.: {-1, 0, 0.5} will
+     *             create the following coordinates: [minX - 1 * dX, minY, minZ + 0.5 * dZ].
+     * @param crs2 given 3-components array, relative to the collection. E.g.: {1, 2, 3} will create
+     *             the following coordinates: [maxX + 1 * dX, maxY + 2 * dY, maxZ + 3 * dX].
      * @return The brand new Block Part.
      */
     public SimpleBlockPart block(ArrayList<PartSurface> aps, double[] crs1, double[] crs2) {
@@ -61,17 +69,18 @@ public class CreateGeometry {
         double dx = dvExtents.get(6);
         double dy = dvExtents.get(7);
         double dz = dvExtents.get(8);
-        double[] c1 = new double[]{minX + crs1[0] * dx, minY + crs1[1] * dy, minZ + crs1[2] * dz};
-        double[] c2 = new double[]{maxX + crs2[0] * dx, maxY + crs2[1] * dy, maxZ + crs2[2] * dz};
+        double[] c1 = new double[]{ minX + crs1[0] * dx, minY + crs1[1] * dy, minZ + crs1[2] * dz };
+        double[] c2 = new double[]{ maxX + crs2[0] * dx, maxY + crs2[1] * dy, maxZ + crs2[2] * dz };
         return block(c1, c2, _ud.defUnitLength);
     }
 
     /**
-     * Creates a Simple Block with the default Tessellation option. See {@link UserDeclarations#defTessOpt}.
+     * Creates a Simple Block with the default Tessellation option. See
+     * {@link UserDeclarations#defTessOpt}.
      *
      * @param coord1 given 3-components array. <i>E.g.: new double[] {0, 0, 0}</i>
      * @param coord2 given 3-components array. <i>E.g.: new double[] {1, 1, 1}</i>
-     * @param u given units.
+     * @param u      given units.
      * @return The SimpleBlockPart.
      */
     public SimpleBlockPart block(double[] coord1, double[] coord2, Units u) {
@@ -87,38 +96,20 @@ public class CreateGeometry {
     }
 
     /**
-     * Creates a Block/Channel 3D-CAD model and creates a Part with 6 Part Surfaces inside, i.e., x0, x1, y0, y1, z0 and
-     * z1. The default Tessellation option is used. See {@link UserDeclarations#defTessOpt}.
+     * Creates a Block/Channel 3D-CAD model and creates a Part with 6 Part Surfaces inside, i.e.,
+     * x0, x1, y0, y1, z0 and z1. The default Tessellation option is used. See
+     * {@link UserDeclarations#defTessOpt}.
      *
      * <p>
      * This method exactly the one defined on {@link macroutils.templates.TemplateGeometry#block}.
      *
      * @param c1 given 3-components array with coordinates. E.g.: {0, -1, -10}.
      * @param c2 given 3-components array with coordinates. E.g.: {1, 1, 1}.
-     * @param u given Units.
+     * @param u  given Units.
      * @return The Cad Body.
      */
     public CadPart block3DCAD(double[] c1, double[] c2, Units u) {
         Body bd = _templ.geometry.block(c1, c2, u, "Block", true);
-        return _get.geometries.cadPart(bd, false);
-    }
-
-    /**
-     * Creates a Cylinder using the 3D-CAD model and creates a Part using the default Tessellation option. See
-     * {@link UserDeclarations#defTessOpt}.
-     *
-     * <p>
-     * This method exactly the one defined on {@link macroutils.templates.TemplateGeometry#cylinder}.
-     *
-     * @param r given Radius.
-     * @param l given Length.
-     * @param org given origin as a 3-components array with coordinates. E.g.: {0, -1, -10}.
-     * @param u given Units.
-     * @param ax given extrusion direction. See {@link macroutils.StaticDeclarations.Axis} for options.
-     * @return The Cad Body.
-     */
-    public CadPart cylinder3DCAD(double r, double l, double[] org, Units u, StaticDeclarations.Axis ax) {
-        Body bd = _templ.geometry.cylinder(r, l, org, u, ax, "Cylinder", true);
         return _get.geometries.cadPart(bd, false);
     }
 
@@ -140,8 +131,31 @@ public class CreateGeometry {
     }
 
     /**
-     * Imports a CAD file using the default Tessellation option. See {@link UserDeclarations#defTessOpt}. It assumes the
-     * file is inside {@link UserDeclarations#simPath}. Informing the Path might be necessary.
+     * Creates a Cylinder using the 3D-CAD model and creates a Part using the default Tessellation
+     * option. See {@link UserDeclarations#defTessOpt}.
+     *
+     * <p>
+     * This method exactly the one defined on
+     * {@link macroutils.templates.TemplateGeometry#cylinder}.
+     *
+     * @param r   given Radius.
+     * @param l   given Length.
+     * @param org given origin as a 3-components array with coordinates. E.g.: {0, -1, -10}.
+     * @param u   given Units.
+     * @param ax  given extrusion direction. See {@link macroutils.StaticDeclarations.Axis} for
+     *            options.
+     * @return The Cad Body.
+     */
+    public CadPart cylinder3DCAD(double r, double l, double[] org, Units u,
+            StaticDeclarations.Axis ax) {
+        Body bd = _templ.geometry.cylinder(r, l, org, u, ax, "Cylinder", true);
+        return _get.geometries.cadPart(bd, false);
+    }
+
+    /**
+     * Imports a CAD file using the default Tessellation option. See
+     * {@link UserDeclarations#defTessOpt}. It assumes the file is inside
+     * {@link UserDeclarations#simPath}. Informing the Path might be necessary.
      *
      * @param part given CAD file with extension. E.g.: "CAD\\machine.prt"
      */
@@ -150,7 +164,8 @@ public class CreateGeometry {
     }
 
     /**
-     * Imports a CAD file using the default Tessellation option. See {@link UserDeclarations#defTessOpt}.
+     * Imports a CAD file using the default Tessellation option. See
+     * {@link UserDeclarations#defTessOpt}.
      *
      * @param cadFile given File in {@link java.io.File} format.
      */
@@ -163,20 +178,23 @@ public class CreateGeometry {
         String sfn = cadFile.toString();
         PartImportManager pim = _sim.get(PartImportManager.class);
         if (_get.strings.fileExtension(sfn).toLowerCase().equals("dbs")) {
-            pim.importDbsPart(sfn, "OneSurfacePerPatch", "OnePartPerFile", true, _ud.unit_m, 1);
+            pim.importDbsPart(sfn, "OneSurfacePerPatch", "OnePartPerFile", true,
+                    _ud.unit_m, 1);
         } else {
-            pim.importCadPart(sfn, "SharpEdges", _ud.mshSharpEdgeAngle, _ud.defTessOpt.getValue(), false, false);
+            pim.importCadPart(sfn, "SharpEdges", _ud.mshSharpEdgeAngle, _ud.defTessOpt.getValue(),
+                    false, false);
         }
         _io.say.ok(true);
     }
 
     /**
-     * Creates a Simple Sphere Part with the default Tessellation option. See {@link UserDeclarations#defTessOpt}. The
-     * origin is located in the Centroid of the given Part Surfaces.
+     * Creates a Simple Sphere Part with the default Tessellation option. See
+     * {@link UserDeclarations#defTessOpt}. The origin is located in the Centroid of the given Part
+     * Surfaces.
      *
-     * @param aps given ArrayList of Part Surfaces.
-     * @param relSize the radius of sphere is given relative to the max(dx, dy, dz). E.g.: 5, is equivalent to 5 *
-     * max(dx, dy, dz).
+     * @param aps     given ArrayList of Part Surfaces.
+     * @param relSize the radius of sphere is given relative to the max(dx, dy, dz). E.g.: 5, is
+     *                equivalent to 5 * max(dx, dy, dz).
      * @return The SimpleSpherePart.
      */
     public SimpleSpherePart sphere(ArrayList<PartSurface> aps, double relSize) {
@@ -187,17 +205,18 @@ public class CreateGeometry {
         double dx = dvExtents.get(6);
         double dy = dvExtents.get(7);
         double dz = dvExtents.get(8);
-        double[] coord = new double[]{minX + 0.5 * dx, minY + 0.5 * dy, minZ + 0.5 * dz};
+        double[] coord = new double[]{ minX + 0.5 * dx, minY + 0.5 * dy, minZ + 0.5 * dz };
         double radius = relSize * Math.max(Math.max(dx, dy), dz);
         return sphere(coord, radius, _ud.defUnitLength);
     }
 
     /**
-     * Creates a Simple Sphere Part with the default Tessellation option. See {@link UserDeclarations#defTessOpt}.
+     * Creates a Simple Sphere Part with the default Tessellation option. See
+     * {@link UserDeclarations#defTessOpt}.
      *
      * @param coord given 3-components array. <i>E.g.: new double[] {0, 0, 0}</i>
-     * @param r given radius.
-     * @param u given unit.
+     * @param r     given radius.
+     * @param u     given unit.
      * @return The SimpleSpherePart.
      */
     public SimpleSpherePart sphere(double[] coord, double r, Units u) {
@@ -221,16 +240,5 @@ public class CreateGeometry {
         _templ = _mu.templates;
         _ud = _mu.userDeclarations;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _templ = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
 
 }

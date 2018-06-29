@@ -1,16 +1,10 @@
 package simplehexamesher;
 
 import macroutils.MacroUtils;
-import macroutils.UserDeclarations;
+import macroutils.templates.simassistants.BlockMesher;
 import star.assistant.Task;
 import star.assistant.annotation.StarAssistantTask;
 import star.assistant.ui.FunctionTaskController;
-import star.base.neo.DoubleVector;
-import star.common.Region;
-import star.common.Simulation;
-import star.common.VectorGlobalParameter;
-import star.vis.Annotation;
-import star.vis.Scene;
 
 /**
  * Block Mesher Task.
@@ -24,6 +18,8 @@ import star.vis.Scene;
         display = "Block Mesher"
 )
 public class BlockTask extends Task {
+
+    private final MacroUtils _mu;
 
     /**
      * Main constructor for this class.
@@ -44,33 +40,12 @@ public class BlockTask extends Task {
          */
         public void generateMesh() {
             initializeTask();
-            if (!haveParameters()) {
-                return;
-            }
-            Annotation an = _mu.get.objects.annotation(ANNOT_NAME, false);
-            boolean is2D = an != null;
-            _mu.templates.mesh.setBadgeFor2D(is2D);
-            VectorGlobalParameter c1 = (VectorGlobalParameter) _mu.get.objects.parameter(BLOCK_C1, false);
-            VectorGlobalParameter c2 = (VectorGlobalParameter) _mu.get.objects.parameter(BLOCK_C2, false);
-            VectorGlobalParameter nc = (VectorGlobalParameter) _mu.get.objects.parameter(BLOCK_NCELLS, false);
-            Region r = _mu.templates.mesh.hexaBlock(getDouble(c1), getDouble(c2), c1.getQuantity().getUnits(),
-                    getInt(nc), "Block");
-            if (is2D) {
-                _ud.namedObjects.add(r);
-                an.getAnnotationManager().remove(an);
-                _mu.templates.mesh.setBadgeFor2D(false);
+            BlockMesher bm = new BlockMesher(_mu);
+            if (bm.haveParameters()) {
+                bm.generateMesh();
             } else {
-                _ud.namedObjects.addAll(_mu.get.boundaries.all(r, false));
+                _mu.io.say.loud("Please define Block dimensions first and try again.");
             }
-            Scene scn = _mu.add.scene.mesh(_ud.namedObjects);
-            scn.open();
-            if (!is2D) {
-                scn.setViewOrientation(new DoubleVector(new double[]{-1.0, 1.0, -1.0}),
-                        new DoubleVector(new double[]{0.0, 1.0, 0.0}));
-            }
-            scn.resetCamera();
-            _ud.namedObjects.clear();
-            _mu.io.say.action("Generate Mesh Task is finished.", true);
         }
 
         /**
@@ -78,8 +53,7 @@ public class BlockTask extends Task {
          */
         public void setAs2D() {
             initializeTask();
-            _mu.add.tools.annotation_Simple(ANNOT_NAME, "");
-            _mu.io.say.action("Geometry will be flagged as 2D.", true);
+            new BlockMesher(_mu).setAs2D();
             _mu.io.say.action("Set as Two-Dimensional Task is finished.", true);
         }
 
@@ -88,51 +62,17 @@ public class BlockTask extends Task {
          */
         public void setParameters() {
             initializeTask();
-            VectorGlobalParameter vgp = _mu.add.tools.parameter_Vector(BLOCK_C1, new double[]{0, 0, 0}, _ud.unit_m);
-            _mu.add.tools.parameter_Vector(BLOCK_C2, new double[]{1, 1, 1}, _ud.unit_m);
-            _mu.add.tools.parameter_Vector(BLOCK_NCELLS, new double[]{2, 4, 6}, _ud.unit_Dimensionless);
-            selectNodeExclusive(vgp);
+            BlockMesher bm = new BlockMesher(_mu);
+            bm.setParameters(new double[]{ 0, 0, 0 }, new double[]{ 1, 1, 1 },
+                    new double[]{ 2, 4, 6 }, _mu.userDeclarations.unit_m);
+            selectNodeExclusive(bm.getBlockCoordinate1Parameter());
             _mu.io.say.action("Set Parameters Task is finished.", true);
         }
 
-        private double[] getDouble(VectorGlobalParameter vgp) {
-            return vgp.getQuantity().getVector().toDoubleArray();
-        }
-
-        private int[] getInt(VectorGlobalParameter vgp) {
-            double[] doubleArray = getDouble(vgp);
-            int[] intArray = new int[doubleArray.length];
-            for (int i = 0; i < doubleArray.length; ++i) {
-                intArray[i] = (int) doubleArray[i];
-            }
-            return intArray;
-        }
-
-        private boolean haveParameters() {
-            if (_mu.get.objects.parameter(BLOCK_C1, false) == null) {
-                _mu.io.say.loud("Please define Block dimensions first and try again.");
-                return false;
-            }
-            return true;
-        }
-
         private void initializeTask() {
-            _sim = getActiveSimulation();
-            _mu.setSimulation(_sim, false);
-            _ud = _mu.userDeclarations;
+            _mu.setSimulation(getActiveSimulation(), false);
         }
 
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private final MacroUtils _mu;
-    private Simulation _sim;
-    private UserDeclarations _ud;
-    private static final String ANNOT_NAME = "is2D";
-    private static final String BLOCK_C1 = "Block Coordinate1";
-    private static final String BLOCK_C2 = "Block Coordinate2";
-    private static final String BLOCK_NCELLS = "Block Number of Cells";
 
 }

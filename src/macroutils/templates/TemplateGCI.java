@@ -30,6 +30,31 @@ import star.common.graph.DataSet;
 public class TemplateGCI {
 
     /**
+     * Default reading X column in a CSV when performing GCI calculations with {@link #evaluate}.
+     * Default = 0.
+     */
+    public int columnForAxisX = 0;
+    /**
+     * Default reading Y column in a CSV when performing GCI calculations with {@link #evaluate}.
+     * Default = 1.
+     */
+    public int columnForAxisY = 1;
+
+    private macroutils.creator.MainCreator _add = null;
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private macroutils.setter.MainSetter _set = null;
+    private Simulation _sim = null;
+    private macroutils.templates.MainTemplates _templ = null;
+    private macroutils.UserDeclarations _ud = null;
+    private int nOscillatoryConvergence = 0;
+    /**
+     * GCI clipping -- 1000% error is skipped.
+     */
+    private static final double GCI_LIMIT = 10.0;
+
+    /**
      * Main constructor for this class.
      *
      * @param m given MacroUtils object.
@@ -37,6 +62,192 @@ public class TemplateGCI {
     public TemplateGCI(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
+    }
+
+    /**
+     * The Grid Convergence Index (GCI) method below implements a variation of Celik et al. paper,
+     * i.e., F1, F2 and F3 are the coarse, medium and fine solutions respectively.
+     * <p>
+     * For more information, see {@link #evaluate2}.
+     *
+     * @param h     given array of doubles containing grid sizes in the <b>following order:
+     * <u>coarse (F1), medium (F2) and fine (F3) grid values</u></b>.
+     * @param f     given array of doubles containing solution values in the same order above.
+     * @param grids given array of strings containing the grid names in the same order as others.
+     * @return An array with doubles in the form {GCI12, GCI23, Order (p), F23_Extrapolated, E12_a,
+     *         E23_a}. More information as follows:
+     * <ul>
+     * <li><b>GCI<i>ij</i></b> are the Grid Convergence Indexes;
+     * <li><b>Order</b> is the Apparent Order;
+     * <li><b>F23_Extrapolated</b> is the Exact solution according to Richardson Extrapolation;
+     * <li><b>E<i>ij</i>_a</b> are the Approximate Errors (Relative Errors) between meshes <i>i</i>
+     * and <i>j</i>.
+     * </ul>
+     */
+    public double[] evaluate(double[] h, double[] f, String[] grids) {
+        return evaluate(h, f, grids, true);
+    }
+
+    /**
+     * Evaluates the Grid Convergence Index (GCI) method below for a series of grids. For more
+     * information, see {@link #evaluate(double[], double[], java.lang.String[])}.
+     *
+     * @param gridSizes given ArrayList of Doubles containing grid sizes in the <b>following order:
+     * <u>coarse (F1), medium (F2) and fine (F3) grid values</u></b>.
+     * @param vals      given ArrayList of Doubles containing solution values in the same order
+     *                  above.
+     * @param grids     given ArrayList of Strings containing the grid names in the same order as
+     *                  others.
+     */
+    public void evaluate(ArrayList<Double> gridSizes, ArrayList<Double> vals,
+            ArrayList<String> grids) {
+        String fmt = "%-35s %12g %12g %12.3f %12.2f %12g";
+        String fmtS = "%-35s %12s %12s %12s %12s %12s";
+        ArrayList<String> toSay = new ArrayList<>();
+        String size = String.format("Size (%s)", _ud.defUnitLength.getPresentationName());
+        toSay.add(String.format(fmtS, "Grid Name", "Value", size, "GCI (%)", "ORDER", "EXACT"));
+        _io.say.loud("Assessing Grid Convergence Index");
+        double gci = 0., p = 0., fe = 0.;
+        for (double val : vals) {
+            int i = vals.indexOf(val);
+            if (i >= 2) {
+                double[] _sizes = { gridSizes.get(i), gridSizes.get(i - 1), gridSizes.get(i - 2) };
+                double[] _vals = { vals.get(i), vals.get(i - 1), vals.get(i - 2) };
+                String[] _grids = { grids.get(i), grids.get(i - 1), grids.get(i - 2) };
+                double[] gciRes = evaluate(_sizes, _vals, _grids, false);
+                gci = gciRes[1];
+                p = gciRes[2];
+                fe = gciRes[3];
+            }
+            toSay.add(String.format(fmt, grids.get(i), vals.get(i), gridSizes.get(i), gci, p, fe));
+        }
+        for (String s : toSay) {
+            _io.say.msg(s);
+        }
+        _io.say.ok(true);
+    }
+
+    /**
+     * Calculates the Grid Convergence Index for 3 sim files, using the Roache's approach.
+     * <p>
+     * <b>Procedure:</b> <ul>
+     * <li> The finest grid must be loaded and active in STAR-CCM+;
+     * <li> Pick a Plot to evaluate;
+     * <li> The 2 other sim files will be loaded in background and the CSV files will be exported
+     * from the Plots;
+     * <li> Coarser solutions will be projected on the CSV of the finest grid;
+     * <li> GCI is then calculated and the original Plot will be changed.
+     * </ul>
+     *
+     * <b>Notes:</b> <ul>
+     * <li> This method will checkout a second license of STAR-CCM+;
+     * <li> The reliability of this method depends on the accuracy of how the solution is projected;
+     * <li> Method is limited to sorted data in the Plot;
+     * <li> If there is more than one DataSet in the plot, only the first X-Y pair will be used;
+     * <li> This method is based on {@link #evaluate(double[], double[], java.lang.String[])}.
+     * </ul>
+     *
+     * @param sp       given StarPlot.
+     * @param simFiles array of sim files. Currently limited to 2 and must be ordered the same way
+     *                 as required by {@link #evaluate}: e.g.: {"coarseGrid.sim" ,
+     *                 "mediumGrid.sim"}. In addition, must be in the same path as
+     *                 {@link UserDeclarations#simPath} variable. If more arguments are provided,
+     *                 only the first two will be used as the macro will take the current simulation
+     *                 as the 3rd one, i.e., the fine grid.
+     */
+    public void evaluate(StarPlot sp, String[] simFiles) {
+        _evaluate(sp, _getFiles(simFiles), true);
+    }
+
+    /**
+     * Calculates the Grid Convergence Index for 3 sim files, using the Roache's approach.
+     * <p>
+     * <b>Procedure:</b> <ul>
+     * <li> The finest grid must be loaded and active in STAR-CCM+;
+     * <li> Pick a Plot to evaluate;
+     * <li> The 2 other sim files will be loaded in background and the CSV files will be exported
+     * from the Plots;
+     * <li> Coarser solutions will be projected on the CSV of the finest grid;
+     * <li> GCI is then calculated and the original Plot will be changed.
+     * </ul>
+     *
+     * <b>Notes:</b> <ul>
+     * <li> This method will checkout a second license of STAR-CCM+;
+     * <li> The reliability of this method depends on the accuracy of how the solution is projected;
+     * <li> Method is limited to sorted data in the Plot;
+     * <li> If there is more than one DataSet in the plot, only the first X-Y pair will be used;
+     * <li> This method is based on {@link #evaluate(double[], double[], java.lang.String[])}.
+     * </ul>
+     *
+     * @param sp       given StarPlot.
+     * @param simFiles ArrayList of @{see java.io.File} containing the sim files. Currently limited
+     *                 to 2 and the coarse grid must have index 0. If more items are inside the
+     *                 ArrayList, only the first 2 will be used as the macro will take the current
+     *                 simulation as the 3rd one, i.e., the fine grid.
+     */
+    public void evaluate(StarPlot sp, ArrayList<File> simFiles) {
+        _evaluate(sp, simFiles, true);
+    }
+
+    /**
+     * The GCI method below implements exactly as it is given in the Paper, i.e., F1, F2 and F3 are
+     * the fine, medium and coarse solutions respectively.
+     * <p>
+     * <b>References</b>:
+     * <p>
+     * Celik, et al., 2008. <u>Procedure for Estimation and Reporting of Uncertainty Due to
+     * Discretization in CFD Applications</u>. Journal of Fluids Engineering. Vol. 130.
+     * <p>
+     * Roache, P. J., 1997. <u>Quantification of Uncertainty in Computational Fluid Dynamics.</u>.
+     * Annu. Rev. Fluid. Mech. 29:123-60.
+     *
+     * @param h     given array of doubles containing grid sizes in the <b>following order:
+     * <u>fine (F1), medium (F2) and coarse (F3) grid values</u></b>.
+     * @param f     given array of doubles containing solution values in the same order above.
+     * @param grids given array of strings containing the grid names in the same order as others.
+     * @return An array with doubles in the form {GCI21, GCI32, Order (p), F21_Extrapolated}.
+     */
+    public double[] evaluate2(double[] h, double[] f, String[] grids) {
+        return _evaluate2(h, f, grids, true);
+    }
+
+    /**
+     * This method is in conjunction with
+     * {@link #evaluate(star.common.StarPlot, java.util.ArrayList)} and it only works along with an
+     * override annotation.
+     *
+     * Useful for adding some code before exporting the CSV file.
+     *
+     * It is invoked prior to exporting the CSV file from the Plot.
+     *
+     * @param s  given Simulation.
+     * @param sp given StarPlot.
+     * @return A StarPlot. In case one needs to create a brand new on the fly.
+     */
+    public StarPlot evaluate_preExport(Simulation s, StarPlot sp) {
+        //-- Use it with @Override annotation
+        return sp;
+    }
+
+    /**
+     * Gets the current grid size for the GCI calculation. Only useful with {@link #evaluate}.
+     *
+     * @return The grid size in the {@link UserDeclarations#defUnitLength} unit.
+     */
+    public double getGridSize() {
+        return _getGridSize(_sim);
+    }
+
+    /**
+     * This method is called automatically by {@link MacroUtils}.
+     */
+    public void updateInstances() {
+        _add = _mu.add;
+        _get = _mu.get;
+        _io = _mu.io;
+        _set = _mu.set;
+        _templ = _mu.templates;
+        _ud = _mu.userDeclarations;
     }
 
     private XYPlot _createDuplicatedPlot(XYPlot xyp, FileTable ft) {
@@ -57,7 +268,8 @@ public class TemplateGCI {
         return xyp2;
     }
 
-    private XYPlot _createPlot(String name, FileTable ft, String[] xx, String[] yy, XYPlot xypOrig) {
+    private XYPlot _createPlot(String name, FileTable ft, String[] xx, String[] yy,
+            XYPlot xypOrig) {
         XYPlot xyp = _sim.getPlotManager().createXYPlot();
         xyp.setPresentationName(name);
         xyp.setTitle("");
@@ -98,7 +310,7 @@ public class TemplateGCI {
             return;
         }
         //-- F1 to F3 == Coarse to Fine
-        double[] x1 = null, y1 = null, x2 = null, y2 = null, x3 = null, y3 = null, y1p = null, y2p = null;
+        double[] x1 = {}, y1 = {}, x2 = {}, y2 = {}, x3 = {}, y3 = {};
         ArrayList<String> als = new ArrayList<>();
         ArrayList<Double> hs = new ArrayList<>();
         als.add(_sim.getPresentationName());
@@ -107,7 +319,7 @@ public class TemplateGCI {
         sp = evaluate_preExport(_sim, sp);
         //-- Export CSVs
         _exportPlot(sp, _sim.getPresentationName() + ".csv", true);
-        for (File sf : new File[]{simFiles.get(1), simFiles.get(0)}) {
+        for (File sf : new File[]{ simFiles.get(1), simFiles.get(0) }) {
             _io.say.msg("Working on File: " + sf.getAbsoluteFile(), vo);
             //--
             Simulation sim2 = new Simulation(sf.toString());
@@ -138,16 +350,18 @@ public class TemplateGCI {
                     x3 = _getVals(data, columnForAxisX);
                     y3 = _getVals(data, columnForAxisY);
                     break;
+                default:
+                    break;
             }
         }
         //-- Project coarser data into finer Grid
         _io.say.msg("Projecting data...");
-        y1p = _getProjectedData(x3, x1, y1);
-        y2p = _getProjectedData(x3, x2, y2);
+        double[] y1p = _getProjectedData(x3, x1, y1);
+        double[] y2p = _getProjectedData(x3, x2, y2);
         //-- GCI
         _io.say.msg("Calculating GCI...");
         String[] grids = als.toArray(new String[als.size()]);
-        double[] hss = {hs.get(0), hs.get(1), hs.get(2)};       //-- Ugly ArrayList to double[].
+        double[] hss = _get.objects.doubleArray(hs);
         double[] gci12 = new double[y3.length], gci23 = new double[y3.length],
                 e12_a = new double[y3.length], e23_a = new double[y3.length],
                 gciP = new double[y3.length], gciExtr = new double[y3.length];
@@ -155,7 +369,7 @@ public class TemplateGCI {
         nOscillatoryConvergence = 0;
         for (int i = 0; i < y3.length; i++) {
             _io.say.msg(true, "Station %4d / %d. X = %g.", (i + 1), y3.length, x3[i]);
-            double[] gci = evaluate(hss, new double[]{y1p[i], y2p[i], y3[i]}, grids, false);
+            double[] gci = evaluate(hss, new double[]{ y1p[i], y2p[i], y3[i] }, grids, false);
             gciP[i] = gci[2];
             p_sum += gciP[i];
             e12_a[i] = gci[4];
@@ -180,7 +394,8 @@ public class TemplateGCI {
             _io.say.line(true);
         }
         FileTable ft = _writeAbsoluteCSV(x3, y3, gci23);
-        _setupPlots(ft, sp, x1, x2, x3, y1, y2, y3, y1p, y2p, gci12, gci23, gciP, e12_a, e23_a, gciExtr);
+        _setupPlots(ft, sp, x1, x2, x3, y1, y2, y3, y1p, y2p, gci12, gci23, gciP, e12_a, e23_a,
+                gciExtr);
         _io.say.ok(true);
     }
 
@@ -200,8 +415,10 @@ public class TemplateGCI {
         if (Double.isNaN(gci21) || Double.isNaN(gci32)) {
             _io.say.msg("WARNING!!! NaN caught in GCI calculation...");
             String fmt = "%12s, %12s, %12s, %12s, %12s, %12s, %12s";
-            _io.say.msg(String.format(fmt, "F1", "F2", "F3", "GCI21", "GCI32", "p", "F21Extrapolated"));
-            _io.say.msg(String.format(fmt.replaceAll("s", "g"), f1, f2, f3, gci21, gci32, p, f21_extr));
+            _io.say.msg(String.format(fmt, "F1", "F2", "F3", "GCI21", "GCI32", "p",
+                    "F21Extrapolated"));
+            _io.say.msg(String.format(fmt.replaceAll("s", "g"), f1, f2, f3, gci21, gci32, p,
+                    f21_extr));
         }
         _io.say.action("GCI Overview (Fine to Coarse -- Paper original)", vo);
         _io.say.msg(String.format("F1: %12g --> %s (Fine)", f1, grids[0]), vo);
@@ -218,13 +435,13 @@ public class TemplateGCI {
         _io.say.msg(String.format(fmtP, "Approximate Error (E21_a)", e21_a), vo);
         _io.say.msg(String.format(fmtP, "Extrapolated Error (E21_extr)", e21_extr), vo);
         _io.say.line(vo);
-        return new double[]{gci21, gci32, p, f21_extr};
+        return new double[]{ gci21, gci32, p, f21_extr };
     }
 
     /**
      * Exports the Plot as CSV with option to sort data.
      *
-     * @param sp given StarPlot.
+     * @param sp      given StarPlot.
      * @param csvName given CSV name.
      */
     private void _exportPlot(StarPlot sp, String csvName, boolean sortData) {
@@ -235,7 +452,8 @@ public class TemplateGCI {
         if (sortData && _isXYPlot(sp)) {
             XYPlot p = (XYPlot) sp;
             YAxisType y = (YAxisType) p.getYAxes().getDefaultAxis();
-            InternalDataSet id = (InternalDataSet) y.getDataSetManager().getDataSets().iterator().next();
+            InternalDataSet id
+                    = (InternalDataSet) y.getDataSetManager().getDataSets().iterator().next();
             id.setNeedsSorting(true);
         }
         sp.export(new File(_ud.simPath, name), ",");
@@ -293,7 +511,8 @@ public class TemplateGCI {
         MacroUtils mu2 = new MacroUtils(s, false);
         UserDeclarations ud2 = mu2.userDeclarations;
         double cc = mu2.get.mesh.fvr().getCellCount();
-        Report r = mu2.add.report.sum(new ArrayList<>(mu2.get.regions.all(false)), "_sumVolumeCells",
+        Report r = mu2.add.report.sum(new ArrayList<>(mu2.get.regions.all(false)),
+                "_sumVolumeCells",
                 mu2.get.objects.fieldFunction(StaticDeclarations.Vars.VOL.getVar(), false),
                 ud2.unit_m3, false);
         double sumVC = r.getReportMonitorValue();
@@ -313,9 +532,11 @@ public class TemplateGCI {
     }
 
     private ExternalDataSet _getNewExternalDataSet(XYPlot xyp, FileTable ft) {
-        ArrayList<DataSet> datasetsOld = new ArrayList<>(xyp.getDataSetManager().getExternalDataSets());
+        ArrayList<DataSet> datasetsOld
+                = new ArrayList<>(xyp.getDataSetManager().getExternalDataSets());
         xyp.getDataSetManager().addDataProvider(ft);
-        ArrayList<DataSet> datasetsNew = new ArrayList<>(xyp.getDataSetManager().getExternalDataSets());
+        ArrayList<DataSet> datasetsNew
+                = new ArrayList<>(xyp.getDataSetManager().getExternalDataSets());
         datasetsNew.removeAll(datasetsOld);
         return (ExternalDataSet) datasetsNew.get(0);
     }
@@ -335,7 +556,8 @@ public class TemplateGCI {
                 _io.say.msg("WARNING!!! NaN caught in GCI Apparent Order calculation (p)...");
                 String fmt = "%12s, %12s, %12s, %12s, %12s, %12s, %12s";
                 _io.say.msg(String.format(fmt, "r21", "r32", "e32", "e21", "beta", "p", "p1"));
-                _io.say.msg(String.format(fmt.replaceAll("s", "g"), r21, r32, e32, e21, beta, p, p1));
+                _io.say.msg(
+                        String.format(fmt.replaceAll("s", "g"), r21, r32, e32, e21, beta, p, p1));
                 vo = true;
             }
             _io.say.msg(vo, "Iter %02d:", i);
@@ -363,11 +585,12 @@ public class TemplateGCI {
         for (int i = 0; i < xx0.length; i++) {
             Double x0 = xx0[i];
             double[] range = _getRange(x0, xx1);
-            //_io.say.msg(true, "### Got Range: {%6.2f  //  %6.2f  //   %6.2f}", range[0], x0, range[1]);
+//            _io.say.msg(true, "### Got Range: {%6.2f  //  %6.2f  //   %6.2f}",
+//                    range[0], x0, range[1]);
             int i0 = Arrays.asList(_getDouble(xx1)).indexOf(range[0]);
             int i1 = Arrays.asList(_getDouble(xx1)).indexOf(range[1]);
-            yy1p[i] = _get.info.linearRegression(new double[]{range[0], range[1]},
-                    new double[]{yy1[i0], yy1[i1]}, x0, false, false);
+            yy1p[i] = _get.info.linearRegression(new double[]{ range[0], range[1] },
+                    new double[]{ yy1[i0], yy1[i1] }, x0, false, false);
         }
         return yy1p;
     }
@@ -384,15 +607,16 @@ public class TemplateGCI {
         for (int i = 0; i < xx.length - 1; i++) {
             double x1 = xx[i];
             double x2 = xx[i + 1];
-            //say(String.format("   Working Range (i=%2d): %6.2f <= %6.2f <= %6.2f ???", i, x1, x0, x2));
+//            _io.say.msg(String.format("   Working Range (i=%2d): %6.2f <= %6.2f <= %6.2f ???",
+//                    i, x1, x0, x2));
             if (x0 >= x1 && x0 <= x2) {
-                return new double[]{x1, x2};
+                return new double[]{ x1, x2 };
             }
             if (x0 >= xx[xx.length - 1]) {
-                return new double[]{xx[xx.length - 2], xx[xx.length - 1]};
+                return new double[]{ xx[xx.length - 2], xx[xx.length - 1] };
             }
         }
-        return new double[]{xx[0], xx[1]};
+        return new double[]{ xx[0], xx[1] };
     }
 
     private double[] _getVals(String[] data, int i) {
@@ -423,7 +647,8 @@ public class TemplateGCI {
 
     private void _setupPlots(FileTable ft, StarPlot sp, double[] x1, double[] x2, double[] x3,
             double[] y1, double[] y2, double[] y3, double[] y1p, double[] y2p,
-            double[] gci12, double[] gci23, double[] gciP, double[] e12_a, double[] e23_a, double[] gciExtr) {
+            double[] gci12, double[] gci23, double[] gciP, double[] e12_a, double[] e23_a,
+            double[] gciExtr) {
         ArrayList<String> data = new ArrayList<>();
         ArrayList<String> plots = new ArrayList<>();
         //-- Changing the original Plot and adding stuff.
@@ -490,29 +715,6 @@ public class TemplateGCI {
         return (FileTable) _sim.getTableManager().createFromFile(newCsv.toString());
     }
 
-    /**
-     * The Grid Convergence Index (GCI) method below implements a variation of Celik et al. paper, i.e., F1, F2 and F3
-     * are the coarse, medium and fine solutions respectively.
-     * <p>
-     * For more information, see {@link #evaluate2}.
-     *
-     * @param h given array of doubles containing grid sizes in the <b>following order:
-     * <u>coarse (F1), medium (F2) and fine (F3) grid values</u></b>.
-     * @param f given array of doubles containing solution values in the same order above.
-     * @param grids given array of strings containing the grid names in the same order as others.
-     * @return An array with doubles in the form {GCI12, GCI23, Order (p), F23_Extrapolated, E12_a, E23_a}. More
-     * information as follows:
-     * <ul>
-     * <li><b>GCI<i>ij</i></b> are the Grid Convergence Indexes;
-     * <li><b>Order</b> is the Apparent Order;
-     * <li><b>F23_Extrapolated</b> is the Exact solution according to Richardson Extrapolation;
-     * <li><b>E<i>ij</i>_a</b> are the Approximate Errors (Relative Errors) between meshes <i>i</i> and <i>j</i>.
-     * </ul>
-     */
-    public double[] evaluate(double[] h, double[] f, String[] grids) {
-        return evaluate(h, f, grids, true);
-    }
-
     private double[] evaluate(double[] h, double[] f, String[] grids, boolean vo) {
         double f1 = f[0], f2 = f[1], f3 = f[2];
         double e12 = f1 - f2, e23 = f2 - f3;
@@ -520,7 +722,8 @@ public class TemplateGCI {
         double beta = _getBeta(r23, r12, e12, e23, 1);
         if (e23 / e12 < 0 || beta < 0) {
             _io.say.msg("Warning! Oscillatory convergence detected in GCI calculation.");
-            _io.say.msg("To avoid a NaN, beta will be used as absolute in the Apparent Order calculation (p).");
+            _io.say.msg("To avoid a NaN, beta will be used as absolute in the Apparent Order "
+                    + "calculation (p).");
             nOscillatoryConvergence++;
         }
         double p = _getP(r23, r12, e12, e23, false);
@@ -539,7 +742,8 @@ public class TemplateGCI {
             vo = true;
         }
         _io.say.action("GCI Overview (Coarse to Fine -- Paper variation)", vo);
-        String fmt = "%s: %12g --> %s (%s - Grid Size = %g__)".replace("__", _ud.defUnitLength.getPresentationName());
+        String fmt = "%s: %12g --> %s (%s - Grid Size = %g__)"
+                .replace("__", _ud.defUnitLength.getPresentationName());
         _io.say.msg(String.format(fmt, "F1", f1, grids[0], "Coarse", h[0]), vo);
         _io.say.msg(String.format(fmt, "F2", f2, grids[0], "Medium", h[1]), vo);
         _io.say.msg(String.format(fmt, "F3", f3, grids[0], "Fine", h[2]), vo);
@@ -553,183 +757,7 @@ public class TemplateGCI {
         _io.say.msg(String.format(fmtP, "Approximate Error (E23_a)", e23_a), vo);
         _io.say.msg(String.format(fmtP, "Extrapolated Error (E23_extr)", e23_extr), vo);
         _io.say.line(vo);
-        return new double[]{gci12, gci23, p, f23_extr, e12_a, e23_a};
+        return new double[]{ gci12, gci23, p, f23_extr, e12_a, e23_a };
     }
-
-    /**
-     * Evaluates the Grid Convergence Index (GCI) method below for a series of grids. For more information, see
-     * {@link #evaluate(double[], double[], java.lang.String[])}.
-     *
-     * @param gridSizes given ArrayList of Doubles containing grid sizes in the <b>following order:
-     * <u>coarse (F1), medium (F2) and fine (F3) grid values</u></b>.
-     * @param vals given ArrayList of Doubles containing solution values in the same order above.
-     * @param grids given ArrayList of Strings containing the grid names in the same order as others.
-     */
-    public void evaluate(ArrayList<Double> gridSizes, ArrayList<Double> vals, ArrayList<String> grids) {
-        String fmt = "%-35s %12g %12g %12.3f %12.2f %12g";
-        String fmtS = "%-35s %12s %12s %12s %12s %12s";
-        ArrayList<String> toSay = new ArrayList<>();
-        String size = String.format("Size (%s)", _ud.defUnitLength.getPresentationName());
-        toSay.add(String.format(fmtS, "Grid Name", "Value", size, "GCI (%)", "ORDER", "EXACT"));
-        _io.say.loud("Assessing Grid Convergence Index");
-        double gci = 0., p = 0., fe = 0.;
-        for (double val : vals) {
-            int i = vals.indexOf(val);
-            if (i >= 2) {
-                double[] _sizes = {gridSizes.get(i), gridSizes.get(i - 1), gridSizes.get(i - 2)};
-                double[] _vals = {vals.get(i), vals.get(i - 1), vals.get(i - 2)};
-                String[] _grids = {grids.get(i), grids.get(i - 1), grids.get(i - 2)};
-                double[] gciRes = evaluate(_sizes, _vals, _grids, false);
-                gci = gciRes[1];
-                p = gciRes[2];
-                fe = gciRes[3];
-            }
-            toSay.add(String.format(fmt, grids.get(i), vals.get(i), gridSizes.get(i), gci, p, fe));
-        }
-        for (String s : toSay) {
-            _io.say.msg(s);
-        }
-        _io.say.ok(true);
-    }
-
-    /**
-     * Calculates the Grid Convergence Index for 3 sim files, using the Roache's approach.
-     * <p>
-     * <b>Procedure:</b> <ul>
-     * <li> The finest grid must be loaded and active in STAR-CCM+;
-     * <li> Pick a Plot to evaluate;
-     * <li> The 2 other sim files will be loaded in background and the CSV files will be exported from the Plots;
-     * <li> Coarser solutions will be projected on the CSV of the finest grid;
-     * <li> GCI is then calculated and the original Plot will be changed.
-     * </ul>
-     *
-     * <b>Notes:</b> <ul>
-     * <li> This method will checkout a second license of STAR-CCM+;
-     * <li> The reliability of this method depends on the accuracy of how the solution is projected;
-     * <li> Method is limited to sorted data in the Plot;
-     * <li> If there is more than one DataSet in the plot, only the first X-Y pair will be used;
-     * <li> This method is based on {@link #evaluate(double[], double[], java.lang.String[])}.
-     * </ul>
-     *
-     * @param sp given StarPlot.
-     * @param simFiles array of sim files. Currently limited to 2 and must be ordered the same way as required by
-     * {@link #evaluate}: e.g.: {"coarseGrid.sim" , "mediumGrid.sim"}. In addition, must be in the same path as
-     * {@link UserDeclarations#simPath} variable. If more arguments are provided, only the first two will be used as the
-     * macro will take the current simulation as the 3rd one, i.e., the fine grid.
-     */
-    public void evaluate(StarPlot sp, String[] simFiles) {
-        _evaluate(sp, _getFiles(simFiles), true);
-    }
-
-    /**
-     * Calculates the Grid Convergence Index for 3 sim files, using the Roache's approach.
-     * <p>
-     * <b>Procedure:</b> <ul>
-     * <li> The finest grid must be loaded and active in STAR-CCM+;
-     * <li> Pick a Plot to evaluate;
-     * <li> The 2 other sim files will be loaded in background and the CSV files will be exported from the Plots;
-     * <li> Coarser solutions will be projected on the CSV of the finest grid;
-     * <li> GCI is then calculated and the original Plot will be changed.
-     * </ul>
-     *
-     * <b>Notes:</b> <ul>
-     * <li> This method will checkout a second license of STAR-CCM+;
-     * <li> The reliability of this method depends on the accuracy of how the solution is projected;
-     * <li> Method is limited to sorted data in the Plot;
-     * <li> If there is more than one DataSet in the plot, only the first X-Y pair will be used;
-     * <li> This method is based on {@link #evaluate(double[], double[], java.lang.String[])}.
-     * </ul>
-     *
-     * @param sp given StarPlot.
-     * @param simFiles ArrayList of @{see java.io.File} containing the sim files. Currently limited to 2 and the coarse
-     * grid must have index 0. If more items are inside the ArrayList, only the first 2 will be used as the macro will
-     * take the current simulation as the 3rd one, i.e., the fine grid.
-     */
-    public void evaluate(StarPlot sp, ArrayList<File> simFiles) {
-        _evaluate(sp, simFiles, true);
-    }
-
-    /**
-     * This method is in conjunction with {@link #evaluate(star.common.StarPlot, java.util.ArrayList)} and it only works
-     * along with an @Override call. Useful for adding some code before exporting the CSV file.
-     *
-     * It is invoked prior to exporting the CSV file from the Plot.
-     *
-     * @param s given Simulation.
-     * @param sp given StarPlot.
-     * @return A StarPlot. In case one needs to create a brand new on the fly.
-     */
-    public StarPlot evaluate_preExport(Simulation s, StarPlot sp) {
-        //-- Use it with @override
-        return sp;
-    }
-
-    /**
-     * The GCI method below implements exactly as it is given in the Paper, i.e., F1, F2 and F3 are the fine, medium and
-     * coarse solutions respectively.
-     * <p>
-     * <b>References</b>:
-     * <p>
-     * Celik, et al., 2008. <u>Procedure for Estimation and Reporting of Uncertainty Due to Discretization in CFD
-     * Applications</u>. Journal of Fluids Engineering. Vol. 130.
-     * <p>
-     * Roache, P. J., 1997. <u>Quantification of Uncertainty in Computational Fluid Dynamics.</u>. Annu. Rev. Fluid.
-     * Mech. 29:123-60.
-     *
-     * @param h given array of doubles containing grid sizes in the <b>following order:
-     * <u>fine (F1), medium (F2) and coarse (F3) grid values</u></b>.
-     * @param f given array of doubles containing solution values in the same order above.
-     * @param grids given array of strings containing the grid names in the same order as others.
-     * @return An array with doubles in the form {GCI21, GCI32, Order (p), F21_Extrapolated}.
-     */
-    public double[] evaluate2(double[] h, double[] f, String[] grids) {
-        return _evaluate2(h, f, grids, true);
-    }
-
-    /**
-     * Gets the current grid size for the GCI calculation. Only useful with {@link #evaluate}.
-     *
-     * @return The grid size in the {@link UserDeclarations#defUnitLength} unit.
-     */
-    public double getGridSize() {
-        return _getGridSize(_sim);
-    }
-
-    /**
-     * This method is called automatically by {@link MacroUtils}.
-     */
-    public void updateInstances() {
-        _add = _mu.add;
-        _get = _mu.get;
-        _io = _mu.io;
-        _set = _mu.set;
-        _templ = _mu.templates;
-        _ud = _mu.userDeclarations;
-    }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private static final double GCI_LIMIT = 10.0;       //-- 1000% error should be skipped.
-
-    private int nOscillatoryConvergence = 0;
-    private MacroUtils _mu = null;
-    private macroutils.creator.MainCreator _add = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.templates.MainTemplates _templ = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
-
-    /**
-     * Default reading X column in a CSV when performing GCI calculations with {@link #evaluate}. Default = 0.
-     */
-    public int columnForAxisX = 0;
-
-    /**
-     * Default reading Y column in a CSV when performing GCI calculations with {@link #evaluate}. Default = 1.
-     */
-    public int columnForAxisY = 1;
 
 }

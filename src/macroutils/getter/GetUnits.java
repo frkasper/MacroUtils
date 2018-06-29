@@ -18,6 +18,13 @@ import star.common.UnitsManager;
  */
 public class GetUnits {
 
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private final String _s = StaticDeclarations.UNIT_DIMENSIONLESS;
+    private Simulation _sim = null;
+    private final String _unitDimensionless = _s;
+
     /**
      * Main constructor for this class.
      *
@@ -42,7 +49,7 @@ public class GetUnits {
      * Gets a unit by its Presentation Name.
      *
      * @param name given unit name.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo   given verbose option. False will not print anything.
      * @return The Unit. Null if nothing is found.
      */
     public Units byName(String name, boolean vo) {
@@ -80,8 +87,10 @@ public class GetUnits {
     public Units fromMonitor(Monitor m) {
         if (m instanceof ResidualMonitor) {
             return byName(_unitDimensionless, false);
+        } else if (m instanceof ReportMonitor) {
+            return ((ReportMonitor) m).getReport().getUnits();
         } else {
-            return (m instanceof ReportMonitor) ? ((ReportMonitor) m).getReport().getUnits() : null;
+            return null;
         }
     }
 
@@ -92,16 +101,5 @@ public class GetUnits {
         _get = _mu.get;
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private final String _s = StaticDeclarations.UNIT_DIMENSIONLESS;
-    private final String _unitDimensionless = _s;
-
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
 
 }

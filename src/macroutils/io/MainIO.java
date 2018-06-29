@@ -13,9 +13,29 @@ import macroutils.UserDeclarations;
 public class MainIO {
 
     /**
+     * This class is responsible for printing information into STAR-CCM+ console/output.
+     */
+    public Print print = null;
+    /**
+     * This class is responsible for reading objects in general with MacroUtils.
+     */
+    public Read read = null;
+    /**
+     * Useful for printing information into console/output. It is the same as {@link #print}.
+     */
+    public Print say = null;
+    /**
+     * This class is responsible for writing data in general with MacroUtils.
+     */
+    public Write write = null;
+
+    private MacroUtils _mu = null;
+    private UserDeclarations _ud = null;
+
+    /**
      * Main constructor for this class.
      *
-     * @param m given MacroUtils object.
+     * @param m        given MacroUtils object.
      * @param debugOpt given Debug option. True to enable.
      */
     public MainIO(MacroUtils m, boolean debugOpt) {
@@ -73,31 +93,5 @@ public class MainIO {
         _ud = _mu.userDeclarations;
         print.msgDebug("" + this.getClass().getSimpleName() + " instances updated succesfully.");
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private UserDeclarations _ud = null;
-
-    /**
-     * This class is responsible for reading objects in general with MacroUtils.
-     */
-    public Read read = null;
-
-    /**
-     * This class is responsible for printing information into STAR-CCM+ console/output.
-     */
-    public Print print = null;
-
-    /**
-     * Useful for printing information into console/output. It is the same as {@link #print}.
-     */
-    public Print say = null;
-
-    /**
-     * This class is responsible for writing data in general with MacroUtils.
-     */
-    public Write write = null;
 
 }

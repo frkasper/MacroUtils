@@ -15,6 +15,11 @@ import star.common.UserUnits;
  */
 public class CreateUnits {
 
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -31,7 +36,7 @@ public class CreateUnits {
      * @param name given Unit name.
      * @param desc given Unit description.
      * @param conv given Unit conversion factor.
-     * @param dim given Dimensions.
+     * @param dim  given Dimensions.
      * @return The created Unit.
      */
     public Units custom(String name, String desc, double conv, Dimensions dim) {
@@ -44,8 +49,8 @@ public class CreateUnits {
      * @param name given Unit name.
      * @param desc given Unit description.
      * @param conv given Unit conversion factor.
-     * @param dim given Dimensions.
-     * @param vo given verbose option. False will not print anything.
+     * @param dim  given Dimensions.
+     * @param vo   given verbose option. False will not print anything.
      * @return The created Unit.
      */
     public Units custom(String name, String desc, double conv, Dimensions dim, boolean vo) {
@@ -59,7 +64,8 @@ public class CreateUnits {
             uu.setDimensions(dim);
             return uu;
         }
-        _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Unit already exists", name, u.getDescription());
+        _io.print.msg(vo, StaticDeclarations.UNIT_FMT, "Unit already exists", name,
+                u.getDescription());
         return u;
     }
 
@@ -70,13 +76,5 @@ public class CreateUnits {
         _get = _mu.get;
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
 
 }

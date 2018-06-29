@@ -19,6 +19,25 @@ import star.vis.VisView;
  */
 public class TemplatePost {
 
+    private macroutils.creator.MainCreator _add = null;
+    private macroutils.checker.MainChecker _chk = null;
+
+    /**
+     * Variable for controlling current frame number.
+     */
+    private int _currentFrame = 0;
+    /**
+     * Variable for controlling the number of wanted frames.
+     */
+    private int _frames = 0;
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private macroutils.misc.MainResetter _reset = null;
+    private macroutils.setter.MainSetter _set = null;
+    private Simulation _sim = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -27,6 +46,117 @@ public class TemplatePost {
     public TemplatePost(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
+    }
+
+    /**
+     * Flies over between two cameras and print pictures in between. The current picture number can
+     * be accessed by {@link TemplatePost#getCurrentFrame}. Picture resolution is controlled by
+     * {@link UserDeclarations#picResX} and and {@link UserDeclarations#picResX}.
+     *
+     * @param scn    given Scene.
+     * @param v1     given Camera 1.
+     * @param v2     given Camera 2.
+     * @param frames given number of frames to be generated.
+     */
+    public void flyOver(Scene scn, VisView v1, VisView v2, int frames) {
+        _flyOver(scn, v1, v2, frames, new ArrayList<>(), null);
+    }
+
+    /**
+     * Flies over between two cameras and print pictures in between. The current picture number can
+     * be accessed by {@link TemplatePost#getCurrentFrame}. Picture resolution is controlled by
+     * {@link UserDeclarations#picResX} and and {@link UserDeclarations#picResX}.
+     *
+     * @param scn    given Scene.
+     * @param v1     given Camera 1.
+     * @param v2     given Camera 2.
+     * @param frames given number of frames to be generated.
+     * @param rsv    given Recorded Solution View.
+     */
+    public void flyOver(Scene scn, VisView v1, VisView v2, int frames, RecordedSolutionView rsv) {
+        _flyOver(scn, v1, v2, frames, new ArrayList<>(), rsv);
+    }
+
+    public void flyOver(Scene scn, ArrayList<VisView> avv) {
+        _flyOver(scn, null, null, avv.size() - 1, avv, null);
+    }
+
+    /**
+     * This method is in conjunction with {@link #flyOver} and it only works along with an override
+     * annotation.
+     *
+     * Useful for changing global stuff.
+     *
+     * It is invoked outside the loop after the last printed picture.
+     */
+    public void flyOver_postPrintPicture() {
+        //-- Use it with @Override annotation
+    }
+
+    /**
+     * This method is in conjunction with {@link #flyOver} and it only works along with an override
+     * annotation.
+     *
+     * Useful for changing Displayer opacities, colors and other local stuff.
+     *
+     * It is invoked within the loop prior to printing the pictures.
+     */
+    public void flyOver_prePrintPicture() {
+        //-- Use it with @Override annotation
+    }
+
+    /**
+     * Gets the current frame number when using the {@link #flyOver} method.
+     *
+     * @return An integer.
+     */
+    public int getCurrentFrame() {
+        return _currentFrame;
+    }
+
+    /**
+     * Gets the number of frames when using the {@link #flyOver} method.
+     *
+     * @return An integer.
+     */
+    public int getNumberOfFrames() {
+        return _frames;
+    }
+
+    /**
+     * Creates some useful Unsteady Reports and Annotations, such as:
+     * <ul>
+     * <li>Maximum CFL Report on all Fluid Regions</li>
+     * <li>Average CFL Report on all Fluid Regions</li>
+     * <li><i>Time</i> Annotation</li>
+     * </ul>
+     */
+    public void unsteadyReports() {
+        _io.say.action("Creating useful Unsteady Reports", true);
+        if (!_isUnsteady()) {
+            return;
+        }
+        _io.say.msg("Creating AVG and MAX CFL Reports...");
+        ArrayList<Region> ar = _get.regions.all(false);
+        FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.CFL.getVar(), false);
+        _add.report.volumeAverage(ar, "CFL_avg", ff, _ud.unit_Dimensionless, false);
+        _add.report.maximum(new ArrayList<>(ar), "CFL_max", ff, _ud.unit_Dimensionless, false);
+        _io.say.msg("Creating Time Report Annotation...");
+        _add.tools.annotation_Time("6.2f");
+        _io.say.ok(true);
+    }
+
+    /**
+     * This method is called automatically by {@link MacroUtils}.
+     */
+    public void updateInstances() {
+        _add = _mu.add;
+        _chk = _mu.check;
+        _get = _mu.get;
+        _io = _mu.io;
+        _reset = _mu.reset;
+        _set = _mu.set;
+        _ud = _mu.userDeclarations;
     }
 
     private void _flyOver(Scene scn, VisView v1, VisView v2, int frames,
@@ -84,7 +214,8 @@ public class TemplatePost {
     }
 
     private void _removeTemporaryCameraViews(boolean vo) {
-        ArrayList<VisView> avv = _get.cameras.allByREGEX(StaticDeclarations.TMP_CAM_NAME + ".*", false);
+        ArrayList<VisView> avv = _get.cameras.allByREGEX(StaticDeclarations.TMP_CAM_NAME + ".*",
+                false);
         int n = avv.size();
         if (avv.size() > 0 && avv.get(0) != null) {
             _io.say.msg("Removing Temporary Cameras", vo);
@@ -92,135 +223,5 @@ public class TemplatePost {
             _io.say.msg(vo, "Temporary Cameras Removed: %d.", n);
         }
     }
-
-    /**
-     * Flies over between two cameras and print pictures in between. The current picture number can be accessed by
-     * {@link TemplatePost#getCurrentFrame}. Picture resolution is controlled by {@link UserDeclarations#picResX} and
-     * and {@link UserDeclarations#picResX}.
-     *
-     * @param scn given Scene.
-     * @param v1 given Camera 1.
-     * @param v2 given Camera 2.
-     * @param frames given number of frames to be generated.
-     */
-    public void flyOver(Scene scn, VisView v1, VisView v2, int frames) {
-        _flyOver(scn, v1, v2, frames, new ArrayList<>(), null);
-    }
-
-    /**
-     * Flies over between two cameras and print pictures in between. The current picture number can be accessed by
-     * {@link TemplatePost#getCurrentFrame}. Picture resolution is controlled by {@link UserDeclarations#picResX} and
-     * and {@link UserDeclarations#picResX}.
-     *
-     * @param scn given Scene.
-     * @param v1 given Camera 1.
-     * @param v2 given Camera 2.
-     * @param frames given number of frames to be generated.
-     * @param rsv given Recorded Solution View.
-     */
-    public void flyOver(Scene scn, VisView v1, VisView v2, int frames, RecordedSolutionView rsv) {
-        _flyOver(scn, v1, v2, frames, new ArrayList<>(), rsv);
-    }
-
-    public void flyOver(Scene scn, ArrayList<VisView> avv) {
-        _flyOver(scn, null, null, avv.size() - 1, avv, null);
-    }
-
-    /**
-     * This method is in conjunction with {@link #flyOver} and it only works along with an @Override. Useful for
-     * changing Displayer opacities, colors and other local stuff.
-     *
-     * It is invoked within the loop prior to printing the pictures.
-     */
-    public void flyOver_prePrintPicture() {
-        //-- Use with @override
-    }
-
-    /**
-     * This method is in conjunction with {@link #flyOver} and it only works along with an @Override. Useful for
-     * changing global stuff.
-     *
-     * It is invoked outside the loop after the last printed picture.
-     */
-    public void flyOver_postPrintPicture() {
-        //-- Use with @override
-    }
-
-    /**
-     * Gets the current frame number when using the {@link #flyOver} method.
-     *
-     * @return An integer.
-     */
-    public int getCurrentFrame() {
-        return _currentFrame;
-    }
-
-    /**
-     * Gets the number of frames when using the {@link #flyOver} method.
-     *
-     * @return An integer.
-     */
-    public int getNumberOfFrames() {
-        return _frames;
-    }
-
-    /**
-     * Creates some useful Unsteady Reports and Annotations, such as:
-     * <ul>
-     * <li>Maximum CFL Report on all Fluid Regions</li>
-     * <li>Average CFL Report on all Fluid Regions</li>
-     * <li><i>Time</i> Annotation</li>
-     * </ul>
-     */
-    public void unsteadyReports() {
-        _io.say.action("Creating useful Unsteady Reports", true);
-        if (!_isUnsteady()) {
-            return;
-        }
-        _io.say.msg("Creating AVG and MAX CFL Reports...");
-        ArrayList<Region> ar = _get.regions.all(false);
-        FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.CFL.getVar(), false);
-        _add.report.volumeAverage(ar, "CFL_avg", ff, _ud.unit_Dimensionless, false);
-        _add.report.maximum(new ArrayList<>(ar), "CFL_max", ff, _ud.unit_Dimensionless, false);
-        _io.say.msg("Creating Time Report Annotation...");
-        _add.tools.annotation_Time("6.2f");
-        _io.say.ok(true);
-    }
-
-    /**
-     * This method is called automatically by {@link MacroUtils}.
-     */
-    public void updateInstances() {
-        _add = _mu.add;
-        _chk = _mu.check;
-        _get = _mu.get;
-        _io = _mu.io;
-        _reset = _mu.reset;
-        _set = _mu.set;
-        _ud = _mu.userDeclarations;
-    }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.creator.MainCreator _add = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.misc.MainResetter _reset = null;
-    private macroutils.setter.MainSetter _set = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
-
-    /**
-     * Variable for controlling current frame number.
-     */
-    private int _currentFrame = 0;
-
-    /**
-     * Variable for controlling the number of wanted frames.
-     */
-    private int _frames = 0;
 
 }

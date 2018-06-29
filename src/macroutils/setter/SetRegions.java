@@ -13,6 +13,9 @@ import star.motion.MotionSpecification;
  */
 public class SetRegions {
 
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+
     /**
      * Main constructor for this class.
      *
@@ -42,11 +45,5 @@ public class SetRegions {
     public void updateInstances() {
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
 
 }

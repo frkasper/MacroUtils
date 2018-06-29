@@ -15,6 +15,11 @@ import star.vis.VisView;
  */
 public class GetCameras {
 
+    private macroutils.getter.MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -23,21 +28,6 @@ public class GetCameras {
     public GetCameras(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
-    }
-
-    private double _getIncrement(double v1, double v2, int step, int totalSteps) {
-        double delta = 1.0 * (v2 - v1) / totalSteps;
-        return v1 + step * delta;
-    }
-
-    private DoubleVector _getIncrement(DoubleVector dv1, DoubleVector dv2, int step, int totalSteps) {
-        DoubleVector dv = (DoubleVector) dv1.clone();
-        for (int i = 0; i < dv.size(); i++) {
-            double d1 = dv1.get(i);
-            double delta = (dv2.get(i) - dv1.get(i)) / totalSteps;
-            dv.setElementAt(d1 + step * delta, i);
-        }
-        return dv;
     }
 
     /**
@@ -56,32 +46,33 @@ public class GetCameras {
      * Gets all Camera Views that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Camera Views.
      */
     public ArrayList<VisView> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Camera Views", new ArrayList<>(all(false)), vo));
+        return _get.objects.allByREGEX(regexPatt, "Camera Views", all(false), vo);
     }
 
     /**
      * Gets the Camera View that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The VisView.
      */
     public VisView byREGEX(String regexPatt, boolean vo) {
-        return (VisView) _get.objects.allByREGEX(regexPatt, "Camera View", new ArrayList<>(all(false)), vo).get(0);
+        return _get.objects.byREGEX(regexPatt, "Camera View", all(false), vo);
     }
 
     /**
      * Performs a linear interpolation between 2 cameras and generate the intermediate views.
      *
-     * @param v1 given Camera 1.
-     * @param v2 given Camera 2.
+     * @param v1     given Camera 1.
+     * @param v2     given Camera 2.
      * @param nSteps given number of wanted Cameras in between.
-     * @param vo given verbose option. False will not print anything.
-     * @return The ordered Vector of the transition Cameras, from Cam1 to Cam2. Vector size is nSteps + 2.
+     * @param vo     given verbose option. False will not print anything.
+     * @return The ordered Vector of the transition Cameras, from Cam1 to Cam2. Vector size is
+     *         nSteps + 2.
      */
     public ArrayList<VisView> inBetween_Linear(VisView v1, VisView v2, int nSteps, boolean vo) {
         _io.say.action("Linear Interpolation between 2 Camera Views", vo);
@@ -102,7 +93,8 @@ public class GetCameras {
             v.setPosition(dv2);
             DoubleVector dv3 = _getIncrement(v1.getViewUp(), v2.getViewUp(), i, nSteps);
             v.setViewUp(dv3);
-            double ps = _getIncrement(v1.getParallelScale().getValue(), v2.getParallelScale().getValue(), i, nSteps);
+            double ps = _getIncrement(v1.getParallelScale().getValue(),
+                    v2.getParallelScale().getValue(), i, nSteps);
             v.getParallelScale().setValue(ps);
             av.add(v);
         }
@@ -114,11 +106,12 @@ public class GetCameras {
     }
 
     /**
-     * Performs a spline interpolation between the given cameras and generate the intermediate views.
+     * Performs a spline interpolation between the given cameras and generate the intermediate
+     * views.
      *
-     * @param avv given ArrayList of Cameras.
+     * @param avv    given ArrayList of Cameras.
      * @param nSteps given number of wanted Cameras in between.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo     given verbose option. False will not print anything.
      * @return The ordered Vector of the transition Cameras. Vector size is nSteps + 1.
      */
     public ArrayList<VisView> inBetween_Spline(ArrayList<VisView> avv, int nSteps, boolean vo) {
@@ -142,7 +135,8 @@ public class GetCameras {
             //-- Create Temporary Cameras
             VisView v = _sim.getViewManager().createView();
             v.copyProperties(avv.get(0));
-            String cn = String.format("%s_Spline_%dcams_%04d", StaticDeclarations.TMP_CAM_NAME, avv.size(), k);
+            String cn = String.format("%s_Spline_%dcams_%04d", StaticDeclarations.TMP_CAM_NAME,
+                    avv.size(), k);
             v.setPresentationName(cn);
             _io.say.value("Generating", v.getPresentationName(), true, vo);
             _io.say.msg("Processing VisView data ID...", vo);
@@ -203,12 +197,20 @@ public class GetCameras {
         _io = _mu.io;
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.getter.MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
+    private double _getIncrement(double v1, double v2, int step, int totalSteps) {
+        double delta = 1.0 * (v2 - v1) / totalSteps;
+        return v1 + step * delta;
+    }
+
+    private DoubleVector _getIncrement(DoubleVector dv1, DoubleVector dv2, int step,
+            int totalSteps) {
+        DoubleVector dv = (DoubleVector) dv1.clone();
+        for (int i = 0; i < dv.size(); i++) {
+            double d1 = dv1.get(i);
+            double delta = (dv2.get(i) - dv1.get(i)) / totalSteps;
+            dv.setElementAt(d1 + step * delta, i);
+        }
+        return dv;
+    }
 
 }

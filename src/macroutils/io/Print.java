@@ -21,6 +21,14 @@ import star.vis.VisView;
  */
 public class Print {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private boolean _dbg = false;
+    private macroutils.getter.MainGetter _get = null;
+    private final String _msgDbgPrefix = StaticDeclarations.MSG_DEBUG_PREFIX;
+    private final String _msgPrefix = StaticDeclarations.MSG_PREFIX;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -31,10 +39,6 @@ public class Print {
         _sim = m.getSimulation();
     }
 
-    private String _getFMT(String format, Object... args) {
-        return new Formatter().format(format, args).toString();
-    }
-
     public String _getValue(String key, String sval, boolean dq) {
         if (dq) {
             return String.format("%s: \"%s\".", key, sval);
@@ -42,19 +46,11 @@ public class Print {
         return String.format("%s: %s.", key, sval);
     }
 
-    private void _say(String msg) {
-        if (_sim == null) {
-            System.out.println(msg);
-            return;
-        }
-        _sim.println(msg);
-    }
-
     /**
      * Prints a text action within a fancy frame.
      *
      * @param text message to be printed.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo   given verbose option. False will not print anything.
      */
     public void action(String text, boolean vo) {
         msg("", vo);
@@ -68,8 +64,8 @@ public class Print {
      * Prints an Action followed by the Object name.
      *
      * @param something some action to be printed.
-     * @param cso given STAR-CCM+ ClientServerObject.
-     * @param vo given verbose option. False will not print anything.
+     * @param cso       given STAR-CCM+ ClientServerObject.
+     * @param vo        given verbose option. False will not print anything.
      */
     public void action(String something, ClientServerObject cso, boolean vo) {
         action(something, vo);
@@ -80,7 +76,7 @@ public class Print {
      * Prints the details of a Camera View (VisView).
      *
      * @param cam given camera (VisView).
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void camera(VisView cam, boolean vo) {
         msg("Camera Overview: " + cam.getPresentationName(), vo);
@@ -110,7 +106,7 @@ public class Print {
      * Prints that something has been created followed by an "Ok" message.
      *
      * @param cso given ClientServerObject.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void created(ClientServerObject cso, boolean vo) {
         value("Created " + _get.strings.parentName(cso), cso.getPresentationName(), true, vo);
@@ -121,7 +117,7 @@ public class Print {
      * Prints the current Dimension.
      *
      * @param dim given Dimensions.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void dimension(Dimensions dim, boolean vo) {
         msg(vo, "Dimension: %s.", dim.toString());
@@ -139,7 +135,7 @@ public class Print {
     /**
      * Prints a line by a number of times.
      *
-     * @param n given number of times the line will be repeated.
+     * @param n  given number of times the line will be repeated.
      * @param vo given verbose option. False will not print anything.
      */
     public void line(int n, boolean vo) {
@@ -151,7 +147,7 @@ public class Print {
     /**
      * Prints a line with a custom character.
      *
-     * @param c given character to be printed as a line.
+     * @param c  given character to be printed as a line.
      * @param vo given verbose option. False will not print anything.
      */
     public void line(String c, boolean vo) {
@@ -199,7 +195,7 @@ public class Print {
      * Prints something in the console/output.
      *
      * @param msg given message to be printed.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void msg(String msg, boolean vo) {
         String prefix = _msgPrefix;
@@ -218,9 +214,9 @@ public class Print {
     /**
      * Prints something in the console/output using formatted strings.
      *
-     * @param vo given verbose option. False will not print anything.
+     * @param vo     given verbose option. False will not print anything.
      * @param format given format using the {@link String} syntax.
-     * @param args given arguments that must be tied to the given format.
+     * @param args   given arguments that must be tied to the given format.
      */
     public void msg(boolean vo, String format, Object... args) {
         if (format == null) {
@@ -245,7 +241,7 @@ public class Print {
      * Prints something when in debug mode using formatted strings.
      *
      * @param format given format using the {@link String} syntax.
-     * @param args given arguments that must be tied to the given format.
+     * @param args   given arguments that must be tied to the given format.
      */
     public void msgDebug(String format, Object... args) {
         String s = new Formatter().format(format, args).toString();
@@ -256,7 +252,7 @@ public class Print {
      * Prints the STAR-CCM+ object name in the console/output.
      *
      * @param cso given STAR-CCM+ Client Server Object.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void object(ClientServerObject cso, boolean vo) {
         value(_get.strings.parentName(cso) + " name", _get.strings.name(cso), true, vo);
@@ -267,7 +263,7 @@ public class Print {
      *
      * @param aos given {@link ArrayList} containing objects in general.
      * @param key given type of the object. E.g.: "Boundary, Report, Scenes, etc...
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void objects(ArrayList aos, String key, boolean vo) {
         if (aos == null) {
@@ -297,7 +293,7 @@ public class Print {
      *
      * @param key given String of the key that will be print.
      * @param val given percentage value.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void percentage(String key, double val, boolean vo) {
         value(key, String.format("%g%%", val), false, vo);
@@ -307,7 +303,7 @@ public class Print {
      * Prints the Scalar name and its Units, if applicable.
      *
      * @param ff given Field Function.
-     * @param u given Units.
+     * @param u  given Units.
      * @param vo given verbose option. False will not print anything.
      */
     public void scalar(FieldFunction ff, Units u, boolean vo) {
@@ -336,7 +332,7 @@ public class Print {
     /**
      * Prints the current Unit.
      *
-     * @param u given Units.
+     * @param u  given Units.
      * @param vo given verbose option. False will not print anything.
      */
     public void unit(Units u, boolean vo) {
@@ -356,7 +352,7 @@ public class Print {
      *
      * @param key given String of the key that will be print.
      * @param val given value.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void value(String key, double val, boolean vo) {
         value(key, String.format("%g", val), false, vo);
@@ -367,7 +363,7 @@ public class Print {
      *
      * @param key given String of the key that will be print.
      * @param val given value.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void value(String key, int val, boolean vo) {
         value(key, String.format("%d", val), false, vo);
@@ -377,8 +373,8 @@ public class Print {
      * Prints something with Values.
      *
      * @param key given String of the key that will be print.
-     * @param dv given values in DoubleVector format.
-     * @param vo given verbose option. False will not print anything.
+     * @param dv  given values in DoubleVector format.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void value(String key, DoubleVector dv, boolean vo) {
         value(key, _get.strings.withinTheBrackets(dv.toString()), false, vo);
@@ -389,8 +385,8 @@ public class Print {
      *
      * @param key given String of the key that will be print.
      * @param val given value.
-     * @param vo given verbose option. False will not print anything.
-     * @param u given Units.
+     * @param vo  given verbose option. False will not print anything.
+     * @param u   given Units.
      */
     public void value(String key, double val, Units u, boolean vo) {
         value(key, String.format("%g", val), u, vo);
@@ -399,10 +395,10 @@ public class Print {
     /**
      * Prints something with Values and Units.
      *
-     * @param key given String of the key that will be print.
+     * @param key  given String of the key that will be print.
      * @param sval given value as string.
-     * @param u given Units.
-     * @param vo given verbose option. False will not print anything.
+     * @param u    given Units.
+     * @param vo   given verbose option. False will not print anything.
      */
     public void value(String key, String sval, Units u, boolean vo) {
         if (key == null) {
@@ -415,9 +411,9 @@ public class Print {
      * Prints something with Values and Units.
      *
      * @param key given String of the key that will be print.
-     * @param dv given values in DoubleVector format.
-     * @param u given Units.
-     * @param vo given verbose option. False will not print anything.
+     * @param dv  given values in DoubleVector format.
+     * @param u   given Units.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void value(String key, DoubleVector dv, Units u, boolean vo) {
         value(key, _get.strings.withinTheBrackets(dv.toString()), u, vo);
@@ -426,10 +422,10 @@ public class Print {
     /**
      * Prints something with values double-quoted. E.g.: Variable: "Pressure".
      *
-     * @param key given String of the key that will be print.
+     * @param key  given String of the key that will be print.
      * @param sval given value that will be print.
-     * @param dq option to double quote the value.
-     * @param vo given verbose option. False will not print anything.
+     * @param dq   option to double quote the value.
+     * @param vo   given verbose option. False will not print anything.
      */
     public void value(String key, String sval, boolean dq, boolean vo) {
         if (key == null) {
@@ -443,7 +439,7 @@ public class Print {
      *
      * @param key given String of the key that will be print.
      * @param spq given ScalarPhysicalQuantity STAR-CCM+ object.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo  given verbose option. False will not print anything.
      */
     public void value(String key, ScalarPhysicalQuantity spq, boolean vo) {
         value(key, spq.getInternalValue(), spq.getUnits(), vo);
@@ -456,16 +452,16 @@ public class Print {
         msg(true, "STAR-CCM+ Version: %s.", _get.info.version());
     }
 
-    //--
-    //-- Variables declaration area.
-    //--
-    private final String _msgPrefix = StaticDeclarations.MSG_PREFIX;
-    private final String _msgDbgPrefix = StaticDeclarations.MSG_DEBUG_PREFIX;
+    private String _getFMT(String format, Object... args) {
+        return new Formatter().format(format, args).toString();
+    }
 
-    private boolean _dbg = false;
-    private MacroUtils _mu = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.getter.MainGetter _get = null;
-    private Simulation _sim = null;
+    private void _say(String msg) {
+        if (_sim == null) {
+            System.out.println(msg);
+            return;
+        }
+        _sim.println(msg);
+    }
 
 }

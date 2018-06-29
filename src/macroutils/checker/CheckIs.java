@@ -48,6 +48,11 @@ import star.vis.VectorDisplayer;
  */
 public class CheckIs {
 
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+    private macroutils.UserDeclarations _ud = null;
+
     /**
      * Main constructor for this class.
      *
@@ -56,6 +61,26 @@ public class CheckIs {
     public CheckIs(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
+    }
+
+    /**
+     * Is this a Detached Eddy Simulation Physics Continua?
+     *
+     * @param pc given PhysicsContinuum.
+     * @return True or False.
+     */
+    public boolean DES(PhysicsContinuum pc) {
+        return pc.getModelManager().has("Detached Eddy Simulation");
+    }
+
+    /**
+     * Is this a Large Eddy Simulation Physics Continua?
+     *
+     * @param pc given PhysicsContinuum.
+     * @return True or False.
+     */
+    public boolean LES(PhysicsContinuum pc) {
+        return pc.getModelManager().has("Large Eddy Simulation");
     }
 
     /**
@@ -89,16 +114,6 @@ public class CheckIs {
     }
 
     /**
-     * Is this a Cylindrical Coordinate System?
-     *
-     * @param c given CoordinateSystem.
-     * @return True or False.
-     */
-    public boolean cylindricalCSYS(CoordinateSystem c) {
-        return c instanceof CylindricalCoordinateSystem;
-    }
-
-    /**
      * Is this a Coupled Solver Continua?
      *
      * @param pc given PhysicsContinuum.
@@ -110,10 +125,20 @@ public class CheckIs {
     }
 
     /**
+     * Is this a Cylindrical Coordinate System?
+     *
+     * @param c given CoordinateSystem.
+     * @return True or False.
+     */
+    public boolean cylindricalCSYS(CoordinateSystem c) {
+        return c instanceof CylindricalCoordinateSystem;
+    }
+
+    /**
      * Gets whether the absolute difference between 2 arguments is within a tolerance.
      *
-     * @param d1 given double.
-     * @param d2 given double.
+     * @param d1  given double.
+     * @param d2  given double.
      * @param tol given tolerance.
      * @return True or False.
      */
@@ -125,8 +150,8 @@ public class CheckIs {
     }
 
     /**
-     * Are the Source and Target Par Surfaces Directed Meshable. See Directed Meshing in User Guide for more
-     * information.
+     * Are the Source and Target Par Surfaces Directed Meshable. See Directed Meshing in User Guide
+     * for more information.
      *
      * @param src given Source Part Surface.
      * @param tgt given Target Part Surface.
@@ -135,7 +160,8 @@ public class CheckIs {
     public boolean directedMeshable(PartSurface src, PartSurface tgt) {
         boolean b = true;
         if (src.getPart() != tgt.getPart()) {
-            _io.say.msg("Source and Target Part Surfaces must be on the same Part. Skipping...", true);
+            _io.say.msg("Source and Target Part Surfaces must be on the same Part. Skipping...",
+                    true);
             b = false;
         }
         if (!(cadPart(src.getPart()) || solidModelPart(src.getPart()))) {
@@ -148,16 +174,6 @@ public class CheckIs {
             _io.say.msg("Not Directed Meshable.", true);
         }
         return b;
-    }
-
-    /**
-     * Is this a Detached Eddy Simulation Physics Continua?
-     *
-     * @param pc given PhysicsContinuum.
-     * @return True or False.
-     */
-    public boolean DES(PhysicsContinuum pc) {
-        return pc.getModelManager().has("Detached Eddy Simulation");
     }
 
     /**
@@ -209,16 +225,6 @@ public class CheckIs {
     }
 
     /**
-     * Is this a Large Eddy Simulation Physics Continua?
-     *
-     * @param pc given PhysicsContinuum.
-     * @return True or False.
-     */
-    public boolean LES(PhysicsContinuum pc) {
-        return pc.getModelManager().has("Large Eddy Simulation");
-    }
-
-    /**
      * Is the Scene open and currently selected in the GUI?
      *
      * @param scn given Scene.
@@ -235,7 +241,8 @@ public class CheckIs {
      * @return True or False.
      */
     public boolean position(FieldFunction ff) {
-        return ff.getTypeOption().getSelectedElement().equals(FieldFunctionTypeOption.Type.POSITION);
+        return ff.getTypeOption().getSelectedElement()
+                .equals(FieldFunctionTypeOption.Type.POSITION);
     }
 
     /**
@@ -403,7 +410,7 @@ public class CheckIs {
      * @param b given Boundary.
      * @return True or False.
      */
-    boolean wall(Boundary b) {
+    public boolean wall(Boundary b) {
         return b.getBoundaryType() instanceof WallBoundary;
     }
 
@@ -425,11 +432,13 @@ public class CheckIs {
     public boolean withinSamePart(ArrayList<NamedObject> ano) {
         ArrayList<GeometryPart> agp = new ArrayList<>();
         for (NamedObject no : ano) {
-            GeometryPart gp = null;
+            GeometryPart gp;
             if (no instanceof PartSurface) {
                 gp = ((PartSurface) no).getPart();
             } else if (no instanceof PartCurve) {
                 gp = ((PartCurve) no).getPart();
+            } else {
+                continue;
             }
             if (agp.contains(gp)) {
                 return false;
@@ -438,13 +447,5 @@ public class CheckIs {
         }
         return true;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private macroutils.io.MainIO _io = null;
-    private macroutils.UserDeclarations _ud = null;
-    private Simulation _sim = null;
 
 }

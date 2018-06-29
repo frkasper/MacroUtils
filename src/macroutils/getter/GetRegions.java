@@ -13,6 +13,11 @@ import star.common.Simulation;
  */
 public class GetRegions {
 
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -39,22 +44,22 @@ public class GetRegions {
      * Gets all Regions that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return An ArrayList of Regions.
      */
     public ArrayList<Region> allByREGEX(String regexPatt, boolean vo) {
-        return new ArrayList<>(_get.objects.allByREGEX(regexPatt, "Regions", new ArrayList<>(all(false)), vo));
+        return _get.objects.allByREGEX(regexPatt, "Regions", all(false), vo);
     }
 
     /**
      * Gets the Region that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The Region.
      */
     public Region byREGEX(String regexPatt, boolean vo) {
-        return (Region) _get.objects.allByREGEX(regexPatt, "Region", new ArrayList<>(all(false)), vo).get(0);
+        return _get.objects.byREGEX(regexPatt, "Region", all(false), vo);
     }
 
     /**
@@ -64,13 +69,5 @@ public class GetRegions {
         _get = _mu.get;
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
 
 }

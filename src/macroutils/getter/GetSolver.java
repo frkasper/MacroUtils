@@ -22,6 +22,12 @@ import star.post.SolutionViewManager;
  */
 public class GetSolver {
 
+    private macroutils.checker.MainChecker _chk = null;
+    private MainGetter _get = null;
+    private macroutils.io.MainIO _io = null;
+    private MacroUtils _mu = null;
+    private Simulation _sim = null;
+
     /**
      * Main constructor for this class.
      *
@@ -35,9 +41,10 @@ public class GetSolver {
     /**
      * Gets a specific Solver from STAR-CCM+ API.
      *
-     * @param <T> any Class that extends from Solver object in STAR-CCM+.
+     * @param <T>    any Class that extends from Solver object in STAR-CCM+.
      * @param solver given Solver Class name.
-     * @return The Solver. Casting the variable might be necessary. Returns <b>null</b> if it is not available.
+     * @return The Solver. Casting the variable might be necessary. Returns <b>null</b> if it is not
+     *         available.
      */
     public <T extends Solver> T byClass(Class<T> solver) {
         try {
@@ -70,11 +77,11 @@ public class GetSolver {
      * Returns the first match of a Solution History by using a REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The SolutionHistory.
      */
     public SolutionHistory solutionHistory(String regexPatt, boolean vo) {
-        return (SolutionHistory) _get.objects.byREGEX(regexPatt,
+        return _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(_sim.get(SolutionHistoryManager.class).getObjects()), vo);
     }
 
@@ -82,11 +89,11 @@ public class GetSolver {
      * Returns the first match of a Solution View by using a REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The SolutionView.
      */
     public SolutionView solutionView(String regexPatt, boolean vo) {
-        return (SolutionView) _get.objects.byREGEX(regexPatt,
+        return _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(_sim.get(SolutionViewManager.class).getObjects()), vo);
     }
 
@@ -94,11 +101,11 @@ public class GetSolver {
      * Returns the first match of a Stopping Criteria by using a REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo given verbose option. False will not print anything.
+     * @param vo        given verbose option. False will not print anything.
      * @return The SolverStoppingCriterion object.
      */
     public SolverStoppingCriterion stoppingCriteria(String regexPatt, boolean vo) {
-        return (SolverStoppingCriterion) _get.objects.byREGEX(regexPatt,
+        return _get.objects.byREGEX(regexPatt,
                 new ArrayList<>(_sim.getSolverStoppingCriterionManager().getObjects()), vo);
     }
 
@@ -121,7 +128,8 @@ public class GetSolver {
             _io.say.msg("Simulation is not Unsteady.");
             return null;
         }
-        return (InnerIterationStoppingCriterion) stoppingCriteria("Maximum Inner Iterations", false);
+        return (InnerIterationStoppingCriterion) stoppingCriteria("Maximum Inner Iterations",
+                false);
     }
 
     /**
@@ -154,14 +162,5 @@ public class GetSolver {
         _get = _mu.get;
         _io = _mu.io;
     }
-
-    //--
-    //-- Variables declaration area.
-    //--
-    private MacroUtils _mu = null;
-    private MainGetter _get = null;
-    private macroutils.checker.MainChecker _chk = null;
-    private macroutils.io.MainIO _io = null;
-    private Simulation _sim = null;
 
 }
