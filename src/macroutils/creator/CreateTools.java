@@ -8,9 +8,12 @@ import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import macroutils.getter.GetMonitors;
 import macroutils.setter.SetObjects;
+import star.base.neo.ClientServerObject;
 import star.base.neo.DoubleVector;
 import star.base.report.PlotableMonitor;
 import star.base.report.Report;
+import star.common.Comment;
+import star.common.CommentManager;
 import star.common.Coordinate;
 import star.common.CylindricalCoordinateSystem;
 import star.common.DeltaMonitorUpdateEvent;
@@ -158,6 +161,21 @@ public class CreateTools {
         ult.setPresentationName(name);
         _io.say.created(ult, true);
         return ult;
+    }
+
+    /**
+     * Creates a comment for a STAR-CCM+ object.
+     *
+     * @param cso     given ClientServerObject
+     * @param comment given string to be used as comment
+     * @return The Comment object
+     */
+    public Comment comment(ClientServerObject cso, String comment) {
+        _io.say.action("Creating a Comment", true);
+        _io.say.object(cso, true);
+        _io.say.value("Comment", comment, true, true);
+        _sim.get(CommentManager.class).setCommentFor(cso, comment);
+        return _get.objects.comment(cso);
     }
 
     /**

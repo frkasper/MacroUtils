@@ -1,6 +1,7 @@
 package demo16;
 
 import macroutils.MacroUtils;
+import macroutils.templates.demos.Demo16;
 import star.assistant.Task;
 import star.assistant.annotation.StarAssistantTask;
 import star.assistant.ui.FunctionTaskController;
@@ -83,7 +84,7 @@ public class BuilderTask extends Task {
             _mu.setSimulation(getActiveSimulation(), true);
             _mu.setDebugMode(true);
             _ud = _mu.userDeclarations;
-            _demo16 = _mu.templates.demos.demo16;
+            _demo16 = new Demo16(_mu);
         }
 
     }

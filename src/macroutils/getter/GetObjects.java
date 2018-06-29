@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
+import star.base.neo.ClientServerObject;
 import star.base.neo.ClientServerObjectManager;
 import star.base.neo.DoubleVector;
 import star.base.neo.NamedObject;
+import star.common.Comment;
+import star.common.CommentManager;
 import star.common.ContinuumManager;
 import star.common.FieldFunction;
 import star.common.GeometryPart;
@@ -204,6 +207,16 @@ public class GetObjects {
      */
     public LookupTable colormap(StaticDeclarations.Colormaps opt) {
         return _sim.get(LookupTableManager.class).getObject(opt.getName());
+    }
+
+    /**
+     * Gets a comment from a STAR-CCM+ object.
+     *
+     * @param cso given ClientServerObject
+     * @return The Comment
+     */
+    public Comment comment(ClientServerObject cso) {
+        return _sim.get(CommentManager.class).getCommentFor(cso);
     }
 
     /**

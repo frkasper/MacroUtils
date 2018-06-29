@@ -107,6 +107,7 @@ public class Demo16 {
         _ud.param = _get.objects.parameter("F", false);
         if (_ud.param == null) {
             _ud.scalParam = _add.tools.parameter_Scalar("F", _F, _ud.unit_Hz);
+            _add.tools.comment(_ud.scalParam, "The sound signal in Hertz");
         } else {
             _ud.scalParam = (ScalarGlobalParameter) _ud.param;
         }

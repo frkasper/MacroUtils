@@ -1,6 +1,7 @@
 package macroutils.creator;
 
 import macroutils.MacroUtils;
+import star.common.ScalarGlobalParameter;
 
 /**
  * Main class for creating STAR-CCM+ objects with MacroUtils.
@@ -137,7 +138,9 @@ public class MainCreator {
      * within MacroUtils.
      */
     public void globalParameters() {
-        _add.tools.parameter_Scalar("PI", Math.PI, _ud.unit_Dimensionless);
+        ScalarGlobalParameter pi;
+        pi = _add.tools.parameter_Scalar("PI", Math.PI, _ud.unit_Dimensionless);
+        _add.tools.comment(pi, "The good old PI number");
     }
 
     /**

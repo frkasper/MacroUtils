@@ -2,6 +2,8 @@ package macroutils.misc;
 
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
+import star.common.Comment;
+import star.common.CommentManager;
 import star.common.Simulation;
 import star.meshing.MeshPipelineController;
 
@@ -26,6 +28,15 @@ public class MainClearer {
         _mu = m;
         _sim = m.getSimulation();
         m.io.say.msgDebug("Class loaded: %s...", this.getClass().getSimpleName());
+    }
+
+    /**
+     * Clears a comment from a STAR-CCM+ object.
+     *
+     * @param comment given Comment object
+     */
+    public void comment(Comment comment) {
+        _sim.get(CommentManager.class).remove(comment);
     }
 
     /**
