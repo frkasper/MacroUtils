@@ -37,7 +37,7 @@ from collections import namedtuple
 
 _Options = namedtuple('Options', ['datahome', 'demohome', 'jarfile',
                                   'starhome', 'testhome', 'test_cases',
-                                  'threads', 'pytest_args'])
+                                  'threads', 'pytest_args', 'serial'])
 PWD = os.getcwd()
 
 
@@ -56,8 +56,9 @@ def _commands_from_demo(options, demo_nt):
     java_files = tests_definition.java_files_from_nt(demo_nt, options.demohome)
     star_commands = []
     for java_file in java_files:
-        star_cmd = star.new_simulation(options.starhome, java_file,
-                                       demo_nt.np, demo_nt.batch)
+        np = 1 if options.serial else demo_nt.np
+        star_cmd = star.new_simulation(options.starhome, java_file, np,
+                                       demo_nt.batch)
         star_commands.append(star_cmd)
     return star_commands
 
@@ -214,6 +215,9 @@ def parse_options():
     gr_r.add_option('--sas', dest='sas', action='store_true',
                     help='execute simulation assistant tests only',
                     default=False)
+    gr_r.add_option('--serial', dest='serial', action='store_true',
+                    help='override STAR-CCM+ runs to serial (default = False)',
+                    default=False)
     gr_r.add_option('--starhome', dest='starhome', action='store',
                     help='path to STAR-CCM+ installation',
                     default=None)
@@ -279,11 +283,12 @@ def parse_options():
     if opts.stop:
         pytest_args.append('-x')
 
+    serial = opts.serial
     nt = opts.threads
     threads = max(int(nt) if isinstance(nt, str) else nt, 0)
 
     return _Options(datahome, demohome, jarfile, starhome, testhome,
-                    test_cases, threads, ' '.join(pytest_args))
+                    test_cases, threads, ' '.join(pytest_args), serial)
 
 
 def print_overview(options):
