@@ -15,15 +15,16 @@ import star.common.MonitorIterationStoppingCriterionAsymptoticType;
 import star.common.MonitorIterationStoppingCriterionMaxLimitType;
 import star.common.MonitorIterationStoppingCriterionMinLimitType;
 import star.common.MonitorIterationStoppingCriterionOption;
+import star.common.MonitorIterationStoppingCriterionRelativeChangeType;
 import star.common.MonitorIterationStoppingCriterionStandardDeviationType;
 import star.common.MonitorIterationStoppingCriterionType;
 import star.common.Region;
+import star.common.ScalarPhysicalQuantity;
 import star.common.Simulation;
 import star.common.SolutionView;
 import star.common.SolverStoppingCriterion;
 import star.common.SolverStoppingCriterionLogicalOption;
 import star.common.SolverStoppingCriterionManager;
-import star.common.Units;
 import star.post.RecordedSolutionView;
 import star.post.SolutionHistory;
 import star.post.SolutionHistoryManager;
@@ -102,61 +103,22 @@ public class CreateSolver {
      * @param mon     given Monitor.
      * @param type    given type. Choose from {@link macroutils.StaticDeclarations.StopCriteria}.
      * @param val     given value.
-     * @param samples how many samples (or iterations)? If using Min/Max, this input is ignored.
+     * @param samples how many samples (or iterations)? If using Min/Max/Standard Deviation/Relative
+     *                Change, this input is ignored.
      * @return The Stopping Criteria.
      */
     public SolverStoppingCriterion stoppingCriteria(Monitor mon,
             StaticDeclarations.StopCriteria type, double val, int samples) {
-        MonitorIterationStoppingCriterionAsymptoticType sca;
-        MonitorIterationStoppingCriterionMaxLimitType scmax;
-        MonitorIterationStoppingCriterionMinLimitType scmin;
-        MonitorIterationStoppingCriterionStandardDeviationType scsd;
-        MinimumInnerIterationStoppingCriterion scmit;
-        SolverStoppingCriterionManager scm = _sim.getSolverStoppingCriterionManager();
-        MonitorIterationStoppingCriterion isc = mon.createIterationStoppingCriterion();
-        SolverStoppingCriterion ssc = isc;
-        Units u = _get.units.fromMonitor(mon);
+        SolverStoppingCriterion ssc;
         _io.print.action("Creating a Solver Stopping Criteria", true);
         _io.say.msg(true, "Criteria: %s.", type.getVar());
-        MonitorIterationStoppingCriterionOption misco = isc.getCriterionOption();
-        MonitorIterationStoppingCriterionType misct = isc.getCriterionType();
-        switch (type) {
-            case ASYMPTOTIC:
-                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.ASYMPTOTIC);
-                sca = (MonitorIterationStoppingCriterionAsymptoticType) isc.getCriterionType();
-                _set.object.physicalQuantity(sca.getMaxWidth(), val, u, type.getVar(), true);
-                _io.say.msg(true, "Number of Samples: %d.", samples);
-                sca.setNumberSamples(samples);
-                break;
-            case MAX:
-                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.MAXIMUM);
-                scmax = (MonitorIterationStoppingCriterionMaxLimitType) isc.getCriterionType();
-                _set.object.physicalQuantity(scmax.getLimit(), val, u, type.getVar(), true);
-                break;
-            case MIN:
-                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.MINIMUM);
-                scmin = (MonitorIterationStoppingCriterionMinLimitType) isc.getCriterionType();
-                _set.object.physicalQuantity(scmin.getLimit(), val, u, type.getVar(), true);
-                break;
-            case MIN_INNER:
-                scm.remove(isc);
-                scmit = scm
-                        .createSolverStoppingCriterion(MinimumInnerIterationStoppingCriterion.class,
-                                type.getVar());
-                ssc = scmit;
-                scmit.setIsUsed(true);
-                scmit.setMinimumNumberInnerIterations(samples);
-                scmit.getLogicalOption().setSelected(SolverStoppingCriterionLogicalOption.Type.AND);
-                break;
-            case STDEV:
-                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.STANDARD_DEVIATION);
-                scsd = (MonitorIterationStoppingCriterionStandardDeviationType) misct;
-                _set.object.physicalQuantity(scsd.getStandardDeviation(), val, u,
-                        "Standard Deviation", true);
-                break;
+        if (type.equals(StaticDeclarations.StopCriteria.MIN_INNER)) {
+            ssc = _minimumInner(type, samples);
+        } else {
+            ssc = _standard(mon, type, val, samples);
         }
-        isc.getLogicalOption().setSelected(SolverStoppingCriterionLogicalOption.Type.AND);
-        isc.setPresentationName(String.format("%s - %s", type.getVar(), mon.getPresentationName()));
+        ssc.getLogicalOption().setSelected(SolverStoppingCriterionLogicalOption.Type.AND);
+        ssc.setPresentationName(String.format("%s - %s", type.getVar(), mon.getPresentationName()));
         _io.say.created(ssc, true);
         return ssc;
     }
@@ -177,6 +139,66 @@ public class CreateSolver {
         } else {
             sh.getInputs().add(no);
         }
+    }
+
+    private SolverStoppingCriterion _minimumInner(StaticDeclarations.StopCriteria type,
+            int samples) {
+        MinimumInnerIterationStoppingCriterion scmit;
+        SolverStoppingCriterionManager scm = _sim.getSolverStoppingCriterionManager();
+        scmit = scm.createSolverStoppingCriterion(MinimumInnerIterationStoppingCriterion.class,
+                type.getVar());
+        scmit.setIsUsed(true);
+        scmit.setMinimumNumberInnerIterations(samples);
+        return scmit;
+    }
+
+    private SolverStoppingCriterion _standard(Monitor mon, StaticDeclarations.StopCriteria type,
+            double val, int samples) {
+        ScalarPhysicalQuantity spq = null;
+        MonitorIterationStoppingCriterion ssc = _sim.getSolverStoppingCriterionManager()
+                .createIterationStoppingCriterion(mon);
+        MonitorIterationStoppingCriterionOption misco = ssc.getCriterionOption();
+        MonitorIterationStoppingCriterionType misct = ssc.getCriterionType();
+        switch (type) {
+            case ASYMPTOTIC:
+                MonitorIterationStoppingCriterionAsymptoticType sca;
+                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.ASYMPTOTIC);
+                sca = (MonitorIterationStoppingCriterionAsymptoticType) ssc.getCriterionType();
+                spq = sca.getMaxWidth();
+                sca.setNumberSamples(samples);
+                _io.say.value("Number of Samples", samples, true);
+                break;
+            case MAX:
+                MonitorIterationStoppingCriterionMaxLimitType scmax;
+                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.MAXIMUM);
+                scmax = (MonitorIterationStoppingCriterionMaxLimitType) ssc.getCriterionType();
+                spq = scmax.getLimit();
+                break;
+            case MIN:
+                MonitorIterationStoppingCriterionMinLimitType scmin;
+                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.MINIMUM);
+                scmin = (MonitorIterationStoppingCriterionMinLimitType) ssc.getCriterionType();
+                spq = scmin.getLimit();
+                break;
+            case REL_CHANGE:
+                MonitorIterationStoppingCriterionRelativeChangeType scrc;
+                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.RELATIVE_CHANGE);
+                scrc = (MonitorIterationStoppingCriterionRelativeChangeType) ssc.getCriterionType();
+                _io.say.value("Relative Change", val, true);
+                scrc.setRelativeChange(val);
+                break;
+            case STD_DEV:
+                misco.setSelected(MonitorIterationStoppingCriterionOption.Type.STANDARD_DEVIATION);
+                MonitorIterationStoppingCriterionStandardDeviationType scsd
+                        = (MonitorIterationStoppingCriterionStandardDeviationType) misct;
+                spq = scsd.getStandardDeviation();
+                break;
+        }
+        if (spq != null) {
+            _set.object.physicalQuantity(spq, val, _get.units.fromMonitor(mon),
+                    type.getVar(), true);
+        }
+        return ssc;
     }
 
 }
