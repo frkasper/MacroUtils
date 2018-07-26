@@ -25,12 +25,12 @@ import star.common.Simulation;
  * 
  * <b>Requires:</b>
  * <ul>
- * <li> STAR-CCM+ v13.04 libraries. <u>It may not run in other versions</u>;
+ * <li> STAR-CCM+ v13.06 libraries. <u>It may not run in other versions</u>;
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v13.04, June 29, 2018.
+ * @version v13.06, July 26, 2018.
  */
 public final class MacroUtils {
 
@@ -111,10 +111,10 @@ public final class MacroUtils {
 
     private boolean _debug = false;
     private boolean _im = false;
-    private boolean _isInitialized = false;
+    private boolean _initialized = false;
     private Simulation _sim = null;
 
-    public static final String MACROUTILS_VERSION = "MacroUtils version 13.04 (build 1)";
+    public static final String MACROUTILS_VERSION = "MacroUtils version 13.06 (build 1)";
 
     /**
      * Initialize MacroUtils in intrusive mode by providing a Simulation object.
@@ -246,9 +246,9 @@ public final class MacroUtils {
     }
 
     private void _initialize() {
-        if (!_isInitialized) {
+        if (!_initialized) {
             io = new MainIO(this, _debug);
-            _isInitialized = true;
+            _initialized = true;
         }
         add = new MainCreator(this);
         check = new MainChecker(this);
