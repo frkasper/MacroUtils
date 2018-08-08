@@ -22,7 +22,7 @@ def test_cell_count():
 
 
 def test_solution():
-    test_utils.assert_iteration(DEMO_ID, 209)
+    test_utils.assert_iteration(DEMO_ID, 190, tolerance=0.1, relative=True)
 
 
 def test_frontal_area_report():
@@ -34,23 +34,26 @@ def test_cd_report():
 
 
 def test_cl_report():
-    test_utils.assert_report(DEMO_ID, 'C_l', 0.3443)
+    test_utils.assert_report(DEMO_ID, 'C_l', 0.350)
 
 
 def test_scalar_pressure_kart_min():
-    test_utils.assert_scene_min(DEMO_ID, 'Pressure Kart', 'Scalar', -1.9607)
+    test_utils.assert_scene_min(DEMO_ID, 'Pressure Kart', 'Scalar', -1.8,
+                                tolerance=0.1, relative=True)
 
 
 def test_scalar_pressure_kart_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Pressure Kart', 'Scalar', 1.1189)
+    test_utils.assert_scene_max(DEMO_ID, 'Pressure Kart', 'Scalar', 1.1,
+                                tolerance=0.1, relative=True)
 
 
 def test_scalar_pressure_section_min():
-    test_utils.assert_scene_min(DEMO_ID, 'Pressure Section', 'Scalar', -0.7279)
+    test_utils.assert_scene_min(DEMO_ID, 'Pressure Section', 'Scalar', -0.7,
+                                tolerance=0.1, relative=True)
 
 
 def test_scalar_pressure_section_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Pressure Section', 'Scalar', 1.0527)
+    test_utils.assert_scene_max(DEMO_ID, 'Pressure Section', 'Scalar', 1.0387)
 
 
 def test_vector_pressure_section_min():

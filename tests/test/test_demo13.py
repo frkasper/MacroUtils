@@ -29,7 +29,8 @@ def test_solution():
 
 
 def test_pressure_scalar_min():
-    test_utils.assert_scene_min(DEMO_ID, 'Scalar', 'Scalar', -10.137)
+    test_utils.assert_scene_min(DEMO_ID, 'Scalar', 'Scalar', -10.5,
+                                tolerance=0.5, relative=False)
 
 
 def test_pressure_scalar_max():
@@ -53,7 +54,8 @@ def test_pictures_count():
 
 def test_write_movie():
     movie.write(MOVIE_FOLDER)
-    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 8315947)
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 8315947,
+                                tolerance=0.1, relative=True)
 
 
 if __name__ == "__main__":
