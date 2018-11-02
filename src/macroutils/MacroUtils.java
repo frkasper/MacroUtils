@@ -122,7 +122,7 @@ public final class MacroUtils {
      * @param s given Simulation.
      */
     public MacroUtils(Simulation s) {
-        setSimulation(s, true);
+        this(s, true);
     }
 
     /**
@@ -254,7 +254,11 @@ public final class MacroUtils {
         String build = manifest.getSpecificationVersion();
         String starccm = manifest.getImplementationTitle();
         String version = manifest.getImplementationVersion();
-        return macroUtils + " " + build + " for " + starccm + " " + version;
+        if (macroUtils == null) {
+            return "MacroUtils";
+        } else {
+            return macroUtils + " " + build + " for " + starccm + " " + version;
+        }
     }
 
     private void _initialize() {

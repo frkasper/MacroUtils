@@ -15,3 +15,7 @@ manifest.mf
 .cache
 .spyproject
 *.pyc
+
+# Other files or folders
+temp_*/
+*.7z
