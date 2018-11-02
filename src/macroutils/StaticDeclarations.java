@@ -1072,7 +1072,7 @@ public class StaticDeclarations {
      * <li>{@link #MAX}
      * <li>{@link #MIN}
      * <li>{@link #MIN_INNER}
-     * <li>{@link #STDEV}
+     * <li>{@link #STD_DEV}
      * </ul>
      */
     public static enum StopCriteria {
@@ -1094,9 +1094,13 @@ public class StaticDeclarations {
          */
         MIN_INNER("Minimum Inner Iterations"),
         /**
+         * Based on the ratio of the current value to initial value.
+         */
+        REL_CHANGE("Relative Change"),
+        /**
          * Based on a standard deviation of the samples.
          */
-        STDEV("Standard Deviation"),;
+        STD_DEV("Standard Deviation"),;
 
         private final String s;
 

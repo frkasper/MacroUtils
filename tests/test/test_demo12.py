@@ -37,7 +37,8 @@ def test_cfl_avg_report():
 
 
 def test_cfl_max_report():
-    test_utils.assert_report(DEMO_ID, 'CFL_max', 8.586637)
+    test_utils.assert_report(DEMO_ID, 'CFL_max', 8.5,
+                             tolerance=0.1, relative=True)
 
 
 def test_time_report():
@@ -46,11 +47,11 @@ def test_time_report():
 
 
 def test_fx_report():
-    test_utils.assert_report(DEMO_ID, 'Fx', 1.036690e-03)
+    test_utils.assert_report(DEMO_ID, 'Fx', 0.0, tolerance=1.5e-3)
 
 
 def test_fy_report():
-    test_utils.assert_report(DEMO_ID, 'Fy', -7.432943e-04)
+    test_utils.assert_report(DEMO_ID, 'Fy', 0.0, tolerance=1.5e-3)
 
 
 def test_scalar_min():
@@ -69,7 +70,8 @@ def test_pictures_count():
 
 def test_write_movie():
     movie.write(MOVIE_FOLDER)
-    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 7554160)
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 7554160,
+                                tolerance=0.1)
 
 
 if __name__ == "__main__":

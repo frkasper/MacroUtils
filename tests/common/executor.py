@@ -42,6 +42,13 @@ def _log(command):
     return '%s.log' % _case_name(command)
 
 
+def _number_of_cores(command):
+    """Retrieve np info"""
+    found = re.findall('-np (\d+)', command)
+    assert len(found) < 2, 'Could not parse np from command: %s' % command
+    return int(found[0]) if found else 1
+
+
 def _run(testhome, command):
     os.chdir(testhome)
     os.system('%s > %s' % (command,  _log(command)))
@@ -57,7 +64,7 @@ def run_commands(testhome, commands, num_threads):
     """General runner"""
     star_time = timer.ExecutionTime(key='STAR-CCM+ macros')
     print('')
-    if num_threads > 0:
+    if num_threads > 1:
         run_multiple(testhome, commands, num_threads)
     else:
         run_sequential(testhome, commands)
@@ -100,8 +107,10 @@ def run_sequential(testhome, commands):
 
     for command in commands_to_run:
         base_name = _case_name(command)
+        np = _number_of_cores(command)
+        snp = 'np=%d' % np if np > 1 else 'serial'
         if _will_run(testhome, base_name):
-            print('Running: %s' % base_name)
+            print('Running: %s (running %s)' % (base_name, snp))
             _run(testhome, command)
         else:
             print('Bypassed due presence of log/picture files: %s' % base_name)
@@ -122,7 +131,9 @@ class TesterThread(threading.Thread):
         et = timer.ExecutionTime(verbose=False)
         testhome, command = self.queue.get()
         name = _case_name(command)
-        print('  |--> Started: %s (at %s)' % (name, et.s_t0))
+        np = _number_of_cores(command)
+        snp = 'np=%d' % np if np > 1 else 'serial'
+        print('  |--> Started: %s (at %s running %s)' % (name, et.s_t0, snp))
         _run(testhome, command)
         et.finalize()
         print '   -->| Finished: %s (duration: %s)' % (name, et.s_tf)

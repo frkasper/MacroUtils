@@ -22,7 +22,7 @@ def test_channel_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 11354, relative=False)
+    test_utils.assert_cell_count(DEMO_ID, 11400)
 
 
 def test_solution():
@@ -30,7 +30,8 @@ def test_solution():
 
 
 def test_report():
-    test_utils.assert_report(DEMO_ID, 'P_in', 0.0015419)
+    test_utils.assert_report(DEMO_ID, 'P_in', 0.0016,
+                             tolerance=0.05, relative=True)
 
 
 def test_scalar_min():

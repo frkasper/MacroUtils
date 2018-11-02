@@ -19,12 +19,12 @@ def test_cell_count():
 
 def test_scalar_min():
     test_utils.assert_scene_min(DEMO_ID, 'Scalar', 'Scalar', 99.63,
-                                tolerance=0.001)
+                                tolerance=0.01, relative=True)
 
 
 def test_scalar_max():
     test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 99.82,
-                                tolerance=0.001)
+                                tolerance=0.01, relative=True)
 
 
 def test_solution():

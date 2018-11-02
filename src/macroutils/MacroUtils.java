@@ -22,15 +22,15 @@ import star.common.Simulation;
 /**
  * MacroUtils is a library that can be used for writing macros, Simulation Assistants and other
  * third party applications related to STAR-CCM+.<p>
- * 
+ *
  * <b>Requires:</b>
  * <ul>
- * <li> STAR-CCM+ v13.04 libraries. <u>It may not run in other versions</u>;
+ * <li> STAR-CCM+ v13.06 libraries (<u>It may not run in other versions</u>);
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v13.04, June 29, 2018.
+ * @version v13.06
  */
 public final class MacroUtils {
 
@@ -111,10 +111,8 @@ public final class MacroUtils {
 
     private boolean _debug = false;
     private boolean _im = false;
-    private boolean _isInitialized = false;
+    private boolean _initialized = false;
     private Simulation _sim = null;
-
-    public static final String MACROUTILS_VERSION = "MacroUtils version 13.04 (build 1)";
 
     /**
      * Initialize MacroUtils in intrusive mode by providing a Simulation object.
@@ -124,7 +122,7 @@ public final class MacroUtils {
      * @param s given Simulation.
      */
     public MacroUtils(Simulation s) {
-        setSimulation(s, true);
+        this(s, true);
     }
 
     /**
@@ -245,10 +243,28 @@ public final class MacroUtils {
         _step(n);
     }
 
+    /**
+     * Get the version from Manifest file.
+     *
+     * @return The current MacroUtils version
+     */
+    private String _getVersion() {
+        Package manifest = getClass().getPackage();
+        String macroUtils = manifest.getSpecificationTitle();
+        String build = manifest.getSpecificationVersion();
+        String starccm = manifest.getImplementationTitle();
+        String version = manifest.getImplementationVersion();
+        if (macroUtils == null) {
+            return "MacroUtils";
+        } else {
+            return macroUtils + " " + build + " for " + starccm + " " + version;
+        }
+    }
+
     private void _initialize() {
-        if (!_isInitialized) {
+        if (!_initialized) {
             io = new MainIO(this, _debug);
-            _isInitialized = true;
+            _initialized = true;
         }
         add = new MainCreator(this);
         check = new MainChecker(this);
@@ -265,9 +281,9 @@ public final class MacroUtils {
         update = new MainUpdater(this);
         userDeclarations = new UserDeclarations(this);
         _updateInstances();
-        io.print.action(String.format("Initializing %s", MACROUTILS_VERSION), true);
+        io.print.action(String.format("Initializing %s", _getVersion()), true);
         _initialize_defaults();
-        io.print.action(String.format("%s initialized!", MACROUTILS_VERSION), true);
+        io.print.action(String.format("%s was initialized!", _getVersion()), true);
     }
 
     private void _initialize_defaults() {

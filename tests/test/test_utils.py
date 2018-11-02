@@ -41,27 +41,6 @@ def _assert_scene(argument, scene, displayer, expected, tol, relative, key):
     assert_value(actual, expected, tol, relative)
 
 
-def _assert_value(actual, expected, tolerance, relative):
-    error = actual - expected
-    if (relative and expected == 0.0) or error == 0.0:
-        relative = False  # Revert to absolute
-    if relative:
-        assert tolerance > 0, 'Relative tolerance must be positive'
-        error /= float(expected)
-        s_error = _perc('error', error)
-        s_tol = _perc('tolerance', tolerance)
-    else:
-        assert tolerance >= 0, 'Tolerance must be equal or higher than zero'
-        s_error = _pair('error', error)
-        s_tol = 'tolerance = %g' % tolerance
-
-    message = '%s; %s; %s; %s' % (_pair('actual', actual),
-                                  _pair('expected', expected),
-                                  s_error, s_tol)
-    print(message)
-    assert abs(error) <= tolerance, message
-
-
 def _base_name(filename):
     return os.path.splitext(filename)[0]
 
@@ -70,15 +49,6 @@ def _contents(filename):
     with open(filename, 'r') as f:
         data = f.read()
     return data
-
-
-def _demo_id(filename):
-    b1 = re.match('.*/test_demo\d{2}\.py', filename)
-    found = re.findall('.*/test_demo(\d{2})\.py', filename)
-    b2 = len(found) == 1
-    is_test_file = b1 and b2
-    assert is_test_file, 'Not a test file: "%s"' % filename
-    return int(found[0])
 
 
 def _env_var(value):
@@ -117,7 +87,6 @@ def _glob(pattern, validate=True):
     found = glob.glob(pattern)
     if validate:
         assert len(found) > 0, 'File not found: "%s"' % pattern
-    os.chdir(_pwd())
     return found
 
 
@@ -137,7 +106,7 @@ def _pair(key, value, fmt='%g', multiplier=1.0):
     return '%s = %s' % (key, fmt % (multiplier * value))
 
 
-def _perc(key, value):
+def _percentage(key, value):
     if value < 1e-6:
         fmt = '%.2e%%'
     elif value < 1e-4:
@@ -145,10 +114,6 @@ def _perc(key, value):
     else:
         fmt = '%.1f%%'
     return _pair(key, value, fmt, multiplier=100.0)
-
-
-def _pwd():
-    return os.getcwd()
 
 
 def _remove(filename):
@@ -172,23 +137,6 @@ def _run_sim(sim_file=None, macro_file=None):
 
 def _star_home():
     return _env_var('STARHOME')
-
-
-def _summary_contents(demo_number=None, sim_file=None, overwrite=False):
-    check_syntax = sum([bool(demo_number), bool(sim_file)])
-    if check_syntax == 0:
-        raise SyntaxError('Provide at least a demo_number or sim_file')
-    elif check_syntax == 2:
-        raise SyntaxError('Provide a demo_number or sim_file not both')
-    os.chdir(_test_home())
-    if demo_number is not None:
-        sim_file = simulation(demo_number)
-    ref_file = _summary_file(sim_file)
-    if overwrite:
-        _write_summary(sim_file, ref_file)
-    contents = _contents(ref_file)
-    os.chdir(_pwd())
-    return contents
 
 
 def _summary_file(sim_file):
@@ -219,10 +167,10 @@ def assert_face_count(argument, expected, tolerance=0.005, relative=True):
     _assert_content_count('Face', argument, expected, tolerance, relative)
 
 
-def assert_file_size(filename, expected):
+def assert_file_size(filename, expected, tolerance=0.001, relative=True):
     actual = os.path.getsize(filename)
     print('\n[assert on file size "%g"]: ' % actual),
-    assert_value(actual, expected, 0.001, relative=True)
+    assert_value(actual, expected, tolerance, relative)
 
 
 def assert_files_count(glob_pattern, expected, tolerance=0, relative=False):
@@ -286,7 +234,24 @@ def assert_time(argument, expected, tolerance=0.0001, relative=True):
 
 def assert_value(actual, expected, tolerance=0.01, relative=True):
     '''Assert a quantitative value, relative or absolute'''
-    _assert_value(actual, expected, tolerance, relative)
+    error = actual - expected
+    if (relative and expected == 0.0) or error == 0.0:
+        relative = False  # Revert to absolute
+    if relative:
+        assert tolerance > 0, 'Relative tolerance must be positive'
+        error /= float(expected)
+        s_error = _percentage('error', error)
+        s_tol = _percentage('tolerance', tolerance)
+    else:
+        assert tolerance >= 0, 'Tolerance must be equal or higher than zero'
+        s_error = _pair('error', error)
+        s_tol = 'tolerance = %g' % tolerance
+
+    message = '%s; %s; %s; %s' % (_pair('actual', actual),
+                                  _pair('expected', expected),
+                                  s_error, s_tol)
+    print(message)
+    assert abs(error) <= tolerance, message
 
 
 def assert_vertex_count(argument, expected, tolerance=0.005, relative=True):
@@ -295,7 +260,12 @@ def assert_vertex_count(argument, expected, tolerance=0.005, relative=True):
 
 def demo_id(filename):
     """Get the demo_number from a test macro"""
-    return _demo_id(filename)
+    b1 = re.match('.*/test_demo\d{2}\.py', filename)
+    found = re.findall('.*/test_demo(\d{2})\.py', filename)
+    b2 = len(found) == 1
+    is_test_file = b1 and b2
+    assert is_test_file, 'Not a test file: "%s"' % filename
+    return int(found[0])
 
 
 def simulation(demo_number):
@@ -310,7 +280,19 @@ def simulations(demo_number):
 
 def summary_contents(demo_number=None, sim_file=None, overwrite=False):
     """Return a list of strings"""
-    return _summary_contents(demo_number, sim_file, overwrite)
+    check_syntax = sum([bool(demo_number), bool(sim_file)])
+    if check_syntax == 0:
+        raise SyntaxError('Provide at least a demo_number or sim_file')
+    elif check_syntax == 2:
+        raise SyntaxError('Provide a demo_number or sim_file not both')
+    os.chdir(_test_home())
+    if demo_number is not None:
+        sim_file = simulation(demo_number)
+    ref_file = _summary_file(sim_file)
+    if overwrite:
+        _write_summary(sim_file, ref_file)
+    contents = _contents(ref_file)
+    return contents
 
 
 if __name__ == "__main__":

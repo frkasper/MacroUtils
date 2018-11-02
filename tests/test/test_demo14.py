@@ -69,11 +69,11 @@ def test_cell_count_grid_001():
 
 
 def test_vmean_report_grid_001():
-    _assert_report(_grid(1), 'Vmean', 9.365380e-02)
+    _assert_report(_grid(1), 'Vmean', 0.09, tolerance=0.1, relative=True)
 
 
 def test_vmax_report_grid_001():
-    _assert_report(_grid(1), 'Vmax', 1.383828e-01)
+    _assert_report(_grid(1), 'Vmax', 0.13, tolerance=0.1, relative=True)
 
 
 def test_write_summary_grid_002():
@@ -85,11 +85,11 @@ def test_cell_count_grid_002():
 
 
 def test_vmean_report_grid_002():
-    _assert_report(_grid(2), 'Vmean', 1.030953e-01)
+    _assert_report(_grid(2), 'Vmean', 0.1, tolerance=0.05, relative=True)
 
 
 def test_vmax_report_grid_002():
-    _assert_report(_grid(2), 'Vmax', 1.544657e-01)
+    _assert_report(_grid(2), 'Vmax', 0.15, tolerance=0.05, relative=True)
 
 
 def test_write_summary_grid_003():
@@ -101,15 +101,15 @@ def test_cell_count_grid_003():
 
 
 def test_solution_grid_003():
-    test_utils.assert_iteration(_grid(3), 8352)
+    test_utils.assert_iteration(_grid(3), 8335, tolerance=0.01, relative=True)
 
 
 def test_vmean_report_grid_003():
-    _assert_report(_grid(3), 'Vmean', 1.040143e-01)
+    _assert_report(_grid(3), 'Vmean', 0.104, tolerance=0.02, relative=True)
 
 
 def test_vmax_report_grid_003():
-    _assert_report(_grid(3), 'Vmax', 1.560768e-01)
+    _assert_report(_grid(3), 'Vmax', 0.156, tolerance=0.02, relative=True)
 
 
 def test_evaluate_gci_summary():
@@ -125,8 +125,8 @@ def test_maximum_velocity_from_plot():
 
 def test_gci23_coefficients():
     gci23_coeffs = _gci_coefficients()
-    test_utils.assert_value(min(gci23_coeffs), 0.00101138162574)
-    test_utils.assert_value(max(gci23_coeffs), 0.0582199582755)
+    test_utils.assert_value(min(gci23_coeffs), 0.001, tolerance=0.1)
+    test_utils.assert_value(max(gci23_coeffs), 0.058, tolerance=0.1)
 
 
 if __name__ == "__main__":

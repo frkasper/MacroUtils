@@ -18,7 +18,7 @@ def test_cell_count():
 
 
 def test_solution():
-    test_utils.assert_iteration(DEMO_ID, 112)
+    test_utils.assert_iteration(DEMO_ID, 120, tolerance=0.1, relative=True)
 
 
 def test_report():

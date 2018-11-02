@@ -19,7 +19,7 @@ import star.common.ResidualMonitor;
 import star.common.Simulation;
 import star.common.StarPlot;
 import star.common.SymbolShapeOption;
-import star.common.SymbolStyle;
+import star.common.SymbolStyleWithSpacing;
 import star.common.XYPlot;
 import star.common.graph.DataSet;
 import star.common.graph.HistogramDataSet;
@@ -220,7 +220,7 @@ public class TemplatePrettifier {
         for (DataSet ds : ads) {
             String dsn = ds.getPresentationName();
             LineStyle ls = ds.getLineStyle();
-            SymbolStyle ss = ds.getSymbolStyle();
+            SymbolStyleWithSpacing ss = ds.getSymbolStyle();
             LinePatternOption lpo = ls.getLinePatternOption();
             SymbolShapeOption sso = ss.getSymbolShapeOption();
             if (ads.size() == 1 && !_chk.is.residual(sp)) {
