@@ -16,7 +16,7 @@ import re
 import shutil
 
 
-STARCCM = 'STAR-CCM+'
+STARCCM = 'Simcenter STAR-CCM+'
 
 
 FIELDS = ['assistants', 'clean', 'package', 'javadoc', 'version', 'build']
@@ -334,7 +334,7 @@ def starccm_version():
     with open(main_java, 'r') as f:
         data = f.read()
 
-    found = re.findall('@version\sv(.*)\n', data)
+    found = re.findall('@version (\d{4}\.\d{1})\n', data)
     assert len(found) == 1, "Could not parse %s version" % STARCCM
 
     return found[0]
