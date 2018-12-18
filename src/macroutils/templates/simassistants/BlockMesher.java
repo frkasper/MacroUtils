@@ -112,9 +112,9 @@ public final class BlockMesher extends SimpleHexaMesher {
      * @param u      given Units
      */
     public void setParameters(double[] coord1, double[] coord2, double[] nCells, Units u) {
-        _add.tools.parameter_Vector(BLOCK_C1, coord1, u);
-        _add.tools.parameter_Vector(BLOCK_C2, coord2, u);
-        _add.tools.parameter_Vector(BLOCK_NCELLS, nCells, u);
+        _add.tools.vectorParameter(BLOCK_C1, coord1, u);
+        _add.tools.vectorParameter(BLOCK_C2, coord2, u);
+        _add.tools.vectorParameter(BLOCK_NCELLS, nCells, u);
     }
 
     private Annotation getAnnotation() {
@@ -135,7 +135,7 @@ public final class BlockMesher extends SimpleHexaMesher {
     }
 
     private VectorGlobalParameter getParameter(String name) {
-        return (VectorGlobalParameter) _get.objects.parameter(name, false);
+        return _get.objects.vectorParameter(name, false);
     }
 
     private boolean is2D() {

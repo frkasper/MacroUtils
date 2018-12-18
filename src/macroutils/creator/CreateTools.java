@@ -7,9 +7,9 @@ import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import macroutils.getter.GetMonitors;
-import macroutils.setter.SetObjects;
 import star.base.neo.ClientServerObject;
 import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
 import star.base.report.PlotableMonitor;
 import star.base.report.Report;
 import star.common.Comment;
@@ -22,7 +22,6 @@ import star.common.FieldFunction;
 import star.common.FieldFunctionTypeOption;
 import star.common.FileTable;
 import star.common.FrequencyMonitorUpdateEvent;
-import star.common.GlobalParameterBase;
 import star.common.GlobalParameterManager;
 import star.common.LocalCoordinateSystemManager;
 import star.common.LogicUpdateEvent;
@@ -285,18 +284,6 @@ public class CreateTools {
     }
 
     /**
-     * Creates a Global Parameter.
-     *
-     * @param type given type. See {@link macroutils.StaticDeclarations.GlobalParameter} for
-     *             options.
-     * @param name given name.
-     * @return The GlobalParameterBase. Use {@link SetObjects#physicalQuantity} to change it.
-     */
-    public GlobalParameterBase parameter(String name, StaticDeclarations.GlobalParameter type) {
-        return _createParameter(name, type, true);
-    }
-
-    /**
      * Creates a Scalar Global Parameter.
      *
      * @param name given name.
@@ -304,7 +291,7 @@ public class CreateTools {
      * @param u    given Units.
      * @return The ScalarGlobalParameter.
      */
-    public ScalarGlobalParameter parameter_Scalar(String name, double val, Units u) {
+    public ScalarGlobalParameter scalarParameter(String name, double val, Units u) {
         return _createParameterScalar(name, null, val, u);
     }
 
@@ -315,20 +302,8 @@ public class CreateTools {
      * @param def  given definition.
      * @return The ScalarGlobalParameter.
      */
-    public ScalarGlobalParameter parameter_Scalar(String name, String def) {
+    public ScalarGlobalParameter scalarParameter(String name, String def) {
         return _createParameterScalar(name, def, 0, _ud.unit_Dimensionless);
-    }
-
-    /**
-     * Creates a Vector Global Parameter.
-     *
-     * @param name given name.
-     * @param vals given 3-components array with values. E.g.: {1, 2, 3.5}.
-     * @param u    given Units.
-     * @return The VectorGlobalParameter.
-     */
-    public VectorGlobalParameter parameter_Vector(String name, double[] vals, Units u) {
-        return _createParameterVector(name, vals, u);
     }
 
     /**
@@ -508,6 +483,18 @@ public class CreateTools {
         _ud = _mu.userDeclarations;
     }
 
+    /**
+     * Creates a Vector Global Parameter.
+     *
+     * @param name given name.
+     * @param vals given 3-components array with values. E.g.: {1, 2, 3.5}.
+     * @param u    given Units.
+     * @return The VectorGlobalParameter.
+     */
+    public VectorGlobalParameter vectorParameter(String name, double[] vals, Units u) {
+        return _createParameterVector(name, vals, u);
+    }
+
     private DeltaMonitorUpdateEvent _createDeltaMonitorUE(PlotableMonitor pm, double delta,
             Units u, String type, boolean acum) {
         _createUE_Type(type);
@@ -536,29 +523,33 @@ public class CreateTools {
         return ev;
     }
 
-    private GlobalParameterBase _createParameter(String name,
-            StaticDeclarations.GlobalParameter type, boolean vo) {
+    private NamedObject _createParameter(String name, StaticDeclarations.GlobalParameter type,
+            boolean vo) {
         _io.say.action(String.format("Creating a %s Global Parameter", type.getType()), true);
+
         GlobalParameterManager gpm = _sim.get(GlobalParameterManager.class);
         if (gpm.has(name)) {
             _io.say.value("Skipping... Parameter already exists", name, true, vo);
             return gpm.getObject(name);
         }
-        GlobalParameterBase gpb;
+
+        NamedObject no;
         switch (type) {
             case SCALAR:
-                gpb = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
+                no = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
                 break;
             case VECTOR:
-                gpb = gpm.createGlobalParameter(VectorGlobalParameter.class, type.getType());
+                no = gpm.createGlobalParameter(VectorGlobalParameter.class, type.getType());
                 break;
             default:
-                gpb = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
+                no = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
                 break;
         }
-        gpb.setPresentationName(name);
-        _io.say.created(gpb, vo);
-        return gpb;
+
+        no.setPresentationName(name);
+        _io.say.created(no, vo);
+
+        return no;
     }
 
     private ScalarGlobalParameter _createParameterScalar(String name, String def, double val,

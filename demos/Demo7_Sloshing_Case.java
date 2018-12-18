@@ -115,8 +115,8 @@ public class Demo7_Sloshing_Case extends StarMacro {
     }
 
     private void prep3_MotionAndPost() {
-        mu.add.tools.parameter_Scalar("Period", 0.5, ud.unit_s);
-        mu.add.tools.parameter_Scalar("Omega", "2 * $PI / $Period");
+        mu.add.tools.scalarParameter("Period", 0.5, ud.unit_s);
+        mu.add.tools.scalarParameter("Omega", "2 * $PI / $Period");
         mu.add.tools.fieldFunction("Amplitude", "($Time <= 4) ? 0.01 : 0",
                 ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
         ud.ff1 = mu.add.tools.fieldFunction("MotionVel",

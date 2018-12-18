@@ -58,7 +58,7 @@ public class BuilderTask extends Task {
         public void updateSignalFrequency() {
             initializeMacro();
             _demo16.updateCaseParameters();
-            _ud.scalParam = (ScalarGlobalParameter) _mu.get.objects.parameter("F", false);
+            _ud.scalParam = (ScalarGlobalParameter) _mu.get.objects.scalarParameter("F", false);
             selectNode(_ud.scalParam);
             _demo16.printOverview();
         }

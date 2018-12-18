@@ -6,7 +6,6 @@ import star.common.Cartesian2DAxis;
 import star.common.Cartesian2DAxisManager;
 import star.common.FieldFunctionTypeOption;
 import star.common.InternalDataSet;
-import star.common.ScalarGlobalParameter;
 import star.common.Simulation;
 import star.common.SymbolShapeOption;
 
@@ -104,13 +103,13 @@ public class Demo16 {
      */
     public void updateCaseParameters() {
         _io.say.action("Updating Case Parameters.", true);
-        _ud.param = _get.objects.parameter("F", false);
-        if (_ud.param == null) {
-            _ud.scalParam = _add.tools.parameter_Scalar("F", _F, _ud.unit_Hz);
+
+        _ud.scalParam = _get.objects.scalarParameter("F", false);
+        if (_ud.scalParam == null) {
+            _ud.scalParam = _add.tools.scalarParameter("F", _F, _ud.unit_Hz);
             _add.tools.comment(_ud.scalParam, "The sound signal in Hertz");
-        } else {
-            _ud.scalParam = (ScalarGlobalParameter) _ud.param;
         }
+
         _F = _ud.scalParam.getQuantity().getRawValue();
         _W = _C / _F;
         _L = 10.0 * _W;

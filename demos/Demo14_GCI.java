@@ -144,7 +144,7 @@ public class Demo14_GCI extends StarMacro {
         mu.set.physics.initialCondition(ud.physCont, StaticDeclarations.Vars.VEL.getVar(),
                 new double[]{ 0, 0, 0.1 }, ud.unit_mps);
         //--
-        mu.add.tools.parameter_Scalar("dPdL", 1.0, ud.unit_Dimensionless);
+        mu.add.tools.scalarParameter("dPdL", 1.0, ud.unit_Dimensionless);
         ud.ff1 = mu.add.tools.fieldFunction("r",
                 "sqrt(pow($$Position[0], 2) + pow($$Position[1], 2))",
                 ud.dimLength, FieldFunctionTypeOption.Type.SCALAR);

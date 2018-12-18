@@ -24,7 +24,6 @@ import star.common.FieldFunction;
 import star.common.FrequencyMonitorUpdateEvent;
 import star.common.GeometryObject;
 import star.common.GeometryPart;
-import star.common.GlobalParameterBase;
 import star.common.Interface;
 import star.common.LabCoordinateSystem;
 import star.common.LogicUpdateEvent;
@@ -309,11 +308,6 @@ public class UserDeclarations {
      * Some useful Global Variables: Geometry Parts.
      */
     public GeometryPart geomPrt = null, geomPrt1 = null, geomPrt2 = null, geomPrt3 = null;
-
-    /**
-     * Some useful Global Variables: Global Parameters.
-     */
-    public GlobalParameterBase param = null, param1 = null, param2 = null, param3 = null;
 
     /**
      * Some useful Global Variables: Interfaces.
