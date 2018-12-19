@@ -65,7 +65,8 @@ def test_cylinder_part_surfaces_count():
 
 
 def test_cell_count_grid_001():
-    test_utils.assert_cell_count(_grid(1), 870, relative=False)
+    test_utils.assert_cell_count(_grid(1), 875,
+                                 tolerance=25, relative=False)
 
 
 def test_vmean_report_grid_001():
@@ -81,7 +82,8 @@ def test_write_summary_grid_002():
 
 
 def test_cell_count_grid_002():
-    test_utils.assert_cell_count(_grid(2), 2650, relative=False)
+    test_utils.assert_cell_count(_grid(2), 2625,
+                                 tolerance=25, relative=False)
 
 
 def test_vmean_report_grid_002():
@@ -97,11 +99,12 @@ def test_write_summary_grid_003():
 
 
 def test_cell_count_grid_003():
-    test_utils.assert_cell_count(_grid(3), 9290, relative=False)
+    test_utils.assert_cell_count(_grid(3), 9275,
+                                 tolerance=25, relative=False)
 
 
 def test_solution_grid_003():
-    test_utils.assert_iteration(_grid(3), 8335, tolerance=0.01, relative=True)
+    test_utils.assert_iteration(_grid(3), 8500, tolerance=0.01, relative=True)
 
 
 def test_vmean_report_grid_003():
@@ -125,9 +128,7 @@ def test_maximum_velocity_from_plot():
 
 def test_gci23_coefficients():
     gci23_coeffs = _gci_coefficients()
-    test_utils.assert_value(min(gci23_coeffs), 0.001, tolerance=0.1)
-    test_utils.assert_value(max(gci23_coeffs), 0.058, tolerance=0.1)
-
-
-if __name__ == "__main__":
-    pass
+    test_utils.assert_value(min(gci23_coeffs), 0.0005,
+                            tolerance=0.0005, relative=False)
+    test_utils.assert_value(max(gci23_coeffs), 0.05,
+                            tolerance=0.01, relative=False)

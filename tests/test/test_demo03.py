@@ -49,7 +49,3 @@ def test_vector_min():
 
 def test_vector_max():
     test_utils.assert_scene_max(DEMO_ID, 'Vector', 'Vector', 0.0821)
-
-
-if __name__ == "__main__":
-    pass

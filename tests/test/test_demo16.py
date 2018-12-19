@@ -20,7 +20,3 @@ def test_cell_count():
 def test_solution():
     test_utils.assert_iteration(DEMO_ID, 2140)
     test_utils.assert_time(DEMO_ID, 0.0200081)
-
-
-if __name__ == "__main__":
-    pass

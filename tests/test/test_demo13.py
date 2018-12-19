@@ -21,7 +21,8 @@ def test_unite_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 20087)
+    test_utils.assert_cell_count(DEMO_ID, 20000,
+                                 tolerance=0.01, relative=True)
 
 
 def test_solution():
@@ -30,11 +31,12 @@ def test_solution():
 
 def test_pressure_scalar_min():
     test_utils.assert_scene_min(DEMO_ID, 'Scalar', 'Scalar', -10.5,
-                                tolerance=0.5, relative=False)
+                                tolerance=0.7, relative=False)
 
 
 def test_pressure_scalar_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 14.797)
+    test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 14.5,
+                                tolerance=0.5, relative=False)
 
 
 def test_streamline_min():
@@ -54,9 +56,5 @@ def test_pictures_count():
 
 def test_write_movie():
     movie.write(MOVIE_FOLDER)
-    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 8315947,
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 9000000,
                                 tolerance=0.1, relative=True)
-
-
-if __name__ == "__main__":
-    pass

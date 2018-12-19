@@ -18,11 +18,12 @@ def test_domain_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 745527)
+    test_utils.assert_cell_count(DEMO_ID, 720000,
+                                 tolerance=0.01, relative=True)
 
 
 def test_solution():
-    test_utils.assert_iteration(DEMO_ID, 160, tolerance=0.1, relative=True)
+    test_utils.assert_iteration(DEMO_ID, 140, tolerance=20, relative=False)
 
 
 def test_frontal_area_report():
@@ -55,7 +56,3 @@ def test_vector_pressure_section_min():
 
 def test_vector_pressure_section_max():
     test_utils.assert_scene_max(DEMO_ID, 'Vector Wing', 'Vector', 14.64)
-
-
-if __name__ == "__main__":
-    pass
