@@ -64,7 +64,7 @@ public class CreateReport {
      *
      * @param name given Report name.
      * @param u    given Units.
-     * @param dim  given dimensions. E.g.: {@link UserDeclarations#dimVel}.
+     * @param dim  given dimensions.
      * @param def  given Expression definition. E.g.: "$Time".
      * @param vo   given verbose option. False will not print anything.
      * @return The Expression Report.

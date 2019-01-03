@@ -103,8 +103,12 @@ public class CreateTools {
      * @return The ReportAnnotation.
      */
     public ReportAnnotation annotation_Time(String fmt) {
-        Report r = _add.report.expression("Time", _ud.unit_s, _ud.dimTime, "$Time", false);
-        AnnotationManager am = _sim.getAnnotationManager();
+
+        final Dimensions dimTime = Dimensions.Builder().time(1).build();
+        final AnnotationManager am = _sim.getAnnotationManager();
+
+        Report r = _add.report.expression("Time", _ud.unit_s, dimTime, "$Time", false);
+
         _io.say.action("Creating a Time Report Annotation", true);
         if (am.has(r.getPresentationName())) {
             if (am.getObject(r.getPresentationName()) instanceof ReportAnnotation) {
@@ -113,8 +117,10 @@ public class CreateTools {
                 return (ReportAnnotation) am.getObject(r.getPresentationName());
             }
         }
+
         ReportAnnotation ra = am.createReportAnnotation(r);
         _io.say.created(ra, true);
+
         return ra;
     }
 
@@ -245,12 +251,15 @@ public class CreateTools {
      */
     public FieldFunction fieldFunction(String name, String def, Dimensions dim,
             FieldFunctionTypeOption.Type type) {
+
         _io.say.action("Creating a Field Function", true);
         FieldFunction ff = _get.objects.fieldFunction(name, false);
+
         if (ff != null) {
             _io.say.value("Field Function already exists", name, true, true);
             return ff;
         }
+
         UserFieldFunction uff = _sim.getFieldFunctionManager().createFieldFunction();
         uff.setPresentationName(name);
         uff.setFunctionName(name.replaceAll("( |\\(|\\)|)", ""));
@@ -259,11 +268,14 @@ public class CreateTools {
         _io.say.value("Type", uff.getTypeOption().getSelectedElement().getPresentationName(), true,
                 true);
         _io.say.value("Definition", uff.getDefinition(), true, true);
-        if (dim != null || dim != _ud.dimDimensionless) {
+
+        if (dim != null || dim != new Dimensions()) {
             uff.setDimensions(dim);
         }
+
         _io.say.created(uff, true);
         return uff;
+
     }
 
     /**

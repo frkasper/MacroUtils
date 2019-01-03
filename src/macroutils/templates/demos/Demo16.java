@@ -2,8 +2,10 @@ package macroutils.templates.demos;
 
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
+import star.common.Boundary;
 import star.common.Cartesian2DAxis;
 import star.common.Cartesian2DAxisManager;
+import star.common.Dimensions;
 import star.common.FieldFunctionTypeOption;
 import star.common.InternalDataSet;
 import star.common.Simulation;
@@ -174,16 +176,24 @@ public class Demo16 {
     }
 
     private void _setupRegion() {
-        _ud.ff = _add.tools.fieldFunction("Pout", String.format("sin(2*$PI*%g*$Time)", _F),
-                _ud.dimPress, FieldFunctionTypeOption.Type.SCALAR);
+
+        _ud.ff = _add.tools.fieldFunction("Pout",
+                String.format("sin(2*$PI*%g*$Time)", _F),
+                Dimensions.Builder().pressure(1).build(),
+                FieldFunctionTypeOption.Type.SCALAR);
+
         _ud.region = _add.region.fromAll(true);
-        _ud.bdry = _get.boundaries.byREGEX(_ud.bcInlet, true);
-        _set.boundary.asFreeStream(_ud.bdry, new double[]{ 1, 0, 0 }, _ud.v0[0] / _C,
-                0, _ud.t0, 0, 0);
-        _ud.bdry = _get.boundaries.byREGEX(_ud.bcOutlet, true);
-        _set.boundary.asPressureOutlet(_ud.bdry, 0, _ud.t0, 0, 0);
-        _set.boundary.definition(_ud.bdry, StaticDeclarations.Vars.P, "$Pout");
-        _set.boundary.asSymmetry(_get.boundaries.byREGEX(_ud.bcSym, true));
+
+        Boundary inlet = _get.boundaries.byREGEX(_ud.bcInlet, true);
+        _set.boundary.asFreeStream(inlet, new double[]{ 1, 0, 0 }, _ud.v0[0] / _C, 0, _ud.t0, 0, 0);
+
+        Boundary outlet = _get.boundaries.byREGEX(_ud.bcOutlet, true);
+        _set.boundary.asPressureOutlet(outlet, 0, _ud.t0, 0, 0);
+        _set.boundary.definition(outlet, StaticDeclarations.Vars.P, "$Pout");
+
+        Boundary sym = _get.boundaries.byREGEX(_ud.bcSym, true);
+        _set.boundary.asSymmetry(sym);
+
     }
 
 }
