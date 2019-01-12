@@ -28,12 +28,15 @@ import star.common.LogicUpdateEvent;
 import star.common.RangeMonitorUpdateEvent;
 import star.common.ScalarGlobalParameter;
 import star.common.Simulation;
+import star.common.Tag;
+import star.common.TagManager;
 import star.common.Units;
 import star.common.UpdateEvent;
 import star.common.UpdateEventDeltaOption;
 import star.common.UpdateEventLogicOption;
 import star.common.UpdateEventRangeOption;
 import star.common.UserFieldFunction;
+import star.common.UserTag;
 import star.common.VectorGlobalParameter;
 import star.motion.MotionManager;
 import star.motion.TranslatingMotion;
@@ -330,6 +333,47 @@ public class CreateTools {
                 .createFromFile(new File(_ud.simPath, filename).toString());
         _io.say.created(ft, true);
         return ft;
+    }
+
+    /**
+     * Create a UserTag while avoiding duplicates.
+     *
+     * @param name  given name
+     * @return The UserTag
+     */
+    public UserTag tag(String name) {
+
+        _io.say.action("Creating a Tag", true);
+        Tag tag = _get.objects.tag(name, false);
+
+        UserTag ut;
+        if (tag == null) {
+            ut = _sim.get(TagManager.class).createNewUserTag(name);
+            _io.say.created(ut, true);
+        } else {
+            _io.say.value("Tag already exists", tag.getPresentationName(), true, true);
+            ut = (UserTag) tag;
+        }
+
+        return ut;
+
+    }
+
+    /**
+     * Create a colored UserTag while avoiding duplicates.
+     *
+     * @param name  given name
+     * @param color given color
+     *
+     * @return The UserTag
+     */
+    public UserTag tag(String name, Color color) {
+
+        UserTag ut = tag(name);
+        ut.setColor(color);
+
+        return ut;
+
     }
 
     /**

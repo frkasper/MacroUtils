@@ -26,6 +26,8 @@ import star.common.ScalarGlobalParameter;
 import star.common.ScalarProfile;
 import star.common.Simulation;
 import star.common.StarPlot;
+import star.common.Tag;
+import star.common.TagManager;
 import star.common.UpdatePlot;
 import star.common.VectorGlobalParameter;
 import star.common.VectorProfile;
@@ -381,11 +383,23 @@ public class GetObjects {
     }
 
     /**
+     * Gets a Tag that matches the REGEX search pattern.
+     *
+     * @param regexPatt given Regular Expression (REGEX) pattern.
+     * @param vo        given verbose option. False will not print anything.
+     * @return The Tag; null if nothing is found
+     */
+    public Tag tag(String regexPatt, boolean vo) {
+        return (Tag) _get.objects.byREGEX(regexPatt, "Tag",
+                new ArrayList<>(_sim.get(TagManager.class).getObjects()), vo);
+    }
+
+    /**
      * Gets a Transform that matches the REGEX search pattern.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
      * @param vo        given verbose option. False will not print anything.
-     * @return The VisTransform.
+     * @return The VisTransform
      */
     public VisTransform transform(String regexPatt, boolean vo) {
         return (VisTransform) _get.objects.byREGEX(regexPatt, "Transform",

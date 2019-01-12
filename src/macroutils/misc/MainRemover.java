@@ -3,6 +3,8 @@ package macroutils.misc;
 import java.util.ArrayList;
 import java.util.Collections;
 import macroutils.MacroUtils;
+import star.base.neo.ClientServerObject;
+import star.base.neo.ClientServerObjectManager;
 import star.base.neo.NeoObjectVector;
 import star.base.neo.NeoProperty;
 import star.base.report.Monitor;
@@ -22,6 +24,8 @@ import star.common.Region;
 import star.common.RegionManager;
 import star.common.Simulation;
 import star.common.StarPlot;
+import star.common.Tag;
+import star.common.TagManager;
 import star.common.UpdateEventManager;
 import star.common.UserFieldFunction;
 import star.meshing.MeshOperation;
@@ -92,6 +96,7 @@ public class MainRemover {
         allUserFieldFunctions();
         allGlobalParameters();
         allAnnotations();
+        allTags();
     }
 
     /**
@@ -256,6 +261,19 @@ public class MainRemover {
     }
 
     /**
+     * Removes all Tags.
+     */
+    public void allTags() {
+        TagManager tm = _sim.getTagManager();
+        ArrayList<Tag> at = new ArrayList<>(tm.getObjects());
+        if (at.isEmpty()) {
+            return;
+        }
+        _removing("Tag", at.size());
+        tm.removeObjects(at);
+    }
+
+    /**
      * Removes all Update Events.
      */
     public void allUpdateEvents() {
@@ -297,6 +315,15 @@ public class MainRemover {
      */
     public void invalidCells_Aggressive() {
         _invalidCells(true);
+    }
+
+    /**
+     * Remove a Tag.
+     *
+     * @param tag given Tag
+     */
+    public void tag(Tag tag) {
+        _remove(_sim.get(TagManager.class), tag);
     }
 
     /**
@@ -360,6 +387,14 @@ public class MainRemover {
             _io.say.msg(true, "  - %-35s: %s", s, np.get(s).toString());
         }
         _sim.getMeshManager().removeInvalidCells(new NeoObjectVector(fvRegions.toArray()), np);
+        _io.say.ok(true);
+    }
+
+    @SuppressWarnings(value = "unchecked")
+    private <M extends ClientServerObjectManager, T extends ClientServerObject> void _remove(
+            M manager, T cso) {
+        _io.say.action("Removing a " + cso.getBeanDisplayName(), true);
+        manager.removeObjects(cso);
         _io.say.ok(true);
     }
 

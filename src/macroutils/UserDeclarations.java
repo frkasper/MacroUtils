@@ -35,6 +35,7 @@ import star.common.ScalarGlobalParameter;
 import star.common.SolutionView;
 import star.common.StarPlot;
 import star.common.Table;
+import star.common.Tag;
 import star.common.Units;
 import star.common.UpdateEvent;
 import star.common.VectorGlobalParameter;
@@ -481,6 +482,11 @@ public class UserDeclarations {
      * Some useful Global Variables: Tables.
      */
     public Table table = null, table1 = null, table2 = null, table3 = null;
+
+    /**
+     * Some useful Global Variables: Tags.
+     */
+    public Tag tag = null, tag1 = null, tag2 = null, tag3 = null;
 
     /**
      * Some useful Global Variables: Update Event.
