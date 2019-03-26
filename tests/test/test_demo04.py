@@ -27,7 +27,3 @@ def test_pictures_count():
 
 def test_solution():
     test_utils.assert_iteration(DEMO_ID, 0)
-
-
-if __name__ == "__main__":
-    pass

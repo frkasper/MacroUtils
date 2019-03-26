@@ -139,7 +139,7 @@ public class MainCreator {
      */
     public void globalParameters() {
         ScalarGlobalParameter pi;
-        pi = _add.tools.parameter_Scalar("PI", Math.PI, _ud.unit_Dimensionless);
+        pi = _add.tools.scalarParameter("PI", Math.PI, _ud.unit_Dimensionless);
         _add.tools.comment(pi, "The good old PI number");
     }
 

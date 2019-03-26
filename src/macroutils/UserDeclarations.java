@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import macroutils.creator.CreateMeshOperation;
-import macroutils.misc.MainUpdater;
 import star.base.neo.DoubleVector;
 import star.base.neo.NamedObject;
 import star.base.report.Monitor;
@@ -18,13 +17,11 @@ import star.common.BoundaryInterface;
 import star.common.CompositePart;
 import star.common.CoordinateSystem;
 import star.common.DeltaMonitorUpdateEvent;
-import star.common.Dimensions;
 import star.common.FeatureCurve;
 import star.common.FieldFunction;
 import star.common.FrequencyMonitorUpdateEvent;
 import star.common.GeometryObject;
 import star.common.GeometryPart;
-import star.common.GlobalParameterBase;
 import star.common.Interface;
 import star.common.LabCoordinateSystem;
 import star.common.LogicUpdateEvent;
@@ -38,6 +35,7 @@ import star.common.ScalarGlobalParameter;
 import star.common.SolutionView;
 import star.common.StarPlot;
 import star.common.Table;
+import star.common.Tag;
 import star.common.Units;
 import star.common.UpdateEvent;
 import star.common.VectorGlobalParameter;
@@ -311,11 +309,6 @@ public class UserDeclarations {
     public GeometryPart geomPrt = null, geomPrt1 = null, geomPrt2 = null, geomPrt3 = null;
 
     /**
-     * Some useful Global Variables: Global Parameters.
-     */
-    public GlobalParameterBase param = null, param1 = null, param2 = null, param3 = null;
-
-    /**
      * Some useful Global Variables: Interfaces.
      */
     public Interface intrf = null, intrf1 = null, intrf2 = null, intrf3 = null;
@@ -489,6 +482,11 @@ public class UserDeclarations {
      * Some useful Global Variables: Tables.
      */
     public Table table = null, table1 = null, table2 = null, table3 = null;
+
+    /**
+     * Some useful Global Variables: Tags.
+     */
+    public Tag tag = null, tag1 = null, tag2 = null, tag3 = null;
 
     /**
      * Some useful Global Variables: Update Event.
@@ -1054,69 +1052,6 @@ public class UserDeclarations {
      * Just strings. Useful somewhere.
      */
     public String string = "", string1 = "", string2 = "", string3 = "", text = "";
-
-    //--
-    //-- Dimensions
-    //--
-    /**
-     * Dimensions of Density. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimDensity = new Dimensions();
-
-    /**
-     * Dimensionless dimensions. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimDimensionless = new Dimensions();
-
-    /**
-     * Dimensions of Force. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimForce = new Dimensions();
-
-    /**
-     * Dimensions of Length. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimLength = new Dimensions();
-
-    /**
-     * Dimensions of Mass. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimMass = new Dimensions();
-
-    /**
-     * Dimensions of Mass Flow. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimMassFlow = new Dimensions();
-
-    /**
-     * Dimensions of Molecular Flow. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimMolFlow = new Dimensions();
-
-    /**
-     * Dimensions of Pressure. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimPress = new Dimensions();
-
-    /**
-     * Dimensions of Time. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimTime = new Dimensions();
-
-    /**
-     * Dimensions of Velocity. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimVel = new Dimensions();
-
-    /**
-     * Dimensions of Viscosity. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimVisc = new Dimensions();
-
-    /**
-     * Dimensions of Volumetric Flow. Definition in {@link MainUpdater#customUnits}.
-     */
-    public Dimensions dimVolFlow = new Dimensions();
 
     //--
     //-- Units

@@ -5,6 +5,8 @@ import macroutils.MacroUtils;
 import star.base.neo.ClientServerObject;
 import star.common.FvRepresentation;
 import star.common.Simulation;
+import star.delaunaymesher.DelaunayAutoMesher;
+import star.dualmesher.DualAutoMesher;
 import star.meshing.AutoMeshOperation;
 import star.meshing.BaseSize;
 import star.meshing.CurrentDescriptionSource;
@@ -152,7 +154,25 @@ public class GetMesh {
     }
 
     /**
-     * Gets the Surface Remesher object, the that is within a Mesh Operation.
+     * Gets the Polyhedral Mesher object that is within a Mesh Operation.
+     *
+     * @param amo given AutoMeshOperation
+     * @param vo  given verbose option. False will not print anything
+     * @return The DualAutoMesher object; null if not applicable
+     */
+    public DualAutoMesher polyMesher(AutoMeshOperation amo, boolean vo) {
+        _io.say.action("Getting the Polyhedral Mesher object", vo);
+        DualAutoMesher dam = null;
+        if (_chk.has.polyMesher(amo)) {
+            dam = (DualAutoMesher) amo.getMeshers().getObject("Polyhedral Mesher");
+        }
+        _io.say.object(amo, vo);
+        _checkGotNull(dam, "Polyhedral Mesher", vo);
+        return dam;
+    }
+
+    /**
+     * Gets the Surface Remesher object that is within a Mesh Operation.
      *
      * @param mo given Mesh Operation.
      * @param vo given verbose option. False will not print anything.
@@ -166,7 +186,7 @@ public class GetMesh {
             AutoMeshOperation amo = (AutoMeshOperation) mo;
             ram = (ResurfacerAutoMesher) amo.getMeshers().getObject("Surface Remesher");
         }
-        _checkGotNull(ram, "Remesher", vo);
+        _checkGotNull(ram, "Surface Remesher", vo);
         return ram;
     }
 
@@ -181,6 +201,24 @@ public class GetMesh {
         _io.say.action("Getting the Target Relative Size", vo);
         _io.say.object(amo, vo);
         return amo.getDefaultValues().get(PartsTargetSurfaceSize.class);
+    }
+
+    /**
+     * Gets the Tetrahedral Mesher object that is within a Mesh Operation.
+     *
+     * @param amo given AutoMeshOperation
+     * @param vo  given verbose option. False will not print anything
+     * @return The DelaunayAutoMesher object; null if not applicable
+     */
+    public DelaunayAutoMesher tetMesher(AutoMeshOperation amo, boolean vo) {
+        _io.say.action("Getting the Tetrahedral Mesher object", vo);
+        DelaunayAutoMesher dam = null;
+        if (_chk.has.tetMesher(amo)) {
+            dam = (DelaunayAutoMesher) amo.getMeshers().getObject("Tetrahedral Mesher");
+        }
+        _io.say.object(amo, vo);
+        _checkGotNull(dam, "Tetrahedral Mesher", vo);
+        return dam;
     }
 
     /**

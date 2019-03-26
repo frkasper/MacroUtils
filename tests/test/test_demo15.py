@@ -41,15 +41,17 @@ def test_unite_part_surfaces_count():
 
 
 def test_cell_count_ss():
-    test_utils.assert_cell_count(_grid_ss(), 16745)
+    test_utils.assert_cell_count(_grid_ss(), 16750,
+                                 tolerance=250, relative=False)
 
 
 def test_solution_ss():
-    test_utils.assert_iteration(_grid_ss(), 90, tolerance=0.1, relative=True)
+    test_utils.assert_iteration(_grid_ss(), 100, tolerance=0.2, relative=True)
 
 
 def test_pressure_drop_report_ss():
-    test_utils.assert_report(_grid_ss(), 'Pressure Drop', 8.0329)
+    test_utils.assert_report(_grid_ss(), 'Pressure Drop', 8.1,
+                             tolerance=0.1, relative=False)
 
 
 def test_pressure_scalar_min_ss():
@@ -63,7 +65,7 @@ def test_pressure_scalar_max_ss():
 
 def test_vector_min_ss():
     test_utils.assert_scene_min(_grid_ss(), 'Vector', 'Vector', 0.0,
-                                tolerance=0.01)
+                                tolerance=0.015)
 
 
 def test_vector_max_ss():
@@ -75,7 +77,8 @@ def test_write_summary_des():
 
 
 def test_cell_count_des():
-    test_utils.assert_cell_count(_grid_des(), 219109)
+    test_utils.assert_cell_count(_grid_des(), 218000,
+                                 tolerance=0.01, relative=True)
 
 
 def test_solution_des():
@@ -95,8 +98,8 @@ def test_cfl_avg_report_des():
 
 
 def test_cfl_max_report_des():
-    test_utils.assert_report(_grid_des(), 'CFL_max', 2.0,
-                             tolerance=0.5, relative=False)
+    test_utils.assert_report(_grid_des(), 'CFL_max', 2.25,
+                             tolerance=0.50, relative=False)
 
 
 def test_time_report_des():
@@ -133,7 +136,3 @@ def test_write_movies():
         print 'Movie folder: %s' % movie_folder
         test_utils.assert_file_size(movie.name(movie_folder), file_size,
                                     tolerance=0.1)
-
-
-if __name__ == "__main__":
-    pass

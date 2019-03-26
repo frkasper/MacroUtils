@@ -3,9 +3,9 @@ package macroutils.templates.simassistants;
 import macroutils.MacroUtils;
 import star.base.neo.DoubleVector;
 import star.common.Region;
+import star.common.Tag;
 import star.common.Units;
 import star.common.VectorGlobalParameter;
-import star.vis.Annotation;
 import star.vis.Scene;
 
 /**
@@ -18,10 +18,10 @@ import star.vis.Scene;
  */
 public final class BlockMesher extends SimpleHexaMesher {
 
-    private static final String ANNOT_NAME = "is2D";
     private static final String BLOCK_C1 = "Block Coordinate1";
     private static final String BLOCK_C2 = "Block Coordinate2";
     private static final String BLOCK_NCELLS = "Block Number of Cells";
+    private static final String TAG_2D = "MacroUtils 2D Mesh";
 
     public BlockMesher(MacroUtils m) {
         super(m);
@@ -42,7 +42,7 @@ public final class BlockMesher extends SimpleHexaMesher {
 
         if (is2D()) {
             _ud.namedObjects.add(r);
-            removeAnnotation();
+            _remove.tag(getTag());
             _mesher.setBadgeFor2D(false);
         } else {
             _ud.namedObjects.addAll(_get.boundaries.all(r, false));
@@ -99,7 +99,7 @@ public final class BlockMesher extends SimpleHexaMesher {
      * Set the block to be two-dimensional.
      */
     public void setAs2D() {
-        _add.tools.annotation_Simple(ANNOT_NAME, "");
+        _add.tools.tag(TAG_2D);
         _io.say.action("Geometry will be flagged as 2D.", true);
     }
 
@@ -112,13 +112,13 @@ public final class BlockMesher extends SimpleHexaMesher {
      * @param u      given Units
      */
     public void setParameters(double[] coord1, double[] coord2, double[] nCells, Units u) {
-        _add.tools.parameter_Vector(BLOCK_C1, coord1, u);
-        _add.tools.parameter_Vector(BLOCK_C2, coord2, u);
-        _add.tools.parameter_Vector(BLOCK_NCELLS, nCells, u);
+        _add.tools.vectorParameter(BLOCK_C1, coord1, u);
+        _add.tools.vectorParameter(BLOCK_C2, coord2, u);
+        _add.tools.vectorParameter(BLOCK_NCELLS, nCells, u);
     }
 
-    private Annotation getAnnotation() {
-        return _get.objects.annotation(ANNOT_NAME, false);
+    private Tag getTag() {
+        return _get.objects.tag(TAG_2D, false);
     }
 
     private double[] getDouble(VectorGlobalParameter vgp) {
@@ -135,17 +135,11 @@ public final class BlockMesher extends SimpleHexaMesher {
     }
 
     private VectorGlobalParameter getParameter(String name) {
-        return (VectorGlobalParameter) _get.objects.parameter(name, false);
+        return _get.objects.vectorParameter(name, false);
     }
 
     private boolean is2D() {
-        return getAnnotation() != null;
-    }
-
-    private void removeAnnotation() {
-        if (getAnnotation() != null) {
-            _sim.getAnnotationManager().remove(getAnnotation());
-        }
+        return getTag() != null;
     }
 
 }

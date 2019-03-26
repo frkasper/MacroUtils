@@ -14,7 +14,7 @@ def test_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 67620, relative=False)
+    test_utils.assert_cell_count(DEMO_ID, 67500, relative=True)
 
 
 def test_solution():
@@ -31,7 +31,3 @@ def test_scalar_min():
 
 def test_scalar_max():
     test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 0.129)
-
-
-if __name__ == "__main__":
-    pass

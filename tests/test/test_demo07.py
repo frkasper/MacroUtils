@@ -25,11 +25,12 @@ def test_solution():
 
 
 def test_cfl_avg_report():
-    test_utils.assert_report(DEMO_ID, 'CFL_avg', 0.010586)
+    test_utils.assert_report(DEMO_ID, 'CFL_avg', 0.011,
+                             tolerance=0.001, relative=False)
 
 
 def test_cfl_max_report():
-    test_utils.assert_report(DEMO_ID, 'CFL_max', 0.035,
+    test_utils.assert_report(DEMO_ID, 'CFL_max', 0.032,
                              tolerance=0.005, relative=False)
 
 
@@ -58,8 +59,5 @@ def test_pictures_count():
 
 def test_write_movie():
     movie.write(MOVIE_FOLDER)
-    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 3084966)
-
-
-if __name__ == "__main__":
-    pass
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 3103500,
+                                tolerance=0.01, relative=True)

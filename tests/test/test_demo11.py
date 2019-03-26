@@ -37,7 +37,3 @@ def test_scalar_max():
 
 def test_solution():
     test_utils.assert_iteration(DEMO_ID, 0)
-
-
-if __name__ == "__main__":
-    pass

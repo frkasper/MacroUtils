@@ -4,6 +4,7 @@ import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import star.base.neo.DoubleVector;
 import star.base.report.Monitor;
+import star.common.Dimensions;
 import star.common.FieldFunctionTypeOption;
 import star.common.StarMacro;
 import star.keturb.KeTurbSpecOption;
@@ -161,9 +162,9 @@ public class Demo15_Run_DES extends StarMacro {
         mu.set.object.updateEvent(mu.get.monitors.byREGEX("Pressure Drop", true),
                 ud.updEvent1, true);
         ud.ff1 = mu.add.tools.fieldFunction("My Q Criterion", "$Qcriterion * (1 - $MenterKwTurbF1)",
-                ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
+                new Dimensions(), FieldFunctionTypeOption.Type.SCALAR);
         ud.ff2 = mu.add.tools.fieldFunction("Courant Number on LES Portion",
-                "$CourantNumber * (1 - $SaTurbDesFd)", ud.dimDimensionless,
+                "$CourantNumber * (1 - $SaTurbDesFd)", new Dimensions(),
                 FieldFunctionTypeOption.Type.SCALAR);
         ud.namedObjects.clear();
         ud.namedObjects.add(mu.get.parts.byREGEX("Plane", true));

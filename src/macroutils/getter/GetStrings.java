@@ -162,7 +162,7 @@ public class GetStrings {
             return "NULL";
         }
         if (cso instanceof GeometryPart) {
-            return ((GeometryPart) cso).getPathInHierarchy();
+            return ((GeometryPart) cso).getFullPathInHierarchy();
         } else if (cso instanceof ColumnDescriptor) {
             return ((ColumnDescriptor) cso).getColumnName();
         }

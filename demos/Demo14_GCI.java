@@ -5,6 +5,7 @@ import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import macroutils.templates.TemplateGCI;
 import star.common.ConstantVectorProfileMethod;
+import star.common.Dimensions;
 import star.common.FieldFunction;
 import star.common.FieldFunctionTypeOption;
 import star.common.InterfaceBoundary;
@@ -130,9 +131,14 @@ public class Demo14_GCI extends StarMacro {
     }
 
     private void setupPhysics() {
+
+        final Dimensions dimLength = Dimensions.Builder().length(1).build();
+        final Dimensions dimVel = Dimensions.Builder().velocity(1).build();
+
         ud.urfVel = 0.95;
         ud.urfP = 0.15;
         ud.maxIter = 3000;
+
         ud.physCont = mu.add.physicsContinua.generic(StaticDeclarations.Space.THREE_DIMENSIONAL,
                 StaticDeclarations.Time.STEADY, StaticDeclarations.Material.LIQUID,
                 StaticDeclarations.Solver.SEGREGATED, StaticDeclarations.Density.INCOMPRESSIBLE,
@@ -144,13 +150,14 @@ public class Demo14_GCI extends StarMacro {
         mu.set.physics.initialCondition(ud.physCont, StaticDeclarations.Vars.VEL.getVar(),
                 new double[]{ 0, 0, 0.1 }, ud.unit_mps);
         //--
-        mu.add.tools.parameter_Scalar("dPdL", 1.0, ud.unit_Dimensionless);
+        mu.add.tools.scalarParameter("dPdL", 1.0, ud.unit_Dimensionless);
         ud.ff1 = mu.add.tools.fieldFunction("r",
                 "sqrt(pow($$Position[0], 2) + pow($$Position[1], 2))",
-                ud.dimLength, FieldFunctionTypeOption.Type.SCALAR);
+                dimLength, FieldFunctionTypeOption.Type.SCALAR);
         ud.ff2 = mu.add.tools.fieldFunction("Analytical Solution",
                 String.format("$dPdL / %g * (pow(%g, 2)-pow($r, 2))", 4 * visc, R / 1000.),
-                ud.dimVel, FieldFunctionTypeOption.Type.SCALAR);
+                dimVel, FieldFunctionTypeOption.Type.SCALAR);
+
     }
 
     private void setupPlotData(InternalDataSet ids, SymbolShapeOption.Type type,

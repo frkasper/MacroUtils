@@ -3,6 +3,7 @@ package macroutils.misc;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
+import star.common.Dimensions;
 import star.common.Simulation;
 import star.common.Units;
 import star.meshing.MeshPipelineController;
@@ -109,80 +110,87 @@ public class MainUpdater {
     }
 
     private void _updateCustomUnits(boolean vo) {
+
+        final Dimensions dimDensity = Dimensions.Builder().mass(1).volume(-1).build();
+        final Dimensions dimForce = Dimensions.Builder().force(1).build();
+        final Dimensions dimMass = Dimensions.Builder().mass(1).build();
+        final Dimensions dimMassFlow = Dimensions.Builder().mass(1).time(-1).build();
+        final Dimensions dimMolFlow = Dimensions.Builder().quantity(1).time(-1).build();
+        final Dimensions dimPress = Dimensions.Builder().pressure(1).build();
+        final Dimensions dimTime = Dimensions.Builder().time(1).build();
+        final Dimensions dimVel = Dimensions.Builder().velocity(1).build();
+        final Dimensions dimVisc = Dimensions.Builder().pressure(1).time(1).build();
+        final Dimensions dimVolFlow = Dimensions.Builder().volume(1).time(-1).build();
+
         _io.print.action("Adding/Updating Custom Units", vo);
-        _ud.dimDensity.setMass(1);
-        _ud.dimDensity.setVolume(-1);
-        _ud.dimForce.setForce(1);
-        _ud.dimLength.setLength(1);
-        _ud.dimMass.setMass(1);
-        _ud.dimMassFlow.setMass(1);
-        _ud.dimMassFlow.setTime(-1);
-        _ud.dimMolFlow.setQuantity(1);
-        _ud.dimMolFlow.setTime(-1);
-        _ud.dimPress.setPressure(1);
-        _ud.dimTime.setTime(1);
-        _ud.dimVel.setVelocity(1);
-        _ud.dimVisc.setPressure(1);
-        _ud.dimVisc.setTime(1);
-        _ud.dimVolFlow.setVolume(1);
-        _ud.dimVolFlow.setTime(-1);
+
         /*    DENSITY UNITS [M/V]    */
         _ud.unit_gpcm3 = _add.units.custom("g/cm^3", "gram per cubic centimeter", 1000,
-                _ud.dimDensity, vo);
+                dimDensity, vo);
+
         /*    FORCE UNITS [M*L/T^2]    */
-        _ud.unit_kN = _add.units.custom("kN", "kilonewton", 1000, _ud.dimForce, vo);
+        _ud.unit_kN = _add.units.custom("kN", "kilonewton", 1000, dimForce, vo);
+
         /*    MASS UNITS [M]    */
-        _ud.unit_g = _add.units.custom("g", "gram", 0.001, _ud.dimMass, vo);
+        _ud.unit_g = _add.units.custom("g", "gram", 0.001, dimMass, vo);
+
         /*    MASS FLOW UNITS [M/T]    */
         _ud.unit_kgph = _add.units.custom("kg/h", "kilogram per hour", 1. / 3600,
-                _ud.dimMassFlow, vo);
+                dimMassFlow, vo);
         _ud.unit_kgpmin = _add.units.custom("kg/min", "kilogram per minute", 1. / 60,
-                _ud.dimMassFlow, vo);
+                dimMassFlow, vo);
         _ud.unit_gpmin = _add.units.custom("g/min", "gram per minute", 0.001 / 60,
-                _ud.dimMassFlow, vo);
-        _ud.unit_gps = _add.units.custom("g/s", "gram per second", 0.001, _ud.dimMassFlow, vo);
+                dimMassFlow, vo);
+        _ud.unit_gps = _add.units.custom("g/s", "gram per second", 0.001, dimMassFlow, vo);
+
         /*    MOLECULAR FLOW UNITS [Mol/T]    */
         _ud.unit_kmolps = _add.units.custom("kmol/s", "kilogram-mol per second", 1.0,
-                _ud.dimMolFlow, vo);
+                dimMolFlow, vo);
+
         /*    PRESSURE UNITS [P]    */
         //--- http://www.sensorsone.co.uk/pressure-units-conversion.html
         //--- http://www.onlineconversion.com/pressure.htm
         _ud.unit_cmH2O = _add.units.custom("cmH2O", "centimeter of water", 98.0665,
-                _ud.dimPress, vo);
+                dimPress, vo);
         _ud.unit_cmHg = _add.units.custom("cmHg", "centimeter of mercury", 1333.2239,
-                _ud.dimPress, vo);
+                dimPress, vo);
         _ud.unit_dynepcm2 = _add.units.custom("dyne/cm^2", "dyne per square centimeter", 0.1,
-                _ud.dimPress, vo);
-        _ud.unit_kPa = _add.units.custom("kPa", "kilopascal", 1000, _ud.dimPress, vo);
-        _ud.unit_mbar = _add.units.custom("mbar", "millibar", 100, _ud.dimPress, vo);
+                dimPress, vo);
+        _ud.unit_kPa = _add.units.custom("kPa", "kilopascal", 1000, dimPress, vo);
+        _ud.unit_mbar = _add.units.custom("mbar", "millibar", 100, dimPress, vo);
         _ud.unit_mmH2O = _add.units.custom("mmH2O", "millimeter of water", 9.80665,
-                _ud.dimPress, vo);
+                dimPress, vo);
         _ud.unit_mmHg = _add.units.custom("mmHg", "millimeter of mercury", 133.32239,
-                _ud.dimPress, vo);
-        _ud.unit_uPa = _add.units.custom("uPa", "micropascal", 1e-6, _ud.dimPress, vo);
+                dimPress, vo);
+        _ud.unit_uPa = _add.units.custom("uPa", "micropascal", 1e-6, dimPress, vo);
+
         /*    TIME UNITS [T]    */
-        _ud.unit_ms = _add.units.custom("ms", "milliseconds", 0.001, _ud.dimTime, vo);
+        _ud.unit_ms = _add.units.custom("ms", "milliseconds", 0.001, dimTime, vo);
+
         /*    VELOCITY UNITS [L/T]    */
-        _ud.unit_kt = _add.units.custom("kt", "knot", 1852. / 3600., _ud.dimVel, vo);
+        _ud.unit_kt = _add.units.custom("kt", "knot", 1852. / 3600., dimVel, vo);
         _ud.unit_mmps = _add.units.custom("mm/s", "millimeter per second", 0.001,
-                _ud.dimVel, vo);
+                dimVel, vo);
         _ud.unit_umps = _add.units.custom("um/s", "micrometer per second", 1e-6,
-                _ud.dimVel, vo);
+                dimVel, vo);
+
         /*    VISCOSITY UNITS [P*T]    */
-        _ud.unit_P = _add.units.custom("P", "Poise", 0.1, _ud.dimVisc, vo);
-        _ud.unit_cP = _add.units.custom("cP", "centipoise", 0.001, _ud.dimVisc, vo);
+        _ud.unit_P = _add.units.custom("P", "Poise", 0.1, dimVisc, vo);
+        _ud.unit_cP = _add.units.custom("cP", "centipoise", 0.001, dimVisc, vo);
+
         /*    VOLUMETRIC FLOW RATE UNITS [V/T]    */
         _ud.unit_galps = _add.units.custom("gal/s", "gallons per second", 0.00378541,
-                _ud.dimVolFlow, vo);
+                dimVolFlow, vo);
         _ud.unit_galpmin = _add.units.custom("gal/min", "gallons per minute", 0.00378541 / 60,
-                _ud.dimVolFlow, vo);
+                dimVolFlow, vo);
         _ud.unit_lph = _add.units.custom("l/h", "liter per hour", 0.001 / 3600,
-                _ud.dimVolFlow, vo);
+                dimVolFlow, vo);
         _ud.unit_lpmin = _add.units.custom("l/min", "liter per minute", 0.001 / 60,
-                _ud.dimVolFlow, vo);
-        _ud.unit_lps = _add.units.custom("l/s", "liter per second", 0.001, _ud.dimVolFlow, vo);
+                dimVolFlow, vo);
+        _ud.unit_lps = _add.units.custom("l/s", "liter per second", 0.001, dimVolFlow, vo);
         _ud.unit_m3ph = _add.units.custom("m^3/h", "cubic meter per hour", 1. / 3600,
-                _ud.dimVolFlow, vo);
+                dimVolFlow, vo);
+
         _io.say.ok(vo);
     }
 

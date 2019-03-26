@@ -7,9 +7,9 @@ import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import macroutils.getter.GetMonitors;
-import macroutils.setter.SetObjects;
 import star.base.neo.ClientServerObject;
 import star.base.neo.DoubleVector;
+import star.base.neo.NamedObject;
 import star.base.report.PlotableMonitor;
 import star.base.report.Report;
 import star.common.Comment;
@@ -22,19 +22,21 @@ import star.common.FieldFunction;
 import star.common.FieldFunctionTypeOption;
 import star.common.FileTable;
 import star.common.FrequencyMonitorUpdateEvent;
-import star.common.GlobalParameterBase;
 import star.common.GlobalParameterManager;
 import star.common.LocalCoordinateSystemManager;
 import star.common.LogicUpdateEvent;
 import star.common.RangeMonitorUpdateEvent;
 import star.common.ScalarGlobalParameter;
 import star.common.Simulation;
+import star.common.Tag;
+import star.common.TagManager;
 import star.common.Units;
 import star.common.UpdateEvent;
 import star.common.UpdateEventDeltaOption;
 import star.common.UpdateEventLogicOption;
 import star.common.UpdateEventRangeOption;
 import star.common.UserFieldFunction;
+import star.common.UserTag;
 import star.common.VectorGlobalParameter;
 import star.motion.MotionManager;
 import star.motion.TranslatingMotion;
@@ -104,8 +106,12 @@ public class CreateTools {
      * @return The ReportAnnotation.
      */
     public ReportAnnotation annotation_Time(String fmt) {
-        Report r = _add.report.expression("Time", _ud.unit_s, _ud.dimTime, "$Time", false);
-        AnnotationManager am = _sim.getAnnotationManager();
+
+        final Dimensions dimTime = Dimensions.Builder().time(1).build();
+        final AnnotationManager am = _sim.getAnnotationManager();
+
+        Report r = _add.report.expression("Time", _ud.unit_s, dimTime, "$Time", false);
+
         _io.say.action("Creating a Time Report Annotation", true);
         if (am.has(r.getPresentationName())) {
             if (am.getObject(r.getPresentationName()) instanceof ReportAnnotation) {
@@ -114,8 +120,10 @@ public class CreateTools {
                 return (ReportAnnotation) am.getObject(r.getPresentationName());
             }
         }
+
         ReportAnnotation ra = am.createReportAnnotation(r);
         _io.say.created(ra, true);
+
         return ra;
     }
 
@@ -246,12 +254,15 @@ public class CreateTools {
      */
     public FieldFunction fieldFunction(String name, String def, Dimensions dim,
             FieldFunctionTypeOption.Type type) {
+
         _io.say.action("Creating a Field Function", true);
         FieldFunction ff = _get.objects.fieldFunction(name, false);
+
         if (ff != null) {
             _io.say.value("Field Function already exists", name, true, true);
             return ff;
         }
+
         UserFieldFunction uff = _sim.getFieldFunctionManager().createFieldFunction();
         uff.setPresentationName(name);
         uff.setFunctionName(name.replaceAll("( |\\(|\\)|)", ""));
@@ -260,11 +271,14 @@ public class CreateTools {
         _io.say.value("Type", uff.getTypeOption().getSelectedElement().getPresentationName(), true,
                 true);
         _io.say.value("Definition", uff.getDefinition(), true, true);
-        if (dim != null || dim != _ud.dimDimensionless) {
+
+        if (dim != null || dim != new Dimensions()) {
             uff.setDimensions(dim);
         }
+
         _io.say.created(uff, true);
         return uff;
+
     }
 
     /**
@@ -285,18 +299,6 @@ public class CreateTools {
     }
 
     /**
-     * Creates a Global Parameter.
-     *
-     * @param type given type. See {@link macroutils.StaticDeclarations.GlobalParameter} for
-     *             options.
-     * @param name given name.
-     * @return The GlobalParameterBase. Use {@link SetObjects#physicalQuantity} to change it.
-     */
-    public GlobalParameterBase parameter(String name, StaticDeclarations.GlobalParameter type) {
-        return _createParameter(name, type, true);
-    }
-
-    /**
      * Creates a Scalar Global Parameter.
      *
      * @param name given name.
@@ -304,7 +306,7 @@ public class CreateTools {
      * @param u    given Units.
      * @return The ScalarGlobalParameter.
      */
-    public ScalarGlobalParameter parameter_Scalar(String name, double val, Units u) {
+    public ScalarGlobalParameter scalarParameter(String name, double val, Units u) {
         return _createParameterScalar(name, null, val, u);
     }
 
@@ -315,20 +317,8 @@ public class CreateTools {
      * @param def  given definition.
      * @return The ScalarGlobalParameter.
      */
-    public ScalarGlobalParameter parameter_Scalar(String name, String def) {
+    public ScalarGlobalParameter scalarParameter(String name, String def) {
         return _createParameterScalar(name, def, 0, _ud.unit_Dimensionless);
-    }
-
-    /**
-     * Creates a Vector Global Parameter.
-     *
-     * @param name given name.
-     * @param vals given 3-components array with values. E.g.: {1, 2, 3.5}.
-     * @param u    given Units.
-     * @return The VectorGlobalParameter.
-     */
-    public VectorGlobalParameter parameter_Vector(String name, double[] vals, Units u) {
-        return _createParameterVector(name, vals, u);
     }
 
     /**
@@ -343,6 +333,47 @@ public class CreateTools {
                 .createFromFile(new File(_ud.simPath, filename).toString());
         _io.say.created(ft, true);
         return ft;
+    }
+
+    /**
+     * Create a UserTag while avoiding duplicates.
+     *
+     * @param name  given name
+     * @return The UserTag
+     */
+    public UserTag tag(String name) {
+
+        _io.say.action("Creating a Tag", true);
+        Tag tag = _get.objects.tag(name, false);
+
+        UserTag ut;
+        if (tag == null) {
+            ut = _sim.get(TagManager.class).createNewUserTag(name);
+            _io.say.created(ut, true);
+        } else {
+            _io.say.value("Tag already exists", tag.getPresentationName(), true, true);
+            ut = (UserTag) tag;
+        }
+
+        return ut;
+
+    }
+
+    /**
+     * Create a colored UserTag while avoiding duplicates.
+     *
+     * @param name  given name
+     * @param color given color
+     *
+     * @return The UserTag
+     */
+    public UserTag tag(String name, Color color) {
+
+        UserTag ut = tag(name);
+        ut.setColor(color);
+
+        return ut;
+
     }
 
     /**
@@ -508,6 +539,18 @@ public class CreateTools {
         _ud = _mu.userDeclarations;
     }
 
+    /**
+     * Creates a Vector Global Parameter.
+     *
+     * @param name given name.
+     * @param vals given 3-components array with values. E.g.: {1, 2, 3.5}.
+     * @param u    given Units.
+     * @return The VectorGlobalParameter.
+     */
+    public VectorGlobalParameter vectorParameter(String name, double[] vals, Units u) {
+        return _createParameterVector(name, vals, u);
+    }
+
     private DeltaMonitorUpdateEvent _createDeltaMonitorUE(PlotableMonitor pm, double delta,
             Units u, String type, boolean acum) {
         _createUE_Type(type);
@@ -536,29 +579,33 @@ public class CreateTools {
         return ev;
     }
 
-    private GlobalParameterBase _createParameter(String name,
-            StaticDeclarations.GlobalParameter type, boolean vo) {
+    private NamedObject _createParameter(String name, StaticDeclarations.GlobalParameter type,
+            boolean vo) {
         _io.say.action(String.format("Creating a %s Global Parameter", type.getType()), true);
+
         GlobalParameterManager gpm = _sim.get(GlobalParameterManager.class);
         if (gpm.has(name)) {
             _io.say.value("Skipping... Parameter already exists", name, true, vo);
             return gpm.getObject(name);
         }
-        GlobalParameterBase gpb;
+
+        NamedObject no;
         switch (type) {
             case SCALAR:
-                gpb = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
+                no = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
                 break;
             case VECTOR:
-                gpb = gpm.createGlobalParameter(VectorGlobalParameter.class, type.getType());
+                no = gpm.createGlobalParameter(VectorGlobalParameter.class, type.getType());
                 break;
             default:
-                gpb = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
+                no = gpm.createGlobalParameter(ScalarGlobalParameter.class, type.getType());
                 break;
         }
-        gpb.setPresentationName(name);
-        _io.say.created(gpb, vo);
-        return gpb;
+
+        no.setPresentationName(name);
+        _io.say.created(no, vo);
+
+        return no;
     }
 
     private ScalarGlobalParameter _createParameterScalar(String name, String def, double val,

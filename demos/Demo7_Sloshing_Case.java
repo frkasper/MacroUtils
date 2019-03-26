@@ -1,6 +1,7 @@
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
+import star.common.Dimensions;
 import star.common.FieldFunctionTypeOption;
 import star.common.Region;
 import star.common.Simulation;
@@ -115,24 +116,32 @@ public class Demo7_Sloshing_Case extends StarMacro {
     }
 
     private void prep3_MotionAndPost() {
-        mu.add.tools.parameter_Scalar("Period", 0.5, ud.unit_s);
-        mu.add.tools.parameter_Scalar("Omega", "2 * $PI / $Period");
+
+        mu.add.tools.scalarParameter("Period", 0.5, ud.unit_s);
+        mu.add.tools.scalarParameter("Omega", "2 * $PI / $Period");
+
         mu.add.tools.fieldFunction("Amplitude", "($Time <= 4) ? 0.01 : 0",
-                ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
+                new Dimensions(), FieldFunctionTypeOption.Type.SCALAR);
+
         ud.ff1 = mu.add.tools.fieldFunction("MotionVel",
                 "-$Amplitude * $Omega * sin($Omega * ($Time - 0.25 * $Period))",
-                ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
+                new Dimensions(), FieldFunctionTypeOption.Type.SCALAR);
+
         ud.ff2 = mu.add.tools.fieldFunction("MotionDispl",
                 "$Amplitude * cos($Omega * ($Time - 0.25 * $Period))",
-                ud.dimDimensionless, FieldFunctionTypeOption.Type.SCALAR);
+                new Dimensions(), FieldFunctionTypeOption.Type.SCALAR);
+
         mu.set.solver.timestep("($Time <= 5) ? 0.00125 : 0.0025");
+
         mu.set.region.motion(
                 mu.add.tools.motion_Translation("[$MotionVel, 0, 0]", "Periodic Motion"),
                 getRegion());
+
         //-- Some cool Reports/Plots
         mu.templates.post.unsteadyReports();
         mu.add.report.maximum(ud.region, "MotionVel", ud.ff1, ud.defUnitVel, true);
         mu.add.report.maximum(ud.region, "MotionDispl", ud.ff2, ud.defUnitLength, true);
+
         //-- Scene setup
         ud.namedObjects.add(mu.get.boundaries.byREGEX(ud.bcSym, true));
         ud.ff = mu.get.objects.fieldFunction("Volume Frac.*Air", true);
@@ -144,10 +153,12 @@ public class Demo7_Sloshing_Case extends StarMacro {
         ScalarDisplayer sd = (ScalarDisplayer) mu.get.scenes.displayerByREGEX(ud.scene, ".*", true);
         sd.setDisplayMeshBoolean(true);
         sd.setFillMode(ScalarFillMode.NATIVE);
+
         //-- Change Update Frequency / Save Pictures
         ud.updEvent = mu.add.tools.updateEvent_DeltaTime(0.005, ud.unit_s, false);
         mu.set.object.updateEvent(ud.scene, ud.updEvent, true);
         mu.set.scene.saveToFile(ud.scene, 1280, 720);
+
     }
 
 }

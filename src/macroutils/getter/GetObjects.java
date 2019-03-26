@@ -15,7 +15,6 @@ import star.common.CommentManager;
 import star.common.ContinuumManager;
 import star.common.FieldFunction;
 import star.common.GeometryPart;
-import star.common.GlobalParameterBase;
 import star.common.GlobalParameterManager;
 import star.common.HardcopyProperties;
 import star.common.Model;
@@ -23,10 +22,14 @@ import star.common.PartSurface;
 import star.common.PhysicsContinuum;
 import star.common.Profile;
 import star.common.Region;
+import star.common.ScalarGlobalParameter;
 import star.common.ScalarProfile;
 import star.common.Simulation;
 import star.common.StarPlot;
+import star.common.Tag;
+import star.common.TagManager;
 import star.common.UpdatePlot;
+import star.common.VectorGlobalParameter;
 import star.common.VectorProfile;
 import star.material.ConstantMaterialPropertyMethod;
 import star.material.MaterialProperty;
@@ -105,7 +108,7 @@ public class GetObjects {
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
      * @param vo        given verbose option. False will not print anything.
-     * @return The Annotation. Null if nothing is all.
+     * @return The Annotation; null if nothing is found
      */
     public Annotation annotation(String regexPatt, boolean vo) {
         return byREGEX(regexPatt, "Annotation",
@@ -141,7 +144,7 @@ public class GetObjects {
      * @param regexPatt given Regular Expression (REGEX) pattern.
      * @param alt       given ArrayList of T.
      * @param vo        given verbose option. False will not print anything.
-     * @return The NamedObject. Null if nothing is all.
+     * @return The NamedObject; null if nothing is found
      */
     public <T extends NamedObject> T byREGEX(String regexPatt, ArrayList<T> alt, boolean vo) {
         return byREGEX(regexPatt, _get.strings.parentName(alt.get(0)), alt, vo);
@@ -155,7 +158,7 @@ public class GetObjects {
      * @param alt       given ArrayList of T.
      * @param key       key kind of object? E.g: Plane, Report, Scene, etc...
      * @param vo        given verbose option. False will not print anything.
-     * @return The NamedObject. Null if nothing is all.
+     * @return The NamedObject; null if nothing is found
      */
     public <T extends NamedObject> T byREGEX(String regexPatt, String key, ArrayList<T> alt,
             boolean vo) {
@@ -314,7 +317,7 @@ public class GetObjects {
      *
      * @param no given NamedObject. It can be a Plot or Scene.
      * @param vo given verbose option. False will not print anything.
-     * @return The HardcopyProperties. Null if nothing is all.
+     * @return The HardcopyProperties; null if nothing is found
      */
     public HardcopyProperties hardcopyProperties(NamedObject no, boolean vo) {
         if (no instanceof Scene) {
@@ -328,25 +331,12 @@ public class GetObjects {
     }
 
     /**
-     * Gets a Global Parameter that matches the REGEX search pattern among all Parameters available
-     * in the model.
-     *
-     * @param regexPatt given Regular Expression (REGEX) pattern.
-     * @param vo        given verbose option. False will not print anything.
-     * @return The GlobalParameterBase. Null if nothing is all.
-     */
-    public GlobalParameterBase parameter(String regexPatt, boolean vo) {
-        return byREGEX(regexPatt, "Global Parameter",
-                new ArrayList<>(_sim.get(GlobalParameterManager.class).getObjects()), vo);
-    }
-
-    /**
      * Gets a Physics Continua that matches the REGEX search pattern among all Continuas available
      * in the model.
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
      * @param vo        given verbose option. False will not print anything.
-     * @return The PhysicsContinuum. Null if nothing is all.
+     * @return The PhysicsContinuum; null if nothing is found
      */
     public PhysicsContinuum physicsContinua(String regexPatt, boolean vo) {
         return byREGEX(regexPatt, "Physics Continua", allPhysicsContinua(false), vo);
@@ -358,7 +348,7 @@ public class GetObjects {
      * @param csom given ClientServerObjectManager.
      * @param name given object pName.
      * @param vo   given verbose option. False will not print anything.
-     * @return The Profile. Null if nothing is all.
+     * @return The Profile; null if nothing is found
      */
     public Profile profile(ClientServerObjectManager csom, String name, boolean vo) {
         if (!csom.has(name)) {
@@ -368,6 +358,17 @@ public class GetObjects {
         }
         return (Profile) csom.getObject(name);
     }
+    /**
+     * Gets a Scalar Global Parameter that matches the REGEX search pattern among all Parameters
+     * available in the model.
+     *
+     * @param regexPatt given Regular Expression (REGEX) pattern.
+     * @param vo        given verbose option. False will not print anything.
+     * @return The ScalarGlobalParameter; null if nothing is found
+     */
+    public ScalarGlobalParameter scalarParameter(String regexPatt, boolean vo) {
+        return (ScalarGlobalParameter) _parameter(regexPatt, vo);
+    }
 
     /**
      * Gets a ScalarProfile, if applicable.
@@ -375,10 +376,22 @@ public class GetObjects {
      * @param csom given ClientServerObjectManager.
      * @param name given object pName.
      * @param vo   given verbose option. False will not print anything.
-     * @return The ScalarProfile. Null if nothing is all.
+     * @return The ScalarProfile; null if nothing is found
      */
     public ScalarProfile scalarProfile(ClientServerObjectManager csom, String name, boolean vo) {
         return (ScalarProfile) profile(csom, name, vo);
+    }
+
+    /**
+     * Gets a Tag that matches the REGEX search pattern.
+     *
+     * @param regexPatt given Regular Expression (REGEX) pattern.
+     * @param vo        given verbose option. False will not print anything.
+     * @return The Tag; null if nothing is found
+     */
+    public Tag tag(String regexPatt, boolean vo) {
+        return (Tag) _get.objects.byREGEX(regexPatt, "Tag",
+                new ArrayList<>(_sim.get(TagManager.class).getObjects()), vo);
     }
 
     /**
@@ -386,7 +399,7 @@ public class GetObjects {
      *
      * @param regexPatt given Regular Expression (REGEX) pattern.
      * @param vo        given verbose option. False will not print anything.
-     * @return The VisTransform.
+     * @return The VisTransform
      */
     public VisTransform transform(String regexPatt, boolean vo) {
         return (VisTransform) _get.objects.byREGEX(regexPatt, "Transform",
@@ -402,12 +415,24 @@ public class GetObjects {
     }
 
     /**
+     * Gets a Vector Global Parameter that matches the REGEX search pattern among all Parameters
+     * available in the model.
+     *
+     * @param regexPatt given Regular Expression (REGEX) pattern.
+     * @param vo        given verbose option. False will not print anything.
+     * @return The VectorGlobalParameter; null if nothing is found
+     */
+    public VectorGlobalParameter vectorParameter(String regexPatt, boolean vo) {
+        return (VectorGlobalParameter) _parameter(regexPatt, vo);
+    }
+
+    /**
      * Gets a VectorProfile, if applicable.
      *
      * @param csom given ClientServerObjectManager.
      * @param name given object pName.
      * @param vo   given verbose option. False will not print anything.
-     * @return The VectorProfile. Null if nothing is all.
+     * @return The VectorProfile; null if nothing is found
      */
     public VectorProfile vectorProfile(ClientServerObjectManager csom, String name, boolean vo) {
         return (VectorProfile) profile(csom, name, vo);
@@ -427,6 +452,11 @@ public class GetObjects {
             _io.say.msg(vo, "  - Match: \"%s\".", t.getPresentationName(), vo);
         }
         return matches;
+    }
+
+    private NamedObject _parameter(String regexPatt, boolean vo) {
+        return byREGEX(regexPatt, "Global Parameter",
+                new ArrayList<>(_sim.get(GlobalParameterManager.class).getObjects()), vo);
     }
 
 }

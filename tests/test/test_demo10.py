@@ -14,7 +14,8 @@ def test_sphere_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 12617)
+    test_utils.assert_cell_count(DEMO_ID, 12600,
+                                 tolerance=100, relative=False)
 
 
 def test_scalar_min():
@@ -29,7 +30,3 @@ def test_scalar_max():
 
 def test_solution():
     test_utils.assert_iteration(DEMO_ID, 0)
-
-
-if __name__ == "__main__":
-    pass

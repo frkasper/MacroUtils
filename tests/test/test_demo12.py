@@ -37,8 +37,8 @@ def test_cfl_avg_report():
 
 
 def test_cfl_max_report():
-    test_utils.assert_report(DEMO_ID, 'CFL_max', 8.5,
-                             tolerance=0.1, relative=True)
+    test_utils.assert_report(DEMO_ID, 'CFL_max', 8.0,
+                             tolerance=0.7, relative=False)
 
 
 def test_time_report():
@@ -72,7 +72,3 @@ def test_write_movie():
     movie.write(MOVIE_FOLDER)
     test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 7554160,
                                 tolerance=0.1)
-
-
-if __name__ == "__main__":
-    pass

@@ -18,7 +18,6 @@ import star.common.Simulation;
 import star.common.SimulationPartManager;
 import star.common.Units;
 import star.common.Vector3;
-import star.dualmesher.DualAutoMesher;
 import star.dualmesher.VolumeControlDualMesherSizeOption;
 import star.meshing.AutoMeshDefaultValuesManager;
 import star.meshing.AutoMeshOperation;
@@ -1027,13 +1026,7 @@ public class CreateMeshOperation {
         _set.mesh.prisms(amo, _ud.prismsLayers, _ud.prismsStretching, _ud.prismsRelSizeHeight,
                 false);
         _set.mesh.thinMesher(amo, _ud.thinMeshLayers, _ud.thinMeshMaxThickness, false);
-        if (_chk.has.polyMesher(amo)) {
-            DualAutoMesher dam = ((DualAutoMesher) amo.getMeshers().getObject("Polyhedral Mesher"));
-            dam.setTetOptimizeCycles(_ud.mshOptCycles);
-            dam.setTetQualityThreshold(_ud.mshQualityThreshold);
-            _io.say.value("Optimization Cycles", dam.getTetOptimizeCycles(), true);
-            _io.say.value("Quality Threshold", dam.getTetQualityThreshold(), true);
-        }
+        _set.mesh.coreMeshOptimizer(amo, _ud.mshOptCycles, _ud.mshQualityThreshold, false);
         _io.say.created(amo, true);
     }
 

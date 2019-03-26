@@ -120,6 +120,16 @@ public class CheckHas {
     }
 
     /**
+     * Does the Automated Mesh Operation have the Tetrahedral Mesher?
+     *
+     * @param amo given Automated Mesh Operation.
+     * @return True or False.
+     */
+    public boolean tetMesher(AutoMeshOperation amo) {
+        return amo.getMeshers().has("Tetrahedral Mesher");
+    }
+
+    /**
      * Does the Automated Mesh Operation have the Thin Layer Mesher?
      *
      * @param amo given Automated Mesh Operation.

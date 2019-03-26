@@ -21,16 +21,16 @@ import star.common.Simulation;
 
 /**
  * MacroUtils is a library that can be used for writing macros, Simulation Assistants and other
- * third party applications related to STAR-CCM+.<p>
+ * third party applications related to Simcenter STAR-CCM+.<p>
  *
  * <b>Requires:</b>
  * <ul>
- * <li> STAR-CCM+ v13.06 libraries (<u>It may not run in other versions</u>);
+ * <li> Simcenter STAR-CCM+ 2019.1 libraries (<u>It may not run in other versions</u>);
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version v13.06
+ * @version 2019.1
  */
 public final class MacroUtils {
 

@@ -12,6 +12,7 @@ import star.meshing.BaseSize;
 import star.meshing.CustomMeshControl;
 import star.meshing.CustomMeshControlConditionManager;
 import star.meshing.MaximumCellSize;
+import star.meshing.PartsCoreMeshOptimizer;
 import star.meshing.PartsMinimumSurfaceSize;
 import star.meshing.PartsMinimumSurfaceSizeOption;
 import star.meshing.PartsTargetSurfaceSize;
@@ -79,6 +80,29 @@ public class SetMesh {
             return;
         }
         _io.say.msg("Mesh Operation does not have a Base Size.");
+    }
+
+    /**
+     * Set the core mesh optimizer parameters.
+     *
+     * @param amo              given AutoMeshOperation
+     * @param optCycles        given optimization cycles
+     * @param qualityThreshold given quality threshold
+     * @param vo given verbose option. False will not print anything
+     */
+    public void coreMeshOptimizer(AutoMeshOperation amo, int optCycles, double qualityThreshold,
+            boolean vo) {
+        _io.say.action("Setting the Core Mesh Optimizer settings", vo);
+        if (_chk.has.tetMesher(amo) || _chk.has.polyMesher(amo)) {
+            PartsCoreMeshOptimizer pcmo = amo.getDefaultValues().get(PartsCoreMeshOptimizer.class);
+            pcmo.setOptimizeCycles(optCycles);
+            pcmo.setQualityThreshold(qualityThreshold);
+            _io.say.value("Core Mesh Optimization Cycles", pcmo.getOptimizeCycles(), true);
+            _io.say.value("Core Mesh Quality Threshold", pcmo.getQualityThreshold(), true);
+        } else {
+            _io.say.msg("Not a Trimmer Mesh Operation", vo);
+        }
+        _io.say.ok(vo);
     }
 
     /**
