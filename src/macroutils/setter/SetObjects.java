@@ -1,6 +1,7 @@
 package macroutils.setter;
 
 import java.io.File;
+import java.util.Arrays;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
@@ -15,9 +16,12 @@ import star.common.ConstantVectorProfileMethod;
 import star.common.FieldFunction;
 import star.common.ScalarPhysicalQuantity;
 import star.common.ScalarProfile;
+import star.common.Simulation;
 import star.common.StarPlot;
 import star.common.StarUpdate;
 import star.common.StarUpdateModeOption;
+import star.common.Tag;
+import star.common.TagManager;
 import star.common.Units;
 import star.common.UpdateEvent;
 import star.common.UpdatePlot;
@@ -44,6 +48,7 @@ public class SetObjects {
     private macroutils.io.MainIO _io = null;
     private MacroUtils _mu = null;
     private macroutils.UserDeclarations _ud = null;
+    private final Simulation _sim;
 
     /**
      * Main constructor for this class.
@@ -52,6 +57,7 @@ public class SetObjects {
      */
     public SetObjects(MacroUtils m) {
         _mu = m;
+        _sim = m.getSimulation();
     }
 
     /**
@@ -250,6 +256,21 @@ public class SetObjects {
         } else if (no instanceof StarPlot) {
             _setWU(((UpdatePlot) no).getPlotUpdate(), picsPath, resx, resy);
         }
+        _io.say.ok(vo);
+    }
+
+    /**
+     * Set a Tag to a CSO.
+     *
+     * @param cso given STAR-CCM+ ClientServerObject.
+     * @param tag  given Tag.
+     * @param vo  given verbose option. False will not print anything.
+     */
+    public void tag(ClientServerObject cso, Tag tag, boolean vo) {
+        _io.say.action("Setting a Tag", vo);
+        _io.say.object(cso, vo);
+        _io.say.object(tag, vo);
+        _sim.get(TagManager.class).setTags(cso, Arrays.asList(tag));
         _io.say.ok(vo);
     }
 

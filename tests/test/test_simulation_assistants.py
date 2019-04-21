@@ -38,7 +38,3 @@ def test_block_mesher_cell_count():
     i, j, k = 4, 7, 8
     _assert_cell_count('%s.sim' % BLOCK_MESHER, i * j * k)
     _assert_cell_count('%s_2D.sim' % BLOCK_MESHER, i * j)
-
-
-if __name__ == "__main__":
-    pass
