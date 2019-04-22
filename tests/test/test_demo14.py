@@ -104,7 +104,7 @@ def test_cell_count_grid_003():
 
 
 def test_solution_grid_003():
-    test_utils.assert_iteration(_grid(3), 8500, tolerance=0.01, relative=True)
+    test_utils.assert_iteration(_grid(3), 8600, tolerance=0.01, relative=True)
 
 
 def test_vmean_report_grid_003():
@@ -130,5 +130,5 @@ def test_gci23_coefficients():
     gci23_coeffs = _gci_coefficients()
     test_utils.assert_value(min(gci23_coeffs), 0.0005,
                             tolerance=0.0005, relative=False)
-    test_utils.assert_value(max(gci23_coeffs), 0.05,
+    test_utils.assert_value(max(gci23_coeffs), 0.11,
                             tolerance=0.01, relative=False)

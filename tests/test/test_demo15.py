@@ -119,7 +119,7 @@ def test_vector_min_des():
 
 
 def test_vector_max_des():
-    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.0,
+    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.5,
                                 tolerance=0.1, relative=True)
 
 

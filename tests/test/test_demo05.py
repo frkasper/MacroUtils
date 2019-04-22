@@ -22,7 +22,7 @@ def test_cell_count():
 
 
 def test_solution():
-    test_utils.assert_iteration(DEMO_ID, 190, tolerance=0.1, relative=True)
+    test_utils.assert_iteration(DEMO_ID, 200, tolerance=0.1, relative=True)
 
 
 def test_frontal_area_report():
