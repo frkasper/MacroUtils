@@ -13,6 +13,8 @@ import star.base.report.ReportMonitor;
 import star.common.Boundary;
 import star.common.FvRepresentation;
 import star.common.GeometryPart;
+import star.common.HistogramAxisType;
+import star.common.HistogramPlot;
 import star.common.MonitorPlot;
 import star.common.PartSurface;
 import star.common.PlotManager;
@@ -140,17 +142,21 @@ public final class SummaryWriter {
      */
     public void collectPlot(StarPlot sp) {
 
-        if (sp instanceof XYPlot) {  // Internal datasets only in XYPlots
-            ((XYPlot) sp).getYAxes().getObjects().stream()
-                    .map(YAxisType.class::cast)
-                    .forEach(yat -> collectDataSets(sp, yat));
+        final boolean isXYPlot = sp instanceof XYPlot;
+        final boolean isResidual = sp instanceof ResidualPlot;
+        final boolean isHistogram = sp instanceof HistogramPlot;
+
+        final boolean collectDataSets = !(isResidual || isHistogram);
+
+        if (isXYPlot) {  // Internal datasets only in XYPlots
+            collectXYPlot((XYPlot) sp);
+        } else if (isHistogram) {
+            collectHistogram((HistogramPlot) sp);
         }
 
-        if (sp instanceof ResidualPlot) {  // Not worth for unsteady simulations
-            return;
+        if (collectDataSets) {
+            sp.getDataSetManager().getDataSets().stream().forEach(ds -> collectDataSet(sp, ds));
         }
-
-        sp.getDataSetManager().getDataSets().stream().forEach(ds -> collectDataSet(sp, ds));
 
     }
 
@@ -163,8 +169,13 @@ public final class SummaryWriter {
 
         int n = printCollecting("Plots");
 
-        pm.getObjectsOf(XYPlot.class).stream().forEach(xyp -> collectPlot(xyp));
-        pm.getObjectsOf(MonitorPlot.class).stream().forEach(mp -> collectPlot(mp));
+        List<StarPlot> selectedPlots = new ArrayList<>();
+
+        selectedPlots.addAll(pm.getObjectsOf(HistogramPlot.class));
+        selectedPlots.addAll(pm.getObjectsOf(XYPlot.class));
+        selectedPlots.addAll(pm.getObjectsOf(MonitorPlot.class));
+
+        selectedPlots.stream().forEach(plot -> collectPlot(plot));
 
         printCollected(n);
 
@@ -276,6 +287,19 @@ public final class SummaryWriter {
         INFORMATION.addAll(displayers);
     }
 
+    private void collectHistogram(HistogramPlot hp) {
+
+        final String info = mu.get.strings.information(hp);
+        final HistogramAxisType hat = hp.getXAxisType();
+
+        final String function = hat.getBinFunction().getFieldFunction().getPresentationName();
+        final int bins = hat.getNumberOfBin();
+
+        INFORMATION.add(getPair(info + " -> Function", function));
+        INFORMATION.add(getPair(info + " -> Bins", bins));
+
+    }
+
     private void collectMonitor(Monitor m) {
 
         String key = mu.get.strings.information(m);
@@ -303,6 +327,14 @@ public final class SummaryWriter {
         INFORMATION.add(getPair("Cell Count", fvr.getCellCount()));
         INFORMATION.add(getPair("Face Count", fvr.getInteriorFaceCount()));
         INFORMATION.add(getPair("Vertex Count", fvr.getVertexCount()));
+    }
+
+    private void collectXYPlot(XYPlot xyp) {
+
+        xyp.getYAxes().getObjects().stream()
+                .map(YAxisType.class::cast)
+                .forEach(yat -> collectDataSets(xyp, yat));
+
     }
 
     private String getDisplayerInfo(Displayer displayer) {

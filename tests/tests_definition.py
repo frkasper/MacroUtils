@@ -53,7 +53,8 @@ SA_01 = SimAssistant(macro_name='SimAssistantBlockMesherTest')
 
 
 # Declare individual simulation tools here
-ST_01 = SimTool(macro_name='ImplicitUnsteadyConvergenceCheckerTest')
+ST_01 = SimTool(macro_name='SimToolImplicitUnsteadyConvergenceCheckerTest')
+ST_02 = SimTool(macro_name='SimToolMeshMetricsTest')
 
 
 # Then collect them all using Python magic

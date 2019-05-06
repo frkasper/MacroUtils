@@ -10,7 +10,6 @@ import star.base.neo.NamedObject;
 import star.base.report.Monitor;
 import star.base.report.Report;
 import star.base.report.ReportMonitor;
-import star.common.Cartesian2DAxis;
 import star.common.ConstantScalarProfileMethod;
 import star.common.ConstantVectorProfileMethod;
 import star.common.FieldFunction;
@@ -46,6 +45,7 @@ public class SetObjects {
 
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
+    private macroutils.setter.MainSetter _set = null;
     private MacroUtils _mu = null;
     private macroutils.UserDeclarations _ud = null;
     private final Simulation _sim;
@@ -160,17 +160,12 @@ public class SetObjects {
      * @param xName given x-axis titles.
      * @param yName given y-axis titles.
      * @param vo    given verbose option. False will not print anything.
+     *
+     * @see macroutils.setter.SetPlots#axesTitles(star.common.StarPlot, java.lang.String, java.lang.String, boolean)
      */
+    @Deprecated // in 2019.2
     public void plotAxesTitles(StarPlot sp, String xName, String yName, boolean vo) {
-        _io.say.action("Setting Plot Axes Titles", vo);
-        _io.say.object(sp, vo);
-        Cartesian2DAxis xax = _get.plots.axisX(sp);
-        Cartesian2DAxis yax = _get.plots.axisY(sp);
-        xax.getTitle().setText(xName);
-        yax.getTitle().setText(yName);
-        _io.say.value("X-Axis", xax.getTitle().getText(), true, true);
-        _io.say.value("Y-Axis", yax.getTitle().getText(), true, true);
-        _io.say.ok(vo);
+        _set.plots.axesTitles(sp, xName, yName, vo);
     }
 
     /**
@@ -311,6 +306,7 @@ public class SetObjects {
         _get = _mu.get;
         _io = _mu.io;
         _ud = _mu.userDeclarations;
+        _set = _mu.set;
     }
 
     private void _setSP(ScalarProfile sp, double val, Units u, String def) {

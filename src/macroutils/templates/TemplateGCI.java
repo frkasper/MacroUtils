@@ -297,7 +297,7 @@ public class TemplateGCI {
                     break;
             }
         }
-        _set.object.plotAxesTitles(xyp, _get.plots.axisX(xypOrig).getTitle().getText(),
+        _set.plots.axesTitles(xyp, _get.plots.axisX(xypOrig).getTitle().getText(),
                 _get.plots.axisY(xypOrig).getTitle().getText(), false);
         _io.say.created(xyp, true);
         return xyp;

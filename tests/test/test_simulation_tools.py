@@ -5,14 +5,27 @@ import test_utils
 
 
 CONVERGENCE_CHECKER = 'SimToolImplicitUnsteadyConvergenceChecker'
+MESH_METRICS = 'SimToolMeshMetrics'
+
+SIM_TOOL = {
+
+    CONVERGENCE_CHECKER: 'SimToolConvergenceChecker',
+
+    MESH_METRICS: MESH_METRICS,
+
+    }
 
 
-def _contents_convergence_checker(key):
+def _contents_sim_tool(key, mesh_metric):
 
-    return test_utils._contents('SimToolConvergenceChecker_' + key + '.ref')
+    ref_file = '%s_%s.ref' % (SIM_TOOL[mesh_metric], key)
+
+    return test_utils._contents(ref_file)
 
 
 def _load_demo(demo_id, macro_name):
+
+    os.chdir(test_utils._test_home())
 
     sim_file = test_utils.simulation(demo_id)
     assert os.path.exists(sim_file), 'Demo %d needs to be run first' % demo_id
@@ -24,15 +37,33 @@ def test_convergence_checker():
 
     _load_demo(15, CONVERGENCE_CHECKER)
 
-    original = _contents_convergence_checker('0_Original')
-    artifacts_created = _contents_convergence_checker('1_Artifacts_Created')
-    artifacts_removed = _contents_convergence_checker('2_Artifacts_Removed')
+    original = _contents_sim_tool('0_Original', CONVERGENCE_CHECKER)
+    created = _contents_sim_tool('1_Artifacts_Created', CONVERGENCE_CHECKER)
+    removed = _contents_sim_tool('2_Artifacts_Removed', CONVERGENCE_CHECKER)
 
-    assert not re.findall('Convergence Checker', artifacts_removed)
-    assert original == artifacts_removed
+    assert not re.findall('Convergence Checker', removed)
+    assert original == removed
 
-    expected = 5 * 2  # Number of Reports x 2
+    expected = 6 * 2  # Number of Reports x 2
     fmt = '%s -> Convergence Checker'
 
-    assert expected == len(re.findall(fmt % 'Monitor', artifacts_created))
-    assert expected == len(re.findall(fmt % 'Plot', artifacts_created))
+    assert expected == len(re.findall(fmt % 'Monitor', created))
+    assert expected == len(re.findall(fmt % 'Plot', created))
+
+
+def test_mesh_metrics():
+
+    _load_demo(5, MESH_METRICS)
+
+    metric_example = 'Face Validity Part Surfaces'
+
+    original = _contents_sim_tool('0_Original', MESH_METRICS)
+    created = _contents_sim_tool('1_Artifacts_Created', MESH_METRICS)
+    removed = _contents_sim_tool('2_Artifacts_Removed', MESH_METRICS)
+
+    assert not re.findall(metric_example, original)
+    assert re.findall(metric_example, created)
+    assert original == removed
+
+    expected = 4 * 2 + 2  # Number of Plots x 2 + included ones
+    assert expected == len(re.findall('Plot -> ', created))
