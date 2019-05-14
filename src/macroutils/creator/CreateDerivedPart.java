@@ -25,6 +25,8 @@ import star.vis.LinePart;
 import star.vis.PlaneSection;
 import star.vis.PointPart;
 import star.vis.StreamPart;
+import star.vis.ThresholdMode;
+import star.vis.ThresholdPart;
 
 /**
  * Low-level class for creating Derived Parts with MacroUtils.
@@ -251,6 +253,32 @@ public class CreateDerivedPart {
             ArrayList<NamedObject> anoSP) {
         _creating(null, "Streamline Derived Part");
         return _streamlinePartSeed(anoIP, anoSP, true);
+    }
+
+    /**
+     * Creates a Threshold Part.
+     *
+     * @param ano given ArrayList of NamedObjects
+     * @param ff  given Field Function
+     * @param range given range to be used
+     * @param mode given threshold mode
+     *
+     * @return The ThresholdPart
+     */
+    public ThresholdPart threshold(ArrayList<NamedObject> ano, FieldFunction ff, double[] range,
+            ThresholdMode mode) {
+        _creating(null, "Threshold Part");
+        ThresholdPart thrp = (ThresholdPart) _sim.getPartManager().createThresholdPart();
+        thrp.getInputParts().setObjects(ano);
+        thrp.setFieldFunction(ff);
+        thrp.setMode(mode);
+        thrp.setRange(new DoubleVector(range));
+        _io.say.objects(ano, "Input Parts", true);
+        _io.say.object(ff, true);
+        _io.say.value("Threshold mode", mode.getPresentationName(), true, true);
+        _io.say.value("Threshold range", range, true);
+        _io.say.created(thrp, true);
+        return thrp;
     }
 
     /**
