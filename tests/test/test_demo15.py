@@ -5,10 +5,10 @@ import test_utils
 
 DEMO_ID = test_utils.demo_id(__file__)
 MOVIE_FOLDERS = {
-        'pics_Demo15_Run_DES_Structures': 4172227,
-        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 10788019,
-        'pics_Demo15_Run_DES_Velocity': 9339374,
-        'pics_Demo15_Run_DES_Wall_Y+': 6413337,
+        'pics_Demo15_Run_DES_Structures': 2451603,
+        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 4933758,
+        'pics_Demo15_Run_DES_Velocity': 4103562,
+        'pics_Demo15_Run_DES_Wall_Y+': 2302710,
         }
 
 
@@ -77,13 +77,13 @@ def test_write_summary_des():
 
 
 def test_cell_count_des():
-    test_utils.assert_cell_count(_grid_des(), 218000,
+    test_utils.assert_cell_count(_grid_des(), 115000,
                                  tolerance=0.01, relative=True)
 
 
 def test_solution_des():
-    test_utils.assert_iteration(_grid_des(), 30000)
-    test_utils.assert_time(_grid_des(), 0.5)
+    test_utils.assert_iteration(_grid_des(), 18000)
+    test_utils.assert_time(_grid_des(), 0.3)
 
 
 # Too sensitive
@@ -98,12 +98,12 @@ def test_cfl_avg_report_des():
 
 
 def test_cfl_max_report_des():
-    test_utils.assert_report(_grid_des(), 'CFL_max', 2.25,
+    test_utils.assert_report(_grid_des(), 'CFL_max', 1.6,
                              tolerance=0.50, relative=False)
 
 
 def test_time_report_des():
-    test_utils.assert_report(_grid_des(), 'Time', 0.5, tolerance=0.0,
+    test_utils.assert_report(_grid_des(), 'Time', 0.3, tolerance=0.0,
                              relative=False)
 
 
@@ -115,18 +115,18 @@ def test_time_report_des():
 
 def test_vector_min_des():
     test_utils.assert_scene_min(_grid_des(), 'Vector', 'Vector', 0.0,
-                                tolerance=0.01, relative=False)
+                                tolerance=0.015, relative=False)
 
 
 def test_vector_max_des():
-    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.5,
-                                tolerance=0.1, relative=True)
+    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.15,
+                                tolerance=0.05, relative=True)
 
 
 def test_pictures_count():
     for movie_folder in MOVIE_FOLDERS:
         folder = '%s/*.png' % movie_folder
-        test_utils.assert_pictures_count_in_folder(folder, 999)
+        test_utils.assert_pictures_count_in_folder(folder, 599)
 
 
 def test_write_movies():

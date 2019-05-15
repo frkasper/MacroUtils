@@ -40,7 +40,7 @@ DEMO_11 = Demo(id=11, np=1, batch=True, files=[])
 DEMO_12 = Demo(id=12, np=2, batch=True, files=[])
 DEMO_13 = Demo(id=13, np=2, batch=True, files=[])
 DEMO_14 = Demo(id=14, np=1, batch=True, files=[])
-DEMO_15 = Demo(id=15, np=16, batch=True, files=['TableFromPeriodicRun.csv'])
+DEMO_15 = Demo(id=15, np=8, batch=True, files=['TableFromPeriodicRun.csv'])
 DEMO_16 = Demo(id=16, np=4, batch=True, files=[])
 
 
