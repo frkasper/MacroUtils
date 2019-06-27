@@ -18,8 +18,8 @@ def test_domain_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 720000,
-                                 tolerance=0.01, relative=True)
+    test_utils.assert_cell_count(DEMO_ID, 728665,
+                                 tolerance=0.015, relative=True)
 
 
 def test_solution():
@@ -35,7 +35,7 @@ def test_upper_area_report():
 
 
 def test_cd_report():
-    test_utils.assert_report(DEMO_ID, 'C_d', 0.190)
+    test_utils.assert_report(DEMO_ID, 'C_d', 0.194)
 
 
 def test_cl_report():

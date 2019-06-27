@@ -22,6 +22,7 @@ from collections import namedtuple
 Bug = namedtuple('Bug', ['load_demo', 'macro_name'])
 Demo = namedtuple('Demo', ['id', 'np', 'batch', 'files'])
 SimAssistant = namedtuple('SimAssistant', ['macro_name'])
+SimTool = namedtuple('SimTool', ['macro_name'])
 
 
 # Declare individual demos here
@@ -39,7 +40,7 @@ DEMO_11 = Demo(id=11, np=1, batch=True, files=[])
 DEMO_12 = Demo(id=12, np=2, batch=True, files=[])
 DEMO_13 = Demo(id=13, np=2, batch=True, files=[])
 DEMO_14 = Demo(id=14, np=1, batch=True, files=[])
-DEMO_15 = Demo(id=15, np=16, batch=True, files=['TableFromPeriodicRun.csv'])
+DEMO_15 = Demo(id=15, np=8, batch=True, files=['TableFromPeriodicRun.csv'])
 DEMO_16 = Demo(id=16, np=4, batch=True, files=[])
 
 
@@ -51,10 +52,16 @@ BUG_014 = Bug(load_demo=1, macro_name='BugCreateStreamlineSceneTest')
 SA_01 = SimAssistant(macro_name='SimAssistantBlockMesherTest')
 
 
+# Declare individual simulation tools here
+ST_01 = SimTool(macro_name='SimToolImplicitUnsteadyConvergenceCheckerTest')
+ST_02 = SimTool(macro_name='SimToolMeshMetricsTest')
+
+
 # Then collect them all using Python magic
 BUGS = [v for k, v in sorted(vars().items()) if re.match('BUG_\d{3}', k)]
 DEMOS = [v for k, v in sorted(vars().items()) if re.match('DEMO_\d{2}', k)]
 SAS = [v for k, v in sorted(vars().items()) if re.match('SA_\d{2}', k)]
+SIMTOOLS = [v for k, v in sorted(vars().items()) if re.match('ST_\d{2}', k)]
 
 
 def _is_nt(nt, key):
@@ -98,6 +105,10 @@ def is_demo(nt):
 
 def is_sa(nt):
     return _is_nt(nt, 'SimAssistant')
+
+
+def is_simtool(nt):
+    return _is_nt(nt, 'SimTool')
 
 
 def java_files(number, demohome):

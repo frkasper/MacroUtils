@@ -393,6 +393,17 @@ public class Print {
     }
 
     /**
+     * Prints something with Values.
+     *
+     * @param key given String of the key that will be print
+     * @param values given array of values
+     * @param vo  given verbose option. False will not print anything
+     */
+    public void value(String key, double[] values, boolean vo) {
+        value(key, new DoubleVector(values), vo);
+    }
+
+    /**
      * Prints something with Values and Units.
      *
      * @param key  given String of the key that will be print.

@@ -39,6 +39,11 @@ public class MainSetter {
     public SetPhysics physics = null;
 
     /**
+     * This class is responsible for setting physics parameters.
+     */
+    public SetPlots plots = null;
+
+    /**
      * This class is responsible for setting Region parameters.
      */
     public SetRegions region = null;
@@ -56,12 +61,14 @@ public class MainSetter {
      * This class is responsible for setting MacroUtils defaults.
      */
     public SetDefaults userDefault = null;
+
     private macroutils.checker.MainChecker _chk = null;
     private macroutils.misc.MainDisabler _dis = null;
     private macroutils.misc.MainEnabler _ena = null;
     private macroutils.io.MainIO _io = null;
-    private MacroUtils _mu = null;
-    private Simulation _sim = null;
+
+    private final MacroUtils _mu;
+    private final Simulation _sim;
 
     /**
      * Main constructor for this class.
@@ -76,6 +83,7 @@ public class MainSetter {
         object = new SetObjects(m);
         geometry = new SetGeometry(m);
         physics = new SetPhysics(m);
+        plots = new SetPlots(m);
         region = new SetRegions(m);
         scene = new SetScenes(m);
         solver = new SetSolver(m);
@@ -131,6 +139,7 @@ public class MainSetter {
         geometry.updateInstances();
         mesh.updateInstances();
         object.updateInstances();
+        plots.updateInstances();
         physics.updateInstances();
         region.updateInstances();
         scene.updateInstances();

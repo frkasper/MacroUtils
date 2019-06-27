@@ -6,6 +6,7 @@ import macroutils.UserDeclarations;
 import star.base.neo.DoubleVector;
 import star.base.neo.NamedObject;
 import star.base.report.AreaAverageReport;
+import star.base.report.ElementCountReport;
 import star.base.report.ExpressionReport;
 import star.base.report.MaxReport;
 import star.base.report.MinReport;
@@ -57,6 +58,31 @@ public class CreateReport {
     public CreateReport(MacroUtils m) {
         _mu = m;
         _sim = m.getSimulation();
+    }
+
+    /**
+     * Create an Element Count Report.
+     *
+     * @param ano  given ArrayList of NamedObjects, if applicable. E.g.: boundaries, interfaces,
+     *             planes, etc...
+     * @param name given Report name.
+     * @param u    given Units.
+     * @param vo   given verbose option. False will not print anything.
+     * @return The Element Count Report.
+     */
+    public ElementCountReport elementCount(ArrayList<? extends NamedObject> ano, String name,
+            Units u, boolean vo) {
+        _io.say.action("Creating an Element Count Report", vo);
+        if (_hasReport(name, false) != null) {
+            return (ElementCountReport) _hasReport(name, vo);
+        }
+        ElementCountReport ecr = (ElementCountReport) _createReport(ElementCountReport.class, name);
+        ecr.getParts().setObjects(ano);
+        ecr.setUnits(u);
+        _io.say.objects(ano, "Objects", vo);
+        _io.say.unit(u, vo);
+        _io.say.created(ecr, vo);
+        return ecr;
     }
 
     /**

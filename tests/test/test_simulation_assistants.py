@@ -13,7 +13,9 @@ def _assert_cell_count(sim_file, expected):
 
 
 def _clean_up(base_name):
+
     os.chdir(test_utils._test_home())
+
     files = glob.glob('%s*.*' % os.path.splitext(base_name)[0])
     files.append(test_utils._summary_file(base_name))
     test_utils._remove([f for f in files if not _is_java(f)])
@@ -38,7 +40,3 @@ def test_block_mesher_cell_count():
     i, j, k = 4, 7, 8
     _assert_cell_count('%s.sim' % BLOCK_MESHER, i * j * k)
     _assert_cell_count('%s_2D.sim' % BLOCK_MESHER, i * j)
-
-
-if __name__ == "__main__":
-    pass

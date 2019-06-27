@@ -124,30 +124,49 @@ def _itemized(tests):
     bugs = [nt.macro_name for nt in tests if tests_definition.is_bug(nt)]
     demos = ['Demo%d' % nt.id for nt in tests if tests_definition.is_demo(nt)]
     sas = [nt.macro_name for nt in tests if tests_definition.is_sa(nt)]
-    all_tests = itertools.chain.from_iterable([demos, bugs, sas])
+    sts = [nt.macro_name for nt in tests if tests_definition.is_simtool(nt)]
+
+    all_tests = itertools.chain.from_iterable([demos, bugs, sas, sts])
+
     return strings.itemized(list(all_tests))
 
 
 def _test_cases(parser):
+
     opts, args = parser.parse_args()
-    execute_all = sum([opts.bugs, opts.sas, opts.demo is not None]) == 0
+
+    given_options = [opts.bugs, opts.sas, opts.simtools, opts.demo is not None]
+    execute_all = sum(given_options) == 0
+
     test_cases = []
 
     if opts.bugs and opts.demo is not None:
             parser.error('--demo and --bugs are mutually exclusive')
     if opts.sas and opts.demo is not None:
             parser.error('--sas and --bugs are mutually exclusive')
+    if opts.simtools and opts.demo is not None:
+            parser.error('--simtools and --bugs are mutually exclusive')
 
     if execute_all:
+
             test_cases.extend(tests_definition.DEMOS)
             test_cases.extend(tests_definition.BUGS)
             test_cases.extend(tests_definition.SAS)
+            test_cases.extend(tests_definition.SIMTOOLS)
+
     else:
+
         if opts.bugs:
             test_cases.extend(tests_definition.BUGS)
+
         if opts.sas:
             test_cases.extend(tests_definition.SAS)
+
+        if opts.simtools:
+            test_cases.extend(tests_definition.SIMTOOLS)
+
         if opts.demo is not None:
+
             try:
                 demo_id = int(opts.demo)
                 test_cases.append(tests_definition.demo(demo_id))
@@ -158,15 +177,24 @@ def _test_cases(parser):
 
 
 def _test_files(test_cases):
+
     bugs = [nt for nt in test_cases if tests_definition.is_bug(nt)]
     demos = [nt for nt in test_cases if tests_definition.is_demo(nt)]
     sas = [nt for nt in test_cases if tests_definition.is_sa(nt)]
+    sts = [nt for nt in test_cases if tests_definition.is_simtool(nt)]
     files = ['test/test_demo%02d.py' % nt.id for nt in demos]
+
     if len(bugs) > 0:
         files.append('test/test_bugs.py')
+
     if len(sas) > 0:
         files.append('test/test_simulation_assistants.py')
+
+    if len(sts) > 0:
+        files.append('test/test_simulation_tools.py')
+
     assert len(files) > 0, 'No test file retrieved'
+
     return ' '.join(files)
 
 
@@ -217,6 +245,9 @@ def parse_options():
                     default=False)
     gr_r.add_option('--serial', dest='serial', action='store_true',
                     help='override STAR-CCM+ runs to serial (default = False)',
+                    default=False)
+    gr_r.add_option('--simtools', dest='simtools', action='store_true',
+                    help='execute simulation tools tests only',
                     default=False)
     gr_r.add_option('--starhome', dest='starhome', action='store',
                     help='path to STAR-CCM+ installation',

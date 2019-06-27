@@ -13,6 +13,8 @@ import star.vis.LookupTable;
 import star.vis.PartDisplayer;
 import star.vis.ScalarDisplayer;
 import star.vis.Scene;
+import star.vis.ThresholdMode;
+import star.vis.ThresholdPart;
 import star.vis.VisView;
 
 /**
@@ -60,12 +62,12 @@ public class Demo15_Run_DES extends StarMacro {
     private final double L = 50;
     final double H = 5.0 * L;
     final double V = 1.0 * L;
-    private final double bsDES = 2.;         //-- Mesh Size in mm for DES run.
+    private final double bsDES = 2.5;        //-- Mesh Size in mm for DES run.
     private final double bsRANS = 6.;        //-- Mesh Size in mm for RANS run.
     private final double dtDES = 1e-4;       //-- Timestep size in seconds for DES run.
     private final double mu_g = 1.855e-05;   //-- Viscosity.
     private final double tau = 0.1;          //-- Approximate Residence Time in seconds.
-    private final double maxTime = 5 * tau;  //-- Maximum Physical Time to be solved.
+    private final double maxTime = 3 * tau;  //-- Maximum Physical Time to be solved.
 
     @Override
     public void execute() {
@@ -190,6 +192,16 @@ public class Demo15_Run_DES extends StarMacro {
         mu.add.report.maximum(ud.point, "P1",
                 mu.get.objects.fieldFunction(StaticDeclarations.Vars.P), ud.unit_Pa, true);
         //--
+        //-- Ideally, the number of cells in LES region where CFL > 1 should be zero
+        ThresholdPart thrp = mu.add.derivedPart.threshold(ud.namedObjects, ud.ff2,
+                new double[] {0, 1}, ThresholdMode.ABOVE_TAG);
+        thrp.setPresentationName("Cells of CFL > 1 on LES Portion");
+        ud.namedObjects2.clear();
+        ud.namedObjects2.add(thrp);
+        ud.rep = mu.add.report.elementCount(ud.namedObjects2, thrp.getPresentationName(),
+                ud.unit_Dimensionless, true);
+        mu.add.report.monitorAndPlot(ud.rep, null, null, true);
+        //--
         //-- A few more Scenes
         ud.namedObjects2.clear();
         ud.namedObjects2.add(
@@ -215,7 +227,7 @@ public class Demo15_Run_DES extends StarMacro {
                 ud.unit_Dimensionless, false);
         scnYPlus.setPresentationName(ud.ff2.getPresentationName());
         ud.scenes.add(scnYPlus);
-        fixScalarDisplayer(scnYPlus, false, new double[]{ 0, tvrRange[1] - 1 }, 0, "%.1f",
+        fixScalarDisplayer(scnYPlus, false, new double[]{ 0, 2 }, 0, "%.1f",
                 mu.get.objects.colormap(StaticDeclarations.Colormaps.BLUE_RED_BALANCED),
                 ud.dv0, ud.vv1);
         //--
@@ -303,7 +315,8 @@ public class Demo15_Run_DES extends StarMacro {
         mu.set.physics.materialProperty(ud.physCont, "Air", StaticDeclarations.Vars.VISC,
                 mu_g, ud.unit_Pa_s);
         ud.region.setPhysicsContinuum(ud.physCont);
-        mu.set.solver.aggressiveSettings();
+        mu.set.solver.ultraAggressiveSettings();
+        mu.set.solver.linearSolverConvergenceTolerance(1E-4, true);
         //-- Activate Synthetic Eddy Generation at Inlet if desired (at a higher CPU cost).
         ud.bdry = mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true);
         mu.enable.syntheticEddyMethod(mu.get.boundaries.byREGEX(".*" + ud.bcInlet, true));

@@ -7,11 +7,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import macroutils.MacroUtils;
+import star.base.report.Monitor;
+import star.base.report.MonitorManager;
+import star.base.report.ReportMonitor;
 import star.common.Boundary;
 import star.common.FvRepresentation;
 import star.common.GeometryPart;
+import star.common.HistogramAxisType;
+import star.common.HistogramPlot;
+import star.common.MonitorPlot;
 import star.common.PartSurface;
+import star.common.PlotManager;
 import star.common.Region;
+import star.common.ResidualPlot;
 import star.common.Simulation;
 import star.common.StarPlot;
 import star.common.XYPlot;
@@ -39,6 +47,7 @@ public final class SummaryWriter {
     private final boolean collectAll;
     private final MacroUtils mu;
     private final Simulation sim;
+    private final String summaryFileName;
     private static final List<String> INFORMATION = new ArrayList<>();
 
     /**
@@ -51,15 +60,38 @@ public final class SummaryWriter {
     }
 
     /**
+     * Typical constructor but with a custom summary file naming.
+     *
+     * @param mu       given MacroUtils instance
+     * @param fileName given summary file name with extension
+     */
+    public SummaryWriter(MacroUtils mu, String fileName) {
+        this(mu, fileName, true);
+    }
+
+    /**
      * Constructor with an option to not collect all information on execution step.
      *
      * @param mu         given MacroUtils instance
      * @param collectAll option to collect all information on {@link #execute} step
      */
     public SummaryWriter(MacroUtils mu, boolean collectAll) {
+        this(mu, "Summary_" + mu.getSimulation().getPresentationName() + ".ref", collectAll);
+    }
+
+    /**
+     * Constructor with an option to not collect all information on execution step and with a custom
+     * summary file naming.
+     *
+     * @param mu         given MacroUtils instance
+     * @param fileName   given summary file name with extension
+     * @param collectAll option to collect all information on {@link #execute} step
+     */
+    public SummaryWriter(MacroUtils mu, String fileName, boolean collectAll) {
         this.mu = mu;
         this.sim = mu.getSimulation();
         this.collectAll = collectAll;
+        this.summaryFileName = fileName;
         INFORMATION.clear();
     }
 
@@ -89,26 +121,64 @@ public final class SummaryWriter {
     }
 
     /**
+     * Collect information concerning ReportMonitors.
+     */
+    public void collectMonitors() {
+
+        final MonitorManager mm = sim.getMonitorManager();
+
+        int n = printCollecting("Monitors");
+
+        mm.getObjectsOf(ReportMonitor.class).stream().forEach(rm -> collectMonitor(rm));
+
+        printCollected(n);
+
+    }
+
+    /**
      * Collect information concerning a specific Plot.
      *
      * @param sp given StarPlot
      */
     public void collectPlot(StarPlot sp) {
-        if (sp instanceof XYPlot) {  // Internal datasets only in XYPlots
-            ((XYPlot) sp).getYAxes().getObjects().stream()
-                    .map(YAxisType.class::cast)
-                    .forEach(yat -> collectDataSets(sp, yat));
+
+        final boolean isXYPlot = sp instanceof XYPlot;
+        final boolean isResidual = sp instanceof ResidualPlot;
+        final boolean isHistogram = sp instanceof HistogramPlot;
+
+        final boolean collectDataSets = !(isResidual || isHistogram);
+
+        if (isXYPlot) {  // Internal datasets only in XYPlots
+            collectXYPlot((XYPlot) sp);
+        } else if (isHistogram) {
+            collectHistogram((HistogramPlot) sp);
         }
-        sp.getDataSetManager().getDataSets().stream().forEach(ds -> collectDataSet(sp, ds));
+
+        if (collectDataSets) {
+            sp.getDataSetManager().getDataSets().stream().forEach(ds -> collectDataSet(sp, ds));
+        }
+
     }
 
     /**
-     * Collect information concerning XYPlots.
+     * Collect information concerning MonitorPlots and XYPlots.
      */
     public void collectPlots() {
+
+        final PlotManager pm = sim.getPlotManager();
+
         int n = printCollecting("Plots");
-        sim.getPlotManager().getObjectsOf(XYPlot.class).stream().forEach(xyp -> collectPlot(xyp));
+
+        List<StarPlot> selectedPlots = new ArrayList<>();
+
+        selectedPlots.addAll(pm.getObjectsOf(HistogramPlot.class));
+        selectedPlots.addAll(pm.getObjectsOf(XYPlot.class));
+        selectedPlots.addAll(pm.getObjectsOf(MonitorPlot.class));
+
+        selectedPlots.stream().forEach(plot -> collectPlot(plot));
+
         printCollected(n);
+
     }
 
     /**
@@ -170,6 +240,7 @@ public final class SummaryWriter {
         collectRegions();
         collectSolution();
         collectReports();
+        collectMonitors();
         collectPlots();
         collectScenes();
     }
@@ -180,14 +251,29 @@ public final class SummaryWriter {
     }
 
     private void collectDataSet(StarPlot sp, DataSet ds) {
-        String key = mu.get.strings.information(sp) + " -> " + ds.getPresentationName();
+
+        final boolean isMonitorPlot = sp instanceof MonitorPlot;
+        final String info = mu.get.strings.information(sp);
+
+        String key = isMonitorPlot ? info : info + " -> " + ds.getPresentationName();
         Arrays.stream(ds.getSeriesLabels()).forEach(sl -> collectDataSetSeries(key, ds, sl));
+
     }
 
     private void collectDataSetSeries(String key, DataSet ds, String seriesName) {
+
         int i = Arrays.asList(ds.getSeriesLabels()).indexOf(seriesName);
-        INFORMATION.add(getPair(key + " -> " + seriesName + " -> X values", ds.getXSeries(i)));
-        INFORMATION.add(getPair(key + " -> " + seriesName + " -> Y values", ds.getYSeries(i)));
+
+        final double[] xx = ds.getXSeries(i);
+        final double[] yy = ds.getYSeries(i);
+
+        if (xx.length > 50) {
+            INFORMATION.add(getPair(key + " -> " + seriesName + " -> Samples", xx.length));
+        } else {
+            INFORMATION.add(getPair(key + " -> " + seriesName + " -> X values", xx));
+            INFORMATION.add(getPair(key + " -> " + seriesName + " -> Y values", yy));
+        }
+
     }
 
     private void collectDataSets(StarPlot sp, YAxisType yat) {
@@ -199,6 +285,31 @@ public final class SummaryWriter {
                 .map(displayer -> getDisplayerInfo(displayer))
                 .collect(Collectors.toList());
         INFORMATION.addAll(displayers);
+    }
+
+    private void collectHistogram(HistogramPlot hp) {
+
+        final String info = mu.get.strings.information(hp);
+        final HistogramAxisType hat = hp.getXAxisType();
+
+        final String function = hat.getBinFunction().getFieldFunction().getPresentationName();
+        final int bins = hat.getNumberOfBin();
+
+        INFORMATION.add(getPair(info + " -> Function", function));
+        INFORMATION.add(getPair(info + " -> Bins", bins));
+
+    }
+
+    private void collectMonitor(Monitor m) {
+
+        String key = mu.get.strings.information(m);
+
+        if (m instanceof ReportMonitor) {
+            ReportMonitor rm = (ReportMonitor) m;
+            INFORMATION.add(getPair(key + " -> Samples", rm.getAllYValues().length));
+            INFORMATION.add(getPair(key + " -> Report", rm.getReport().getPresentationName()));
+        }
+
     }
 
     private void collectRegion(Region r) {
@@ -216,6 +327,14 @@ public final class SummaryWriter {
         INFORMATION.add(getPair("Cell Count", fvr.getCellCount()));
         INFORMATION.add(getPair("Face Count", fvr.getInteriorFaceCount()));
         INFORMATION.add(getPair("Vertex Count", fvr.getVertexCount()));
+    }
+
+    private void collectXYPlot(XYPlot xyp) {
+
+        xyp.getYAxes().getObjects().stream()
+                .map(YAxisType.class::cast)
+                .forEach(yat -> collectDataSets(xyp, yat));
+
     }
 
     private String getDisplayerInfo(Displayer displayer) {
@@ -317,7 +436,7 @@ public final class SummaryWriter {
 
     private void writeInformation() {
         mu.io.print.action("Writing summary file", true);
-        File file = new File(sim.getSessionDir(), "Summary_" + sim.getPresentationName() + ".ref");
+        File file = new File(sim.getSessionDir(), summaryFileName);
         mu.io.write.data(file, new ArrayList<>(INFORMATION), true);
     }
 

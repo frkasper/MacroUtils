@@ -1,10 +1,12 @@
 package macroutils.setter;
 
 import java.util.ArrayList;
+import java.util.List;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import star.combustion.PpdfCombustionSolver;
+import star.common.AMGLinearSolver;
 import star.common.ImplicitUnsteadySolver;
 import star.common.InnerIterationStoppingCriterion;
 import star.common.Model;
@@ -15,6 +17,7 @@ import star.common.PisoUnsteadySolver;
 import star.common.Region;
 import star.common.ScalarPhysicalQuantity;
 import star.common.ScalarSolverBase;
+import star.common.ScalarSolverBaseNoUrf;
 import star.common.Simulation;
 import star.common.Solver;
 import star.common.StepStoppingCriterion;
@@ -32,6 +35,7 @@ import star.kwturb.KwTurbViscositySolver;
 import star.metrics.GradientsModel;
 import star.metrics.LimiterMethodOption;
 import star.mixturemultiphase.SegregatedMmpSolver;
+import star.mixturemultiphase.SegregatedVolumeFractionSingleStepSolver;
 import star.multiphase.GranularTemperatureTransportSolver;
 import star.rsturb.RsTurbSolver;
 import star.rsturb.RsTurbViscositySolver;
@@ -48,6 +52,7 @@ import star.segregatedspecies.SegregatedSpeciesSolver;
 import star.sixdof.DofMotionSolver;
 import star.sixdof.SixDofSolver;
 import star.turbulence.TurbViscositySolver;
+import star.vof.SegregatedVofSolver;
 import star.vof.VofWaveZoneDistanceSolver;
 import star.walldistance.WallDistanceSolver;
 
@@ -99,8 +104,8 @@ public class SetSolver {
      * Sets aggressive under-relaxation factors (URFs) for the Segregated solvers.
      * <ul>
      * <li> Good for steady state analysis;
-     * <li> If one is simulating Unsteady, it will set all URFs to unity but make sure the global
-     * CFL &lt; 1 condition is respected. Fluctuations or divergence may occur otherwise.
+     * <li> If one is simulating Unsteady just make sure the global CFL &lt; 1 condition is
+     * respected. Fluctuations or divergence may occur otherwise.
      * </ul>
      */
     public void aggressiveSettings() {
@@ -136,7 +141,7 @@ public class SetSolver {
         if (opt) {
             action = "Freezed";
         }
-        ArrayList<Solver> as = new ArrayList<>(_sim.getSolverManager().getObjects());
+        List<Solver> as = _getSolvers();
         switch (slv) {
             case ALL:
                 for (Solver s : as) {
@@ -160,6 +165,21 @@ public class SetSolver {
         }
         _io.say.msg(true, "%s: %s.", action, slv.toString());
         _io.say.ok(true);
+    }
+
+    /**
+     * Set a common AMG convergence tolerance for all Solvers, when applicable.
+     * <p>
+     * This may help obtaining parallel invariant results -- default is 0.1 or 10%.
+     *
+     * @param val given value -- e.g.: 0.001
+     * @param vo given verbose option. False will not print anything
+     */
+    public void linearSolverConvergenceTolerance(double val, boolean vo) {
+        _io.say.action("Setting AMG Convergence Tolerance for Solvers", vo);
+        _io.say.value("AMG Convergence Tolerance", val, vo);
+        _getSolvers().forEach(solver -> _setAMGConvergenceTolerance(solver, val, vo));
+        _io.say.ok(vo);
     }
 
     /**
@@ -307,6 +327,23 @@ public class SetSolver {
     }
 
     /**
+     * Sets ultra aggressive under-relaxation factors (URFs) for the Segregated solvers.
+     * <ul>
+     * <li> Avoid for steady state analysis, use {@link #aggressiveSettings()} instead
+     * <li> Recommended for accurate Unsteady simulations only
+     * </ul>
+     */
+    public void ultraAggressiveSettings() {
+        _io.say.action("Setting Aggressive Solver Settings", true);
+        _ud.urfSolidEnrgy = 0.99999;
+        _ud.urfFluidEnrgy = _ud.urfVel = _ud.urfKEps = _ud.urfKOmega = 0.98;
+        _ud.urfP = 0.8;
+        _updateURFs();
+        _updateIterations();
+        _io.say.ok(true);
+    }
+
+    /**
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
@@ -400,6 +437,10 @@ public class SetSolver {
         return ar;
     }
 
+    private List<Solver> _getSolvers() {
+        return new ArrayList<>(_sim.getSolverManager().getObjects());
+    }
+
     private ScalarPhysicalQuantity _getTimeStep() {
         if (_chk.has.PISO()) {
             return _get.solver.byClass(PisoUnsteadySolver.class).getTimeStep();
@@ -439,6 +480,39 @@ public class SetSolver {
         }
         _io.say.msg("Case is not Unsteady.", vo);
         return false;
+    }
+
+    private void _setAMGConvergenceTolerance(Solver solver, double val, boolean vo) {
+
+        AMGLinearSolver amg = null;
+
+        if (solver instanceof SegregatedFlowSolver) {
+
+            SegregatedFlowSolver sfs = (SegregatedFlowSolver) solver;
+
+            sfs.getVelocitySolver().getAMGLinearSolver().setConvergeTol(val);
+            _io.say.object(sfs.getVelocitySolver(), vo);
+
+            sfs.getPressureSolver().getAMGLinearSolver().setConvergeTol(val);
+            _io.say.object(sfs.getPressureSolver(), vo);
+
+        } else if (solver instanceof ScalarSolverBaseNoUrf) {
+
+            amg = ((ScalarSolverBaseNoUrf) solver).getAMGLinearSolver();
+
+        } else if (solver instanceof SegregatedVofSolver) {
+
+            amg = ((SegregatedVolumeFractionSingleStepSolver) solver).getAMGLinearSolver();
+
+        }
+
+        if (amg != null) {
+
+            amg.setConvergeTol(val);
+            _io.say.object(solver, vo);
+
+        }
+
     }
 
     private void _setTimestep(double val, String def, boolean vo) {
@@ -494,7 +568,7 @@ public class SetSolver {
     }
 
     private void _updateURFs_OtherSolvers() {
-        for (Solver s : _sim.getSolverManager().getObjects()) {
+        for (Solver s : _getSolvers()) {
             double urf = 0.8;
             if (s instanceof GranularTemperatureTransportSolver) {
                 urf = _ud.urfGranTemp;

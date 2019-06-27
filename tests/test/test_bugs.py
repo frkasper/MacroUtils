@@ -70,13 +70,9 @@ def test_bug_20():
     _new_sim('BugParentNameTest')
     ref_file = test_utils._summary_file('BugParentNameTest')
     contents = test_utils._contents(ref_file)
-    assert len(re.findall('Part', contents)) == 2
-    assert len(re.findall('Region', contents)) == 2
-    assert len(re.findall('Report', contents)) == 2
-    assert len(re.findall('Scene', contents)) == 4
-    assert len(re.findall('Scene', contents)) == 4
-    assert len(re.findall('Displayer', contents)) == 4
-
-
-if __name__ == "__main__":
-    pass
+    assert len(re.findall('Part ->', contents)) == 1
+    assert len(re.findall('Region ->', contents)) == 2  # Multiple words
+    assert len(re.findall('Report ->', contents)) == 7  # found
+    assert len(re.findall('Monitor ->', contents)) == 2
+    assert len(re.findall('Scene ->', contents)) == 4
+    assert len(re.findall('Displayer ->', contents)) == 2

@@ -198,7 +198,7 @@ public class Demo14_GCI extends StarMacro {
         yxA.getScalarFunction().setFieldFunction(ud.ff2);
         idsN.setSeriesName("Numerical");
         idsA.setSeriesName("Analytical");
-        mu.set.object.plotAxesTitles(plot,
+        mu.set.plots.axesTitles(plot,
                 String.format("Radius [%s]", ud.defUnitLength.getPresentationName()),
                 String.format("Axial Velocity [%s]", ud.defUnitVel.getPresentationName()), true);
     }
