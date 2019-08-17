@@ -4,9 +4,9 @@ MacroUtils is a collection of high-level APIs in order to make your life easier 
 
 ## Requires
 
-1. Simcenter STAR-CCM+ v2019.2 libraries. It may not run in other versions;
+1. Simcenter STAR-CCM+ v2019.3 libraries. It may not run in other versions;
 
-1. If one is compiling through NetBeans, please do against JDK 8 Source/Binary format.
+1. If one is compiling through NetBeans, please do against JDK 11 Source/Binary format.
 
 ## Need an older version?
 

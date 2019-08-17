@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
@@ -305,7 +306,7 @@ public class TemplateGCI {
 
     private void _evaluate(StarPlot sp, ArrayList<File> simFiles, boolean vo) {
         _io.say.action("Performing Roache's GCI calculation on a Plot", vo);
-        if (!_isXYPlot(sp)) {
+        if (!(sp instanceof XYPlot)) {
             _io.say.msg("Currently limited to X-Y Plots only.");
             return;
         }
@@ -449,7 +450,7 @@ public class TemplateGCI {
         if (!name.toLowerCase().contains(".csv")) {
             name += ".csv";
         }
-        if (sortData && _isXYPlot(sp)) {
+        if (sortData && sp instanceof XYPlot) {
             XYPlot p = (XYPlot) sp;
             YAxisType y = (YAxisType) p.getYAxes().getDefaultAxis();
             InternalDataSet id
@@ -620,29 +621,28 @@ public class TemplateGCI {
     }
 
     private double[] _getVals(String[] data, int i) {
-        ArrayList<Double> ard = new ArrayList<>();
-        Double val;
+
+        final List<Double> values = new ArrayList<>();
+
         for (String line : data) {
+
             if (line.contains("\"")) {
                 continue;
             }
-            String[] cols = line.split(",");
-            try {
-                val = new Double(cols[i]);
-            } catch (NumberFormatException e) {
-                continue;
-            }
-            ard.add(val);
-        }
-        double[] vals = new double[ard.size()];
-        for (int j = 0; j < ard.size(); j++) {
-            vals[j] = ard.get(j);
-        }
-        return vals;
-    }
 
-    private boolean _isXYPlot(StarPlot sp) {
-        return sp instanceof XYPlot;
+            String[] cols = line.split(",");
+
+            try {
+                values.add(Double.valueOf(cols[i]));
+            } catch (NumberFormatException e) {
+            }
+
+        }
+
+        return values.stream()
+                .mapToDouble(Double::doubleValue)
+                .toArray();
+
     }
 
     private void _setupPlots(FileTable ft, StarPlot sp, double[] x1, double[] x2, double[] x3,
