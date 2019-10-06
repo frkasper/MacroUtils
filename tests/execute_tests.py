@@ -19,7 +19,6 @@ Limitations:
 @author: Fabio Kasper
 """
 import datetime
-import tests_definition
 import glob
 import itertools
 import optparse
@@ -31,12 +30,13 @@ import common.set_up as set_up
 import common.star as star
 import common.strings as strings
 import common.timer as timer
+import tests_definition as td
 
 from collections import namedtuple
 
 
-_Options = namedtuple('Options', ['datahome', 'demohome', 'jarfile',
-                                  'starhome', 'testhome', 'test_cases',
+_Options = namedtuple('Options', ['data_home', 'demo_home', 'jar_file',
+                                  'star_home', 'test_home', 'test_cases',
                                   'threads', 'pytest_args', 'serial'])
 PWD = os.getcwd()
 
@@ -44,8 +44,8 @@ PWD = os.getcwd()
 def _call_pytest(options, test_cases):
     print(strings.heading('Calling pytest'))
     commands = ['export PYTHONPATH=%s' % PWD,
-                'export STARHOME=%s' % options.starhome,
-                'export TESTHOME=%s' % options.testhome,
+                'export STARHOME=%s' % options.star_home,
+                'export TESTHOME=%s' % options.test_home,
                 'pytest %s %s' % (options.pytest_args,
                                   _test_files(test_cases))]
     os.system('; '.join(commands))
@@ -53,18 +53,18 @@ def _call_pytest(options, test_cases):
 
 
 def _commands_from_demo(options, demo_nt):
-    java_files = tests_definition.java_files_from_nt(demo_nt, options.demohome)
+    java_files = td.java_files_from_nt(demo_nt, options.demo_home)
     star_commands = []
     for java_file in java_files:
         np = 1 if options.serial else demo_nt.np
-        star_cmd = star.new_simulation(options.starhome, java_file, np,
+        star_cmd = star.new_simulation(options.star_home, java_file, np,
                                        demo_nt.batch)
         star_commands.append(star_cmd)
     return star_commands
 
 
 def _commands_from_test(options, test_case):
-    if tests_definition.is_demo(test_case):
+    if td.is_demo(test_case):
         return _commands_from_demo(options, test_case)
     else:
         # Bugs are not run in step1
@@ -83,13 +83,13 @@ def _copy_test_macros(options):
     aux_folder = 'common'
     aux_macros_home = os.path.join(test_macros_home, aux_folder)
 
-    aux_in_testhome = os.path.join(options.testhome, aux_folder)
-    if os.path.isdir(aux_in_testhome):
-        shutil.rmtree(aux_in_testhome)
+    aux_in_test_home = os.path.join(options.test_home, aux_folder)
+    if os.path.isdir(aux_in_test_home):
+        shutil.rmtree(aux_in_test_home)
 
     # Finally, copy files
-    set_up._copy(java_files, options.testhome)
-    shutil.copytree(aux_macros_home, aux_in_testhome)
+    set_up._copy(java_files, options.test_home)
+    shutil.copytree(aux_macros_home, aux_in_test_home)
 
     names = [os.path.split(f)[1] for f in java_files]
     print(strings.itemized(names))
@@ -97,17 +97,16 @@ def _copy_test_macros(options):
 
 
 def _demo(number):
-    return tests_definition.demo(number)
+    return td.demo(number)
 
 
 def _demo_files(options, demo_nt):
-        return tests_definition.demo_files(demo_nt.id, options.demohome,
-                                           options.datahome)
+    return td.demo_files(demo_nt.id, options.demo_home, options.data_home)
 
 
 def _demo_home(options):
     """For convenience demo home is in the same folder as jar file"""
-    bp, fn = os.path.split(options.jarfile)
+    bp, fn = os.path.split(options.jar_file)
     demo_home = os.path.join(bp, 'demo')
     assert os.path.isdir(demo_home), 'Folder does not exist: "%s"' % demo_home
     return demo_home
@@ -121,10 +120,10 @@ def _is_error(key, value):
 
 
 def _itemized(tests):
-    bugs = [nt.macro_name for nt in tests if tests_definition.is_bug(nt)]
-    demos = ['Demo%d' % nt.id for nt in tests if tests_definition.is_demo(nt)]
-    sas = [nt.macro_name for nt in tests if tests_definition.is_sa(nt)]
-    sts = [nt.macro_name for nt in tests if tests_definition.is_simtool(nt)]
+    bugs = [nt.macro_name for nt in tests if td.is_bug(nt)]
+    demos = ['Demo%d' % nt.id for nt in tests if td.is_demo(nt)]
+    sas = [nt.macro_name for nt in tests if td.is_sa(nt)]
+    sts = [nt.macro_name for nt in tests if td.is_simtool(nt)]
 
     all_tests = itertools.chain.from_iterable([demos, bugs, sas, sts])
 
@@ -149,27 +148,27 @@ def _test_cases(parser):
 
     if execute_all:
 
-            test_cases.extend(tests_definition.DEMOS)
-            test_cases.extend(tests_definition.BUGS)
-            test_cases.extend(tests_definition.SAS)
-            test_cases.extend(tests_definition.SIMTOOLS)
+            test_cases.extend(td.DEMOS)
+            test_cases.extend(td.BUGS)
+            test_cases.extend(td.SAS)
+            test_cases.extend(td.SIMTOOLS)
 
     else:
 
         if opts.bugs:
-            test_cases.extend(tests_definition.BUGS)
+            test_cases.extend(td.BUGS)
 
         if opts.sas:
-            test_cases.extend(tests_definition.SAS)
+            test_cases.extend(td.SAS)
 
         if opts.simtools:
-            test_cases.extend(tests_definition.SIMTOOLS)
+            test_cases.extend(td.SIMTOOLS)
 
         if opts.demo is not None:
 
             try:
                 demo_id = int(opts.demo)
-                test_cases.append(tests_definition.demo(demo_id))
+                test_cases.append(td.demo(demo_id))
             except ValueError:
                 parser.error('demo must be an integer: "%s"' % opts.demo)
 
@@ -178,10 +177,10 @@ def _test_cases(parser):
 
 def _test_files(test_cases):
 
-    bugs = [nt for nt in test_cases if tests_definition.is_bug(nt)]
-    demos = [nt for nt in test_cases if tests_definition.is_demo(nt)]
-    sas = [nt for nt in test_cases if tests_definition.is_sa(nt)]
-    sts = [nt for nt in test_cases if tests_definition.is_simtool(nt)]
+    bugs = [nt for nt in test_cases if td.is_bug(nt)]
+    demos = [nt for nt in test_cases if td.is_demo(nt)]
+    sas = [nt for nt in test_cases if td.is_sa(nt)]
+    sts = [nt for nt in test_cases if td.is_simtool(nt)]
     files = ['test/test_demo%02d.py' % nt.id for nt in demos]
 
     if len(bugs) > 0:
@@ -200,6 +199,7 @@ def _test_files(test_cases):
 
 def parse_options():
     """Parse argument options and return a namedtuple."""
+
     usage = [
             '%prog [options]',
             '',
@@ -238,7 +238,7 @@ def parse_options():
                     help='run a specific demo number (default = all tests)',
                     default=None)
     gr_r.add_option('--jarhome', dest='jarhome', action='store',
-                    help='path to MacroUtils.jar file',
+                    help='path to MacroUtils compiled jar file',
                     default=None)
     gr_r.add_option('--sas', dest='sas', action='store_true',
                     help='execute simulation assistant tests only',
@@ -284,25 +284,35 @@ def parse_options():
         errors.append('add --help for a detailed list of options')
         parser.error('\n\n- %s\n' % '\n- '.join(errors))
 
-    datahome = os.path.abspath(opts.datahome)
-    demohome = os.path.abspath(opts.demohome)
-    jarhome = os.path.abspath(opts.jarhome)
-    if os.path.isfile(jarhome):
-        jarfile = jarhome
-    else:
-        jarfile = os.path.join(jarhome, 'MacroUtils.jar')
-    starhome = os.path.abspath(opts.starhome)
-    testhome = os.path.abspath(opts.testhome)
+    data_home = os.path.abspath(opts.datahome)
+    demo_home = os.path.abspath(opts.demohome)
+    jar_home = os.path.abspath(opts.jarhome)
 
-    for folder in [datahome, demohome, starhome, testhome]:
+    no_jars_msg = 'MacroUtils jar file does not exist in "%s"' % jar_home
+
+    if os.path.isfile(jar_home):
+        jar_file = jar_home
+    else:
+        jar_files = glob.glob(jar_home + os.sep + 'macroutils*.jar')
+
+        if not jar_files:
+            parser.error(no_jars_msg)
+
+        jar_file = jar_files[0] if jar_files else None
+
+    if not os.path.exists(jar_file):
+        parser.error(no_jars_msg)
+
+    star_home = os.path.abspath(opts.starhome)
+    test_home = os.path.abspath(opts.testhome)
+
+    for folder in [data_home, demo_home, star_home, test_home]:
         if not os.path.isdir(folder):
             parser.error('folder does not exist: "%s"' % folder)
-    if not os.path.exists(jarfile):
-        parser.error('MacroUtils.jar file does not exist in "%s"' % jarhome)
 
     # Now assign a TESTHOME
     today = datetime.datetime.now().strftime('%Y%m%d')
-    testhome = os.path.join(testhome, 'tests_%s' % today)
+    test_home = os.path.join(test_home, 'tests_%s' % today)
 
     test_cases = _test_cases(parser)
 
@@ -318,7 +328,7 @@ def parse_options():
     nt = opts.threads
     threads = max(int(nt) if isinstance(nt, str) else nt, 0)
 
-    return _Options(datahome, demohome, jarfile, starhome, testhome,
+    return _Options(data_home, demo_home, jar_file, star_home, test_home,
                     test_cases, threads, ' '.join(pytest_args), serial)
 
 
@@ -327,11 +337,11 @@ def print_overview(options):
     print(strings.frame('MacroUtils tester'))
     print('')
     print(strings.heading('Important information'))
-    print(fmt % ('DATAHOME', options.datahome))
-    print(fmt % ('DEMOHOME', options.demohome))
-    print(fmt % ('STARHOME', options.starhome))
-    print(fmt % ('JAR FILE', options.jarfile))
-    print(fmt % ('TESTHOME', options.testhome))
+    print(fmt % ('DATAHOME', options.data_home))
+    print(fmt % ('DEMOHOME', options.demo_home))
+    print(fmt % ('STARHOME', options.star_home))
+    print(fmt % ('JAR FILE', options.jar_file))
+    print(fmt % ('TESTHOME', options.test_home))
     print('\n')
     print(strings.heading('Basic Procedure'))
     print('1) Run demos in STAR-CCM+ -- functional tests;')
@@ -349,7 +359,7 @@ def print_overview(options):
 
 def run_step1(options, test_cases):
     star_commands = [_commands_from_test(options, nt) for nt in test_cases]
-    executor.run_commands(options.testhome, star_commands, options.threads)
+    executor.run_commands(options.test_home, star_commands, options.threads)
 
 
 def run_step2(options, test_cases):
@@ -366,13 +376,13 @@ def run_tests(options):
     print(strings.line() + '\n')
 
     # Bug and SimAssistant files are not copied at this time.
-    demos = [nt for nt in options.test_cases if tests_definition.is_demo(nt)]
+    demos = [nt for nt in options.test_cases if td.is_demo(nt)]
     demo_files_2d = [_demo_files(options, nt) for nt in demos]
     files = list(itertools.chain.from_iterable(demo_files_2d))
 
-    set_up.environment(options.datahome, options.demohome,
-                       options.jarfile, options.starhome,
-                       options.testhome, files)
+    set_up.environment(options.data_home, options.demo_home,
+                       options.jar_file, options.star_home,
+                       options.test_home, files)
 
     run_step1(options, options.test_cases)
     run_step2(options, options.test_cases)
