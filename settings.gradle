@@ -1,0 +1,5 @@
+rootProject.name = 'MacroUtils'
+
+include 'macroutils'
+include 'simassistants:demo16'
+include 'simassistants:simplehexamesher'

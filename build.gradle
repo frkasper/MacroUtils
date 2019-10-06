@@ -1,0 +1,61 @@
+def buildVersion() {
+
+    File javaFile = file(java.nio.file.Paths.get(rootDir.getAbsolutePath())
+        .resolve('macroutils')
+        .resolve('src')
+        .resolve('macroutils')
+        .resolve('MacroUtils.java'))
+
+    String rowFound = javaFile.readLines().grep(~/\s\* \@version.*/)[0]
+    String versionFound = rowFound.split(' ').grep(~/\d{4}\.\d{1}/)[0]
+
+    return versionFound
+
+}
+
+ext {
+    buildDate = new java.text.SimpleDateFormat("yyyyMMdd").format(new Date())
+    buildVersion = buildVersion()
+    jarBaseName = "${project.name}_${buildVersion}_build_${buildDate}".toLowerCase()
+    libsFolder = file("${rootDir}/../libs_STAR-CCM+")
+}
+
+subprojects {
+
+    apply plugin: 'base'
+    apply plugin: 'java-library'
+
+    dependencies {
+        compile fileTree(libsFolder.getAbsolutePath()) {
+            include '*.jar'
+        }
+    }
+
+    jar {
+
+        onlyIf {
+            !sourceSets.main.allSource.files.isEmpty()
+        }
+
+        baseName "${jarBaseName}"
+
+    }
+
+    sourceSets {
+        main.java.srcDirs 'src'
+    }
+
+}
+
+//
+// Uncomment for debug printing
+//
+//println  "  Root Project:     ${project.rootProject}";
+//println  "  Project name:     ${project.rootProject.name}";
+//println  "  rootDir:          ${project.rootDir}"
+//println  "  projectDir:       ${project.projectDir}";
+//println  "  user.dir:         ${System.getProperty("user.dir")}";
+//println  "  libsFolder:       ${libsFolder}";
+//println  "  build version:    ${buildVersion}";
+//println  "  build date:       ${buildDate}";
+//println  "  JAR base name:    ${jarBaseName}";
