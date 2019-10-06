@@ -65,8 +65,8 @@ def test_cylinder_part_surfaces_count():
 
 
 def test_cell_count_grid_001():
-    test_utils.assert_cell_count(_grid(1), 875,
-                                 tolerance=25, relative=False)
+    test_utils.assert_cell_count(_grid(1), 900,
+                                 tolerance=50, relative=False)
 
 
 def test_vmean_report_grid_001():
@@ -74,7 +74,7 @@ def test_vmean_report_grid_001():
 
 
 def test_vmax_report_grid_001():
-    _assert_report(_grid(1), 'Vmax', 0.13, tolerance=0.1, relative=True)
+    _assert_report(_grid(1), 'Vmax', 0.14, tolerance=0.1, relative=True)
 
 
 def test_write_summary_grid_002():
@@ -104,7 +104,7 @@ def test_cell_count_grid_003():
 
 
 def test_solution_grid_003():
-    test_utils.assert_iteration(_grid(3), 8600, tolerance=0.01, relative=True)
+    test_utils.assert_iteration(_grid(3), 8700, tolerance=0.02, relative=True)
 
 
 def test_vmean_report_grid_003():
@@ -130,5 +130,5 @@ def test_gci23_coefficients():
     gci23_coeffs = _gci_coefficients()
     test_utils.assert_value(min(gci23_coeffs), 0.0005,
                             tolerance=0.0005, relative=False)
-    test_utils.assert_value(max(gci23_coeffs), 0.11,
-                            tolerance=0.01, relative=False)
+    test_utils.assert_value(max(gci23_coeffs), 0.04,
+                            tolerance=0.02, relative=False)
