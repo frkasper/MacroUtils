@@ -69,7 +69,8 @@ def test_vector_min_ss():
 
 
 def test_vector_max_ss():
-    test_utils.assert_scene_max(_grid_ss(), 'Vector', 'Vector', 5.3978)
+    test_utils.assert_scene_max(_grid_ss(), 'Vector', 'Vector', 5.4,
+                                tolerance=0.02)
 
 
 def test_write_summary_des():
@@ -119,7 +120,7 @@ def test_vector_min_des():
 
 
 def test_vector_max_des():
-    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.15,
+    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 5.75,
                                 tolerance=0.05, relative=True)
 
 

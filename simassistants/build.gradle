@@ -1,0 +1,32 @@
+/*******************************************************************************
+ *
+ * Simulation Assistants common build.gradle script
+ *
+ *******************************************************************************/
+
+
+subprojects {
+
+    dependencies {
+        compile project(':macroutils')
+    }
+
+    jar {
+
+        exclude '*.jar'
+
+        from {
+            configurations.compile.collect {
+                it.name.contains("${jarBaseName}") ? zipTree(it) : it
+            }
+        }
+
+        into 'html', {
+            from 'html'
+        }
+
+        baseName "${project.name}_assistant_${buildVersion}_build_${buildDate}"
+
+    }
+
+}

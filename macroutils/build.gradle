@@ -1,0 +1,25 @@
+/*******************************************************************************
+ *
+ * MacroUtils source code build.gradle script
+ *
+ *******************************************************************************/
+
+jar {
+
+    manifest {
+
+        attributes(
+            'Manifest-Version' : '1.2',
+            'Build-JDK': System.properties['java.version'],
+            'Build-OS': System.properties['os.name'],
+            'Build-Date': new Date(),
+            'Created-By': "Gradle ${gradle.gradleVersion}",
+            'Specification-Title': "${rootProject.name}",
+            'Specification-Version': "build-${buildDate}",
+            'Implementation-Title': 'Simcenter STAR-CCM+',
+            'Implementation-Version': buildVersion,
+        )
+
+    }
+
+}

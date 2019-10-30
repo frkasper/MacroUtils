@@ -30,8 +30,9 @@ def test_cfl_avg_report():
 
 
 def test_cfl_max_report():
-    test_utils.assert_report(DEMO_ID, 'CFL_max', 0.032,
-                             tolerance=0.005, relative=False)
+    """Fluid should be at rest by the end of simulation"""
+    test_utils.assert_report(DEMO_ID, 'CFL_max', 0.0,
+                             tolerance=0.05, relative=False)
 
 
 def test_time_report():

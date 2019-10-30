@@ -122,16 +122,19 @@ public final class BlockMesher extends SimpleHexaMesher {
     }
 
     private double[] getDouble(VectorGlobalParameter vgp) {
-        return vgp.getQuantity().getVector().toDoubleArray();
+
+        return vgp.getQuantity().getInternalVector().stream()
+                .mapToDouble(Double::doubleValue)
+                .toArray();
+
     }
 
     private int[] getInt(VectorGlobalParameter vgp) {
-        double[] doubleArray = getDouble(vgp);
-        int[] intArray = new int[doubleArray.length];
-        for (int i = 0; i < doubleArray.length; ++i) {
-            intArray[i] = (int) doubleArray[i];
-        }
-        return intArray;
+
+        return vgp.getQuantity().getInternalVector().stream()
+                .mapToInt(Double::intValue)
+                .toArray();
+
     }
 
     private VectorGlobalParameter getParameter(String name) {

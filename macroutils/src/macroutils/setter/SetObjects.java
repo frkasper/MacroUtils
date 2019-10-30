@@ -154,21 +154,6 @@ public class SetObjects {
     }
 
     /**
-     * Sets the axes names for a Plot.
-     *
-     * @param sp    given StarPlot.
-     * @param xName given x-axis titles.
-     * @param yName given y-axis titles.
-     * @param vo    given verbose option. False will not print anything.
-     *
-     * @see macroutils.setter.SetPlots#axesTitles(star.common.StarPlot, java.lang.String, java.lang.String, boolean)
-     */
-    @Deprecated // in 2019.2
-    public void plotAxesTitles(StarPlot sp, String xName, String yName, boolean vo) {
-        _set.plots.axesTitles(sp, xName, yName, vo);
-    }
-
-    /**
      * Sets a constant Scalar Profile for a STAR-CCM+ object.
      *
      * @param sp  given ScalarProfile.
