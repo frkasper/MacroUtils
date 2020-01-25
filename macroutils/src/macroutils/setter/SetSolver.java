@@ -173,7 +173,7 @@ public class SetSolver {
      * This may help obtaining parallel invariant results -- default is 0.1 or 10%.
      *
      * @param val given value -- e.g.: 0.001
-     * @param vo given verbose option. False will not print anything
+     * @param vo  given verbose option. False will not print anything
      */
     public void linearSolverConvergenceTolerance(double val, boolean vo) {
         _io.say.action("Setting AMG Convergence Tolerance for Solvers", vo);
@@ -271,8 +271,8 @@ public class SetSolver {
     }
 
     /**
-     * Sets the discretization discretization scheme that is used for evaluating face values for
-     * convection and diffusion fluxes.
+     * Sets the discretization scheme that is used for evaluating face values for convection and
+     * diffusion fluxes.
      *
      * @param pc    given PhysicsContinuum.
      * @param order given discretization scheme, if applicable.
@@ -368,10 +368,10 @@ public class SetSolver {
             return;
         }
         SegregatedEnergySolver ses = _get.solver.byClass(SegregatedEnergySolver.class);
-        ses.setFluidUrf(urfFld);
-        ses.setSolidUrf(urfSld);
-        _io.say.value("URF Fluid Energy", ses.getFluidUrf(), true);
-        _io.say.value("URF Solid Energy", ses.getSolidUrf(), true);
+        ses.getFluidUrfQuantity().setValue(urfFld);
+        ses.getSolidUrfQuantity().setValue(urfSld);
+        _io.say.value("URF Fluid Energy", ses.getFluidUrfQuantity(), true);
+        _io.say.value("URF Solid Energy", ses.getSolidUrfQuantity(), true);
         _io.say.ok(vo);
     }
 
@@ -391,10 +391,10 @@ public class SetSolver {
         SegregatedFlowSolver sfs = _get.solver.byClass(SegregatedFlowSolver.class);
         VelocitySolver vs = sfs.getVelocitySolver();
         PressureSolver ps = sfs.getPressureSolver();
-        vs.setUrf(urfVel);
-        ps.setUrf(urfP);
-        _io.say.value("URF Velocity", vs.getUrf(), true);
-        _io.say.value("URF Pressure", ps.getUrf(), true);
+        vs.getUrfQuantity().setValue(urfVel);
+        ps.getUrfQuantity().setValue(urfP);
+        _io.say.value("URF Velocity", vs.getUrfQuantity(), true);
+        _io.say.value("URF Pressure", ps.getUrfQuantity(), true);
         _io.say.ok(vo);
     }
 
@@ -605,8 +605,8 @@ public class SetSolver {
                 continue;
             }
             ScalarSolverBase ssb = (ScalarSolverBase) s;
-            ssb.setUrf(urf);
-            _io.say.value("URF " + ssb.getPresentationName(), ssb.getUrf(), true);
+            ssb.getUrfQuantity().setValue(urf);
+            _io.say.value("URF " + ssb.getPresentationName(), ssb.getUrfQuantity(), true);
         }
     }
 

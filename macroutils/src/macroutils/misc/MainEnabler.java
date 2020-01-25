@@ -1,13 +1,10 @@
 package macroutils.misc;
 
 import macroutils.MacroUtils;
-import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import star.base.neo.ClientServerObject;
 import star.common.AbortFileStoppingCriterion;
 import star.common.Boundary;
-import star.common.ExpertDriverCoupledSolver;
-import star.common.ExpertDriverOption;
 import star.common.ExpertInitManager;
 import star.common.ExpertInitOption;
 import star.common.GridSequencingInit;
@@ -20,6 +17,9 @@ import star.common.SolverStoppingCriterion;
 import star.common.SteadyModel;
 import star.common.StepStoppingCriterion;
 import star.coupledflow.CoupledImplicitSolver;
+import star.coupledflow.CourantNumberControlOption;
+import star.coupledflow.CourantNumberController;
+import star.coupledflow.ExpertDriverCourantNumberControl;
 import star.meshing.AutoMeshOperation;
 import star.meshing.CustomMeshControlManager;
 import star.meshing.CustomMeshControlValueManager;
@@ -81,11 +81,11 @@ public class MainEnabler {
         if (!_isCoupled(vo)) {
             return;
         }
-        _getCoupledImplicitSolver().getSolutionDriverManager().getExpertDriverOption()
-                .setSelected(ExpertDriverOption.Type.EXPERT_DRIVER);
-        ExpertDriverCoupledSolver ed = (ExpertDriverCoupledSolver) _getCoupledImplicitSolver()
-                .getSolutionDriverManager().getDriver();
-        ed.setRelativeResidualCutoff(StaticDeclarations.SMALL_NUMBER);
+        CourantNumberController cnc = _getCoupledImplicitSolver().getCourantNumberController();
+        cnc.getCourantNumberControlOption()
+                .setSelected(CourantNumberControlOption.Type.EXPERT_DRIVER);
+        ExpertDriverCourantNumberControl ed = (ExpertDriverCourantNumberControl) cnc
+                .getCourantNumberControl();
         if (_getExpertInitOption().getSelectedElement() == ExpertInitOption.Type.GRID_SEQ_METHOD) {
             ed.setInitialRampValue(_getGridSequencingInit().getGSCfl());
             _io.say.msg(vo, "Initial Ramp CFL value set to: %g.", 
