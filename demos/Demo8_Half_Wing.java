@@ -187,8 +187,6 @@ public class Demo8_Half_Wing extends StarMacro {
                 StaticDeclarations.Time.STEADY, StaticDeclarations.Material.GAS,
                 StaticDeclarations.Solver.COUPLED, StaticDeclarations.Density.IDEAL_GAS,
                 StaticDeclarations.Energy.THERMAL, StaticDeclarations.Viscous.RKE_2LAYER);
-        mu.enable.expertInitialization(5, true);
-        mu.enable.expertDriver(true);
         //--
         //****************************************
         //-- BOUNDARY CONDITIONS
