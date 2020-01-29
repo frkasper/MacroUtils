@@ -5,10 +5,10 @@ import test_utils
 
 DEMO_ID = test_utils.demo_id(__file__)
 MOVIE_FOLDERS = {
-        'pics_Demo15_Run_DES_Structures': 2451603,
-        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 4933758,
-        'pics_Demo15_Run_DES_Velocity': 4103562,
-        'pics_Demo15_Run_DES_Wall_Y+': 2302710,
+        'pics_Demo15_Run_DES_Structures': 1254530,
+        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 3521478,
+        'pics_Demo15_Run_DES_Velocity': 2638932,
+        'pics_Demo15_Run_DES_Wall_Y+': 1937729,
         }
 
 
@@ -41,8 +41,8 @@ def test_unite_part_surfaces_count():
 
 
 def test_cell_count_ss():
-    test_utils.assert_cell_count(_grid_ss(), 16750,
-                                 tolerance=250, relative=False)
+    test_utils.assert_cell_count(_grid_ss(), 16500,
+                                 tolerance=500, relative=False)
 
 
 def test_solution_ss():
@@ -78,8 +78,8 @@ def test_write_summary_des():
 
 
 def test_cell_count_des():
-    test_utils.assert_cell_count(_grid_des(), 115000,
-                                 tolerance=0.01, relative=True)
+    test_utils.assert_cell_count(_grid_des(), 97500,
+                                 tolerance=0.02, relative=True)
 
 
 def test_solution_des():
@@ -120,7 +120,7 @@ def test_vector_min_des():
 
 
 def test_vector_max_des():
-    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 5.75,
+    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.15,
                                 tolerance=0.05, relative=True)
 
 
