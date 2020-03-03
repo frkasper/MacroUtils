@@ -21,8 +21,8 @@ def test_unite_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 20000,
-                                 tolerance=0.01, relative=True)
+    test_utils.assert_cell_count(DEMO_ID, 15300,
+                                 tolerance=0.02, relative=True)
 
 
 def test_solution():
@@ -30,8 +30,8 @@ def test_solution():
 
 
 def test_pressure_scalar_min():
-    test_utils.assert_scene_min(DEMO_ID, 'Scalar', 'Scalar', -10.5,
-                                tolerance=0.7, relative=False)
+    test_utils.assert_scene_min(DEMO_ID, 'Scalar', 'Scalar', -9.5,
+                                tolerance=1.0, relative=False)
 
 
 def test_pressure_scalar_max():

@@ -1055,6 +1055,14 @@ public class CreateMeshOperation {
     }
 
     private void _setMeshDefaults(AutoMeshDefaultValuesManager amdvm) {
+
+        boolean isTrimmer = false;
+
+        if (amdvm.getParent() instanceof AutoMeshOperation) {
+            AutoMeshOperation amo = amdvm.getParent();
+            isTrimmer = _chk.has.trimmerMesher(amo);
+        }
+
         _set.object.physicalQuantity(amdvm.get(BaseSize.class), _ud.mshBaseSize, _ud.defUnitLength,
                 "Base Size", true);
         _set.object.relativeSize(amdvm.get(PartsTargetSurfaceSize.class), "Target Surface Size",
@@ -1071,7 +1079,7 @@ public class CreateMeshOperation {
             _set.mesh.surfaceProximity(amdvm.get(SurfaceProximity.class),
                     _ud.mshProximityPointsInGap, _ud.mshProximitySearchFloor, false);
         }
-        if (amdvm.has("Volume Growth Rate")) {
+        if (amdvm.has("Volume Growth Rate") && isTrimmer) {
             star.trimmer.PartsGrowthRateOption.Type t = _ud.mshTrimmerGrowthRate.getType();
             amdvm.get(PartsSimpleTemplateGrowthRate.class).getGrowthRateOption().setSelected(t);
             _io.say.value("Growth Rate Type", t.getPresentationName(), true, true);

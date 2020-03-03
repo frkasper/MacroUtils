@@ -14,7 +14,7 @@ def test_sphere_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 12600,
+    test_utils.assert_cell_count(DEMO_ID, 7200,
                                  tolerance=100, relative=False)
 
 

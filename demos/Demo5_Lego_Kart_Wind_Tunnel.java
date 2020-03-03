@@ -222,8 +222,6 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
                 StaticDeclarations.Solver.COUPLED, StaticDeclarations.Density.INCOMPRESSIBLE,
                 StaticDeclarations.Energy.ISOTHERMAL, StaticDeclarations.Viscous.RKE_HIGH_YPLUS);
         mu.enable.cellQualityRemediation(ud.physCont, true);
-        mu.enable.expertInitialization(1, true);
-        mu.enable.expertDriver(true);
         mu.set.physics.initialCondition(ud.physCont, StaticDeclarations.Vars.VEL.getVar(),
                 new double[]{ 0, 0, -50 }, ud.defUnitVel);
         //--

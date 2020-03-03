@@ -14,7 +14,7 @@ def buildVersion() {
 }
 
 ext {
-    buildDate = new java.text.SimpleDateFormat("yyyyMMdd").format(new Date())
+    buildDate = new java.text.SimpleDateFormat("MMdd").format(new Date())
     buildVersion = buildVersion()
     jarBaseName = "${project.name}_${buildVersion}_build_${buildDate}".toLowerCase()
     libsFolder = file("${rootDir}/../libs_STAR-CCM+")

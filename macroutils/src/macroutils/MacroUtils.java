@@ -25,12 +25,12 @@ import star.common.Simulation;
  *
  * <b>Requires:</b>
  * <ul>
- * <li> Simcenter STAR-CCM+ 2019.3 libraries (<u>It may not run in other versions</u>);
+ * <li> Simcenter STAR-CCM+ 2020.1 libraries (<u>It may not run in other versions</u>);
  * </ul>
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version 2019.3
+ * @version 2020.1
  */
 public final class MacroUtils {
 
