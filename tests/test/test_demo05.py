@@ -18,7 +18,7 @@ def test_kart_wrap_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 592000, tolerance=0.01)
+    test_utils.assert_cell_count(DEMO_ID, 603000, tolerance=0.01)
 
 
 def test_solution():
@@ -45,7 +45,7 @@ def test_scalar_pressure_kart_min():
 
 
 def test_scalar_pressure_kart_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Pressure Kart', 'Scalar', 4.2,
+    test_utils.assert_scene_max(DEMO_ID, 'Pressure Kart', 'Scalar', 4.8,
                                 tolerance=0.1, relative=True)
 
 
@@ -55,8 +55,8 @@ def test_scalar_pressure_section_min():
 
 
 def test_scalar_pressure_section_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Pressure Section', 'Scalar', 4.2,
-                                tolerance=0.1, relative=False)
+    test_utils.assert_scene_max(DEMO_ID, 'Pressure Section', 'Scalar', 4.8,
+                                tolerance=0.1, relative=True)
 
 
 def test_vector_pressure_section_min():
