@@ -23,7 +23,7 @@ def test_subtract_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 162500, tolerance=0.01)
+    test_utils.assert_cell_count(DEMO_ID, 156500, tolerance=0.01)
 
 
 def test_scalar_min():
