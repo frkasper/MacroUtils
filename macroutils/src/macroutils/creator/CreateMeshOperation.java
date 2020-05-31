@@ -1,7 +1,10 @@
 package macroutils.creator;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
@@ -407,19 +410,108 @@ public class CreateMeshOperation {
         //_io.say.msg("NeoProperty np = patchMsh.autopopulateFeatureEdges();");
         //_io.say.msg(np.getHashtable().toString());
         //--
-        boolean isBackwards = _meshPipe_buildExternalPatchCurves(patchMsh, ccs, false);
-        if (isBackwards) {
-            _meshPipe_buildExternalPatchCurves(patchMsh, ccs, isBackwards);
-        }
-        ArrayList<PatchCurve> pcExts = _getPatchCurves(patchMsh);
-        PatchCurve pcInt = _meshPipe_buildInternalPatchCurves(patchMsh, ccs, rR, isBackwards);
-        //--
-        if (pcInt == null) {
-            return null;
-        }
-        //--
+
+        //-- Trying the simple approach, i.e., split existing patch curves
+        ArrayList<PatchCurve> pcExts = new ArrayList<>();
         ArrayList<PatchCurve> pcInts = new ArrayList<>();
-        pcInts.add(pcInt);
+        ArrayList<PatchCurve> stockCurves = _getPatchCurves(patchMsh);
+        _sayPatchVerticesNames(_getPatchVertices(patchMsh));
+
+        if (stockCurves.size() == 2) {
+
+            // External curves creation
+            stockCurves.forEach(patchCurve -> {
+                _io.say.msg("Splitting external Patch Curve: " + patchCurve.getPresentationName());
+                patchMsh.splitPatchCurve(patchCurve, 1);
+                _sayPatchVerticesNames(_getPatchVertices(patchMsh));
+            });
+            List<PatchCurve> externalCurves = _getPatchCurves(patchMsh);
+            List<PatchVertex> sortedVertices = _getPatchVerticesSortedByAngle(patchMsh, ccs);
+
+            // Internal Patch curves creation
+            _io.say.msg("Building internal Patch Curves...");
+            _io.say.msg(" ");
+            List<PatchCurve> internalCurves = new ArrayList();
+            List<PatchVertex> internalVertices = new ArrayList();
+
+            sortedVertices.forEach(externalVertex -> {
+
+                // In cylindrical coordinates
+                Vector3 cartCoordsExt = new Vector3(externalVertex.getCoordinate().toDoubleArray());
+                Vector3 cylCoordsExt = _getVector3(externalVertex, ccs);
+                double extR = cylCoordsExt.x;
+                double theta = cylCoordsExt.y;
+                Vector3 cylCoordsInt = new Vector3(extR * rR, theta, 0.0);
+
+                // Back to cartesian
+                Vector3 cartCoordsInt = ccs.transformCoordinate(cylCoordsInt);
+
+                _io.say.msg("  - External Coordinate [Cyl]: " + cylCoordsExt.toString());
+                _io.say.msg("  - Internal Coordinate [Cyl]: " + cylCoordsInt.toString());
+                _io.say.msg("  - External Coordinate [Cart]: " + cartCoordsExt.toString());
+                _io.say.msg("  - Internal Coordinate [Cart]: " + cartCoordsInt.toString());
+
+                // Create new internal Patch curve
+                patchMsh.createPatchCurve(externalVertex, null,
+                        new DoubleVector(cartCoordsInt.toArray()),
+                        new StringVector(new String[] {"ON_SURFACE"}));
+
+                // Find out which new vertex was created
+                List<PatchVertex> currentVertices = _getPatchVertices(patchMsh);
+                currentVertices.removeAll(sortedVertices);
+                currentVertices.removeAll(internalVertices);
+
+                PatchVertex createdVertex = currentVertices.get(0);
+                internalVertices.add(createdVertex);
+
+                List<PatchCurve> currentCurves = _getPatchCurves(patchMsh);
+                currentCurves.removeAll(externalCurves);
+                currentCurves.removeAll(internalCurves);
+
+                PatchCurve createdCurve = currentCurves.get(0);
+                internalCurves.add(createdCurve);
+
+                _io.say.msg("  - Created Patch Curve: " + createdCurve.getPresentationName());
+                _io.say.msg("  - Created Patch Vertex: " + createdVertex.getPresentationName());
+                _io.say.msg(" ");
+
+            });
+
+            // Finally connect all the internal created vertices to close the O-Grid loop
+            internalVertices.add(internalVertices.get(0));
+            _io.say.msg("Connecting internal Patch Vertices...");
+            _io.say.msg(" ");
+            _sayPatchVerticesNames(internalVertices);
+
+            for (int i = 1; i < internalVertices.size(); i++) {
+
+                PatchVertex fromVertex = internalVertices.get(i-1);
+                PatchVertex toVertex = internalVertices.get(i);
+                _io.say.msg("  - From Patch Vertex: " + fromVertex.getPresentationName());
+                _io.say.msg("  - To Patch Vertex: " + toVertex.getPresentationName());
+                _io.say.msg(" ");
+
+                patchMsh.createPatchCurve(fromVertex, toVertex, new DoubleVector(new double[] {}),
+                        new StringVector(new String[] {}));
+
+            }
+
+            // Mesh distribution in theta
+            pcExts.addAll(externalCurves);
+
+            // Radial mesh distribution -- only one is needed
+            pcInts.add(internalCurves.get(0));
+
+
+        } else {
+
+            // Reevaluate when happening
+            return null;
+
+        }
+
+        //--
+        //--
         patchMsh.defineMeshMultiplePatchCurves(new Vector<>(pcExts), nT, false);
         patchMsh.defineMeshMultiplePatchCurves(new Vector<>(pcInts), nR, false);
         if (_ud.dmSmooths > 0) {
@@ -784,15 +876,6 @@ public class CreateMeshOperation {
         return scmc;
     }
 
-    private Object _getNewObject(ArrayList objOld, ArrayList objNew) {
-        for (Object o : objNew) {
-            if (!objOld.contains(o)) {
-                return o;
-            }
-        }
-        return null;
-    }
-
     private ArrayList<PatchCurve> _getPatchCurves(DirectedPatchSourceMesh patchMsh) {
         return new ArrayList<>(patchMsh.getPatchCurveManager().getObjects());
     }
@@ -801,15 +884,25 @@ public class CreateMeshOperation {
         return new ArrayList<>(patchMsh.getPatchVertexManager().getObjects());
     }
 
-    private double _getRadius(DirectedPatchSourceMesh patchMsh, CylindricalCoordinateSystem c) {
-        double maxR = 0.;
-        for (PatchVertex pv : _getPatchVertices(patchMsh)) {
-            Vector3 xyz = _getVector3(pv, c);
-            //_io.say.msg(pv.getPresentationName() + " in Cyl CSYS: " + xyz.toString());
-            maxR = Math.max(maxR, xyz.x);
-        }
-        _io.say.value("Pipe Radius", maxR, _ud.unit_m, true);
-        return maxR;
+    private List<PatchVertex> _getPatchVerticesSortedByAngle(DirectedPatchSourceMesh patchMsh,
+            CylindricalCoordinateSystem ccs) {
+
+        List<PatchVertex> vertices = _getPatchVertices(patchMsh);
+
+        List<Double> angles = vertices.stream()
+                .map(pv -> _getVector3(pv, ccs))
+                .map(cylindricalVector -> cylindricalVector.y)
+                .collect(Collectors.toList());
+
+        List<Double> sortedAngles = angles.stream()
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
+
+        return sortedAngles.stream()
+                .map(angle -> angles.indexOf(angle))
+                .map(i -> vertices.get(i))
+                .collect(Collectors.toList());
+
     }
 
     private Vector3 _getVector3(PatchVertex pv, CylindricalCoordinateSystem c) {
@@ -824,178 +917,15 @@ public class CreateMeshOperation {
         return false;
     }
 
-    private boolean _meshPipe_buildExternalPatchCurves(DirectedPatchSourceMesh patchMsh,
-            CylindricalCoordinateSystem c, boolean backwards) {
-        double r = _getRadius(patchMsh, c);
-        _io.say.msg("Erasing original Patch Curves...");
-        for (PatchCurve pc : _getPatchCurves(patchMsh)) {
-            patchMsh.deletePatchCurve(pc);
-        }
-        _io.say.msg("Rebuilding external Patch Curves...");
-        //-- Building is always clock-wise (0, 90, 180, 270)
-        ArrayList<PatchVertex> placedVs = new ArrayList<>();
-        Vector3 p1 = c.transformCoordinate(new Vector3(r, 0., 0.));
-        Vector3 p2 = c.transformCoordinate(new Vector3(r, 90. / 180. * Math.PI, 0.));
-        Vector3 p3 = c.transformCoordinate(new Vector3(r, Math.PI, 0));
-        Vector3 p4 = c.transformCoordinate(new Vector3(r, 270. / 180. * Math.PI, 0.));
-        double[] angles = { 0, 90, 180, 270 };
-        if (backwards) {
-            angles = new double[]{ 0, 270, 180, 90 };
-            Vector3 p90 = new Vector3(p2);
-            Vector3 p180 = new Vector3(p3);
-            Vector3 p270 = new Vector3(p4);
-            p2 = p270;
-            p3 = p180;
-            p4 = p90;
-            _io.say.msg("Trying angles backwards order...");
-        }
-        DoubleVector dv = new DoubleVector();
-        PatchVertex oldPv;
-        for (int i = 0; i < angles.length - 1; i++) {
-            _io.say.msg(true, "   Creating Curve: %.0f to %.0f...", angles[i], angles[i + 1]);
-            switch (i) {
-                case 0:
-                    dv = new DoubleVector(new double[]{ p1.x, p1.y, p1.z, p2.x, p2.y, p2.z });
-                    patchMsh.createPatchCurve(null, null, dv,
-                            new StringVector(new String[]{ "ON_FEATURE_EDGE", "ON_FEATURE_EDGE" }));
-                    placedVs.addAll(_getPatchVertices(patchMsh));
-                    continue;
-                case 1:
-                    dv = new DoubleVector(new double[]{ p3.x, p3.y, p3.z });
-                    break;
-                case 2:
-                    dv = new DoubleVector(new double[]{ p4.x, p4.y, p4.z });
-                    break;
-            }
-            oldPv = placedVs.get(placedVs.size() - 1);
-            patchMsh.createPatchCurve(oldPv, null, dv,
-                    new StringVector(new String[]{ "ON_FEATURE_EDGE" }));
-            for (PatchVertex pv : _getPatchVertices(patchMsh)) {
-                if (!placedVs.contains(pv)) {
-                    placedVs.add(pv);
-                }
-            }
-        }
-        dv.clear();
-        _io.say.msg("   Creating Curve: 270 to 0...");
-        patchMsh.createPatchCurve(placedVs.get(0), placedVs.get(placedVs.size() - 1), dv,
-                new StringVector(new String[]{}));
-        if (placedVs.size() == 4) {
-            return false;
-        }
-        _io.say.msg("Number of Vertices are not 4. Trying backwards...");
-        return true;
-    }
+    private void _sayPatchVerticesNames(List<PatchVertex> vertices) {
 
-    private PatchCurve _meshPipe_buildInternalPatchCurves(DirectedPatchSourceMesh patchMsh,
-            CylindricalCoordinateSystem c,
-            double rR, boolean backwards) {
-        double r = _getRadius(patchMsh, c);
-        final double toRad = Math.PI / 180.;
-        DoubleVector dv = new DoubleVector();
-        _io.say.msg("Building internal Patch Curves...");
-        //-- Building is always clock-wise (0, 90, 180, 270)
-        ArrayList<PatchCurve> placedCs = _getPatchCurves(patchMsh);
-        ArrayList<PatchVertex> placedVs = _getPatchVertices(patchMsh);
-        _io.say.msg("   Placed Curves: " + placedCs.size());
-        _io.say.msg("   Placed Vertices: " + placedVs.size());
-        if (placedVs.size() != 4) {
-            _io.say.msg("Number of Vertices are not 4. Please revise.");
-            return null;
-        }
-        Vector3 p1 = c.transformCoordinate(new Vector3(r * rR, 0., 0.));
-        Vector3 p2 = c.transformCoordinate(new Vector3(r * rR, 90. * toRad, 0.));
-        Vector3 p3 = c.transformCoordinate(new Vector3(r * rR, 180 * toRad, 0));
-        Vector3 p4 = c.transformCoordinate(new Vector3(r * rR, 270. * toRad, 0.));
-        PatchVertex pv1 = placedVs.get(0);
-        PatchVertex pv2 = placedVs.get(1);
-        PatchVertex pv3 = placedVs.get(2);
-        PatchVertex pv4 = placedVs.get(3);
-        int[] angles = { 0, 90, 180, 270 };
-        if (backwards) {
-            _io.say.msg("Trying angles in backwards...");
-            angles = new int[]{ 0, 270, 180, 90 };
-            Vector3 p90 = new Vector3(p2);
-            Vector3 p180 = new Vector3(p3);
-            Vector3 p270 = new Vector3(p4);
-            p2 = p270;
-            p3 = p180;
-            p4 = p90;
-        }
-        //_io.say.msg(  pv1.getProjectedCoordinate().toString());
-        //--
-        PatchVertex pv = null;
-        for (int i = 1; i <= 4; i++) {
-            switch (i) {
-                case 1:
-                    dv = new DoubleVector(new double[]{ p1.x, p1.y, p1.z });
-                    pv = pv1;
-                    break;
-                case 2:
-                    dv = new DoubleVector(new double[]{ p2.x, p2.y, p2.z });
-                    pv = pv2;
-                    break;
-                case 3:
-                    dv = new DoubleVector(new double[]{ p3.x, p3.y, p3.z });
-                    pv = pv3;
-                    break;
-                case 4:
-                    dv = new DoubleVector(new double[]{ p4.x, p4.y, p4.z });
-                    pv = pv4;
-                    break;
-            }
-            //_io.say.msg("DV = " + dv.toString());
-            //_io.say.msg("PV = " + pv.getCoordinate().toString());
-            //_io.say.msg("PV = " + pv.toString());
-            patchMsh.createPatchCurve(pv, null, dv, new StringVector(new String[]{ "ON_SURFACE" }));
-            PatchVertex p = (PatchVertex) _getNewObject(placedVs, _getPatchVertices(patchMsh));
-            placedVs.add(p);
-        }
-        //--
-        PatchCurve pcInt = (PatchCurve) _getNewObject(placedCs, _getPatchCurves(patchMsh));
-        //--
-        PatchVertex pv1r = placedVs.get(4);
-        PatchVertex pv2r = placedVs.get(5);
-        PatchVertex pv3r = placedVs.get(6);
-        PatchVertex pv4r = placedVs.get(7);
-        //--
-        PatchVertex px = null, py = null;
-        double delta = 90. / (_ud.dmDiv + 1);
-        for (int deg : angles) {
-            StringVector sv = new StringVector();
-            dv.clear();
-            _io.say.msg(true, "   Creating O-Grid angle: %d...", deg);
-            //--
-            for (int i = 1; i <= _ud.dmDiv; i++) {
-                double newR = _ud.dmOGF * r * rR;
-                double newT = deg + i * delta;
-                //_io.say.msg(String.format("r = %g     Theta = %g", newR, newT));
-                Vector3 v3 = new Vector3(newR, newT * toRad, 0.);
-                Vector3 pxy = new Vector3(c.transformCoordinate(v3));
-                dv.addAll(new DoubleVector(new double[]{ pxy.x, pxy.y, pxy.z }));
-                sv.add("ON_SURFACE");
-            }
-            switch (deg) {
-                case 0:
-                    px = pv1r;
-                    py = pv2r;
-                    break;
-                case 90:
-                    px = pv2r;
-                    py = pv3r;
-                    break;
-                case 180:
-                    px = pv3r;
-                    py = pv4r;
-                    break;
-                case 270:
-                    px = pv4r;
-                    py = pv1r;
-                    break;
-            }
-            patchMsh.createPatchCurve(px, py, dv, sv);
-        }
-        return pcInt;
+
+        List<String> names = vertices.stream()
+                .map(pv -> pv.getPresentationName())
+                .collect(Collectors.toList());
+
+        _io.say.msg("Vertices: " + names.toString());
+
     }
 
     private void _setAnisotropicSizes(VolumeCustomMeshControl vcmc, double[] relSizes) {
