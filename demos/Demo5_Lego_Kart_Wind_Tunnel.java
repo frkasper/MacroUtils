@@ -6,6 +6,7 @@ import star.base.neo.NamedObject;
 import star.common.Boundary;
 import star.common.Simulation;
 import star.common.StarMacro;
+import star.meshing.AutoMeshOperation;
 import star.meshing.MeshOperationPart;
 import star.meshing.SurfaceCustomMeshControl;
 
@@ -141,7 +142,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
                 0.0, targetTunnel);
         ud.mshCtrl1.setPresentationName(tunnelName);
         //-- Create Contact Preventions
-        mu.add.meshOperation.contactPrevention(ud.wrapMshOp, ud.geometryObjects, 0.8, ud.unit_mm);
+        mu.add.meshOperation.contactPrevention(ud.wrapMshOp, ud.geometryObjects, 0.75, ud.unit_mm);
         ud.geomPrt = mu.get.geometries.byREGEX(ud.wrapMshOp.getPresentationName(), true);
         ud.region = mu.add.region.fromPart(ud.geomPrt,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
@@ -176,6 +177,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
                 StaticDeclarations.Meshers.TRIMMER_MESHER,
                 StaticDeclarations.Meshers.PRISM_LAYER_MESHER);
         ud.mshOp.setPresentationName("Mesh of " + ud.geomPrt.getPresentationName());
+        mu.set.mesh.surfaceGrowthRate((AutoMeshOperation) ud.mshOp, 1.2, true);
         ud.geometryParts2.clear();
 
         //-- Create Custom Surface Controls

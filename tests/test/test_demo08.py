@@ -18,7 +18,7 @@ def test_domain_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 728665,
+    test_utils.assert_cell_count(DEMO_ID, 711000,
                                  tolerance=0.015, relative=True)
 
 
@@ -35,11 +35,11 @@ def test_upper_area_report():
 
 
 def test_cd_report():
-    test_utils.assert_report(DEMO_ID, 'C_d', 0.194)
+    test_utils.assert_report(DEMO_ID, 'C_d', 0.190, tolerance=0.02)
 
 
 def test_cl_report():
-    test_utils.assert_report(DEMO_ID, 'C_l', 0.3562)
+    test_utils.assert_report(DEMO_ID, 'C_l', 0.357, tolerance=0.02)
 
 
 def test_scalar_pressure_coefficient_min():

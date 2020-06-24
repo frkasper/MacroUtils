@@ -29,6 +29,7 @@ import star.prismmesher.PrismAutoMesher;
 import star.prismmesher.PrismLayerStretching;
 import star.prismmesher.PrismThickness;
 import star.prismmesher.VolumeControlPrismsOption;
+import star.resurfacer.SurfaceGrowthRate;
 import star.solidmesher.ThinAutoMesher;
 import star.solidmesher.ThinNumLayers;
 import star.solidmesher.ThinThicknessThreshold;
@@ -286,6 +287,22 @@ public class SetMesh {
         _io.say.action("Setting Surface Curvature", (NamedObject) sc.getParent().getParent(), vo);
         sc.setNumPointsAroundCircle(n);
         _io.say.value("Surface Curvature Points/Curve", sc.getNumPointsAroundCircle(), true);
+        _io.say.ok(vo);
+    }
+
+    /**
+     * Specifies a custom Surface Growth parameter.
+     *
+     * @param amo given AutoMeshOperation
+     * @param gr  given growth rate value
+     * @param vo  given verbose option; false will only print necessary data
+     */
+    public void surfaceGrowthRate(AutoMeshOperation amo, double gr, boolean vo) {
+        _io.say.action("Setting Surface Growth Rate", amo, vo);
+        SurfaceGrowthRate sgr = amo.getDefaultValues().get(SurfaceGrowthRate.class);
+        sgr.setGrowthRateOption(SurfaceGrowthRate.GrowthRateOption.USER_SPECIFIED);
+        sgr.getGrowthRateScalar().setValue(gr);
+        _io.say.value("Surface Growth Rate", sgr.getGrowthRateScalar(), true);
         _io.say.ok(vo);
     }
 

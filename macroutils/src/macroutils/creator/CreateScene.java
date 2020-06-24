@@ -415,11 +415,12 @@ public class CreateScene {
             case EMPTY:
                 break;
             case GEOMETRY:
-                _add.scene._createDisplayer_Part(scn, ano, vo);
+                PartDisplayer geometry = _add.scene._createDisplayer_Part(scn, ano, vo);
+                geometry.setRepresentation(_get.mesh.latestSurfaceRepresentation());
                 break;
             case MESH:
-                PartDisplayer pd = _createDisplayer_Part(scn, ano, vo);
-                pd.setMesh(true);
+                PartDisplayer mesh = _createDisplayer_Part(scn, ano, vo);
+                mesh.setMesh(true);
                 break;
             case SCALAR:
                 _createDisplayer_Scalar(scn, ano, ff, u, vo);

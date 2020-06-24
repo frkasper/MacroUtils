@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import macroutils.MacroUtils;
 import star.base.neo.ClientServerObject;
 import star.common.FvRepresentation;
+import star.common.Representation;
 import star.common.Simulation;
 import star.delaunaymesher.DelaunayAutoMesher;
 import star.dualmesher.DualAutoMesher;
@@ -115,9 +116,29 @@ public class GetMesh {
      * Get the Latest Surface mesh description.
      *
      * @return The CurrentDescriptionSource.
+     * @see #latestSurfaceRepresentation()
      */
+    @Deprecated  // in 2020.2
     public CurrentDescriptionSource latestSurfaceDescriptionSource() {
         return (CurrentDescriptionSource) descriptionSource("Latest Surface");
+    }
+
+    /**
+     * Get the Latest Surface representation.
+     *
+     * @return The Representation.
+     */
+    public Representation latestSurfaceRepresentation() {
+        return geometry().getSubRepresentations().getObject("Latest Surface");
+    }
+
+    /**
+     * Get the Latest Surface or Volume representation.
+     *
+     * @return The Representation.
+     */
+    public Representation latestSurfaceVolumeRepresentation() {
+        return _sim.getRepresentationManager().getObject("Latest Surface/Volume");
     }
 
     /**
