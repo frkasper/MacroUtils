@@ -60,7 +60,8 @@ def test_pressure_scalar_min_ss():
 
 
 def test_pressure_scalar_max_ss():
-    test_utils.assert_scene_max(_grid_ss(), 'Pressure', 'Scalar', 13.61)
+    test_utils.assert_scene_max(_grid_ss(), 'Pressure', 'Scalar', 13.7,
+                                tolerance=0.02, relative=True)
 
 
 def test_vector_min_ss():
@@ -120,7 +121,7 @@ def test_vector_min_des():
 
 
 def test_vector_max_des():
-    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.15,
+    test_utils.assert_scene_max(_grid_des(), 'Vector', 'Vector', 6.0,
                                 tolerance=0.05, relative=True)
 
 

@@ -40,12 +40,12 @@ def test_cl_report():
 
 
 def test_scalar_pressure_kart_min():
-    test_utils.assert_scene_min(DEMO_ID, 'Pressure Kart', 'Scalar', -1.5,
+    test_utils.assert_scene_min(DEMO_ID, 'Pressure Kart', 'Scalar', -17.3,
                                 tolerance=0.5, relative=False)
 
 
 def test_scalar_pressure_kart_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Pressure Kart', 'Scalar', 4.8,
+    test_utils.assert_scene_max(DEMO_ID, 'Pressure Kart', 'Scalar', 9.1,
                                 tolerance=0.1, relative=True)
 
 
