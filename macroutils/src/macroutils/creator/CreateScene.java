@@ -399,6 +399,8 @@ public class CreateScene {
         vd.getVectorDisplayQuantity().setFieldFunction(ff);
         if (u != null) {
             vd.getVectorDisplayQuantity().setUnits(u);
+            vd.getVectorDisplayQuantity().getMinimumValue().setUnits(u);
+            vd.getVectorDisplayQuantity().getMaximumValue().setUnits(u);
         }
         vd.addParts(ano);
         _createdDisplayer(vd, ano, vo);

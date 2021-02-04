@@ -298,7 +298,6 @@ public class TemplatePrettifier {
         hp.setTitleFont(StaticDeclarations.Fonts.TITLE.getFont());
         HistogramDataSet hds = (HistogramDataSet) hp.getDataSetManager().getDataSet(0);
         hds.getFillStyle().setColor(StaticDeclarations.Colors.SLATE_GRAY.getColor());
-        hds.getFillStyle().setBackgroundColor(StaticDeclarations.Colors.SLATE_GRAY.getColor());
         _setAxes(hp);
     }
 
