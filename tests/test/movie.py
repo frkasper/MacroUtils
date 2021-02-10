@@ -61,7 +61,7 @@ def write(folder):
     command = 'ffmpeg -i %s/%s -framerate 60 -c:v libx264 ' \
         '-pix_fmt yuv420p %s; rm -fr %s' % (temp_folder, _FMT_PICS,
                                             movie_file, temp_folder)
-    print '\nCommand: "%s"\n' % command
+    print('\nCommand: "%s"\n' % command)
     os.system(command)
     _remove(temp_folder)
 

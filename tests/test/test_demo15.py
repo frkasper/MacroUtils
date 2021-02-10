@@ -135,6 +135,6 @@ def test_write_movies():
     _write_movies()
     for movie_folder in MOVIE_FOLDERS:
         file_size = MOVIE_FOLDERS[movie_folder]
-        print 'Movie folder: %s' % movie_folder
+        print('Movie folder: %s' % movie_folder)
         test_utils.assert_file_size(movie.name(movie_folder), file_size,
                                     tolerance=0.1)

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Execute MacroUtils tests using pytest.
@@ -8,7 +8,7 @@ just for consistency checking.
 
 
 Basic requirements:
-    - Python 2 -- not tested with Python 3
+    - Python 3 -- tested with Python 3.8
     - pytest -- see http://www.pytest.org
 
 

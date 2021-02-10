@@ -8,12 +8,12 @@ Created on Fri Apr 27 10:44:34 2018
 """
 import glob
 import os
-import Queue
+import queue
 import re
-import strings
 import threading
 import time
-import timer
+import common.timer as timer
+import common.strings as strings
 
 
 def _flat(commands):
@@ -81,20 +81,20 @@ def run_multiple(testhome, commands, num_threads):
     if len(commands_to_run) == 0:
         return
 
-    queue = Queue.Queue()
+    run_queue = queue.Queue()
     for i in range(num_threads):
-        thread = TesterThread(queue=queue)
+        thread = TesterThread(queue=run_queue)
         thread.start()
 
     for command in commands_to_run:
         base_name = _case_name(command)
         if _will_run(testhome, base_name):
-            queue.put([testhome, command])
+            run_queue.put([testhome, command])
             time.sleep(1)
         else:
             print('Bypassed due presence of log/picture files: %s' % base_name)
 
-    queue.join()
+    run_queue.join()
 
 
 def run_sequential(testhome, commands):
@@ -136,7 +136,7 @@ class TesterThread(threading.Thread):
         print('  |--> Started: %s (at %s running %s)' % (name, et.s_t0, snp))
         _run(testhome, command)
         et.finalize()
-        print '   -->| Finished: %s (duration: %s)' % (name, et.s_tf)
+        print('   -->| Finished: %s (duration: %s)' % (name, et.s_tf))
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ Created on Fri Apr 27 08:25:53 2018
 """
 import os
 import shutil
-import strings
+import common.strings as strings
 
 
 def _copy(files, testhome):
