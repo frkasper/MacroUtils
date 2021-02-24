@@ -431,8 +431,8 @@ public class CreateMeshOperation {
             // Internal Patch curves creation
             _io.say.msg("Building internal Patch Curves...");
             _io.say.msg(" ");
-            List<PatchCurve> internalCurves = new ArrayList();
-            List<PatchVertex> internalVertices = new ArrayList();
+            List<PatchCurve> internalCurves = new ArrayList<>();
+            List<PatchVertex> internalVertices = new ArrayList<>();
 
             sortedVertices.forEach(externalVertex -> {
 

@@ -22,6 +22,7 @@ import star.common.Region;
 import star.common.ResidualPlot;
 import star.common.Simulation;
 import star.common.StarPlot;
+import star.common.Units;
 import star.common.XYPlot;
 import star.common.YAxisType;
 import star.common.graph.DataSet;
@@ -346,6 +347,7 @@ public final class SummaryWriter {
             double[] minMax = getMinMax(displayer);
             info.add(getPair(key + " MIN", minMax[0]));
             info.add(getPair(key + " MAX", minMax[1]));
+            info.add(getPair(key + " Units", getUnits(displayer).getPresentationName()));
             info.add(getPair(key + " Color Map", leg.getLookupTable().getPresentationName()));
             info.add(getPair(key + " Color Map Levels", leg.getLevels()));
             info.add(getPair(key + " Legend Position", leg.getPositionCoordinate().toString()));
@@ -375,7 +377,8 @@ public final class SummaryWriter {
             return new double[]{ sdq.getRangeMin(), sdq.getRangeMax() };
         } else {
             VectorDisplayQuantity vdq = (VectorDisplayQuantity) t;
-            return new double[]{ vdq.getMinMagnitude(), vdq.getMaxMagnitude() };
+            return new double[]{ vdq.getMinimumValue().getRawValue(),
+                vdq.getMaximumValue().getRawValue()};
         }
     }
 
@@ -422,6 +425,16 @@ public final class SummaryWriter {
 
     private String getString(double value) {
         return String.format("%.6e", value);
+    }
+
+    private Units getUnits(Displayer displayer) {
+        if (displayer instanceof ScalarDisplayer) {
+            return ((ScalarDisplayer) displayer).getScalarDisplayQuantity().getUnits();
+        } else if (displayer instanceof StreamDisplayer) {
+            return ((StreamDisplayer) displayer).getScalarDisplayQuantity().getUnits();
+        } else {
+            return ((VectorDisplayer) displayer).getVectorDisplayQuantity().getUnits();
+        }
     }
 
     private void printCollected(int initialSize) {

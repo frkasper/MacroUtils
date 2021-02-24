@@ -5,10 +5,10 @@ import test_utils
 
 DEMO_ID = test_utils.demo_id(__file__)
 MOVIE_FOLDERS = {
-        'pics_Demo15_Run_DES_Structures': 1254530,
-        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 3521478,
-        'pics_Demo15_Run_DES_Velocity': 2638932,
-        'pics_Demo15_Run_DES_Wall_Y+': 1937729,
+        'pics_Demo15_Run_DES_Structures': 1229022,
+        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 3349034,
+        'pics_Demo15_Run_DES_Velocity': 2591147,
+        'pics_Demo15_Run_DES_Wall_Y+': 2016267,
         }
 
 
@@ -135,6 +135,6 @@ def test_write_movies():
     _write_movies()
     for movie_folder in MOVIE_FOLDERS:
         file_size = MOVIE_FOLDERS[movie_folder]
-        print 'Movie folder: %s' % movie_folder
+        print('Movie folder: %s' % movie_folder)
         test_utils.assert_file_size(movie.name(movie_folder), file_size,
                                     tolerance=0.1)
