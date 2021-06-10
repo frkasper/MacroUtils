@@ -70,5 +70,5 @@ def test_pictures_count():
 
 def test_write_movie():
     movie.write(MOVIE_FOLDER)
-    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 7554160,
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 7319660,
                                 tolerance=0.1)

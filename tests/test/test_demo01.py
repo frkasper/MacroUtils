@@ -14,7 +14,7 @@ def test_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 54000, tolerance=0.01, relative=True)
+    test_utils.assert_cell_count(DEMO_ID, 55200, tolerance=0.01, relative=True)
 
 
 def test_solution():

@@ -18,12 +18,12 @@ def test_domain_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 711000,
+    test_utils.assert_cell_count(DEMO_ID, 726000,
                                  tolerance=0.015, relative=True)
 
 
 def test_solution():
-    test_utils.assert_iteration(DEMO_ID, 170, tolerance=20, relative=False)
+    test_utils.assert_iteration(DEMO_ID, 200, tolerance=40, relative=False)
 
 
 def test_frontal_area_report():
