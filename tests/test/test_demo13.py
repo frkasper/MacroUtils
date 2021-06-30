@@ -21,8 +21,7 @@ def test_unite_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 15300,
-                                 tolerance=0.02, relative=True)
+    test_utils.assert_cell_count(DEMO_ID, 14400, tolerance=0.025)
 
 
 def test_solution():
@@ -56,5 +55,5 @@ def test_pictures_count():
 
 def test_write_movie():
     movie.write(MOVIE_FOLDER)
-    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 9913839,
+    test_utils.assert_file_size(movie.name(MOVIE_FOLDER), 9799470,
                                 tolerance=0.1, relative=True)
