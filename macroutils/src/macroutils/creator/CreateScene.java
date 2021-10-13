@@ -326,8 +326,8 @@ public class CreateScene {
         _io.say.value("Position", an.getDefaultPosition(), true);
         _io.say.object(an, true);
         _io.say.ok(true);
-        return (FixedAspectAnnotationProp) scn.getAnnotationPropManager()
-                .createPropForAnnotation(an);
+        scn.getAnnotationPropManager().getAnnotationGroup().add(an);
+        return (FixedAspectAnnotationProp) scn.getAnnotationPropManager().getAnnotationProp(an);
     }
 
     private Displayer _createDisplayer(Scene scn, StaticDeclarations.Displayer type,
