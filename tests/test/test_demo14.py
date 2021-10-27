@@ -8,7 +8,7 @@ DEMO_ID = test_utils.demo_id(__file__)
 
 def _assert_report(grid_file, report_name, expected, tolerance=0.005,
                    relative=True):
-    re_patt = 'Report -> %s:\s(.*)\n' % report_name
+    re_patt = r'Report -> %s:\s(.*)\n' % report_name
     actual = test_utils._float_from_sim_file(re_patt, grid_file)
     print('\n[assert Report] %s: ' % report_name),
     test_utils.assert_value(actual, expected, tolerance, relative)
@@ -20,8 +20,8 @@ def _assert_summary_contents(grid_number):
 
 def _gci_coefficients():
     """Reconstruct GCI23 values from Plot"""
-    num_vals = _values_from_plot('.*Numerical .. Y values:\s\[(.*)\]')
-    gci_all_vals = _values_from_plot('.*GCI23 .. Y values:\s\[(.*)\]')
+    num_vals = _values_from_plot(r'.*Numerical .. Y values:\s\[(.*)\]')
+    gci_all_vals = _values_from_plot(r'.*GCI23 .. Y values:\s\[(.*)\]')
     gci_vals = gci_all_vals[::2]
     assert len(num_vals) == len(gci_vals)
     return [xs / x - 1.0 for xs, x in zip(gci_vals, num_vals)]
@@ -121,7 +121,7 @@ def test_evaluate_gci_summary():
 
 
 def test_maximum_velocity_from_plot():
-    num_vals = _values_from_plot('.*Numerical .. Y values:\s\[(.*)\]')
+    num_vals = _values_from_plot(r'.*Numerical .. Y values:\s\[(.*)\]')
     assert len(num_vals) == 21
     test_utils.assert_value(max(num_vals), _vmax())
 
@@ -130,5 +130,5 @@ def test_gci23_coefficients():
     gci23_coeffs = _gci_coefficients()
     test_utils.assert_value(min(gci23_coeffs), 0.0005,
                             tolerance=0.0005, relative=False)
-    test_utils.assert_value(max(gci23_coeffs), 0.04,
+    test_utils.assert_value(max(gci23_coeffs), 0.06,
                             tolerance=0.02, relative=False)

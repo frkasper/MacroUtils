@@ -246,8 +246,8 @@ public class TemplatePrettifier {
                     }
                 }
             }
-            if (ls.getWidth() == 1) {
-                ls.setWidth(lw);
+            if (ls.getLineWidth() == 1.0) {
+                ls.setLineWidth(lw);
             }
             if (ss.getSize() == 6) {
                 ss.setSize(_SYMBOL_SIZE);
