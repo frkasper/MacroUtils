@@ -18,7 +18,7 @@ import common.star as star
 
 
 def _assert_content_count(key, argument, expected, tolerance, relative):
-    actual = _float_from_argument('%s Count:\s(.*)\n' % key, argument)
+    actual = _float_from_argument(r'%s Count:\s(.*)\n' % key, argument)
     print('\n[assert %s Count]: ' % key),
     assert_value(actual, expected, tolerance, relative)
 
@@ -28,14 +28,14 @@ def _assert_exists(filename):
 
 
 def _assert_report(argument, report_name, expected, tolerance, relative):
-    re_patt = 'Report -> %s:\s(.*)\n' % report_name
+    re_patt = r'Report -> %s:\s(.*)\n' % report_name
     actual = _float_from_argument(re_patt, argument)
     print('\n[assert Report] %s: ' % report_name),
     assert_value(actual, expected, tolerance, relative)
 
 
 def _assert_scene(argument, scene, displayer, expected, tol, relative, key):
-    re_patt = 'Scene -> %s -> \w+ -> %s %s:\s(.*)\n' % (scene, displayer, key)
+    re_patt = r'Scene -> %s -> \w+ -> %s %s:\s(.*)\n' % (scene, displayer, key)
     actual = _float_from_argument(re_patt, argument)
     print('\n[assert Scene] %s -> %s: ' % (scene, displayer)),
     assert_value(actual, expected, tol, relative)
@@ -189,14 +189,14 @@ def assert_pictures_count_in_folder(glob_pattern, expected):
 
 def assert_part_surfaces_count(argument, part_name, expected, tolerance=0,
                                relative=False):
-    actual = _float_from_argument('Part -> %s:\s(\d+) Part' % part_name,
+    actual = _float_from_argument(r'Part -> %s:\s(\d+) Part' % part_name,
                                   argument)
     print('\n[assert Part Surfaces Count]: '),
     assert_value(actual, expected, tolerance, relative)
 
 
 def assert_iteration(argument, expected, tolerance=0.0, relative=False):
-    actual = _int_from_argument('Iteration:\s(\d+)', argument)
+    actual = _int_from_argument(r'Iteration:\s(\d+)', argument)
     assert_value(actual, expected, tolerance, relative)
 
 
@@ -228,7 +228,7 @@ def assert_summary_contents_by_sim_file(filename):
 
 
 def assert_time(argument, expected, tolerance=0.0001, relative=True):
-    actual = _float_from_argument('Time:\s(.*)\n', argument)
+    actual = _float_from_argument(r'Time:\s(.*)\n', argument)
     assert_value(actual, expected, tolerance, relative)
 
 
@@ -260,8 +260,8 @@ def assert_vertex_count(argument, expected, tolerance=0.005, relative=True):
 
 def demo_id(filename):
     """Get the demo_number from a test macro"""
-    b1 = re.match('.*/test_demo\d{2}\.py', filename)
-    found = re.findall('.*/test_demo(\d{2})\.py', filename)
+    b1 = re.match(r'.*/test_demo\d{2}\.py', filename)
+    found = re.findall(r'.*/test_demo(\d{2})\.py', filename)
     b2 = len(found) == 1
     is_test_file = b1 and b2
     assert is_test_file, 'Not a test file: "%s"' % filename
