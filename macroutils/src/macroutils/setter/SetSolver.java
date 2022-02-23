@@ -561,10 +561,12 @@ public class SetSolver {
         SegregatedMultiPhaseSolver emps = _get.solver.byClass(SegregatedMultiPhaseSolver.class);
         MultiPhaseVelocitySolver empv = emps.getVelocitySolver();
         MultiPhasePressureSolver empp = emps.getPressureSolver();
-        empv.setUrf(_ud.urfPhsCplVel);
-        empp.setUrf(_ud.urfP);
-        _io.say.value("URF Phase Couple Velocity", empv.getUrf(), true);
-        _io.say.value("URF Pressure", empp.getUrf(), true);
+        ScalarPhysicalQuantity urfp = empp.getUrfQuantity();
+        ScalarPhysicalQuantity urfv = empv.getUrfQuantity();
+        urfp.setValue(_ud.urfP);
+        urfv.setValue(_ud.urfPhsCplVel);
+        _io.say.value("URF Phase Couple Velocity", urfv.getRawValue(), true);
+        _io.say.value("URF Pressure", urfp.getRawValue(), true);
     }
 
     private void _updateURFs_OtherSolvers() {

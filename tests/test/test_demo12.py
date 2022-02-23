@@ -37,8 +37,8 @@ def test_cfl_avg_report():
 
 
 def test_cfl_max_report():
-    test_utils.assert_report(DEMO_ID, 'CFL_max', 8.0,
-                             tolerance=0.7, relative=False)
+    test_utils.assert_report(DEMO_ID, 'CFL_max', 8.5,
+                             tolerance=1.0, relative=False)
 
 
 def test_time_report():

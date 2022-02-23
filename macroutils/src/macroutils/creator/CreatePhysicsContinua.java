@@ -8,6 +8,7 @@ import macroutils.UserDeclarations;
 import star.common.CompositeArrayProfileMethod;
 import star.common.EulerianPhase;
 import star.common.ExplicitUnsteadyModel;
+import star.common.FieldFunction;
 import star.common.FunctionScalarProfileMethod;
 import star.common.FunctionVectorProfileMethod;
 import star.common.ImplicitUnsteadyModel;
@@ -129,20 +130,24 @@ public class CreatePhysicsContinua {
                 _ud.unit_kgpm3, "Heavy Fluid Density", true);
         //--
         //-- Apply Wave Initial Conditions
+        FieldFunction ffp = _get.objects.fieldFunction("Hydrostatic Pressure.*", true);
+        FieldFunction ffvfh = _get.objects.fieldFunction("Volume Fraction.*Heavy.*", true);
+        FieldFunction ffvfl = _get.objects.fieldFunction("Volume Fraction.*Light.*", true);
+        FieldFunction ffvel = _get.objects.fieldFunction("Velocity of .*Wave.*", true);
         InitialPressureProfile ipp = pc.getInitialConditions().get(InitialPressureProfile.class);
         ipp.setMethod(FunctionScalarProfileMethod.class);
-        ipp.getMethod(FunctionScalarProfileMethod.class).setFieldFunction(fvw.getPressureFF());
+        ipp.getMethod(FunctionScalarProfileMethod.class).setFieldFunction(ffp);
         VolumeFractionProfile vfp = pc.getInitialConditions().get(VolumeFractionProfile.class);
         vfp.setMethod(CompositeArrayProfileMethod.class);
         ScalarProfile sp0 = vfp.getMethod(CompositeArrayProfileMethod.class).getProfile(0);
         sp0.setMethod(FunctionScalarProfileMethod.class);
         ScalarProfile sp1 = vfp.getMethod(CompositeArrayProfileMethod.class).getProfile(1);
         sp1.setMethod(FunctionScalarProfileMethod.class);
-        sp0.getMethod(FunctionScalarProfileMethod.class).setFieldFunction(fvw.getVofHeavyFF());
-        sp1.getMethod(FunctionScalarProfileMethod.class).setFieldFunction(fvw.getVofLightFF());
+        sp0.getMethod(FunctionScalarProfileMethod.class).setFieldFunction(ffvfh);
+        sp1.getMethod(FunctionScalarProfileMethod.class).setFieldFunction(ffvfl);
         VelocityProfile vpp = pc.getInitialConditions().get(VelocityProfile.class);
         vpp.setMethod(FunctionVectorProfileMethod.class);
-        vpp.getMethod(FunctionVectorProfileMethod.class).setFieldFunction(fvw.getVelocityFF());
+        vpp.getMethod(FunctionVectorProfileMethod.class).setFieldFunction(ffvel);
         //--
         _io.say.created(fvw, true);
         return fvw;

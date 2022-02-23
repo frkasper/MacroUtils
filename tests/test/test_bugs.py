@@ -6,7 +6,7 @@ import test_utils
 
 
 def _assert_opacity_bug_14(key, expected):
-    re_patt = 'Scene -> \w+ -> \w+ -> %s Opacity:\s(.*)\n' % key
+    re_patt = r'Scene -> \w+ -> \w+ -> %s Opacity:\s(.*)\n' % key
     actual = _float(re_patt, _bug_sim(1))
     test_utils.assert_value(actual, expected, tolerance=0)
 

@@ -1,8 +1,8 @@
-attrs==20.3.0
+attrs==21.4.0
 iniconfig==1.1.1
-packaging==20.9
-pluggy==0.13.1
-py==1.10.0
-pyparsing==2.4.7
-pytest==6.2.2
-toml==0.10.2
+packaging==21.3
+pluggy==1.0.0
+py==1.11.0
+pyparsing==3.0.7
+pytest==7.0.1
+tomli==2.0.1
