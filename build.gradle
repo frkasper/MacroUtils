@@ -19,7 +19,7 @@ def buildVersion() {
         .resolve('MacroUtils.java'))
 
     String rowFound = javaFile.readLines().grep(~/\s\* \@version.*/)[0]
-    String versionFound = rowFound.split(' ').grep(~/\d{4}\.\d{1}/)[0]
+    String versionFound = rowFound.split(' ').grep(~/\d{4}/)[0]
 
     return versionFound
 
