@@ -237,8 +237,8 @@ public class CreateTools {
         Coordinate c = ccsys.getOrigin();
         c.setCoordinate(_ud.defUnitLength, _ud.defUnitLength, _ud.defUnitLength,
                 new DoubleVector(org));
-        ccsys.setBasis0(new DoubleVector(b1));
-        ccsys.setBasis1(new DoubleVector(b2));
+        ccsys.getRadialVector().setVector(new DoubleVector(b1));
+        ccsys.getRThetaPlane().setVector(new DoubleVector(b2));
         _io.say.created(ccsys, true);
         return ccsys;
     }

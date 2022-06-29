@@ -13,6 +13,7 @@ import star.common.Units;
 import star.vis.Annotation;
 import star.vis.AnnotationProp;
 import star.vis.AnnotationPropManager;
+import star.vis.ClipMode;
 import star.vis.DisplayLocationMode;
 import star.vis.Displayer;
 import star.vis.DisplayerManager;
@@ -361,8 +362,8 @@ public class CreateScene {
 
     private ScalarDisplayer _createDisplayer_Scalar(Scene scn, ArrayList<NamedObject> ano,
             FieldFunction ff, Units u, boolean vo) {
-        ScalarDisplayer sd = _getDM(scn)
-                .createScalarDisplayer(StaticDeclarations.Displayer.SCALAR.getType());
+        ScalarDisplayer sd = _getDM(scn).createScalarDisplayer(
+                StaticDeclarations.Displayer.SCALAR.getType(), ClipMode.NONE);
         sd.initialize();
         _setSDQ(sd.getScalarDisplayQuantity(), ff);
         if (u != null) {
@@ -375,8 +376,8 @@ public class CreateScene {
 
     private StreamDisplayer _createDisplayer_Streamline(Scene scn, ArrayList<NamedObject> ano,
             FieldFunction ff, Units u, boolean vo) {
-        StreamDisplayer sd = _getDM(scn)
-                .createStreamDisplayer(StaticDeclarations.Displayer.STREAMLINE.getType());
+        StreamDisplayer sd = _getDM(scn).createStreamDisplayer(
+                StaticDeclarations.Displayer.STREAMLINE.getType(), ClipMode.NONE);
         sd.initialize();
         _setSDQ(sd.getScalarDisplayQuantity(), ff);
         if (u != null) {
@@ -390,7 +391,7 @@ public class CreateScene {
 
     private VectorDisplayer _createDisplayer_Vector(Scene scn, ArrayList<NamedObject> ano,
             FieldFunction ff, Units u, boolean vo) {
-        VectorDisplayer vd = _getDM(scn).createVectorDisplayer("Vector");
+        VectorDisplayer vd = _getDM(scn).createVectorDisplayer("Vector", ClipMode.NONE);
         vd.initialize();
         if (!_chk.is.vector(ff)) {
             _io.say.value("Field Function is not a Vector. Type",
