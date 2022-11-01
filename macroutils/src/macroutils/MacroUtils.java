@@ -23,11 +23,12 @@ import star.common.Simulation;
  * MacroUtils is a library that can be used for writing macros, Simulation Assistants and other
  * third party applications related to Simcenter STAR-CCM+.<p>
  *
- * It requires the Simcenter STAR-CCM+ libraries from the version indicated below.
+ * It requires the Simcenter STAR-CCM+ libraries from the version indicated in the annotation
+ * below.
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version 2206
+ * @version 2210
  */
 public final class MacroUtils {
 

@@ -5,10 +5,10 @@ import test_utils
 
 DEMO_ID = test_utils.demo_id(__file__)
 MOVIE_FOLDERS = {
-        'pics_Demo15_Run_DES_Structures': 1088207,
-        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 3326595,
-        'pics_Demo15_Run_DES_Velocity': 2622274,
-        'pics_Demo15_Run_DES_Wall_Y+': 1933390,
+        'pics_Demo15_Run_DES_Structures': 1140359,
+        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 3208486,
+        'pics_Demo15_Run_DES_Velocity': 2615315,
+        'pics_Demo15_Run_DES_Wall_Y+': 2024378,
         }
 
 
