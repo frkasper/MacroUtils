@@ -147,7 +147,7 @@ public class Demo5_Lego_Kart_Wind_Tunnel extends StarMacro {
         ud.region = mu.add.region.fromPart(ud.geomPrt,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                true);
         ud.region.setPresentationName(tunnelName);
 
         //-- Create Custom Bounded Shapes for Volumetric Controls

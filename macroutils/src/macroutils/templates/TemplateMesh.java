@@ -61,7 +61,7 @@ public class TemplateMesh {
         Region reg = _add.region.fromPart(gp,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                true);
         _add.meshOperation
                 .directedMeshing_Channel(src, tgt, nCells[0], nCells[1], nCells[2]).execute();
         return reg;
@@ -99,7 +99,7 @@ public class TemplateMesh {
         Region reg = _add.region.fromPart(gp,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                true);
         if (_badgeFor2D) {
             _add.meshOperation.badgeFor2D(_get.objects.arrayList(gp));
         }

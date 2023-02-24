@@ -17,7 +17,6 @@ import star.common.BoundaryInterface;
 import star.common.CompositePart;
 import star.common.CoordinateSystem;
 import star.common.DeltaMonitorUpdateEvent;
-import star.common.FeatureCurve;
 import star.common.FieldFunction;
 import star.common.FrequencyMonitorUpdateEvent;
 import star.common.GeometryObject;
@@ -286,11 +285,6 @@ public class UserDeclarations {
      * Just an empty DoubleVector. Useful somewhere.
      */
     public DoubleVector dv0 = new DoubleVector(StaticDeclarations.COORD0);
-
-    /**
-     * A Global Feature Curve variable. Useful somewhere.
-     */
-    public FeatureCurve featCrv = null;
 
     /**
      * Some useful Global Variables: Field Function.

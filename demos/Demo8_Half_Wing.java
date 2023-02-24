@@ -132,7 +132,7 @@ public class Demo8_Half_Wing extends StarMacro {
         ud.region = mu.add.region.fromPart(ud.mshOpPrt2,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_EACH_PART_CURVE, true);
+                true);
         ud.region.setPresentationName(regionName);
         //--
         ud.geometryParts.addAll(ud.region.getPartGroup().getObjects());

@@ -44,8 +44,7 @@ public class CreateRegion {
         return fromParts(_get.geometries.all(false), StaticDeclarations.RegionMode.ONE,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_EACH_PART_CURVE, true)
-                .get(0);
+                true).get(0);
     }
 
     /**
@@ -56,15 +55,12 @@ public class CreateRegion {
      *            options.
      * @param im  given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for
      *            options.
-     * @param fcm given Feature Curve mode. See
-     *            {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
      * @param vo  given verbose option. False will not print anything.
      * @return The Region.
      */
     public Region fromPart(GeometryPart gp, StaticDeclarations.BoundaryMode bm, 
-            StaticDeclarations.InterfaceMode im, StaticDeclarations.FeatureCurveMode fcm,
-            boolean vo) {
-        return fromParts(_get.objects.arrayList(gp), bm, im, fcm, vo);
+            StaticDeclarations.InterfaceMode im, boolean vo) {
+        return fromParts(_get.objects.arrayList(gp), bm, im, vo);
     }
 
     /**
@@ -75,15 +71,12 @@ public class CreateRegion {
      *            options.
      * @param im  given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for
      *            options.
-     * @param fcm given Feature Curve mode. See
-     *            {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
      * @param vo  given verbose option. False will not print anything.
      * @return An ArrayList of the created Regions.
      */
     public Region fromParts(ArrayList<GeometryPart> agp, StaticDeclarations.BoundaryMode bm,
-            StaticDeclarations.InterfaceMode im, StaticDeclarations.FeatureCurveMode fcm,
-            boolean vo) {
-        return fromParts(agp, StaticDeclarations.RegionMode.ONE, bm, im, fcm, vo).get(0);
+            StaticDeclarations.InterfaceMode im, boolean vo) {
+        return fromParts(agp, StaticDeclarations.RegionMode.ONE, bm, im, vo).get(0);
     }
 
     /**
@@ -96,15 +89,12 @@ public class CreateRegion {
      *            options.
      * @param im  given Interface mode. See {@link macroutils.StaticDeclarations.InterfaceMode} for
      *            options.
-     * @param fcm given Feature Curve mode. See
-     *            {@link macroutils.StaticDeclarations.FeatureCurveMode} for options.
      * @param vo  given verbose option. False will not print anything.
      * @return An ArrayList of the created Regions.
      */
     public ArrayList<Region> fromParts(ArrayList<GeometryPart> agp, 
             StaticDeclarations.RegionMode rm, StaticDeclarations.BoundaryMode bm,
-            StaticDeclarations.InterfaceMode im, StaticDeclarations.FeatureCurveMode fcm,
-            boolean vo) {
+            StaticDeclarations.InterfaceMode im, boolean vo) {
         switch (rm) {
             case ONE:
                 _io.say.action("Assigning Parts to a Single Region", vo);
@@ -120,8 +110,10 @@ public class CreateRegion {
         _io.say.objects(agp, "Geometry Parts", vo);
         ArrayList<Region> ar0 = _get.regions.all(false);
         RegionManager rmg = _sim.getRegionManager();
-        rmg.newRegionsFromParts(agp, rm.getMode(),
-                null, bm.getMode(), null, fcm.getMode(), null, im.getMode());
+        rmg.newRegionsFromParts(agp,
+                rm.getMode(), null,
+                bm.getMode(), null,
+                im.getMode());
         ArrayList<Region> ar1 = _get.regions.all(false);
         ar1.removeAll(ar0);
         _io.say.msg(vo, "Regions created: %d", ar1.size());
