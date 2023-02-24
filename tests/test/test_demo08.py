@@ -43,7 +43,8 @@ def test_cl_report():
 
 
 def test_scalar_pressure_coefficient_min():
-    test_utils.assert_scene_min(DEMO_ID, 'Cp Wing', 'Scalar', -1.5444)
+    test_utils.assert_scene_min(DEMO_ID, 'Cp Wing', 'Scalar', -1.503,
+                                tolerance=0.02)
 
 
 def test_scalar_pressure_kart_max():

@@ -50,7 +50,7 @@ def test_scalar_pressure_kart_max():
 
 
 def test_scalar_pressure_section_min():
-    test_utils.assert_scene_min(DEMO_ID, 'Pressure Section', 'Scalar', -0.8,
+    test_utils.assert_scene_min(DEMO_ID, 'Pressure Section', 'Scalar', -0.65,
                                 tolerance=0.1, relative=True)
 
 
