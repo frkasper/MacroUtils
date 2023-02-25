@@ -22,7 +22,7 @@ def test_solution():
 
 
 def test_report():
-    test_utils.assert_report(DEMO_ID, 'Pressure Inlet', 3.845553)
+    test_utils.assert_report(DEMO_ID, 'Pressure Inlet', 3.9, tolerance=0.02)
 
 
 def test_scalar_min():
@@ -30,4 +30,5 @@ def test_scalar_min():
 
 
 def test_scalar_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 0.129)
+    test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 0.126,
+                                tolerance=0.02)

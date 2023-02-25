@@ -93,7 +93,7 @@ public class Demo11_Directed_Meshing extends StarMacro {
                 ud.region = mu.add.region.fromPart(ud.cadPrt2,
                         StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                         StaticDeclarations.InterfaceMode.CONTACT,
-                        StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                        true);
                 ud.region.setPresentationName(cyl);
                 ud.csys = mu.add.tools.coordinateSystem_Cylindrical(origin,
                         new double[]{ 1, 0, 0 }, new double[]{ 0, 0, 1 });
@@ -125,7 +125,7 @@ public class Demo11_Directed_Meshing extends StarMacro {
         ud.region = mu.add.region.fromPart(ud.mshOpPrt,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                true);
         //--
         ud.mshOp = mu.add.meshOperation.automatedMesh(ud.geometryParts2,
                 StaticDeclarations.Meshers.SURFACE_REMESHER,

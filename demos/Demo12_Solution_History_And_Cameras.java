@@ -130,7 +130,7 @@ public class Demo12_Solution_History_And_Cameras extends StarMacro {
         ud.region = mu.add.region.fromPart(ud.mshOpPrt,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                true);
         ud.autoMshOp = mu.add.meshOperation.automatedMesh(ud.geometryParts2,
                 StaticDeclarations.Meshers.SURFACE_REMESHER,
                 StaticDeclarations.Meshers.TRIMMER_MESHER,

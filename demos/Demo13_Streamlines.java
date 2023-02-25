@@ -176,7 +176,7 @@ public class Demo13_Streamlines extends StarMacro {
         ud.region = mu.add.region.fromPart(ud.mshOpPrt,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                true);
         //--
         ud.mshBaseSize = r2 / 5;
         ud.prismsLayers = 1;

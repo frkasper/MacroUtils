@@ -18,7 +18,6 @@ import star.trimmer.PartsGrowthRateOption;
  * <li>{@link DefaultURFs}
  * <li>{@link Density}
  * <li>{@link Energy}
- * <li>{@link FeatureCurveMode}
  * <li>{@link Fonts}
  * <li>{@link GrowthRate}
  * <li>{@link InterfaceMode}
@@ -490,41 +489,6 @@ public class StaticDeclarations {
          * Material solving for Heat Transfer.
          */
         THERMAL,
-
-    }
-
-    /**
-     * Special MacroUtils types when creating Regions w.r.t Feature Curves:
-     * <ul>
-     * <li>{@link #ONE_FOR_EACH_PART_CURVE} (Preferred)
-     * <li>{@link #ONE_FOR_ALL}
-     * </ul>
-     */
-    public static enum FeatureCurveMode {
-
-        /**
-         * One Feature Curve for every Part Curve available (Preferred).
-         */
-        ONE_FOR_EACH_PART_CURVE("OneFeatureCurvePerPartCurve"),
-        /**
-         * One Feature Curve all Part Curves available.
-         */
-        ONE_FOR_ALL("OneFeatureCurve"),;
-
-        private final String s;
-
-        private FeatureCurveMode(final String s) {
-            this.s = s;
-        }
-
-        /**
-         * Gets the actual string expected by STAR-CCM+ API.
-         *
-         * @return The mode.
-         */
-        public String getMode() {
-            return this.s;
-        }
 
     }
 

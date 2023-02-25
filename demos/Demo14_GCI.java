@@ -211,7 +211,7 @@ public class Demo14_GCI extends StarMacro {
         ud.region = mu.add.region.fromPart(ud.cadPrt,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.BOUNDARY,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                true);
     }
 
     private void solveGrids() {

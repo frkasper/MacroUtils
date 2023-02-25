@@ -34,7 +34,7 @@ def test_pressure_scalar_min():
 
 
 def test_pressure_scalar_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 14.5,
+    test_utils.assert_scene_max(DEMO_ID, 'Scalar', 'Scalar', 14.0,
                                 tolerance=0.5, relative=False)
 
 

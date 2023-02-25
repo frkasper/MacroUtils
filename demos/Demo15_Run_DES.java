@@ -339,7 +339,7 @@ public class Demo15_Run_DES extends StarMacro {
         ud.region = mu.add.region.fromPart(ud.mshOpPrt,
                 StaticDeclarations.BoundaryMode.ONE_FOR_EACH_PART_SURFACE,
                 StaticDeclarations.InterfaceMode.CONTACT,
-                StaticDeclarations.FeatureCurveMode.ONE_FOR_ALL, true);
+                true);
         //--
         ud.mshBaseSize = bsRANS;
         ud.mshOptCycles = 4;
