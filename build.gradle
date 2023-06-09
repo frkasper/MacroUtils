@@ -38,7 +38,7 @@ subprojects {
     apply plugin: 'java-library'
 
     dependencies {
-        compile fileTree(libsFolder.getAbsolutePath()) {
+        api fileTree(libsFolder.getAbsolutePath()) {
             include '*.jar'
         }
     }
@@ -49,7 +49,7 @@ subprojects {
             !sourceSets.main.allSource.files.isEmpty()
         }
 
-        baseName "${jarBaseName}"
+        archiveBaseName = "${jarBaseName}"
 
     }
 

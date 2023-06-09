@@ -7,8 +7,13 @@
 
 subprojects {
 
+    configurations {
+        resolvableApi.extendsFrom(api)
+        resolvableApi.canBeResolved(true)
+    }
+
     dependencies {
-        compile project(':macroutils')
+        api project(':macroutils')
     }
 
     jar {
@@ -16,7 +21,7 @@ subprojects {
         exclude '*.jar'
 
         from {
-            configurations.compile.collect {
+            configurations.resolvableApi.collect {
                 it.name.contains("${jarBaseName}") ? zipTree(it) : it
             }
         }
@@ -25,7 +30,7 @@ subprojects {
             from 'html'
         }
 
-        baseName "${project.name}_assistant_${buildVersion}_build_${buildDate}"
+        archiveBaseName = "${project.name}_assistant_${buildVersion}_build_${buildDate}"
 
     }
 
