@@ -2,6 +2,8 @@ package macroutils.misc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Vector;
+import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import star.base.neo.ClientServerObject;
 import star.base.neo.ClientServerObjectManager;
@@ -386,7 +388,8 @@ public class MainRemover {
         for (String s : npKeys) {
             _io.say.msg(true, "  - %-35s: %s", s, np.get(s).toString());
         }
-        _sim.getMeshManager().removeInvalidCells(new NeoObjectVector(fvRegions.toArray()), np);
+        Vector inputs = fvRegions.stream().collect(Collectors.toCollection(Vector::new));
+        _sim.getMeshManager().removeInvalidCells(inputs, np);
         _io.say.ok(true);
     }
 

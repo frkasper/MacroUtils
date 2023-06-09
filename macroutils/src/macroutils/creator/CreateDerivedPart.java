@@ -2,6 +2,7 @@ package macroutils.creator;
 
 import java.util.ArrayList;
 import java.util.Vector;
+import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
@@ -101,7 +102,8 @@ public class CreateDerivedPart {
     public IsoPart isosurface(ArrayList<NamedObject> ano, FieldFunction ff, double val, Units u) {
         _creating(ano, "Isosurface");
         _io.say.object(ff, true);
-        IsoPart ip = _sim.getPartManager().createIsoPart(new NeoObjectVector(ano.toArray()), ff);
+        Vector inputs = ano.stream().collect(Collectors.toCollection(Vector::new));
+        IsoPart ip = _sim.getPartManager().createIsoPart(inputs, ff);
         ip.setMode(IsoMode.ISOVALUE_SINGLE);
         _set.object.physicalQuantity(ip.getSingleIsoValue().getValueQuantity(), val, u,
                 "Iso Value", true);
@@ -122,10 +124,10 @@ public class CreateDerivedPart {
      */
     public LinePart line(ArrayList<NamedObject> ano, double[] c1, double[] c2, int res) {
         _creating(ano, "Line Probe");
-        NeoObjectVector where = new NeoObjectVector(ano.toArray());
+        Vector inputs = ano.stream().collect(Collectors.toCollection(Vector::new));
         DoubleVector from = new DoubleVector(c1);
         DoubleVector to = new DoubleVector(c2);
-        LinePart lp = _sim.getPartManager().createLinePart(where, from, to, res);
+        LinePart lp = _sim.getPartManager().createLinePart(inputs, from, to, res);
         lp.getPoint1Coordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength,
                 _ud.defUnitLength, from);
         lp.getPoint2Coordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength,
@@ -144,8 +146,8 @@ public class CreateDerivedPart {
      */
     public PointPart point(ArrayList<NamedObject> ano, double[] c) {
         _creating(ano, "Point Probe");
-        PointPart pp = _sim.getPartManager().createPointPart(new NeoObjectVector(ano.toArray()),
-                new DoubleVector(c));
+        Vector inputs = ano.stream().collect(Collectors.toCollection(Vector::new));
+        PointPart pp = _sim.getPartManager().createPointPart(inputs, new DoubleVector(c));
         pp.getPointCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength,
                 _ud.defUnitLength, new DoubleVector(c));
         _io.say.created(pp, true);
@@ -312,11 +314,11 @@ public class CreateDerivedPart {
         if (axis != null) {
             _io.say.msg(true, "Normal to %s direction.", axis);
         }
-        NeoObjectVector where = new NeoObjectVector(ano.toArray());
+        Vector inputs = ano.stream().collect(Collectors.toCollection(Vector::new));
         DoubleVector vecOrient = new DoubleVector(orientation);
         DoubleVector vecOrigin = new DoubleVector(origin);
         DoubleVector vecOffsets = new DoubleVector(new double[]{ 0.0 });
-        ImplicitPart ip = _sim.getPartManager().createImplicitPart(where, vecOrient,
+        ImplicitPart ip = _sim.getPartManager().createImplicitPart(inputs, vecOrient,
                 vecOrigin, 0, 1, vecOffsets);
         PlaneSection ps = (PlaneSection) ip;
         ps.getOriginCoordinate().setCoordinate(_ud.defUnitLength, _ud.defUnitLength,
@@ -330,9 +332,10 @@ public class CreateDerivedPart {
         _io.say.objects(anoIP, "Input Parts", vo);
         _io.say.objects(anoSP, "Seed Parts", vo);
         FieldFunction ff = _get.objects.fieldFunction(StaticDeclarations.Vars.VEL.getVar(), false);
-        StreamPart sp = _sim.getPartManager().createStreamPart(new NeoObjectVector(anoIP.toArray()),
-                new NeoObjectVector(anoSP.toArray()), ff, _ud.postStreamlineResolution,
-                _ud.postStreamlineResolution, 0);
+        Vector inputsIP = anoIP.stream().collect(Collectors.toCollection(Vector::new));
+        Vector<NamedObject> inputsSP = anoSP.stream().collect(Collectors.toCollection(Vector::new));
+        StreamPart sp = _sim.getPartManager().createStreamPart(inputsIP, inputsSP,
+                ff, _ud.postStreamlineResolution, _ud.postStreamlineResolution, 0);
         _io.say.object(sp.getFieldFunction(), true);
         _io.say.created(sp, true);
         return sp;
