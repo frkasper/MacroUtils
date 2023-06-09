@@ -28,7 +28,7 @@ import star.common.Simulation;
  *
  * @since STAR-CCM+ v7.02, May of 2012
  * @author Fabio Kasper
- * @version 2302
+ * @version 2306
  */
 public final class MacroUtils {
 

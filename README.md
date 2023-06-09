@@ -4,9 +4,9 @@ MacroUtils is a collection of high-level APIs in order to make your life easier 
 
 ## Requires
 
-1. Simcenter STAR-CCM+ 2302 libraries;
+1. Simcenter STAR-CCM+ 2306 libraries;
 
-1. Integrated development environment (IDE) supporting JDK 17 and gradle -- e.g.: NetBeans 13 or later.
+1. Integrated development environment (IDE) supporting JDK 17 and gradle -- e.g.: NetBeans 15 or later.
 
 ## Need an older version?
 
