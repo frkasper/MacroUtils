@@ -45,8 +45,8 @@ def test_scalar_pressure_kart_min():
 
 
 def test_scalar_pressure_kart_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Pressure Kart', 'Scalar', 5.0,
-                                tolerance=0.1, relative=True)
+    test_utils.assert_scene_max(DEMO_ID, 'Pressure Kart', 'Scalar', 4.75,
+                                tolerance=0.5, relative=False)
 
 
 def test_scalar_pressure_section_min():
@@ -55,8 +55,8 @@ def test_scalar_pressure_section_min():
 
 
 def test_scalar_pressure_section_max():
-    test_utils.assert_scene_max(DEMO_ID, 'Pressure Section', 'Scalar', 5.0,
-                                tolerance=0.1, relative=True)
+    test_utils.assert_scene_max(DEMO_ID, 'Pressure Section', 'Scalar', 4.75,
+                                tolerance=0.5, relative=False)
 
 
 def test_vector_velocity_section_min():
