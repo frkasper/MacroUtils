@@ -26,6 +26,10 @@ import star.prismmesher.NumPrismLayers;
 import star.prismmesher.PartsCustomPrismsOption;
 import star.prismmesher.PartsCustomizePrismMesh;
 import star.prismmesher.PrismAutoMesher;
+import star.prismmesher.PrismLayerCoreLayerAspectRatio;
+import star.prismmesher.PrismLayerGapFillPercentage;
+import star.prismmesher.PrismLayerMinimumThickness;
+import star.prismmesher.PrismLayerReductionPercentage;
 import star.prismmesher.PrismLayerStretching;
 import star.prismmesher.PrismThickness;
 import star.prismmesher.VolumeControlPrismsOption;
@@ -195,19 +199,23 @@ public class SetMesh {
             return;
         }
         AutoMeshDefaultValuesManager amdvm = amo.getDefaultValues();
-        PrismAutoMesher pam = (PrismAutoMesher) amo.getMeshers().getObject("Prism Layer Mesher");
-        pam.setMinimumThickness(_ud.prismsMinThickn);
-        pam.setGapFillPercentage(_ud.prismsGapFillPerc);
-        pam.setLayerChoppingPercentage(_ud.prismsLyrChoppPerc);
-        pam.setNearCoreLayerAspectRatio(_ud.prismsNearCoreAspRat);
+        PrismLayerMinimumThickness mt = amdvm.get(PrismLayerMinimumThickness.class);
+        PrismLayerGapFillPercentage gfp = amdvm.get(PrismLayerGapFillPercentage.class);
+        PrismLayerReductionPercentage rp = amdvm.get(PrismLayerReductionPercentage.class);
+        PrismLayerCoreLayerAspectRatio clar = amdvm.get(PrismLayerCoreLayerAspectRatio.class);
+        mt.setValue(_ud.prismsMinThickn);
+        gfp.setValue(_ud.prismsGapFillPerc);
+        rp.setValue(_ud.prismsLyrChoppPerc);
+        clar.setValue(_ud.prismsNearCoreAspRat);
         prisms(amdvm, numLayers, stretch, totalThickness, false);
-        _io.say.value("Prism Layer Minimum Thickness", pam.getMinimumThickness(), true);
-        _io.say.percentage("Prism Layer Gap Fill Percentage", pam.getGapFillPercentage(),
-                true);
-        _io.say.percentage("Prism Layer Chopping Percentage", pam.getLayerChoppingPercentage(),
-                true);
-        _io.say.value("Prism Layer Near Core Aspect Ratio", pam.getNearCoreLayerAspectRatio(),
-                true);
+        _io.say.value("Prism Layer Minimum Thickness",
+                mt.getMinimumThicknessPercentageInput().getValue(), true);
+        _io.say.percentage("Prism Layer Gap Fill Percentage",
+                gfp.getGapFillPercentageInput().getValue(), true);
+        _io.say.percentage("Prism Layer Chopping Percentage",
+                rp.getReductionPercentageInput().getValue(), true);
+        _io.say.value("Prism Layer Near Core Aspect Ratio",
+                clar.getCoreLayerAspectRatioInput().getValue(), true);
         _io.say.ok(vo);
     }
 

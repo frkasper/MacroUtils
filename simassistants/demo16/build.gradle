@@ -24,3 +24,5 @@ jar {
     }
 
 }
+
+jar.dependsOn(":macroutils:jar")

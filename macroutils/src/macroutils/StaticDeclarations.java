@@ -1369,22 +1369,6 @@ public class StaticDeclarations {
     }
 
     //--
-    //-- Objects in general.
-    //--
-    /**
-     * An empty object array. Useful somewhere.
-     */
-    public static final Object[] EMPTY_OBJECT = new Object[]{};
-
-    /**
-     * An empty STAR-CCM+ NeoObjectVector. Useful somewhere.
-     */
-    public static final NeoObjectVector EMPTY_NEO_OBJECT_VECTOR = new NeoObjectVector(EMPTY_OBJECT);
-
-    //--
-    //-- Integers.
-    //--
-    //--
     //-- Strings.
     //--
     /**

@@ -1,6 +1,8 @@
 package macroutils.setter;
 
 import java.util.ArrayList;
+import java.util.Vector;
+import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import star.base.neo.NeoObjectVector;
 import star.cadmodeler.SolidModelPart;
@@ -90,9 +92,9 @@ public class SetGeometry {
         _io.say.action("Splitting Part Surfaces by Angle", vo);
         _io.say.objects(aps, "Part Surfaces", vo);
         _io.say.msg(vo, "Split Angle: %g.", angle);
+        Vector inputs = aps.stream().collect(Collectors.toCollection(Vector::new));
         for (PartSurface ps : aps) {
-            _get.partSurfaces.manager(ps)
-                    .splitPartSurfacesByAngle(new NeoObjectVector(aps.toArray()), angle);
+            _get.partSurfaces.manager(ps).splitPartSurfacesByAngle(inputs, angle);
         }
         _io.say.ok(vo);
     }
@@ -126,10 +128,10 @@ public class SetGeometry {
             _io.say.msg(vo, "Objects do not share the same Geometry Part. Returning NULL!");
             return;
         }
+        Vector inputsPC = apc.stream().collect(Collectors.toCollection(Vector::new));
+        Vector inputsPS = aps.stream().collect(Collectors.toCollection(Vector::new));
         for (PartSurface ps : aps) {
-            _get.partSurfaces.manager(ps)
-                    .splitPartSurfacesByPartCurves(new NeoObjectVector(aps.toArray()),
-                            new NeoObjectVector(apc.toArray()));
+            _get.partSurfaces.manager(ps).splitPartSurfacesByPartCurves(inputsPS,inputsPC);
         }
         _io.say.ok(vo);
     }
