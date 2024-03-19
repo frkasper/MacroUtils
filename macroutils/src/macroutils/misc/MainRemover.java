@@ -2,12 +2,11 @@ package macroutils.misc;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Vector;
+import java.util.List;
 import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import star.base.neo.ClientServerObject;
 import star.base.neo.ClientServerObjectManager;
-import star.base.neo.NeoObjectVector;
 import star.base.neo.NeoProperty;
 import star.base.report.Monitor;
 import star.base.report.MonitorManager;
@@ -388,7 +387,7 @@ public class MainRemover {
         for (String s : npKeys) {
             _io.say.msg(true, "  - %-35s: %s", s, np.get(s).toString());
         }
-        Vector inputs = fvRegions.stream().collect(Collectors.toCollection(Vector::new));
+        List<Region> inputs = fvRegions.stream().collect(Collectors.toList());
         _sim.getMeshManager().removeInvalidCells(inputs, np);
         _io.say.ok(true);
     }
