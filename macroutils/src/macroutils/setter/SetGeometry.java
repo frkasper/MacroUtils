@@ -1,10 +1,7 @@
 package macroutils.setter;
 
 import java.util.ArrayList;
-import java.util.Vector;
-import java.util.stream.Collectors;
 import macroutils.MacroUtils;
-import star.base.neo.NeoObjectVector;
 import star.cadmodeler.SolidModelPart;
 import star.common.GeometryPart;
 import star.common.PartCurve;
@@ -84,16 +81,15 @@ public class SetGeometry {
     /**
      * Splits the given Part Surfaces by an angle.
      *
-     * @param aps   given ArrayList of Part Surfaces.
-     * @param angle given Split Angle.
-     * @param vo    given verbose option. False will not print anything.
+     * @param inputs given ArrayList of Part Surfaces.
+     * @param angle  given Split Angle.
+     * @param vo     given verbose option. False will not print anything.
      */
-    public void splitPartSurfacesByAngle(ArrayList<PartSurface> aps, double angle, boolean vo) {
+    public void splitPartSurfacesByAngle(ArrayList<PartSurface> inputs, double angle, boolean vo) {
         _io.say.action("Splitting Part Surfaces by Angle", vo);
-        _io.say.objects(aps, "Part Surfaces", vo);
+        _io.say.objects(inputs, "Part Surfaces", vo);
         _io.say.msg(vo, "Split Angle: %g.", angle);
-        Vector inputs = aps.stream().collect(Collectors.toCollection(Vector::new));
-        for (PartSurface ps : aps) {
+        for (PartSurface ps : inputs) {
             _get.partSurfaces.manager(ps).splitPartSurfacesByAngle(inputs, angle);
         }
         _io.say.ok(vo);
@@ -113,25 +109,23 @@ public class SetGeometry {
     /**
      * Splits the given Part Surfaces by the given Part Curves.
      *
-     * @param aps given ArrayList of Part Surfaces.
-     * @param apc given ArrayList of Part Curves.
-     * @param vo  given verbose option. False will not print anything.
+     * @param inputsPS given ArrayList of Part Surfaces.
+     * @param inputsPC given ArrayList of Part Curves.
+     * @param vo       given verbose option. False will not print anything.
      */
-    public void splitPartSurfacesByPartCurves(ArrayList<PartSurface> aps,
-            ArrayList<PartCurve> apc, boolean vo) {
+    public void splitPartSurfacesByPartCurves(ArrayList<PartSurface> inputsPS,
+            ArrayList<PartCurve> inputsPC, boolean vo) {
         _io.say.action("Splitting Part Surfaces by Part Curves", vo);
-        _io.say.objects(aps, "Part Surfaces", vo);
-        _io.say.objects(apc, "Part Curves", vo);
-        boolean pssSamePart = _chk.is.withinSamePart(new ArrayList<>(aps));
-        boolean pcsSamePart = _chk.is.withinSamePart(new ArrayList<>(apc));
+        _io.say.objects(inputsPS, "Part Surfaces", vo);
+        _io.say.objects(inputsPC, "Part Curves", vo);
+        boolean pssSamePart = _chk.is.withinSamePart(new ArrayList<>(inputsPS));
+        boolean pcsSamePart = _chk.is.withinSamePart(new ArrayList<>(inputsPC));
         if (!(pssSamePart && pcsSamePart)) {
             _io.say.msg(vo, "Objects do not share the same Geometry Part. Returning NULL!");
             return;
         }
-        Vector inputsPC = apc.stream().collect(Collectors.toCollection(Vector::new));
-        Vector inputsPS = aps.stream().collect(Collectors.toCollection(Vector::new));
-        for (PartSurface ps : aps) {
-            _get.partSurfaces.manager(ps).splitPartSurfacesByPartCurves(inputsPS,inputsPC);
+        for (PartSurface ps : inputsPS) {
+            _get.partSurfaces.manager(ps).splitPartSurfacesByPartCurves(inputsPS, inputsPC);
         }
         _io.say.ok(vo);
     }

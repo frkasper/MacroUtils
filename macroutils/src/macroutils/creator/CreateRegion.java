@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import star.common.GeometryPart;
-import star.common.ManagesParts;
 import star.common.Region;
 import star.common.RegionManager;
 import star.common.Simulation;
@@ -117,7 +116,7 @@ public class CreateRegion {
         ArrayList<Region> ar1 = _get.regions.all(false);
         ar1.removeAll(ar0);
         _io.say.msg(vo, "Regions created: %d", ar1.size());
-        ArrayList<ManagesParts> amp = new ArrayList<>();
+        ArrayList<SimulationPartManager> amp = new ArrayList<>();
         amp.add(_sim.get(SimulationPartManager.class));
         //-- Attempt to automatically create the Interfaces.
         rmg.updateInterfacesFromPartContacts(amp, im.getMode());

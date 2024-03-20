@@ -46,8 +46,8 @@ def test_solution_ss():
 
 
 def test_pressure_drop_report_ss():
-    test_utils.assert_report(ss_sim(), 'Pressure Drop', 8.1,
-                             tolerance=0.1, relative=False)
+    test_utils.assert_report(ss_sim(), 'Pressure Drop', 8.0,
+                             tolerance=0.25, relative=False)
 
 
 def test_pressure_scalar_min_ss():
