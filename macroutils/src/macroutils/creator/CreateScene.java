@@ -351,7 +351,6 @@ public class CreateScene {
     private PartDisplayer _createDisplayer_Part(Scene scn, ArrayList<NamedObject> ano, boolean vo) {
         PartDisplayer pd = _getDM(scn)
                 .createPartDisplayer(StaticDeclarations.Displayer.GEOMETRY.getType());
-        pd.initialize();
         pd.setColorMode(PartColorMode.DP);
         pd.setOutline(false);
         pd.setSurface(true);
@@ -364,7 +363,6 @@ public class CreateScene {
             FieldFunction ff, Units u, boolean vo) {
         ScalarDisplayer sd = _getDM(scn).createScalarDisplayer(
                 StaticDeclarations.Displayer.SCALAR.getType(), ClipMode.NONE);
-        sd.initialize();
         _setSDQ(sd.getScalarDisplayQuantity(), ff);
         if (u != null) {
             sd.getScalarDisplayQuantity().setUnits(u);
@@ -378,7 +376,6 @@ public class CreateScene {
             FieldFunction ff, Units u, boolean vo) {
         StreamDisplayer sd = _getDM(scn).createStreamDisplayer(
                 StaticDeclarations.Displayer.STREAMLINE.getType(), ClipMode.NONE);
-        sd.initialize();
         _setSDQ(sd.getScalarDisplayQuantity(), ff);
         if (u != null) {
             sd.getScalarDisplayQuantity().setUnits(u);
@@ -392,7 +389,6 @@ public class CreateScene {
     private VectorDisplayer _createDisplayer_Vector(Scene scn, ArrayList<NamedObject> ano,
             FieldFunction ff, Units u, boolean vo) {
         VectorDisplayer vd = _getDM(scn).createVectorDisplayer("Vector", ClipMode.NONE);
-        vd.initialize();
         if (!_chk.is.vector(ff)) {
             _io.say.value("Field Function is not a Vector. Type",
                     ff.getType().getSelected().name(), true, true);
@@ -509,8 +505,6 @@ public class CreateScene {
         _io.say.value("Type", type.getType(), true, vo);
         Scene scn = _sim.getSceneManager().createScene();
         scn.setPresentationName(type.getType());
-        ((PartDisplayer) scn.getCreatorDisplayer()).initialize();
-        scn.initializeAndWait();
         scn.resetCamera();
         _get.objects.hardcopyProperties(scn, false).setUseCurrentResolution(false);
         scn.setDepthPeel(false);
