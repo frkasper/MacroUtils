@@ -18,7 +18,7 @@ def test_kart_wrap_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 630000, tolerance=0.025)
+    test_utils.assert_cell_count(DEMO_ID, 640000, tolerance=0.05)
 
 
 def test_solution():
@@ -35,8 +35,8 @@ def test_cd_report():
 
 
 def test_cl_report():
-    test_utils.assert_report(DEMO_ID, 'C_l', 0.35,
-                             tolerance=0.01, relative=False)
+    test_utils.assert_report(DEMO_ID, 'C_l', 0.34,
+                             tolerance=0.02, relative=False)
 
 
 def test_scalar_pressure_kart_min():

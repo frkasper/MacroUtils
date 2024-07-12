@@ -277,7 +277,7 @@ public class GetPartSurfaces {
         _io.say.action("Querying Part Surfaces Statistics", true);
         //-- Init Widget
         Scene scn = _sim.getSceneManager().createScene("Repair Surface");
-        scn.initializeAndWait();
+        scn.initialize();
         PartSurfaceMeshWidget psmw = _get.geometries.representation().startSurfaceMeshWidget(scn);
         psmw.setActiveParts(agp, _get.geometries.rootDescriptionSource());
         psmw.startSurfaceRepairControllers();

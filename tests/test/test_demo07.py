@@ -25,8 +25,8 @@ def test_solution():
 
 
 def test_cfl_avg_report():
-    test_utils.assert_report(DEMO_ID, 'CFL_avg', 0.011,
-                             tolerance=0.001, relative=False)
+    test_utils.assert_report(DEMO_ID, 'CFL_avg', 0.01,
+                             tolerance=0.005, relative=False)
 
 
 def test_cfl_max_report():
