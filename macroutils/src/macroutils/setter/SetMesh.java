@@ -25,7 +25,6 @@ import star.prismmesher.CustomPrismValuesManager;
 import star.prismmesher.NumPrismLayers;
 import star.prismmesher.PartsCustomPrismsOption;
 import star.prismmesher.PartsCustomizePrismMesh;
-import star.prismmesher.PrismAutoMesher;
 import star.prismmesher.PrismLayerCoreLayerAspectRatio;
 import star.prismmesher.PrismLayerGapFillPercentage;
 import star.prismmesher.PrismLayerMinimumThickness;
@@ -294,7 +293,8 @@ public class SetMesh {
     public void surfaceCurvature(SurfaceCurvature sc, double n, boolean vo) {
         _io.say.action("Setting Surface Curvature", (NamedObject) sc.getParent().getParent(), vo);
         sc.setNumPointsAroundCircle(n);
-        _io.say.value("Surface Curvature Points/Curve", sc.getNumPointsAroundCircle(), true);
+        _io.say.value("Surface Curvature Points/Curve",
+                sc.getNumPointsAroundCircleQuantity().evaluate(), true);
         _io.say.ok(vo);
     }
 
@@ -325,7 +325,7 @@ public class SetMesh {
     public void surfaceProximity(SurfaceProximity sp, double np, double sf, boolean vo) {
         _io.say.action("Setting Surface Proximity", (NamedObject) sp.getParent().getParent(), vo);
         sp.setNumPointsInGap(np);
-        _io.say.value("Number of Points in Gap", sp.getNumPointsInGap(), true);
+        _io.say.value("Number of Points in Gap", sp.getNumPointsInGapQuantity().evaluate(), true);
         _set.object.physicalQuantity(sp.getFloor(), sf, _ud.defUnitLength,
                 "Proximity Search Floor", true);
         _io.say.ok(vo);

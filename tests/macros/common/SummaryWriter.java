@@ -257,16 +257,15 @@ public final class SummaryWriter {
         final String info = mu.get.strings.information(sp);
 
         String key = isMonitorPlot ? info : info + " -> " + ds.getPresentationName();
-        Arrays.stream(ds.getSeriesLabels()).forEach(sl -> collectDataSetSeries(key, ds, sl));
+        collectDataSetSeries(key, ds);
 
     }
 
-    private void collectDataSetSeries(String key, DataSet ds, String seriesName) {
+    private void collectDataSetSeries(String key, DataSet ds) {
 
-        int i = Arrays.asList(ds.getSeriesLabels()).indexOf(seriesName);
-
-        final double[] xx = ds.getXSeries(i);
-        final double[] yy = ds.getYSeries(i);
+        final double[] xx = ds.getXValues();
+        final double[] yy = ds.getYValues();
+        final String seriesName = ds.getSeriesName();
 
         if (xx.length > 50) {
             INFORMATION.add(getPair(key + " -> " + seriesName + " -> Samples", xx.length));
@@ -305,8 +304,7 @@ public final class SummaryWriter {
 
         String key = mu.get.strings.information(m);
 
-        if (m instanceof ReportMonitor) {
-            ReportMonitor rm = (ReportMonitor) m;
+        if (m instanceof ReportMonitor rm) {
             INFORMATION.add(getPair(key + " -> Samples", rm.getAllYValues().length));
             INFORMATION.add(getPair(key + " -> Report", rm.getReport().getPresentationName()));
         }
@@ -360,25 +358,34 @@ public final class SummaryWriter {
     }
 
     private Legend getLegend(Displayer displayer) {
-        if (displayer instanceof ScalarDisplayer) {
-            return ((ScalarDisplayer) displayer).getLegend();
-        } else if (displayer instanceof VectorDisplayer) {
-            return ((VectorDisplayer) displayer).getLegend();
-        } else if (displayer instanceof StreamDisplayer) {
-            return ((StreamDisplayer) displayer).getLegend();
-        } else {
-            return null;
+        switch (displayer) {
+            case ScalarDisplayer scalarDisplayer -> {
+                return scalarDisplayer.getLegend();
+            }
+            case VectorDisplayer vectorDisplayer -> {
+                return vectorDisplayer.getLegend();
+            }
+            case StreamDisplayer streamDisplayer -> {
+                return streamDisplayer.getLegend();
+            }
+            default -> {
+                return null;
+            }
         }
     }
 
     private <T extends DisplayQuantity> double[] getMinMax(T t) {
-        if (t instanceof ScalarDisplayQuantity) {
-            ScalarDisplayQuantity sdq = (ScalarDisplayQuantity) t;
-            return new double[]{ sdq.getRangeMin(), sdq.getRangeMax() };
-        } else {
-            VectorDisplayQuantity vdq = (VectorDisplayQuantity) t;
-            return new double[]{ vdq.getMinimumValue().getRawValue(),
-                vdq.getMaximumValue().getRawValue()};
+        switch (t) {
+            case ScalarDisplayQuantity sdq -> {
+                return new double[]{ sdq.getRangeMin(), sdq.getRangeMax() };
+            }
+            case VectorDisplayQuantity vdq -> {
+                return new double[]{ vdq.getMinimumValue().getRawValue(),
+                    vdq.getMaximumValue().getRawValue()};
+            }
+            default -> {
+                return null;
+            }
         }
     }
 
