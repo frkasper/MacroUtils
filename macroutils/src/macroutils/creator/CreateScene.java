@@ -506,7 +506,6 @@ public class CreateScene {
         Scene scn = _sim.getSceneManager().createScene();
         scn.setPresentationName(type.getType());
         scn.resetCamera();
-        _get.objects.hardcopyProperties(scn, false).setUseCurrentResolution(false);
         scn.setDepthPeel(false);
         AnnotationProp ap = scn.getAnnotationPropManager().getAnnotationProp("Logo");
         ((FixedAspectAnnotationProp) ap).setLocation(DisplayLocationMode.FOREGROUND);

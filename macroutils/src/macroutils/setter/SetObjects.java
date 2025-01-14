@@ -26,6 +26,7 @@ import star.common.UpdateEvent;
 import star.common.UpdatePlot;
 import star.common.VectorPhysicalQuantity;
 import star.common.VectorProfile;
+import star.common.ViewObject;
 import star.common.WindowUpdate;
 import star.flow.PressureCoefficientFunction;
 import star.meshing.MeshOperationPart;
@@ -33,6 +34,7 @@ import star.meshing.PartsRelativeOrAbsoluteSize;
 import star.meshing.RelativeOrAbsoluteSize;
 import star.meshing.RelativeSize;
 import star.post.SolutionHistory;
+import star.vis.ExportResolution;
 import star.vis.Scene;
 
 /**
@@ -231,10 +233,16 @@ public class SetObjects {
         _io.say.action("Setting Save To File", vo);
         _io.say.object(no, vo);
         String picsPath = "pics_" + _get.strings.friendlyFilename(no.getPresentationName());
-        if (no instanceof Scene) {
-            _setWU(((Scene) no).getSceneUpdate(), picsPath, resx, resy);
-        } else if (no instanceof StarPlot) {
-            _setWU(((UpdatePlot) no).getPlotUpdate(), picsPath, resx, resy);
+        if (no instanceof ViewObject view) {
+            view.setExportResolution(ExportResolution.CUSTOM);
+            view.setExportWidth(resx);
+            view.setExportHeight(resy);
+        }
+        if (no instanceof Scene scene) {
+            _setWU(scene.getSceneUpdate(), picsPath);
+        }
+        if (no instanceof UpdatePlot plot) {
+            _setWU(plot.getPlotUpdate(), picsPath);
         }
         _io.say.ok(vo);
     }
@@ -340,13 +348,10 @@ public class SetObjects {
         }
     }
 
-    private void _setWU(WindowUpdate wu, String pp, int resx, int resy) {
+    private void _setWU(WindowUpdate wu, String pp) {
         wu.setSaveAnimation(true);
         wu.setAnimationFilePath(new File(_ud.simPath, pp));
         wu.setAnimationFilenameBase("pic");
-        wu.getHardcopyProperties().setUseCurrentResolution(false);
-        wu.getHardcopyProperties().setOutputWidth(resx);
-        wu.getHardcopyProperties().setOutputHeight(resy);
     }
 
 }
