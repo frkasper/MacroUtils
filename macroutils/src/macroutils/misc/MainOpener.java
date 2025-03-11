@@ -58,7 +58,7 @@ public class MainOpener {
      */
     public void allScenes(boolean vo) {
         _openingAll("Scenes", vo);
-        for (Scene scn : _sim.getSceneManager().getObjects()) {
+        for (Scene scn : _sim.getSceneManager().getScenes()) {
             _opening(scn, vo);
             scn.open();
         }

@@ -153,7 +153,7 @@ public class TemplatePrettifier {
 
     public void scenes() {
         _io.say.action("Prettifying Scenes", true);
-        for (Scene scn : _sim.getSceneManager().getObjects()) {
+        for (Scene scn : _sim.getSceneManager().getScenes()) {
             if (_needSkipping(scn, true)) {
                 continue;
             }

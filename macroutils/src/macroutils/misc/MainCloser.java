@@ -58,7 +58,7 @@ public class MainCloser {
      */
     public void allScenes(boolean vo) {
         _closingAll("Scenes", vo);
-        for (Scene scn : _sim.getSceneManager().getObjects()) {
+        for (Scene scn : _sim.getSceneManager().getScenes()) {
             _closing(scn, vo);
             scn.close(true);
         }
