@@ -2,127 +2,142 @@
 """
 Basic definitions for the demos.
 
-
-namedtuple fields:
-    - id: Demo number;
-    - np: number of cores to perform testing; np=0 is serial;
-    - batch: a few demos are run in interactive mode;
-    - files: the support files to be copied in order for the demo to execute.
-
-
 @author: Fabio Kasper
 """
-import glob
-import itertools
-import os
-import re
-from collections import namedtuple
+from pathlib import Path
+from dataclasses import dataclass
 
 
-Bug = namedtuple('Bug', ['load_demo', 'macro_name'])
-Demo = namedtuple('Demo', ['id', 'np', 'batch', 'files'])
-SimAssistant = namedtuple('SimAssistant', ['macro_name'])
-SimTool = namedtuple('SimTool', ['macro_name'])
+class Case:
+
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__
 
 
-# Declare individual demos here
-DEMO_01 = Demo(id=1, np=2, batch=True, files=[])
-DEMO_02 = Demo(id=2, np=2, batch=True, files=[])
-DEMO_03 = Demo(id=3, np=2, batch=True, files=[])
-DEMO_04 = Demo(id=4, np=1, batch=True, files=['radial_impeller.stp'])
-DEMO_05 = Demo(id=5, np=6, batch=True, files=['LegoKart.x_b'])
-# Demo 6 is bypassed
-DEMO_07 = Demo(id=7, np=4, batch=True, files=[])
-DEMO_08 = Demo(id=8, np=6, batch=True, files=['WING.x_b', 'wingCams.txt'])
-# Demo 9 is bypassed
-DEMO_10 = Demo(id=10, np=1, batch=True, files=[])
-DEMO_11 = Demo(id=11, np=1, batch=True, files=[])
-DEMO_12 = Demo(id=12, np=2, batch=True, files=[])
-DEMO_13 = Demo(id=13, np=2, batch=True, files=[])
-DEMO_14 = Demo(id=14, np=1, batch=True, files=[])
-DEMO_15 = Demo(id=15, np=8, batch=True, files=['TableFromPeriodicRun.csv'])
-DEMO_16 = Demo(id=16, np=4, batch=True, files=[])
+@dataclass
+class Macro(Case):
+    macro_name: str
+
+    @property
+    def java_file(self) -> str:
+        return f'{self.macro_name}.java'
+
+    @property
+    def name(self) -> str:
+        return f'{self.macro_name}'
+
+    def java_path(self, testhome: Path) -> Path:
+        path = testhome.joinpath(self.java_file)
+        if not path.is_file():
+            raise OSError(f'not a file: {path!r}')
+        return path
 
 
-# Declare individual bugs here
-BUG_014 = Bug(load_demo=1, macro_name='BugCreateStreamlineSceneTest')
+@dataclass
+class Bug(Macro):
+    load_demo: str
 
 
-# Declare individual simulation assistants here
-SA_01 = SimAssistant(macro_name='SimAssistantBlockMesherTest')
+@dataclass
+class Demo(Case):
+    id: int                  # demo number
+    np: int                  # core count
+    batch: bool              # run in batch?
+    files: list[str]         # list of support files
+
+    @property
+    def name(self) -> str:
+        return f'{super().name}{self.id:02d}'
+
+    def java_files(self, demohome: Path) -> list[Path]:
+        """Return a list of JAVA files files related to this demo"""
+        files = demohome.glob(f'Demo{self.id}_*.java')
+        if not files:
+            raise OSError(f'no JAVA files found for {self}')
+        return list(files)
+
+    def running_files(self, demohome: Path, datahome: Path) -> list[Path]:
+        """Return a list of necessary files to run this demo"""
+        paths = self.java_files(demohome)
+        for file in self.files:
+            path = datahome.joinpath(file)
+            paths.append(path)
+            if not path.is_file():
+                raise OSError(f'invalid {path=}')
+        return sorted(paths)
 
 
-# Declare individual simulation tools here
-ST_01 = SimTool(macro_name='SimToolImplicitUnsteadyConvergenceCheckerTest')
-ST_02 = SimTool(macro_name='SimToolMeshMetricsTest')
+class SimAssistant(Macro):
+    ...
 
 
-# Then collect them all using Python magic
-BUGS = [v for k, v in sorted(vars().items()) if re.match('BUG_\d{3}', k)]
-DEMOS = [v for k, v in sorted(vars().items()) if re.match('DEMO_\d{2}', k)]
-SAS = [v for k, v in sorted(vars().items()) if re.match('SA_\d{2}', k)]
-SIMTOOLS = [v for k, v in sorted(vars().items()) if re.match('ST_\d{2}', k)]
+class SimTool(Macro):
+    ...
 
 
-def _is_nt(nt, key):
-    assert isinstance(nt, tuple), 'Must be a namedtuple'
-    return bool(re.match('^%s\(.*\)$' % key, nt.__doc__))
+CASES = [  # A list defining all cases
+    #-----------
+    # Demos
+    #-----------
+    Demo(id=1, np=2, batch=True, files=[]),
+    Demo(id=2, np=2, batch=True, files=[]),
+    Demo(id=3, np=2, batch=True, files=[]),
+    Demo(id=4, np=1, batch=True, files=['radial_impeller.stp']),
+    Demo(id=5, np=6, batch=True, files=['LegoKart.x_b']),
+    # Demo 6 is bypassed
+    Demo(id=7, np=4, batch=True, files=[]),
+    Demo(id=8, np=6, batch=True, files=['WING.x_b', 'wingCams.txt']),
+    # Demo 9 is bypassed
+    Demo(id=10, np=1, batch=True, files=[]),
+    Demo(id=11, np=1, batch=True, files=[]),
+    Demo(id=12, np=2, batch=True, files=[]),
+    Demo(id=13, np=2, batch=True, files=[]),
+    Demo(id=14, np=1, batch=True, files=[]),
+    Demo(id=15, np=8, batch=True, files=['TableFromPeriodicRun.csv']),
+    Demo(id=16, np=4, batch=True, files=[]),
+    #-----------
+    # Bugs
+    #-----------
+    Bug(load_demo=1, macro_name='BugCreateStreamlineSceneTest'),
+    #-----------
+    # Simulation assistants
+    #-----------
+    SimAssistant(macro_name='SimAssistantBlockMesherTest'),
+    #-----------
+    # Simulation tools
+    #-----------
+    SimTool(macro_name='SimToolImplicitUnsteadyConvergenceCheckerTest'),
+    SimTool(macro_name='SimToolMeshMetricsTest'),
+    ]
 
 
-def bug_file(macro_name, testhome):
-    """Return a file necessary to run a particular bug"""
-    macro_file = os.path.join(testhome, '%s.java' % macro_name)
-    assert os.path.exists(macro_file), 'File does not exist: %s' % macro_file
-    return macro_file
+def filtered_cases(cases: list[Case], class_type: Case) -> list[Case]:
+    return list(filter(lambda x: isinstance(x, class_type), cases))
 
 
-def demo(number):
-    """Return a namedtuple"""
-    assert isinstance(number, int), 'Demo number must be an integer'
-    chosen = [d for d in DEMOS if d.id == number]
-    assert len(chosen) > 0, 'Demo %d not declared in setup' % number
-    assert len(chosen) == 1, 'Invalid result: "%s"' % str(chosen)
-    return chosen[0]
+def get_demo(number: int) -> Demo:
+    demos = filtered_cases(CASES, Demo)
+    ids = [demo.id for demo in demos]
+    try:
+        if int(number) in ids:
+            return demos[ids.index(int(number))]
+    except Exception:
+        ... # Do nothing
+    raise ValueError(f'invalid demo {number = }')
 
 
-def demo_files(number, demohome, datahome):
-    """Return a list of files necessary to run a particular demo"""
-    demo_nt = demo(number)
-    support_files = [os.path.join(datahome, f) for f in demo_nt.files]
-    for sf in support_files:
-        assert os.path.exists(sf), 'File does not exist: %s' % sf
-    all_files = [java_files(number, demohome), support_files]
-    return sorted(list(itertools.chain.from_iterable(all_files)))
+def main():
+    """Local debug"""
+    testhome = Path(__file__).parent.joinpath('macros')
 
+    demo = get_demo(1)
+    print(f'{demo=}')
+    print(f'{demo.name=}')
 
-def is_bug(nt):
-    return _is_nt(nt, 'Bug')
-
-
-def is_demo(nt):
-    return _is_nt(nt, 'Demo')
-
-
-def is_sa(nt):
-    return _is_nt(nt, 'SimAssistant')
-
-
-def is_simtool(nt):
-    return _is_nt(nt, 'SimTool')
-
-
-def java_files(number, demohome):
-    """Return a list of java files associated with the demo number"""
-    java_files = glob.glob(os.path.join(demohome, 'Demo%d_*.java' % number))
-    assert len(java_files) > 0, 'No JAVA files found for demo %d' % number
-    return sorted(java_files)
-
-
-def java_files_from_nt(demo_nt, demohome):
-    """Return a list of java files associated with the demo"""
-    files = java_files(demo_nt.id, demohome)
-    return [f for f in files if re.match('.*\.java$', f)]
+    print(filtered_cases(CASES, Bug)[0].java_path(testhome))
+    print(filtered_cases(CASES, SimAssistant)[0].name)
 
 
 if __name__ == "__main__":
-    pass
+    main()
