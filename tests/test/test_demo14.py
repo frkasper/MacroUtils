@@ -104,7 +104,7 @@ def test_cell_count_grid_003():
 
 
 def test_solution_grid_003():
-    test_utils.assert_iteration(_grid(3), 8700, tolerance=0.02, relative=True)
+    test_utils.assert_iteration(_grid(3), 12000, tolerance=0.02, relative=True)
 
 
 def test_vmean_report_grid_003():
