@@ -3,28 +3,23 @@ package common;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import macroutils.MacroUtils;
 import star.base.report.Monitor;
-import star.base.report.MonitorManager;
 import star.base.report.ReportMonitor;
+import star.base.report.graph.MultiAxisMonitorDataSet;
 import star.common.Boundary;
+import star.common.Cartesian2DPlot;
 import star.common.FvRepresentation;
 import star.common.GeometryPart;
-import star.common.HistogramAxisType;
-import star.common.HistogramPlot;
-import star.common.MonitorPlot;
+import star.common.PartAxisType;
+import star.common.PartGroupDataSet;
 import star.common.PartSurface;
-import star.common.PlotManager;
 import star.common.Region;
-import star.common.ResidualPlot;
 import star.common.Simulation;
 import star.common.StarPlot;
 import star.common.Units;
-import star.common.XYPlot;
-import star.common.YAxisType;
 import star.common.graph.DataSet;
 import star.meshing.CurrentDescriptionSource;
 import star.vis.DisplayQuantity;
@@ -100,40 +95,32 @@ public final class SummaryWriter {
      * Collect information concerning geometry Parts.
      */
     public void collectGeometry() {
-        int n = printCollecting("Geometry");
-        List<String> parts = mu.get.geometries.all(true).stream()
+        collect("Geometry", () -> INFORMATION.addAll(mu.get.geometries.all(true).stream()
                 .map(part -> getPartInfo(part))
-                .collect(Collectors.toList());
-        INFORMATION.addAll(parts);
-        printCollected(n);
+                .collect(Collectors.toList())));
     }
 
     /**
      * Collect all information concerning mesh.
      */
     public void collectMesh() {
-        int n = printCollecting("Mesh");
-        if (mu.check.has.volumeMesh()) {
-            collectVolumeMeshInfo();
-        } else {
-            collectSurfaceMeshInfo();
-        }
-        printCollected(n);
+        collect("Mesh", () -> {
+            if (mu.check.has.volumeMesh()) {
+                collectVolumeMeshInfo();
+            } else {
+                collectSurfaceMeshInfo();
+            }
+        });
     }
 
     /**
      * Collect information concerning ReportMonitors.
      */
     public void collectMonitors() {
-
-        final MonitorManager mm = sim.getMonitorManager();
-
-        int n = printCollecting("Monitors");
-
-        mm.getObjectsOf(ReportMonitor.class).stream().forEach(rm -> collectMonitor(rm));
-
-        printCollected(n);
-
+        collect("Monitors", () -> sim.getMonitorManager().getMonitors().stream()
+                .filter(ReportMonitor.class::isInstance)
+                .map(ReportMonitor.class::cast)
+                .forEach(monitor -> collectMonitor(monitor)));
     }
 
     /**
@@ -142,76 +129,44 @@ public final class SummaryWriter {
      * @param sp given StarPlot
      */
     public void collectPlot(StarPlot sp) {
-
-        final boolean isXYPlot = sp instanceof XYPlot;
-        final boolean isResidual = sp instanceof ResidualPlot;
-        final boolean isHistogram = sp instanceof HistogramPlot;
-
-        final boolean collectDataSets = !(isResidual || isHistogram);
-
-        if (isXYPlot) {  // Internal datasets only in XYPlots
-            collectXYPlot((XYPlot) sp);
-        } else if (isHistogram) {
-            collectHistogram((HistogramPlot) sp);
+        if (sp instanceof Cartesian2DPlot plot) {
+            plot.getDataSeriesOrder().stream().forEach(ds -> collectDataSet(sp, ds));
         }
-
-        if (collectDataSets) {
-            sp.getDataSetManager().getDataSets().stream().forEach(ds -> collectDataSet(sp, ds));
-        }
-
     }
 
     /**
      * Collect information concerning MonitorPlots and XYPlots.
      */
     public void collectPlots() {
-
-        final PlotManager pm = sim.getPlotManager();
-
-        int n = printCollecting("Plots");
-
-        List<StarPlot> selectedPlots = new ArrayList<>();
-
-        selectedPlots.addAll(pm.getObjectsOf(HistogramPlot.class));
-        selectedPlots.addAll(pm.getObjectsOf(XYPlot.class));
-        selectedPlots.addAll(pm.getObjectsOf(MonitorPlot.class));
-
-        selectedPlots.stream().forEach(plot -> collectPlot(plot));
-
-        printCollected(n);
-
+        collect("Plots", () -> sim.getPlotManager().getPlots().stream()
+                .filter(Cartesian2DPlot.class::isInstance)
+                .map(Cartesian2DPlot.class::cast)
+                .forEach(plot -> collectPlot(plot)));
     }
 
     /**
      * Collect all information concerning Regions and its Boundaries.
      */
     public void collectRegions() {
-        int n = printCollecting("Region");
-        sim.getRegionManager().getRegions().stream().forEach(r -> collectRegion(r));
-        printCollected(n);
+        collect("Regions", () -> sim.getRegionManager().getRegions().stream()
+                .forEach(r -> collectRegion(r)));
     }
 
     /**
      * Collect information concerning Reports.
      */
     public void collectReports() {
-        int n = printCollecting("Reports");
-        List<String> reports = sim.getReportManager().getObjects().stream()
+        collect("Reports", () -> INFORMATION.addAll(sim.getReportManager().getObjects().stream()
                 .map(r -> getPair(mu.get.strings.information(r), r.getReportMonitorValue()))
-                .collect(Collectors.toList());
-        INFORMATION.addAll(reports);
-        printCollected(n);
+                .collect(Collectors.toList())));
     }
 
     /**
      * Collect information concerning Scenes and its dependents.
      */
     public void collectScenes() {
-        int n = printCollecting("Scenes");
-        Collection<Scene> allScenes = sim.getSceneManager().getObjects();
-        allScenes.forEach(scene -> scene.open());
-        allScenes.forEach(scene -> collectDisplayers(scene));
-        printCollected(n);
+        collect("Scenes", () -> sim.getSceneManager().getScenes()
+                .forEach(scene -> collectDisplayers(scene)));
     }
 
     /**
@@ -235,6 +190,14 @@ public final class SummaryWriter {
         writeInformation();
     }
 
+    private void collect(String key, Collector lambda) {
+        int size = INFORMATION.size();
+        mu.io.print.action("Collecting " + key + " data", true);
+        lambda.collect();
+        int added = INFORMATION.size() - size;
+        mu.io.print.msg(true, "Collected %d new %s.", added, added > 1 ? "entries" : "entry");
+    }
+
     private void collectAll() {
         collectGeometry();
         collectMesh();
@@ -253,51 +216,35 @@ public final class SummaryWriter {
 
     private void collectDataSet(StarPlot sp, DataSet ds) {
 
-        final boolean isMonitorPlot = sp instanceof MonitorPlot;
-        final String info = mu.get.strings.information(sp);
 
-        String key = isMonitorPlot ? info : info + " -> " + ds.getPresentationName();
-        collectDataSetSeries(key, ds);
+        String dataSetName = ds.getPresentationName();
+        String info = mu.get.strings.information(sp);
+        boolean monitor = ds instanceof MultiAxisMonitorDataSet;
+        String key = monitor ? info : info + " -> " + ds.getPresentationName();
+        double[] xx = ds.getXValues();
+        double[] yy = ds.getYValues();
+        int samples = ds.getRowCount();
 
-    }
-
-    private void collectDataSetSeries(String key, DataSet ds) {
-
-        final double[] xx = ds.getXValues();
-        final double[] yy = ds.getYValues();
-        final String seriesName = ds.getSeriesName();
-
-        if (xx.length > 50) {
-            INFORMATION.add(getPair(key + " -> " + seriesName + " -> Samples", xx.length));
+        if (mu.check.is.histogram(sp) && ds instanceof PartGroupDataSet pgds) {
+            PartAxisType xAxis = mu.get.plots.axisX(pgds);
+            String function = xAxis.getScalarFunction().getFieldFunction().getPresentationName();
+            int bins = mu.get.plots.axisX(pgds).hasBinningDescriptor().getNumberOfBins();
+            INFORMATION.add(getPair(info + " -> Function", function));
+            INFORMATION.add(getPair(info + " -> Bins", bins));
+        } else if (samples > 50) {
+            INFORMATION.add(getPair(key + " -> " + dataSetName + " -> Samples", samples));
         } else {
-            INFORMATION.add(getPair(key + " -> " + seriesName + " -> X values", xx));
-            INFORMATION.add(getPair(key + " -> " + seriesName + " -> Y values", yy));
+            INFORMATION.add(getPair(key + " -> " + dataSetName + " -> X values", xx));
+            INFORMATION.add(getPair(key + " -> " + dataSetName + " -> Y values", yy));
         }
 
     }
 
-    private void collectDataSets(StarPlot sp, YAxisType yat) {
-        yat.getDataSetManager().getObjects().stream().forEach(ds -> collectDataSet(sp, ds));
-    }
-
     private void collectDisplayers(Scene scene) {
-        List<String> displayers = scene.getDisplayerManager().getObjects().stream()
+        List<String> displayers = scene.getDisplayerManager().getDisplayers().stream()
                 .map(displayer -> getDisplayerInfo(displayer))
                 .collect(Collectors.toList());
         INFORMATION.addAll(displayers);
-    }
-
-    private void collectHistogram(HistogramPlot hp) {
-
-        final String info = mu.get.strings.information(hp);
-        final HistogramAxisType hat = hp.getXAxisType();
-
-        final String function = hat.getBinFunction().getFieldFunction().getPresentationName();
-        final int bins = hat.getNumberOfBin();
-
-        INFORMATION.add(getPair(info + " -> Function", function));
-        INFORMATION.add(getPair(info + " -> Bins", bins));
-
     }
 
     private void collectMonitor(Monitor m) {
@@ -326,14 +273,6 @@ public final class SummaryWriter {
         INFORMATION.add(getPair("Cell Count", fvr.getCellCount()));
         INFORMATION.add(getPair("Face Count", fvr.getInteriorFaceCount()));
         INFORMATION.add(getPair("Vertex Count", fvr.getVertexCount()));
-    }
-
-    private void collectXYPlot(XYPlot xyp) {
-
-        xyp.getYAxes().getObjects().stream()
-                .map(YAxisType.class::cast)
-                .forEach(yat -> collectDataSets(xyp, yat));
-
     }
 
     private String getDisplayerInfo(Displayer displayer) {
@@ -381,7 +320,7 @@ public final class SummaryWriter {
             }
             case VectorDisplayQuantity vdq -> {
                 return new double[]{ vdq.getMinimumValue().getRawValue(),
-                    vdq.getMaximumValue().getRawValue()};
+                    vdq.getMaximumValue().getRawValue() };
             }
             default -> {
                 return null;
@@ -444,20 +383,20 @@ public final class SummaryWriter {
         }
     }
 
-    private void printCollected(int initialSize) {
-        int net = INFORMATION.size() - initialSize;
-        mu.io.print.msg(true, "Collected %d entr%s.", net, net > 1 ? "ies" : "y");
-    }
-
-    private int printCollecting(String key) {
-        mu.io.print.action("Collecting " + key + " data", true);
-        return INFORMATION.size();
-    }
-
     private void writeInformation() {
         mu.io.print.action("Writing summary file", true);
         File file = new File(sim.getSessionDir(), summaryFileName);
         mu.io.write.data(file, new ArrayList<>(INFORMATION), true);
+    }
+
+    /**
+     * Lambda function.
+     */
+    @FunctionalInterface
+    private interface Collector {
+
+        public void collect();
+
     }
 
 }

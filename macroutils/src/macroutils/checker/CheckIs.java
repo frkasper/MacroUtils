@@ -16,11 +16,12 @@ import star.common.FieldFunction;
 import star.common.FieldFunctionTypeOption;
 import star.common.FluidRegion;
 import star.common.GeometryPart;
-import star.common.HistogramPlot;
 import star.common.ModelManager;
 import star.common.PartCurve;
+import star.common.PartGroupDataSet;
 import star.common.PartSurface;
 import star.common.PhysicsContinuum;
+import star.common.PlottingMode;
 import star.common.Region;
 import star.common.ResidualMonitor;
 import star.common.ResidualPlot;
@@ -196,13 +197,28 @@ public class CheckIs {
     }
 
     /**
+     * Is this a Histogram DataSet?
+     *
+     * @param pgds given DataSet.
+     * @return True or False.
+     */
+    public boolean histogram(PartGroupDataSet pgds) {
+        return pgds.getPlottingMode().equals(PlottingMode.HISTOGRAM);
+    }
+
+    /**
      * Is this a Histogram Plot?
      *
      * @param sp given Plot.
      * @return True or False.
      */
     public boolean histogram(StarPlot sp) {
-        return sp instanceof HistogramPlot;
+        return sp.getDataSetCollection().stream()
+                .filter(PartGroupDataSet.class::isInstance)
+                .map(PartGroupDataSet.class::cast)
+                .filter(ds -> histogram(ds))
+                .findAny()
+                .isPresent();
     }
 
     /**

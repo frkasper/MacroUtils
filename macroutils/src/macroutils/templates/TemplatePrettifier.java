@@ -1,28 +1,26 @@
 package macroutils.templates;
 
 import java.awt.Color;
-import java.util.ArrayList;
+import java.util.List;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import star.base.neo.DoubleVector;
 import star.base.neo.NamedObject;
 import star.base.report.Monitor;
 import star.common.Cartesian2DAxis;
+import star.common.Cartesian2DPlot;
 import star.common.ChartPositionOption;
-import star.common.HistogramAxisType;
-import star.common.HistogramPlot;
 import star.common.LinePatternOption;
 import star.common.LineStyle;
 import star.common.MonitorNormalizeOption;
 import star.common.MultiColLegend;
+import star.common.PartGroupDataSet;
 import star.common.ResidualMonitor;
 import star.common.Simulation;
 import star.common.StarPlot;
 import star.common.SymbolShapeOption;
 import star.common.SymbolStyleWithSpacing;
-import star.common.XYPlot;
 import star.common.graph.DataSet;
-import star.common.graph.HistogramDataSet;
 import star.vis.Displayer;
 import star.vis.LogoAnnotation;
 import star.vis.Scene;
@@ -142,8 +140,8 @@ public class TemplatePrettifier {
                 continue;
             }
             _sayPrettifying(sp, true);
-            if (_chk.is.histogram(sp)) {
-                histogram((HistogramPlot) sp);
+            if (_chk.is.histogram(sp) && sp instanceof Cartesian2DPlot plot) {
+                histogram(plot);
                 continue;
             }
             plot(sp);
@@ -215,8 +213,7 @@ public class TemplatePrettifier {
         _setLabel(_get.plots.axisY(sp));
     }
 
-    private void _setDatasets(StarPlot sp, ArrayList<DataSet> ads) {
-        boolean isXYPlot = sp instanceof XYPlot;
+    private void _setDatasets(StarPlot sp, List<DataSet> ads) {
         for (DataSet ds : ads) {
             String dsn = ds.getPresentationName();
             LineStyle ls = ds.getLineStyle();
@@ -252,11 +249,8 @@ public class TemplatePrettifier {
             if (ss.getSize() == 6) {
                 ss.setSize(_SYMBOL_SIZE);
             }
-            if (isXYPlot) {
-                //-- Avoid change in spacing for XYPlots.
-                continue;
-            }
-            if (ss.getSpacing() == 1) {
+            if (ss.getSpacing() == 1 && lpo.getSelectedElement() != LinePatternOption.Type.NONE) {
+                //-- Avoid changing spacing for pure symbol DataSets (a.k.a. legacy XYPlots)
                 ss.setSpacing(_SYMBOL_SPACING);
             }
         }
@@ -289,14 +283,13 @@ public class TemplatePrettifier {
         mcl.setFont(StaticDeclarations.Fonts.OTHER.getFont());
     }
 
-    private void histogram(HistogramPlot hp) {
-        HistogramAxisType hat = hp.getXAxisType();
-        hat.setNumberOfBin(20);
-        String nn = hat.getBinFunction().getFieldFunction().getPresentationName() + " Histogram";
-        _changeAndSayNewName(hp, nn, true);
+    private void histogram(Cartesian2DPlot hp) {
+        _set.plots.bins(hp, 20, true);
+        PartGroupDataSet hds = (PartGroupDataSet) hp.getDataSeriesOrder().getFirst();
+        String nn = _get.plots.axisX(hds).getScalarFunction().getFieldFunction()
+                .getPresentationName() + " Histogram";
         hp.setTitle(nn);
         hp.setTitleFont(StaticDeclarations.Fonts.TITLE.getFont());
-        HistogramDataSet hds = (HistogramDataSet) hp.getDataSetManager().getDataSet(0);
         hds.getFillStyle().setColor(StaticDeclarations.Colors.SLATE_GRAY.getColor());
         _setAxes(hp);
     }
@@ -315,7 +308,7 @@ public class TemplatePrettifier {
         }
         sp.setTitleFont(StaticDeclarations.Fonts.TITLE.getFont());
         _setAxes(sp);
-        ArrayList<DataSet> ads = _get.plots.datasets(sp, false);
+        List<DataSet> ads = _get.plots.datasets(sp, false);
         _setDatasets(sp, ads);
         _setLegend(sp, ads.size());
     }

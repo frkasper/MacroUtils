@@ -10,17 +10,18 @@ import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import star.base.neo.DoubleVector;
 import star.base.report.Report;
-import star.common.ExternalDataSet;
+import star.common.Cartesian2DPlot;
+import star.common.FieldFunction;
 import star.common.FileTable;
-import star.common.InternalDataSet;
+import star.common.PartGroupDataSet;
 import star.common.Simulation;
+import star.common.SortDirection;
+import star.common.SortOrder;
 import star.common.StarPlot;
 import star.common.SymbolShapeOption;
 import star.common.SymbolStyle;
+import star.common.TableDataSet;
 import star.common.Units;
-import star.common.XYPlot;
-import star.common.YAxisType;
-import star.common.graph.DataSet;
 
 /**
  * Low-level class for assessing the Grid Convergence Index metric with MacroUtils.
@@ -157,7 +158,7 @@ public class TemplateGCI {
      *                 as the 3rd one, i.e., the fine grid.
      */
     public void evaluate(StarPlot sp, String[] simFiles) {
-        _evaluate(sp, _getFiles(simFiles), true);
+        _evaluate((Cartesian2DPlot) sp, _getFiles(simFiles), true);
     }
 
     /**
@@ -187,7 +188,7 @@ public class TemplateGCI {
      *                 simulation as the 3rd one, i.e., the fine grid.
      */
     public void evaluate(StarPlot sp, ArrayList<File> simFiles) {
-        _evaluate(sp, simFiles, true);
+        _evaluate((Cartesian2DPlot) sp, simFiles, true);
     }
 
     /**
@@ -251,16 +252,15 @@ public class TemplateGCI {
         _ud = _mu.userDeclarations;
     }
 
-    private XYPlot _createDuplicatedPlot(XYPlot xyp, FileTable ft) {
-        XYPlot xyp2 = _sim.getPlotManager().createXYPlot();
+    private Cartesian2DPlot _createDuplicatedPlot(Cartesian2DPlot xyp, FileTable ft) {
+        Cartesian2DPlot xyp2 = _add.plot.empty();
         //--
         String s = "GCI23";
         xyp2.copyProperties(xyp);
         xyp2.setPresentationName(xyp.getPresentationName() + " - " + s);
         xyp2.setTitle("");
-        ExternalDataSet eds = _getNewExternalDataSet(xyp2, ft);
-        eds.setXValuesName("X");
-        eds.setYValuesName(s);
+        xyp2.getDataSetManager().addDataProvider(ft);
+        TableDataSet eds = (TableDataSet) xyp2.getDataSeriesOrder().getLast();
         eds.setPresentationName(s);
         eds.setSeriesName(s);
         eds.getSymbolStyle().setColor(StaticDeclarations.Colors.SLATE_GRAY_DARK.getColor());
@@ -269,18 +269,21 @@ public class TemplateGCI {
         return xyp2;
     }
 
-    private XYPlot _createPlot(String name, FileTable ft, String[] xx, String[] yy,
-            XYPlot xypOrig) {
-        XYPlot xyp = _sim.getPlotManager().createXYPlot();
+    private Cartesian2DPlot _createPlot(String name, FileTable ft, String[] xx, String[] yy,
+            Cartesian2DPlot xypOrig) {
+        Cartesian2DPlot xyp = _add.plot.empty();
         xyp.setPresentationName(name);
         xyp.setTitle("");
         for (int i = 0; i < yy.length; i++) {
             String s = yy[i].trim();
-            ExternalDataSet eds = _getNewExternalDataSet(xyp, ft);
-            eds.setXValuesName(xx[i].trim());
-            eds.setYValuesName(s);
+            xyp.getDataSetManager().addDataProvider(ft);
+            TableDataSet eds = (TableDataSet) xyp.getDataSeriesOrder().getLast();
             eds.setPresentationName(s);
             eds.setSeriesName(s);
+            _get.plots.axisX(eds).getTableColumnRef()
+                    .setReferencedObject(ft.getColumnDescriptor(xx[i]));
+            _get.plots.axisY(eds).getTableColumnRef()
+                    .setReferencedObject(ft.getColumnDescriptor(yy[i]));
             SymbolStyle ss = eds.getSymbolStyle();
             ss.getSymbolShapeOption().setSelected(SymbolShapeOption.Type.FILLED_CIRCLE);
             switch (i) {
@@ -304,12 +307,8 @@ public class TemplateGCI {
         return xyp;
     }
 
-    private void _evaluate(StarPlot sp, ArrayList<File> simFiles, boolean vo) {
+    private void _evaluate(Cartesian2DPlot sp, ArrayList<File> simFiles, boolean vo) {
         _io.say.action("Performing Roache's GCI calculation on a Plot", vo);
-        if (!(sp instanceof XYPlot)) {
-            _io.say.msg("Currently limited to X-Y Plots only.");
-            return;
-        }
         //-- F1 to F3 == Coarse to Fine
         double[] x1 = {}, y1 = {}, x2 = {}, y2 = {}, x3 = {}, y3 = {};
         ArrayList<String> als = new ArrayList<>();
@@ -317,7 +316,7 @@ public class TemplateGCI {
         als.add(_sim.getPresentationName());
         hs.add(_getGridSize(_sim));
         String pltName = sp.getPresentationName();
-        sp = evaluate_preExport(_sim, sp);
+        sp = (Cartesian2DPlot) evaluate_preExport(_sim, sp);
         //-- Export CSVs
         _exportPlot(sp, _sim.getPresentationName() + ".csv", true);
         for (File sf : new File[]{ simFiles.get(1), simFiles.get(0) }) {
@@ -442,20 +441,20 @@ public class TemplateGCI {
     /**
      * Exports the Plot as CSV with option to sort data.
      *
-     * @param sp      given StarPlot.
-     * @param csvName given CSV name.
+     * @param sp       given StarPlot.
+     * @param csvName  given CSV name.
+     * @param sortData sort Y data?
      */
     private void _exportPlot(StarPlot sp, String csvName, boolean sortData) {
         String name = csvName;
         if (!name.toLowerCase().contains(".csv")) {
             name += ".csv";
         }
-        if (sortData && sp instanceof XYPlot) {
-            XYPlot p = (XYPlot) sp;
-            YAxisType y = (YAxisType) p.getYAxes().getDefaultAxis();
-            InternalDataSet id
-                    = (InternalDataSet) y.getDataSetManager().getDataSets().iterator().next();
-            id.setNeedsSorting(true);
+        if (sortData && sp instanceof Cartesian2DPlot plot) {
+            PartGroupDataSet ds = (PartGroupDataSet) plot.getDataSeriesOrder().getFirst();
+            FieldFunction ff = _get.plots.axisX(ds).getScalarFunction().getFieldFunction();
+            SortOrder.SortLevel level = new SortOrder.SortLevel(ff, SortDirection.Ascending);
+            ds.getDataSorter().setSortOrder(new SortOrder(List.of(level)));
         }
         sp.export(new File(_ud.simPath, name), ",");
         _io.say.msg("CSV Exported: " + name);
@@ -530,16 +529,6 @@ public class TemplateGCI {
         double sumVC = r.getReportMonitorValue();
         double convFactor = _ud.unit_m.getConversion() / _ud.defUnitLength.getConversion();
         return Math.cbrt(sumVC / cc) * convFactor;
-    }
-
-    private ExternalDataSet _getNewExternalDataSet(XYPlot xyp, FileTable ft) {
-        ArrayList<DataSet> datasetsOld
-                = new ArrayList<>(xyp.getDataSetManager().getExternalDataSets());
-        xyp.getDataSetManager().addDataProvider(ft);
-        ArrayList<DataSet> datasetsNew
-                = new ArrayList<>(xyp.getDataSetManager().getExternalDataSets());
-        datasetsNew.removeAll(datasetsOld);
-        return (ExternalDataSet) datasetsNew.get(0);
     }
 
     private double _getP(double r21, double r32, double e32, double e21, boolean vo) {
@@ -645,7 +634,7 @@ public class TemplateGCI {
 
     }
 
-    private void _setupPlots(FileTable ft, StarPlot sp, double[] x1, double[] x2, double[] x3,
+    private void _setupPlots(FileTable ft, Cartesian2DPlot sp, double[] x1, double[] x2, double[] x3,
             double[] y1, double[] y2, double[] y3, double[] y1p, double[] y2p,
             double[] gci12, double[] gci23, double[] gciP, double[] e12_a, double[] e23_a,
             double[] gciExtr) {
@@ -653,8 +642,8 @@ public class TemplateGCI {
         ArrayList<String> plots = new ArrayList<>();
         //-- Changing the original Plot and adding stuff.
         _io.say.msg("Changing Plot: " + sp.getPresentationName());
-        XYPlot xyp = (XYPlot) sp;
-        XYPlot xypGCI = _createDuplicatedPlot(xyp, ft);
+        Cartesian2DPlot xyp = (Cartesian2DPlot) sp;
+        Cartesian2DPlot xypGCI = _createDuplicatedPlot(xyp, ft);
         plots.add(xypGCI.getPresentationName());
         //--
         //-- Write a GCI CSV with original and projected data.
@@ -686,10 +675,12 @@ public class TemplateGCI {
         _io.say.msg("Written GCI CSV file: " + gciCsv.getName());
         FileTable ft2 = (FileTable) _sim.getTableManager().createFromFile(gciCsv.toString());
         //-- F1, F2 & F3 plots
-        XYPlot xyp2 = _createPlot("Original Grids Solutions", ft2, "X1,X2,X3".split(","),
+        Cartesian2DPlot xyp2 = _createPlot("Original Grids Solutions", ft2,
+                "X1,X2,X3".split(","),
                 "F1,F2,F3".split(","), xyp);
         plots.add(xyp2.getPresentationName());
-        XYPlot xyp3 = _createPlot("Projected Grids Solutions", ft2, "X3,X3,X3,X3".split(","),
+        Cartesian2DPlot xyp3 = _createPlot("Projected Grids Solutions", ft2,
+                "X3,X3,X3,X3".split(","),
                 "F1P,F2P,F3,F3EXACT".split(","), xyp);
         plots.add(xyp3.getPresentationName());
         _templ.prettify.plots();

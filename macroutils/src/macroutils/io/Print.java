@@ -1,7 +1,7 @@
 package macroutils.io;
 
-import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import star.base.neo.ClientServerObject;
@@ -261,21 +261,17 @@ public class Print {
     /**
      * Prints the STAR-CCM+ object names in the console/output.
      *
-     * @param aos given {@link ArrayList} containing objects in general.
-     * @param key given type of the object. E.g.: "Boundary, Report, Scenes, etc...
-     * @param vo  given verbose option. False will not print anything.
+     * @param csos given {@link List} containing objects in general.
+     * @param key  given type of the object. E.g.: "Boundary, Report, Scenes, etc...
+     * @param vo   given verbose option. False will not print anything.
      */
-    public void objects(ArrayList aos, String key, boolean vo) {
-        if (aos == null) {
-            aos = new ArrayList<>();
+    public void objects(List<? extends ClientServerObject> csos, String key, boolean vo) {
+        if (csos == null) {
+            csos =List.of();
         }
-        msg(vo, "Number of %s: %d.", key, aos.size(), vo);
-        for (Object o : aos) {
-            String s = o.toString();
-            if (o instanceof ClientServerObject) {
-                s = _get.strings.name((ClientServerObject) o);
-            }
-            msg(vo, "  - \"%s\"", s);
+        msg(vo, "Number of %s: %d.", key, csos.size(), vo);
+        for (ClientServerObject cso : csos) {
+            msg(vo, "  - \"%s\"", _get.strings.name(cso));
         }
     }
 

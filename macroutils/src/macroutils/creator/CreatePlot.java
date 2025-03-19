@@ -1,16 +1,21 @@
 package macroutils.creator;
 
 import java.util.ArrayList;
+import java.util.List;
 import macroutils.MacroUtils;
 import star.base.neo.NamedObject;
-import star.common.AxisType;
-import star.common.AxisTypeMode;
+import star.common.Cartesian2DPlot;
 import star.common.FieldFunction;
-import star.common.HistogramPlot;
+import star.common.PartGroupDataSet;
 import star.common.Simulation;
 import star.common.Units;
-import star.common.XYPlot;
-import star.common.YAxisType;
+import star.common.WeightingMode;
+import star.coremodule.ui.plotsetup.PlotAxisInput;
+import star.coremodule.ui.plotsetup.SimDataSourceType;
+import star.coremodule.ui.plotsetup.VariableType;
+import star.coremodule.ui.plotsetup.XyPlotTypeEnum;
+import star.coremodule.ui.plotsetup.dscfg.HistogramDataSeriesConfig;
+import star.coremodule.ui.plotsetup.dscfg.XyDataSeriesConfig;
 
 /**
  * Low-level class for creating Plots with MacroUtils.
@@ -42,6 +47,18 @@ public class CreatePlot {
     }
 
     /**
+     * Creates an empty plot.
+     *
+     * @return The Cartesian2DPlot
+     */
+    public Cartesian2DPlot empty() {
+        _io.say.action("Creating an empty Plot", true);
+        Cartesian2DPlot plot = _sim.getPlotManager().createCartesian2DPlot("", List.of());
+        _io.say.created(plot, true);
+        return plot;
+    }
+
+    /**
      * Creates a Histogram Plot from the selected Objects.
      *
      * @param ano given ArrayList of STAR-CCM+ Objects
@@ -49,19 +66,21 @@ public class CreatePlot {
      *
      * @return The HistogramPlot
      */
-    public HistogramPlot histogram(ArrayList<NamedObject> ano, FieldFunction ff) {
+    public Cartesian2DPlot histogram(ArrayList<NamedObject> ano, FieldFunction ff) {
 
         _io.say.action("Creating a Histogram Plot", true);
         _io.say.objects(ano, "Parts", true);
         _io.say.object(ff, true);
 
-        HistogramPlot hp = _sim.getPlotManager().createPlot(HistogramPlot.class);
-        hp.setTitle("");
-        hp.getParts().setObjects(ano);
-        hp.getXAxisType().getBinFunction().setFieldFunction(ff);
+        HistogramDataSeriesConfig config = new HistogramDataSeriesConfig(SimDataSourceType.PARTS,
+                ano, null,
+                new PlotAxisInput(VariableType.SCALAR, new PlotAxisInput.ScalarFunctionInput(ff)),
+                new PlotAxisInput(VariableType.SCALAR), WeightingMode.FREQUENCY);
+        Cartesian2DPlot plot = _sim.getPlotManager().createCartesian2DPlot("",
+                List.of(XyPlotTypeEnum.HISTOGRAM), config);
 
-        _io.say.created(hp, true);
-        return hp;
+        _io.say.created(plot, true);
+        return plot;
 
     }
 
@@ -76,25 +95,27 @@ public class CreatePlot {
      *
      * @return The created XY Plot.
      */
-    public XYPlot xy(ArrayList<NamedObject> ano, FieldFunction ffx, Units ux, FieldFunction ffy,
+    public Cartesian2DPlot xy(ArrayList<NamedObject> ano, FieldFunction ffx, Units ux, FieldFunction ffy,
             Units uy) {
+
         _io.say.action("Creating a XY Plot", true);
         _io.say.objects(ano, "Parts", true);
         _io.say.value("X-Axis", ffx.getPresentationName(), true, true);
         _io.say.value("Y-Axis", ffy.getPresentationName(), true, true);
-        XYPlot xyp = _sim.getPlotManager().createXYPlot();
-        xyp.setTitle("");
-        xyp.getParts().setObjects(ano);
-        _setAxisType(xyp.getXAxisType(), ffx, ux);
-        _setAxisType(((YAxisType) xyp.getYAxes().getDefaultAxis()), ffy, uy);
-        _io.say.created(xyp, true);
-        return xyp;
-    }
 
-    private void _setAxisType(AxisType at, FieldFunction ff, Units u) {
-        at.setMode(AxisTypeMode.SCALAR);
-        at.getScalarFunction().setFieldFunction(ff);
-        at.getScalarFunction().setUnits(u);
+        XyDataSeriesConfig config = new XyDataSeriesConfig(SimDataSourceType.PARTS,
+                ano, null,
+                new PlotAxisInput(VariableType.SCALAR, new PlotAxisInput.ScalarFunctionInput(ffx)),
+                new PlotAxisInput(VariableType.SCALAR, new PlotAxisInput.ScalarFunctionInput(ffy)));
+        Cartesian2DPlot plot = _sim.getPlotManager().createCartesian2DPlot("",
+                List.of(XyPlotTypeEnum.BASIC), config);
+        PartGroupDataSet ds = (PartGroupDataSet) plot.getDataSeriesOrder().getFirst();
+        ds.getAxisTypeManager().getAxisType("Bottom Axis Data").getScalarFunction().setUnits(ux);
+        ds.getAxisTypeManager().getAxisType("Left Axis Data").getScalarFunction().setUnits(uy);
+
+        _io.say.created(plot, true);
+        return plot;
+
     }
 
 }

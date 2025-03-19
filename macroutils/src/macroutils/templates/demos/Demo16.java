@@ -7,7 +7,7 @@ import star.common.Cartesian2DAxis;
 import star.common.Cartesian2DAxisManager;
 import star.common.Dimensions;
 import star.common.FieldFunctionTypeOption;
-import star.common.InternalDataSet;
+import star.common.PartGroupDataSet;
 import star.common.Simulation;
 import star.common.SymbolShapeOption;
 
@@ -158,21 +158,21 @@ public class Demo16 {
         _ud.ff1 = _get.objects.fieldFunction(StaticDeclarations.Vars.POS);
         _ud.ff2 = _get.objects.fieldFunction(StaticDeclarations.Vars.P);
         _ud.namedObjects.add(_get.boundaries.byREGEX(_ud.bcSym, true));
-        _ud.starPlot = _add.plot.xy(_ud.namedObjects, _ud.ff1.getComponentFunction(0),
+        _ud.plot = _add.plot.xy(_ud.namedObjects, _ud.ff1.getComponentFunction(0),
                 _ud.unit_m, _ud.ff2, _ud.unit_Pa);
-        _ud.starPlot.setPresentationName("Pressure vs Length");
+        _ud.plot.setPresentationName("Pressure vs Length");
         _ud.updEvent = _add.tools.updateEvent_Iteration(10, 0);
-        _set.object.updateEvent(_ud.starPlot, _ud.updEvent, true);
-        InternalDataSet ids = (InternalDataSet) _get.plots.datasets(_ud.starPlot, true).get(0);
-        ids.getSymbolStyle().getSymbolShapeOption()
+        _set.object.updateEvent(_ud.plot, _ud.updEvent, true);
+        PartGroupDataSet ds = (PartGroupDataSet) _ud.plot.getDataSeriesOrder().getFirst();
+        ds.getSymbolStyle().getSymbolShapeOption()
                 .setSelected(SymbolShapeOption.Type.FILLED_CIRCLE);
-        ids.getSymbolStyle().setColor(StaticDeclarations.Colors.BLACK.getColor());
-        ids.getSymbolStyle().setSize(4);
-        Cartesian2DAxisManager cam = (Cartesian2DAxisManager) _ud.starPlot.getAxisManager();
+        ds.getSymbolStyle().setColor(StaticDeclarations.Colors.BLACK.getColor());
+        ds.getSymbolStyle().setSize(4);
+        Cartesian2DAxisManager cam = (Cartesian2DAxisManager) _ud.plot.getAxisManager();
         Cartesian2DAxis cla = (Cartesian2DAxis) cam.getAxis("Left Axis");
         cla.setMinimum(-1.2);
         cla.setMaximum(1.2);
-        _ud.starPlot.open();
+        _ud.plot.open();
     }
 
     private void _setupRegion() {

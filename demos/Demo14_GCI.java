@@ -4,17 +4,17 @@ import macroutils.MacroUtils;
 import macroutils.StaticDeclarations;
 import macroutils.UserDeclarations;
 import macroutils.templates.TemplateGCI;
+import star.common.Cartesian2DPlot;
 import star.common.ConstantVectorProfileMethod;
 import star.common.Dimensions;
 import star.common.FieldFunction;
 import star.common.FieldFunctionTypeOption;
 import star.common.InterfaceBoundary;
-import star.common.InternalDataSet;
+import star.common.PartGroupDataSet;
 import star.common.PartSurface;
 import star.common.StarMacro;
 import star.common.SymbolShapeOption;
-import star.common.XYPlot;
-import star.common.YAxisType;
+import star.common.graph.DataSet;
 import star.flow.MomentumUserSource;
 import star.flow.MomentumUserSourceOption;
 
@@ -117,6 +117,14 @@ public class Demo14_GCI extends StarMacro {
                 "[0.0, 0.0, $dPdL]", "Momentum Source", true);
     }
 
+    private void setupDataSet(DataSet ds, String name, SymbolShapeOption.Type type,
+            StaticDeclarations.Colors color) {
+        ds.getSymbolStyle().getSymbolShapeOption().setSelected(type);
+        ds.getSymbolStyle().setColor(color.getColor());
+        ds.setPresentationName(name);
+        ds.setSeriesName(name);
+    }
+
     private void setupMesh() {
         ud.mshBaseSize = baseSize0;
         ud.mshSrfSizeMin = 80;
@@ -160,12 +168,6 @@ public class Demo14_GCI extends StarMacro {
 
     }
 
-    private void setupPlotData(InternalDataSet ids, SymbolShapeOption.Type type,
-            StaticDeclarations.Colors color) {
-        ids.getSymbolStyle().getSymbolShapeOption().setSelected(type);
-        ids.getSymbolStyle().setColor(color.getColor());
-    }
-
     private void setupPost() {
         FieldFunction fx = mu.get.objects.fieldFunction(StaticDeclarations.Vars.POS.getVar(), true)
                 .getComponentFunction(0);
@@ -181,23 +183,20 @@ public class Demo14_GCI extends StarMacro {
         ud.namedObjects.addAll(mu.get.regions.all(true));
         ud.namedObjects2.add(mu.add.derivedPart.line(ud.namedObjects,
                 new double[]{ -0.98 * R, 0, L / 2 }, new double[]{ 0.98 * R, 0, L / 2 }, 20));
-        XYPlot plot = mu.add.plot.xy(ud.namedObjects2, fx, ud.defUnitLength, fVz, ud.defUnitVel);
+        Cartesian2DPlot plot = mu.add.plot.xy(ud.namedObjects2, fx, ud.defUnitLength,
+                fVz, ud.defUnitVel);
         plot.setPresentationName(plotName);
         ud.updEvent = mu.add.tools.updateEvent_Iteration(100, 0);
         mu.set.object.updateEvent(plot, ud.updEvent, true);
-        YAxisType yxN = plot.getYAxes().getDefaultAxis();
-        YAxisType yxA = plot.getYAxes().createAxisType();
-        InternalDataSet idsN = (InternalDataSet) yxN.getDataSetManager().getDataSets()
-                .iterator().next();
-        InternalDataSet idsA = (InternalDataSet) yxA.getDataSetManager().getDataSets()
-                .iterator().next();
-        setupPlotData(idsN, SymbolShapeOption.Type.EMPTY_CIRCLE,
+        PartGroupDataSet ds1 = (PartGroupDataSet) plot.getDataSeriesOrder().getFirst();
+        plot.getDataSetManager().addDataProvider(ds1);
+        PartGroupDataSet ds2 = (PartGroupDataSet) plot.getDataSeriesOrder().getLast();
+        ds2.getAxisTypeManager().getAxisType("Left Axis Data")
+                .getScalarFunction().setFieldFunction(ud.ff2);
+        setupDataSet(ds1, "Numerical", SymbolShapeOption.Type.EMPTY_CIRCLE,
                 StaticDeclarations.Colors.BLACK);
-        setupPlotData(idsA, SymbolShapeOption.Type.FILLED_TRIANGLE,
+        setupDataSet(ds2, "Analytical", SymbolShapeOption.Type.FILLED_TRIANGLE,
                 StaticDeclarations.Colors.DARK_GREEN);
-        yxA.getScalarFunction().setFieldFunction(ud.ff2);
-        idsN.setSeriesName("Numerical");
-        idsA.setSeriesName("Analytical");
         mu.set.plots.axesTitles(plot,
                 String.format("Radius [%s]", ud.defUnitLength.getPresentationName()),
                 String.format("Axial Velocity [%s]", ud.defUnitVel.getPresentationName()), true);

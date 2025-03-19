@@ -9,7 +9,7 @@ import macroutils.creator.MainCreator;
 import macroutils.getter.MainGetter;
 import macroutils.setter.MainSetter;
 import star.base.report.Monitor;
-import star.common.HistogramPlot;
+import star.common.Cartesian2DPlot;
 import star.common.Simulation;
 import star.common.StarPlot;
 import star.common.UserTag;
@@ -58,9 +58,8 @@ public class MeshMetrics {
      * Execute this class.
      */
     public void execute() {
-
         createHistograms();
-
+        _mu.templates.prettify.plots();
     }
 
     /**
@@ -104,7 +103,7 @@ public class MeshMetrics {
             name = metric.getFunction() + " Part Surfaces";
         }
 
-        HistogramPlot hp = _add.plot.histogram(_ud.namedObjects, _ud.ff);
+        Cartesian2DPlot hp = _add.plot.histogram(_ud.namedObjects, _ud.ff);
         hp.setPresentationName(name);
         hp.setTitle(name);
         hp.open();

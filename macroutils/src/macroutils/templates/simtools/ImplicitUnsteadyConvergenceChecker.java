@@ -10,13 +10,13 @@ import macroutils.setter.MainSetter;
 import star.base.report.Monitor;
 import star.base.report.Report;
 import star.base.report.ReportMonitor;
-import star.common.MonitorPlot;
+import star.base.report.graph.MultiAxisMonitorDataSet;
+import star.common.Cartesian2DPlot;
 import star.common.Simulation;
 import star.common.StarPlot;
 import star.common.StarUpdateModeOption;
 import star.common.SymbolShapeOption;
 import star.common.UserTag;
-import star.common.graph.DataSet;
 
 /**
  * This class will create a plot for every Report available in the Simulation.
@@ -103,25 +103,25 @@ public class ImplicitUnsteadyConvergenceChecker {
 
         final String name = _tag.getPresentationName() + ": " + report.getPresentationName();
 
-        _ud.monitors.clear();
-
         // Create ReportMonitor and set to update at every iteration
         ReportMonitor rm = report.createMonitor();
         rm.setPresentationName(name);
         rm.getStarUpdate().getUpdateModeOption().setSelected(StarUpdateModeOption.Type.ITERATION);
-        _ud.monitors.add(rm);
 
         // Create MonitorPlot and set to update at every iteration
-        MonitorPlot mp = _sim.getPlotManager().createMonitorPlot(_ud.monitors, name);
-        mp.setXAxisMonitor(_get.monitors.iteration());
-        mp.getLegend().setVisible(false);
+        Cartesian2DPlot plot = _add.plot.empty();
+        plot.setPresentationName(name);
+        plot.getDataSetManager().addDataProvider(rm);
+        MultiAxisMonitorDataSet ds = (MultiAxisMonitorDataSet) plot.getDataSeriesOrder().getFirst();
+        ds.setPresentationName(name);
+        _get.plots.axisX(ds).getMonitorRef().setReferencedObject(_get.monitors.iteration());
+        plot.getLegend().setVisible(false);
 
         // Now prettify the DataSet
-        DataSet ds = mp.getDataSetCollection().stream().findFirst().get();
         ds.getSymbolStyle().getSymbolShapeOption().setSelected(SymbolShapeOption.Type.STAR);
 
         _set.object.tag(rm, _tag, true);
-        _set.object.tag(mp, _tag, true);
+        _set.object.tag(plot, _tag, true);
 
     }
 

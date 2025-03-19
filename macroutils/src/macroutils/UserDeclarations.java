@@ -14,6 +14,7 @@ import star.cadmodeler.CadModel;
 import star.cadmodeler.SolidModelPart;
 import star.common.Boundary;
 import star.common.BoundaryInterface;
+import star.common.Cartesian2DPlot;
 import star.common.CompositePart;
 import star.common.CoordinateSystem;
 import star.common.DeltaMonitorUpdateEvent;
@@ -24,7 +25,6 @@ import star.common.GeometryPart;
 import star.common.Interface;
 import star.common.LabCoordinateSystem;
 import star.common.LogicUpdateEvent;
-import star.common.MonitorPlot;
 import star.common.PartCurve;
 import star.common.PartSurface;
 import star.common.PhysicsContinuum;
@@ -355,16 +355,6 @@ public class UserDeclarations {
     public Monitor mon = null, mon1 = null, mon2 = null;
 
     /**
-     * Global MacroUtils variable for storing a Monitor Plot. Useful when creating a Report.
-     */
-    public MonitorPlot monPlot = null;
-
-    /**
-     * Some useful Global Variables: Planes.
-     */
-    public PlaneSection plane = null, plane1 = null, plane2 = null;
-
-    /**
      * Some useful Global Variables: Part Curves.
      */
     public PartCurve partCrv = null, partCrv1 = null, partCrv2 = null, partCrv3 = null;
@@ -373,6 +363,16 @@ public class UserDeclarations {
      * Some useful Global Variables: Part Surfaces.
      */
     public PartSurface partSrf = null, partSrf1 = null, partSrf2 = null, partSrf3 = null;
+
+    /**
+     * Some useful Global Variables: Planes.
+     */
+    public PlaneSection plane = null, plane1 = null, plane2 = null;
+
+    /**
+     * Global MacroUtils variable for storing a plot. Useful when creating a Report.
+     */
+    public Cartesian2DPlot plot = null;
 
     /**
      * Some useful Global Variables: Points.
