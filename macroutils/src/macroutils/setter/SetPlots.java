@@ -1,11 +1,11 @@
 package macroutils.setter;
 
 import macroutils.MacroUtils;
-import star.base.neo.DoubleVector;
+import star.common.BinningDescriptor;
 import star.common.Cartesian2DAxis;
-import star.common.HistogramAxisType;
-import star.common.HistogramBinMode;
-import star.common.HistogramPlot;
+import star.common.Cartesian2DPlot;
+import star.common.PartGroupDataSet;
+import star.common.RangedData;
 import star.common.StarPlot;
 
 /**
@@ -16,6 +16,7 @@ import star.common.StarPlot;
  */
 public class SetPlots {
 
+    private macroutils.checker.MainChecker _chk = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
     private final MacroUtils _mu;
@@ -42,35 +43,46 @@ public class SetPlots {
         _io.say.action("Setting Plot Axes Titles", vo);
         _io.say.object(sp, vo);
 
-        axisTitle(_get.plots.axisX(sp), "X-Axis", xName);
-        axisTitle(_get.plots.axisY(sp), "Y-Axis", yName);
+        _axisTitle(_get.plots.axisX(sp), "X-Axis", xName);
+        _axisTitle(_get.plots.axisY(sp), "Y-Axis", yName);
 
         _io.say.ok(vo);
 
     }
 
     /**
-     * Sets the bin parameters for a Histogram Plot.
+     * Sets the bins number for a Histogram Plot.
      *
-     * @param hp     given HistogramPlot
-     * @param number given number of bins
-     * @param range  given range for the bins
-     * @param vo     given verbose option. False will not print anything
+     * @param hp    given StarPlot
+     * @param bins  given number of bins
+     * @param vo    given verbose option. False will not print anything
      */
-    public void binParameters(HistogramPlot hp, int number, double[] range, boolean vo) {
+    public void bins(StarPlot hp, int bins, boolean vo) {
+        binsParameters(hp, bins, new double[]{}, vo);
+    }
+
+    /**
+     * Sets the bins parameters for a Histogram Plot.
+     *
+     * @param hp    given StarPlot
+     * @param bins  given number of bins
+     * @param range given range for the bins
+     * @param vo    given verbose option. False will not print anything
+     */
+    public void binsParameters(StarPlot hp, int bins, double[] range, boolean vo) {
 
         _io.say.action("Setting Histogram Plot range on bins", vo);
         _io.say.object(hp, vo);
 
-        HistogramAxisType axisType = hp.getXAxisType();
-        axisType.setNumberOfBin(number);
-        axisType.setBinMode(HistogramBinMode.MANUAL);
-        axisType.getHistogramRange().setRange(new DoubleVector(range));
-
-        _io.say.value("Number of bins", number, vo);
-        _io.say.value("Bin rang", range, vo);
-
-        _io.say.ok(vo);
+        if (_chk.is.histogram(hp) && hp instanceof Cartesian2DPlot plot) {
+            plot.getDataSeriesOrder().stream()
+                    .filter(PartGroupDataSet.class::isInstance)
+                    .map(PartGroupDataSet.class::cast)
+                    .forEach(dataSet -> _setBinsParameters(dataSet, bins, range, vo));
+            _io.say.ok(vo);
+        } else {
+            _io.say.msg("Skipped! Plot is not supported", vo);
+        }
 
     }
 
@@ -78,13 +90,27 @@ public class SetPlots {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
+        _chk = _mu.check;
         _get = _mu.get;
         _io = _mu.io;
     }
 
-    private void axisTitle(Cartesian2DAxis axis, String key, String name) {
+    private void _axisTitle(Cartesian2DAxis axis, String key, String name) {
         axis.getTitle().setText(name);
         _io.say.value(key, axis.getTitle().getText(), true, true);
+    }
+
+    private void _setBinsParameters(PartGroupDataSet ds, int bins, double[] range, boolean vo) {
+        _io.say.object(ds, vo);
+        _io.say.value("Number of bins", bins, vo);
+        _io.say.value("Bin range", range, vo);
+        BinningDescriptor descriptor = _get.plots.axisX(ds).hasBinningDescriptor();
+        descriptor.setNumberOfBins(bins);
+        if (range.length == 2) {
+            descriptor.setDataRangeMode(RangedData.RangeMode.Manual);
+            descriptor.setManualDataExtentsMin(range[0]);
+            descriptor.setManualDataExtentsMax(range[1]);
+        }
     }
 
 }

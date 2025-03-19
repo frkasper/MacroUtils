@@ -65,5 +65,8 @@ def test_mesh_metrics():
     assert re.findall(metric_example, created)
     assert original == removed
 
-    expected = 4 * 2 + 2  # Number of Plots x 2 + included ones
+    plots_created = 4
+    expected = plots_created * 2 + 2  # The last term is the included ones
     assert expected == len(re.findall('Plot -> ', created))
+    assert plots_created == len(re.findall('Function:', created))
+    assert plots_created == len(re.findall('Bins:', created))

@@ -60,29 +60,28 @@ def _will_run(testhome, base_name):
     return len(pictures) + len(log_file) == 0
 
 
-def run_commands(testhome, commands, num_threads):
+def run_commands(testhome, commands, threads):
     """General runner"""
     star_time = timer.ExecutionTime(key='STAR-CCM+ macros')
     print('')
-    if num_threads > 1:
-        run_multiple(testhome, commands, num_threads)
+    if threads > 1:
+        run_multiple(testhome, commands, threads)
     else:
         run_sequential(testhome, commands)
     star_time.finalize(extra_info='STAR-CCM+ macros')
     print('\n')
 
 
-def run_multiple(testhome, commands, num_threads):
+def run_multiple(testhome, commands, threads):
     """Run multiple threads"""
-    threads = '(threads = %d)' % num_threads
-    print(strings.heading('Running in threaded mode %s' % threads))
+    print(strings.heading(f'Running in threaded mode ({threads = })'))
 
     commands_to_run = _flat(commands)
     if len(commands_to_run) == 0:
         return
 
     run_queue = queue.Queue()
-    for i in range(num_threads):
+    for i in range(threads):
         thread = TesterThread(queue=run_queue)
         thread.start()
 
@@ -92,7 +91,7 @@ def run_multiple(testhome, commands, num_threads):
             run_queue.put([testhome, command])
             time.sleep(1)
         else:
-            print('Bypassed due presence of log/picture files: %s' % base_name)
+            print(f'Bypassed due presence of log/picture files: {base_name}')
 
     run_queue.join()
 

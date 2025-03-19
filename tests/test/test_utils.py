@@ -132,6 +132,7 @@ def _run_sim(sim_file=None, macro_file=None):
         star_cmd = star.new_simulation(sh, macro_file, np, is_batch)
     else:
         star_cmd = star.load_simulation(sh, sim_file, macro_file, np, is_batch)
+    print(f'\n\n# Running: {star_cmd}\n\n')
     os.system(star_cmd)
 
 

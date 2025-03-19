@@ -20,9 +20,9 @@ import star.base.report.VolumeAverageReport;
 import star.common.Axis;
 import star.common.Cartesian2DAxis;
 import star.common.Cartesian2DAxisManager;
+import star.common.Cartesian2DPlot;
 import star.common.Dimensions;
 import star.common.FieldFunction;
-import star.common.MonitorPlot;
 import star.common.ScalarPhysicalQuantity;
 import star.common.Simulation;
 import star.common.Units;
@@ -43,6 +43,7 @@ import star.vis.FrontalAreaReport;
  */
 public class CreateReport {
 
+    private macroutils.creator.MainCreator _add = null;
     private macroutils.getter.MainGetter _get = null;
     private macroutils.io.MainIO _io = null;
     private MacroUtils _mu = null;
@@ -427,8 +428,8 @@ public class CreateReport {
             }
         }
         ReportMonitor rm = r.createMonitor();
-        MonitorPlot mp = _sim.getPlotManager().createMonitorPlot();
         rm.setPresentationName(r.getPresentationName());
+        Cartesian2DPlot mp = _add.plot.empty();
         mp.setPresentationName(r.getPresentationName());
         mp.setTitle(r.getPresentationName());
         mp.getDataSetManager().addDataProvider(rm);
@@ -579,6 +580,7 @@ public class CreateReport {
      * This method is called automatically by {@link MacroUtils}.
      */
     public void updateInstances() {
+        _add = _mu.add;
         _get = _mu.get;
         _io = _mu.io;
         _set = _mu.set;

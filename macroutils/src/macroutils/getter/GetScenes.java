@@ -79,7 +79,7 @@ public class GetScenes {
      * @return An ArrayList of Displayers.
      */
     public ArrayList<Displayer> allDisplayers(Scene scn, boolean vo) {
-        ArrayList<Displayer> ad = new ArrayList<>(scn.getDisplayerManager().getObjects());
+        ArrayList<Displayer> ad = new ArrayList<>(scn.getDisplayerManager().getDisplayers());
         _io.say.objects(ad, String.format("Getting all Displayers from Scene \"%s\"",
                 scn.getPresentationName()), vo);
         return ad;

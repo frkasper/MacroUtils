@@ -19,186 +19,119 @@ Limitations:
 @author: Fabio Kasper
 """
 import datetime
-import glob
-import itertools
-import optparse
 import os
 import re
 import shutil
-import common.executor as executor
-import common.set_up as set_up
-import common.star as star
-import common.strings as strings
-import common.timer as timer
-import tests_definition as td
-
-from collections import namedtuple
+from dataclasses import dataclass
+from optparse import OptionParser, OptionGroup
+from pathlib import Path
+from common import executor, set_up, star, strings, timer
+from tests_definition import Bug, Case, CASES, Demo, SimAssistant, SimTool, \
+                             filtered_cases, get_demo
 
 
-_Options = namedtuple('Options', ['data_home', 'demo_home', 'jar_file',
-                                  'star_home', 'test_home', 'test_cases',
-                                  'threads', 'pytest_args', 'serial'])
-PWD = os.getcwd()
+WORKDIR = Path(__file__).parent
 
 
-def _call_pytest(options, test_cases):
+@dataclass
+class Options:
+    serial: bool
+    threads: int
+    data_home: Path
+    demo_home: Path
+    jar_file: Path
+    star_home: Path
+    test_home: Path
+    test_cases: list[Case]
+    pytest_args: list[str]
+
+    @property
+    def bugs(self) -> list[Bug]:
+        return filtered_cases(self.test_cases, Bug)
+
+    @property
+    def demos(self) -> list[Demo]:
+        return filtered_cases(self.test_cases, Demo)
+
+    @property
+    def sim_assistants(self) -> list[SimAssistant]:
+        return filtered_cases(self.test_cases, SimAssistant)
+
+    @property
+    def sim_tools(self) -> list[SimTool]:
+        return filtered_cases(self.test_cases, SimTool)
+
+    @property
+    def pytest_command(self) -> str:
+        command = ['pytest'] + self.pytest_args
+        command.extend(f'test/test_demo{d.id:02d}.py' for d in self.demos)
+        if self.bugs:
+            command.append('test/test_bugs.py')
+        if self.sim_assistants:
+            command.append('test/test_simulation_assistants.py')
+        if self.sim_tools:
+            command.append('test/test_simulation_tools.py')
+        return ' '.join(command)
+
+
+    def print_overview(self):
+        print(strings.frame('MacroUtils tester'))
+        print('')
+        print(strings.heading('Important information'))
+        print(f'DATAHOME: {self.data_home}')
+        print(f'DEMOHOME: {self.demo_home}')
+        print(f'STARHOME: {self.star_home}')
+        print(f'JAR_FILE: {self.jar_file}')
+        print(f'TESTHOME: {self.test_home}')
+        print(f'PYTESTS : {WORKDIR}')
+        print('\n')
+        print(strings.heading('Basic Procedure'))
+        print('1) Run some demos in STAR-CCM+')
+        print('2) Test the results achieved above with pytest')
+        print('\n')
+        print(strings.heading('Notes'))
+        print('- In case of a test repetition, only step (2) is performed')
+        print('- To repeat step (1), remove the corresponding STAR-CCM+ ')
+        print('  files associated with the demo(s) in TESTHOME')
+        print('\n')
+        print(strings.heading(f'Tests to run: {len(self.test_cases)}'))
+        print(strings.itemized([case.name for case in self.test_cases]))
+        print('\n')
+
+
+def call_pytest(options: Options):
     print(strings.heading('Calling pytest'))
-    commands = ['export PYTHONPATH=%s' % PWD,
+    commands = ['export PYTHONPATH=%s' % WORKDIR,
                 'export STARHOME=%s' % options.star_home,
                 'export TESTHOME=%s' % options.test_home,
-                'pytest %s %s' % (options.pytest_args,
-                                  _test_files(test_cases))]
+                options.pytest_command]
+    os.chdir(WORKDIR)
     os.system('; '.join(commands))
     print('\n')
 
 
-def _commands_from_demo(options, demo_nt):
-    java_files = td.java_files_from_nt(demo_nt, options.demo_home)
-    star_commands = []
-    for java_file in java_files:
-        np = 1 if options.serial else demo_nt.np
-        star_cmd = star.new_simulation(options.star_home, java_file, np,
-                                       demo_nt.batch)
-        star_commands.append(star_cmd)
-    return star_commands
-
-
-def _commands_from_test(options, test_case):
-    if td.is_demo(test_case):
-        return _commands_from_demo(options, test_case)
-    else:
-        # Bugs are not run in step1
-        return None
-
-
-def _copy_test_macros(options):
+def copy_test_macros(options: Options):
     print(strings.heading('Test macros'))
 
     # Test macros first
-    test_macros_home = os.path.join(PWD, 'macros')
-    java_files = glob.glob(os.path.join(test_macros_home, '*Test.java'))
-    assert len(java_files) > 0, 'No test macros found in %s' % test_macros_home
+    macros_folder = WORKDIR.joinpath('macros')
+    java_files = list(macros_folder.glob('*Test.java'))
 
     # Then auxiliary macros
-    aux_folder = 'common'
-    aux_macros_home = os.path.join(test_macros_home, aux_folder)
+    macros_subfolder = macros_folder.joinpath('common')
 
-    aux_in_test_home = os.path.join(options.test_home, aux_folder)
-    if os.path.isdir(aux_in_test_home):
-        shutil.rmtree(aux_in_test_home)
+    # Refresh subfolder if needed
+    test_home_subfolder = options.test_home.joinpath(macros_subfolder.name)
+    if test_home_subfolder.is_dir():
+        shutil.rmtree(test_home_subfolder)
 
-    # Finally, copy files
+    # Finally, copy the files
     set_up._copy(java_files, options.test_home)
-    shutil.copytree(aux_macros_home, aux_in_test_home)
-
-    names = [os.path.split(f)[1] for f in java_files]
-    print(strings.itemized(names))
+    shutil.copytree(macros_subfolder, test_home_subfolder)
     print('\n')
 
 
-def _demo(number):
-    return td.demo(number)
-
-
-def _demo_files(options, demo_nt):
-    return td.demo_files(demo_nt.id, options.demo_home, options.data_home)
-
-
-def _demo_home(options):
-    """For convenience demo home is in the same folder as jar file"""
-    bp, fn = os.path.split(options.jar_file)
-    demo_home = os.path.join(bp, 'demo')
-    assert os.path.isdir(demo_home), 'Folder does not exist: "%s"' % demo_home
-    return demo_home
-
-
-def _is_error(key, value):
-    """Check if key is worth of trowing an optparse error"""
-    if re.match('^(demo|threads)$', key):
-        return False
-    return value is None
-
-
-def _itemized(tests):
-    bugs = [nt.macro_name for nt in tests if td.is_bug(nt)]
-    demos = ['Demo%d' % nt.id for nt in tests if td.is_demo(nt)]
-    sas = [nt.macro_name for nt in tests if td.is_sa(nt)]
-    sts = [nt.macro_name for nt in tests if td.is_simtool(nt)]
-
-    all_tests = itertools.chain.from_iterable([demos, bugs, sas, sts])
-
-    return strings.itemized(list(all_tests))
-
-
-def _test_cases(parser):
-
-    opts, args = parser.parse_args()
-
-    given_options = [opts.bugs, opts.sas, opts.simtools, opts.demo is not None]
-    execute_all = sum(given_options) == 0
-
-    test_cases = []
-
-    if opts.bugs and opts.demo is not None:
-            parser.error('--demo and --bugs are mutually exclusive')
-    if opts.sas and opts.demo is not None:
-            parser.error('--sas and --bugs are mutually exclusive')
-    if opts.simtools and opts.demo is not None:
-            parser.error('--simtools and --bugs are mutually exclusive')
-
-    if execute_all:
-
-            test_cases.extend(td.DEMOS)
-            test_cases.extend(td.BUGS)
-            test_cases.extend(td.SAS)
-            test_cases.extend(td.SIMTOOLS)
-
-    else:
-
-        if opts.bugs:
-            test_cases.extend(td.BUGS)
-
-        if opts.sas:
-            test_cases.extend(td.SAS)
-
-        if opts.simtools:
-            test_cases.extend(td.SIMTOOLS)
-
-        if opts.demo is not None:
-
-            try:
-                demo_id = int(opts.demo)
-                test_cases.append(td.demo(demo_id))
-            except ValueError:
-                parser.error('demo must be an integer: "%s"' % opts.demo)
-
-    return test_cases
-
-
-def _test_files(test_cases):
-
-    bugs = [nt for nt in test_cases if td.is_bug(nt)]
-    demos = [nt for nt in test_cases if td.is_demo(nt)]
-    sas = [nt for nt in test_cases if td.is_sa(nt)]
-    sts = [nt for nt in test_cases if td.is_simtool(nt)]
-    files = ['test/test_demo%02d.py' % nt.id for nt in demos]
-
-    if len(bugs) > 0:
-        files.append('test/test_bugs.py')
-
-    if len(sas) > 0:
-        files.append('test/test_simulation_assistants.py')
-
-    if len(sts) > 0:
-        files.append('test/test_simulation_tools.py')
-
-    assert len(files) > 0, 'No test file retrieved'
-
-    return ' '.join(files)
-
-
-def parse_options():
-    """Parse argument options and return a namedtuple."""
+def parse_options() -> Options:
 
     usage = [
             '%prog [options]',
@@ -216,13 +149,12 @@ def parse_options():
             'If no custom syntax is given both types will be tested.',
             ]
 
-    parser = optparse.OptionParser('\n'.join(usage))
+    parser = OptionParser('\n'.join(usage))
 
     #
     # Runtime Group
-    gr_r = optparse.OptionGroup(parser, 'Runtime Options', 'These options '
-                                'control the required inputs for launching '
-                                'the tests.')
+    gr_r = OptionGroup(parser, 'Runtime Options', 'Options related to the '
+                       'being evaluated.')
     parser.add_option_group(gr_r)
 
     gr_r.add_option('--bugs', dest='bugs', action='store_true',
@@ -260,8 +192,7 @@ def parse_options():
                     'run (default = 4)', default=4)
     #
     # pytest Group
-    gr_p = optparse.OptionGroup(parser, 'pytest Options', 'These options '
-                                'control pytest utility.')
+    gr_p = OptionGroup(parser, 'pytest Options', 'Options related to pytest.')
     parser.add_option_group(gr_p)
 
     gr_p.add_option('-s', dest='capture_no', action='store_true',
@@ -276,45 +207,69 @@ def parse_options():
 
     opts, args = parser.parse_args()
 
+    def informed(key, value) -> bool:
+        if re.match('^(demo|threads)$', key):
+            return False
+        return value is None
+
     #
-    # Assert all arguments are in place
+    # Assert that all arguments are informed
     items = opts.__dict__.items()
-    errors = ['%s not informed' % k for k, v in items if _is_error(k, v)]
+    errors = ['%s not informed' % k for k, v in items if informed(k, v)]
     if len(errors) > 0:
         errors.append('add --help for a detailed list of options')
         parser.error('\n\n- %s\n' % '\n- '.join(errors))
 
-    data_home = os.path.abspath(opts.datahome)
-    demo_home = os.path.abspath(opts.demohome)
-    jar_home = os.path.abspath(opts.jarhome)
+    data_home = Path(opts.datahome).resolve()
+    demo_home = Path(opts.demohome).resolve()
+    jar_home = Path(opts.jarhome).resolve()
 
-    no_jars_msg = 'MacroUtils jar file does not exist in "%s"' % jar_home
-
-    if os.path.isfile(jar_home):
+    if jar_home.is_file():
         jar_file = jar_home
     else:
-        jar_files = glob.glob(jar_home + os.sep + 'macroutils*.jar')
-
+        jar_files = jar_home.glob('macroutils*.jar')
         if not jar_files:
-            parser.error(no_jars_msg)
+            parser.error(f'No MacroUtils jar files in {jar_home}')
+        jar_file = next(jar_files)
 
-        jar_file = jar_files[0] if jar_files else None
-
-    if not os.path.exists(jar_file):
-        parser.error(no_jars_msg)
-
-    star_home = os.path.abspath(opts.starhome)
-    test_home = os.path.abspath(opts.testhome)
+    jar_file = jar_file.resolve()
+    star_home = Path(opts.starhome).resolve()
+    test_home = Path(opts.testhome).resolve()
 
     for folder in [data_home, demo_home, star_home, test_home]:
-        if not os.path.isdir(folder):
-            parser.error('folder does not exist: "%s"' % folder)
+        if not folder.is_dir():
+            parser.error(f'folder does not exist: {folder!r}')
 
     # Now assign a TESTHOME
     today = datetime.datetime.now().strftime('%Y%m%d')
-    test_home = os.path.join(test_home, 'tests_%s' % today)
+    test_home = test_home.joinpath(f'tests_{today}')
 
-    test_cases = _test_cases(parser)
+
+    if opts.bugs and opts.demo is not None:
+            parser.error('--demo and --bugs are mutually exclusive')
+    if opts.sas and opts.demo is not None:
+            parser.error('--sas and --bugs are mutually exclusive')
+    if opts.simtools and opts.demo is not None:
+            parser.error('--simtools and --bugs are mutually exclusive')
+
+    # Parse the test cases to be run
+    test_cases = []
+    if opts.demo is None and not any([opts.bugs, opts.sas, opts.simtools]):
+        opts.bugs = opts.sas = opts.simtools = True
+        test_cases.extend(filtered_cases(CASES, Demo))
+    elif opts.demo is None:
+        pass
+    else:
+        try:
+            test_cases.append(get_demo(opts.demo))
+        except ValueError as ve:
+            parser.error(ve)
+    if opts.bugs:
+        test_cases.extend(filtered_cases(CASES, Bug))
+    if opts.sas:
+        test_cases.extend(filtered_cases(CASES, SimAssistant))
+    if opts.simtools:
+        test_cases.extend(filtered_cases(CASES, SimTool))
 
     pytest_args = []
     if opts.capture_no:
@@ -328,68 +283,53 @@ def parse_options():
     nt = opts.threads
     threads = max(int(nt) if isinstance(nt, str) else nt, 0)
 
-    return _Options(data_home, demo_home, jar_file, star_home, test_home,
-                    test_cases, threads, ' '.join(pytest_args), serial)
+    return Options(serial, threads, data_home, demo_home, jar_file, star_home,
+                   test_home, test_cases, pytest_args)
 
 
-def print_overview(options):
-    fmt = '%s: %s'
-    print(strings.frame('MacroUtils tester'))
-    print('')
-    print(strings.heading('Important information'))
-    print(fmt % ('DATAHOME', options.data_home))
-    print(fmt % ('DEMOHOME', options.demo_home))
-    print(fmt % ('STARHOME', options.star_home))
-    print(fmt % ('JAR FILE', options.jar_file))
-    print(fmt % ('TESTHOME', options.test_home))
-    print('\n')
-    print(strings.heading('Basic Procedure'))
-    print('1) Run demos in STAR-CCM+ -- functional tests;')
-    print('2) Perform unit testing with pytest.')
-    print('\n')
-    print(strings.heading('Note'))
-    print('- In case of a test repetition, only step (2) will be performed;')
-    print('- If one wants to repeat step (1), just remove corresponding')
-    print('  STAR-CCM+ files associated with the demo(s) in TESTHOME.')
-    print('\n')
-    print(strings.heading('Tests to run: %d' % len(options.test_cases)))
-    print(_itemized(options.test_cases))
-    print('\n')
-
-
-def run_step1(options, test_cases):
-    star_commands = [_commands_from_test(options, nt) for nt in test_cases]
+def run_starccm_plus(options: Options):
+    star_commands = []
+    for demo in options.demos:
+        for java_file in demo.java_files(options.demo_home):
+            np = 1 if options.serial else demo.np  # Override from command line
+            star_cmd = star.new_simulation(options.star_home, java_file, np,
+                                           demo.batch)
+            star_commands.append(star_cmd)
     executor.run_commands(options.test_home, star_commands, options.threads)
 
 
-def run_step2(options, test_cases):
-    os.chdir(PWD)
-    _copy_test_macros(options)
-    _call_pytest(options, test_cases)
+def run_pytest(options: Options):
+    copy_test_macros(options)
+    call_pytest(options)
 
 
-def run_tests(options):
-    print_overview(options)
+def run_tests(options: Options):
 
+    options.print_overview()
     print(strings.line())
     overall_time = timer.ExecutionTime(key='All Tests')
     print(strings.line() + '\n')
 
+    def running_files(demo: Demo) -> list[Path]:
+        return demo.running_files(options.demo_home, options.data_home)
+
     # Bug and SimAssistant files are not copied at this time.
-    demos = [nt for nt in options.test_cases if td.is_demo(nt)]
-    demo_files_2d = [_demo_files(options, nt) for nt in demos]
-    files = list(itertools.chain.from_iterable(demo_files_2d))
+    files = [running_files(demo) for demo in options.demos]
 
-    set_up.environment(options.data_home, options.demo_home,
-                       options.jar_file, options.star_home,
-                       options.test_home, files)
+    set_up.environment(options.data_home, options.demo_home, options.jar_file,
+                       options.star_home, options.test_home,
+                       [file for group in files for file in group])
 
-    run_step1(options, options.test_cases)
-    run_step2(options, options.test_cases)
+    run_starccm_plus(options)
+    run_pytest(options)
 
     overall_time.finalize(extra_info='All Tests')
 
 
-if __name__ == "__main__":
+def main():
     options = parse_options()
     run_tests(options)
+
+
+if __name__ == "__main__":
+    main()
