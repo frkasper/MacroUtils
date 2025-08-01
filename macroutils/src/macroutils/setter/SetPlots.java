@@ -108,8 +108,10 @@ public class SetPlots {
         descriptor.setNumberOfBins(bins);
         if (range.length == 2) {
             descriptor.setDataRangeMode(RangedData.RangeMode.Manual);
-            descriptor.setManualDataExtentsMin(range[0]);
-            descriptor.setManualDataExtentsMax(range[1]);
+            descriptor.getMinimumQuantity().setValue(range[0]);
+            descriptor.getMaximumQuantity().setValue(range[1]);
+            descriptor.setLockMinimum(true);
+            descriptor.setLockMaximum(true);
         }
     }
 
