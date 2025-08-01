@@ -170,8 +170,8 @@ public class Demo16 {
         ds.getSymbolStyle().setSize(4);
         Cartesian2DAxisManager cam = (Cartesian2DAxisManager) _ud.plot.getAxisManager();
         Cartesian2DAxis cla = (Cartesian2DAxis) cam.getAxis("Left Axis");
-        cla.setMinimum(-1.2);
-        cla.setMaximum(1.2);
+        cla.getMinimumQuantity().setValue(-1.2);
+        cla.getMaximumQuantity().setValue(1.2);
         _ud.plot.open();
     }
 

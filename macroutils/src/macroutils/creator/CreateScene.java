@@ -362,7 +362,8 @@ public class CreateScene {
     private ScalarDisplayer _createDisplayer_Scalar(Scene scn, ArrayList<NamedObject> ano,
             FieldFunction ff, Units u, boolean vo) {
         ScalarDisplayer sd = _getDM(scn).createScalarDisplayer(
-                StaticDeclarations.Displayer.SCALAR.getType(), ClipMode.NONE);
+                StaticDeclarations.Displayer.SCALAR.getType());
+        sd.getScalarDisplayQuantity().setClip(ClipMode.NONE);
         _setSDQ(sd.getScalarDisplayQuantity(), ff);
         if (u != null) {
             sd.getScalarDisplayQuantity().setUnits(u);
@@ -375,7 +376,8 @@ public class CreateScene {
     private StreamDisplayer _createDisplayer_Streamline(Scene scn, ArrayList<NamedObject> ano,
             FieldFunction ff, Units u, boolean vo) {
         StreamDisplayer sd = _getDM(scn).createStreamDisplayer(
-                StaticDeclarations.Displayer.STREAMLINE.getType(), ClipMode.NONE);
+                StaticDeclarations.Displayer.STREAMLINE.getType());
+        sd.getScalarDisplayQuantity().setClip(ClipMode.NONE);
         _setSDQ(sd.getScalarDisplayQuantity(), ff);
         if (u != null) {
             sd.getScalarDisplayQuantity().setUnits(u);
@@ -388,7 +390,8 @@ public class CreateScene {
 
     private VectorDisplayer _createDisplayer_Vector(Scene scn, ArrayList<NamedObject> ano,
             FieldFunction ff, Units u, boolean vo) {
-        VectorDisplayer vd = _getDM(scn).createVectorDisplayer("Vector", ClipMode.NONE);
+        VectorDisplayer vd = _getDM(scn).createVectorDisplayer("Vector");
+        vd.getVectorDisplayQuantity().setClip(ClipMode.NONE);
         if (!_chk.is.vector(ff)) {
             _io.say.value("Field Function is not a Vector. Type",
                     ff.getType().getSelected().name(), true, true);

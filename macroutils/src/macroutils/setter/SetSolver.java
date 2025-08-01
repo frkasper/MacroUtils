@@ -36,7 +36,6 @@ import star.kwturb.KwTurbViscositySolver;
 import star.metrics.GradientsModel;
 import star.metrics.LimiterMethodOption;
 import star.mixturemultiphase.SegregatedMmpSolver;
-import star.mixturemultiphase.SegregatedVolumeFractionSingleStepSolver;
 import star.rsturb.RsTurbSolver;
 import star.rsturb.RsTurbViscositySolver;
 import star.segregatedenergy.SegregatedEnergySolver;
@@ -486,31 +485,22 @@ public class SetSolver {
 
         AMGLinearSolver amg = null;
 
-        if (solver instanceof SegregatedFlowSolver) {
-
-            SegregatedFlowSolver sfs = (SegregatedFlowSolver) solver;
-
-            sfs.getVelocitySolver().getAMGLinearSolver().setConvergeTol(val);
-            _io.say.object(sfs.getVelocitySolver(), vo);
-
-            sfs.getPressureSolver().getAMGLinearSolver().setConvergeTol(val);
-            _io.say.object(sfs.getPressureSolver(), vo);
-
-        } else if (solver instanceof ScalarSolverBaseNoUrf) {
-
-            amg = ((ScalarSolverBaseNoUrf) solver).getAMGLinearSolver();
-
-        } else if (solver instanceof SegregatedVofSolver) {
-
-            amg = ((SegregatedVolumeFractionSingleStepSolver) solver).getAMGLinearSolver();
-
+        switch (solver) {
+            case SegregatedFlowSolver sfs -> {
+                sfs.getVelocitySolver().getAMGLinearSolver().setConvergeTol(val);
+                _io.say.object(sfs.getVelocitySolver(), vo);
+                sfs.getPressureSolver().getAMGLinearSolver().setConvergeTol(val);
+                _io.say.object(sfs.getPressureSolver(), vo);
+            }
+            case ScalarSolverBaseNoUrf ssbnu -> amg = ssbnu.getAMGLinearSolver();
+            case SegregatedVofSolver svs -> amg = svs.getAMGLinearSolver();
+            default -> {
+            }
         }
 
         if (amg != null) {
-
             amg.setConvergeTol(val);
             _io.say.object(solver, vo);
-
         }
 
     }

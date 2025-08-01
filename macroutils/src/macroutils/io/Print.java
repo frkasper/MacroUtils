@@ -83,7 +83,7 @@ public class Print {
         value("  - Focal Point", cam.getFocalPoint(), vo);
         value("  - Position", cam.getPosition(), vo);
         value("  - View Up", cam.getViewUp(), vo);
-        value("  - Parallel Scale", cam.getParallelScale().getValue(), vo);
+        value("  - Parallel Scale", cam.getParallelScale().getScale(), vo);
         value("  - Projection Mode", cam.getProjectionModeEnum().getPresentationName(), true, vo);
         msg("", vo);
     }

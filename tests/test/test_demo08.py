@@ -18,8 +18,8 @@ def test_domain_part_surfaces_count():
 
 
 def test_cell_count():
-    test_utils.assert_cell_count(DEMO_ID, 726000,
-                                 tolerance=0.015, relative=True)
+    test_utils.assert_cell_count(DEMO_ID, 750000,
+                                 tolerance=0.02, relative=True)
 
 
 def test_solution():

@@ -86,7 +86,7 @@ public class Demo13_Streamlines extends StarMacro {
         //-- One can make it all in a single Scenes.
         ud.ff = mu.get.objects.fieldFunction(StaticDeclarations.Vars.P.getVar(), true);
         ud.scene = mu.add.scene.scalar(ud.namedObjects, ud.ff, ud.unit_Pa, true);
-        ud.scene.getAxes().setAxesVisible(false);
+        ud.scene.setAxesVisible(false);
 
         scd = (ScalarDisplayer) mu.get.scenes.displayerByREGEX(ud.scene, "Scalar", true);
         scd.setOpacity(0);

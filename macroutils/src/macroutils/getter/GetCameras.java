@@ -93,9 +93,9 @@ public class GetCameras {
             v.setPosition(dv2);
             DoubleVector dv3 = _getIncrement(v1.getViewUp(), v2.getViewUp(), i, nSteps);
             v.setViewUp(dv3);
-            double ps = _getIncrement(v1.getParallelScale().getValue(),
-                    v2.getParallelScale().getValue(), i, nSteps);
-            v.getParallelScale().setValue(ps);
+            double ps = _getIncrement(v1.getParallelScale().getScale().evaluate(),
+                    v2.getParallelScale().getScale().evaluate(), i, nSteps);
+            v.getParallelScale().getScale().setValue(ps);
             av.add(v);
         }
         av.add(0, v1);
@@ -174,14 +174,14 @@ public class GetCameras {
             _f.clear();
             for (int i = 0; i < avv.size(); i++) {
                 _x.add((double) i * n_delta);
-                _f.add(avv.get(i).getParallelScale().getValue());
+                _f.add(avv.get(i).getParallelScale().getScale().evaluate());
             }
             double[][] splPS = _get.info.spline(_x, _f);
             double newPS = _get.info.splineValue(splPS, k);
             v.setFocalPoint(dvFP);
             v.setPosition(dvPos);
             v.setViewUp(dvVU);
-            v.getParallelScale().setValue(newPS);
+            v.getParallelScale().getScale().setValue(newPS);
             av.add(v);
         }
         _io.say.value("Cameras processed", av.size(), vo);

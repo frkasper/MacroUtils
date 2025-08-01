@@ -82,7 +82,7 @@ public class Write {
             DoubleVector fp = v.getFocalPoint();
             DoubleVector pos = v.getPosition();
             DoubleVector vu = v.getViewUp();
-            double ps = v.getParallelScale().getValue();
+            double ps = v.getParallelScale().getScale().evaluate();
             int pm = v.getProjectionModeEnum().getValue();
             String cam = String.format(StaticDeclarations.CAM_FORMAT,
                     name, fp.get(0), fp.get(1), fp.get(2), pos.get(0), pos.get(1), pos.get(2),

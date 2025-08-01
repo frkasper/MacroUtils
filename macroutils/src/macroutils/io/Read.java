@@ -79,16 +79,9 @@ public class Read {
                     break;
             }
         }
-        double ps = Double.valueOf(props[4]);
-        vv1.getParallelScale().setValue(ps);
+        double ps = Double.parseDouble(props[4]);
+        vv1.getParallelScale().getScale().setValue(ps);
         _io.say.value("Parallel Scale read", ps, true);
-        int pm = 1;
-        try {
-            pm = Integer.parseInt(props[5]);
-            _io.say.value("Projection Mode read", pm, true);
-        } catch (Exception e) {
-            _io.say.msg("Could not read Projection Mode. Using Parallel.");
-        }
         vv1.setProjectionMode(VisProjectionMode.PARALLEL);
         _io.say.camera(vv1, vo);
         return vv1;
