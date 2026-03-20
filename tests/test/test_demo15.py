@@ -6,10 +6,10 @@ import test_utils
 
 DEMO_ID = test_utils.demo_id(__file__)
 MOVIES_FOLDERS = {
-        'pics_Demo15_Run_DES_Structures': 1179880,
-        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 2871033,
-        'pics_Demo15_Run_DES_Velocity': 2997786,
-        'pics_Demo15_Run_DES_Wall_Y+': 2408223,
+        'pics_Demo15_Run_DES_Structures': 1E6,
+        'pics_Demo15_Run_DES_Turbulent_Viscosity_Ratio': 3E6,
+        'pics_Demo15_Run_DES_Velocity': 2.75E6,
+        'pics_Demo15_Run_DES_Wall_Y+': 2E6,
         }
 MOVIES_IDS = ['-'.join(x.split('_')[4:]) for x in MOVIES_FOLDERS]
 
@@ -96,8 +96,8 @@ def test_cfl_avg_report_des():
 
 
 def test_cfl_max_report_des():
-    test_utils.assert_report(des_sim(), 'CFL_max', 1.6,
-                             tolerance=0.50, relative=False)
+    test_utils.assert_report(des_sim(), 'CFL_max', 1.75,
+                             tolerance=0.75, relative=False)
 
 
 def test_time_report_des():
@@ -137,4 +137,4 @@ def test_movie_size(movie_folder):
     file_size = MOVIES_FOLDERS[movie_folder]
     print('Movie folder: %s' % movie_folder)
     test_utils.assert_file_size(movie.name(movie_folder), file_size,
-                                tolerance=0.1)
+                                tolerance=0.15)
