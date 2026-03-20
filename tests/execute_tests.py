@@ -6,15 +6,12 @@ Execute MacroUtils tests using pytest.
 At the moment, testing is restricted to legacy demos and this framework is
 just for consistency checking.
 
-
 Basic requirements:
-    - Python 3 -- tested with Python 3.8
+    - Python 3
     - pytest -- see http://www.pytest.org
-
 
 Limitations:
     - Restricted to Linux only
-
 
 @author: Fabio Kasper
 """
@@ -22,8 +19,8 @@ import datetime
 import os
 import re
 import shutil
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from dataclasses import dataclass
-from optparse import OptionParser, OptionGroup
 from pathlib import Path
 from common import executor, set_up, star, strings, timer
 from tests_definition import Bug, Case, CASES, Demo, SimAssistant, SimTool, \
@@ -72,7 +69,6 @@ class Options:
         if self.sim_tools:
             command.append('test/test_simulation_tools.py')
         return ' '.join(command)
-
 
     def print_overview(self):
         print(strings.frame('MacroUtils tester'))
@@ -133,154 +129,136 @@ def copy_test_macros(options: Options):
 
 def parse_options() -> Options:
 
-    usage = [
-            '%prog [options]',
-            '',
-            'Execute MacroUtils tests using pytest. This is an optional step',
-            'and only serves for consistency checks while maintaining this',
-            'library. It is encouraged though that everyone using MacroUtils',
-            'try to execute the tests themselves, specially when changing the',
-            'source code.',
-            '',
-            'There are essentially two type of tests:',
-            '  - demos: tests legacy MacroUtils demos;',
-            '  - bugs: tests created over bugs filed over GitHub.',
-            '',
-            'If no custom syntax is given both types will be tested.',
-            ]
+    description = (
+        'Execute MacroUtils tests using pytest. This is an optional step\n'
+        'and only serves for consistency checks while maintaining this\n'
+        'library. It is encouraged to execute these tests when changing the\n'
+        'source code.\n'
+        '\n'
+        'There are essentially two type of tests:\n'
+        '  - demos: tests legacy MacroUtils demos;\n'
+        '  - bugs: tests created over bugs filed over GitHub.\n'
+        '\n'
+        'If no custom syntax is given both types will be tested.'
+    )
 
-    parser = OptionParser('\n'.join(usage))
+    parser = ArgumentParser(description=description,
+                            formatter_class=RawDescriptionHelpFormatter,
+                            add_help=True)
 
-    #
-    # Runtime Group
-    gr_r = OptionGroup(parser, 'Runtime Options', 'Options related to the '
-                       'being evaluated.')
-    parser.add_option_group(gr_r)
+    gr_r = parser.add_argument_group('Runtime Options', 'Options related to '
+                                     'the runtime being evaluated.')
+    gr_r.add_argument('--bugs', action='store_true', default=False,
+                      help='execute tests related to bugs only')
+    gr_r.add_argument('--datahome', action='store', type=Path,
+                      required=True, metavar='PATH', help='path to '
+                      'supporting files -- e.g.: geometries, etc')
+    gr_r.add_argument('--demohome', action='store', type=Path,
+                      required=True, metavar='PATH', help='path to demo '
+                      'source files')
+    gr_r.add_argument('--demo', action='store', type=int, default=-1,
+                      metavar='N', help='run a specific demo number '
+                      '(default = all tests)')
+    gr_r.add_argument('--jarhome', action='store', type=Path,
+                      required=True, metavar='PATH', help='path to '
+                      'MacroUtils compiled jar file')
+    gr_r.add_argument('--sas', action='store_true', default=False,
+                      help='execute simulation assistant tests only')
+    gr_r.add_argument('--serial', action='store_true', default=False,
+                      help='override STAR-CCM+ runs to serial '
+                      '(default = False)')
+    gr_r.add_argument('--simtools', action='store_true', default=False,
+                      help='execute simulation tools tests only')
+    gr_r.add_argument('--starhome', action='store', type=Path,
+                      required=True, metavar='PATH', help='path to '
+                      'STAR-CCM+ installation')
+    gr_r.add_argument('--testhome', action='store', type=Path,
+                      required=True, metavar='PATH', help='path to where '
+                      'testing will be conducted')
+    gr_r.add_argument('--threads', action='store', default=4, metavar='N',
+                      help='how many multiple instances of STAR-CCM+ will '
+                      'be run (default = 4)')
 
-    gr_r.add_option('--bugs', dest='bugs', action='store_true',
-                    help='execute tests related to bugs only',
-                    default=False)
-    gr_r.add_option('--datahome', dest='datahome', action='store',
-                    help='path to supporting files -- e.g.: geometries, etc',
-                    default=None)
-    gr_r.add_option('--demohome', dest='demohome', action='store',
-                    help='path to demo source files',
-                    default=None)
-    gr_r.add_option('--demo', dest='demo', action='store',
-                    help='run a specific demo number (default = all tests)',
-                    default=None)
-    gr_r.add_option('--jarhome', dest='jarhome', action='store',
-                    help='path to MacroUtils compiled jar file',
-                    default=None)
-    gr_r.add_option('--sas', dest='sas', action='store_true',
-                    help='execute simulation assistant tests only',
-                    default=False)
-    gr_r.add_option('--serial', dest='serial', action='store_true',
-                    help='override STAR-CCM+ runs to serial (default = False)',
-                    default=False)
-    gr_r.add_option('--simtools', dest='simtools', action='store_true',
-                    help='execute simulation tools tests only',
-                    default=False)
-    gr_r.add_option('--starhome', dest='starhome', action='store',
-                    help='path to STAR-CCM+ installation',
-                    default=None)
-    gr_r.add_option('--testhome', dest='testhome', action='store',
-                    help='path to where testing will be conducted',
-                    default=None)
-    gr_r.add_option('--threads', dest='threads', action='store',
-                    help='how many multiple instances of STAR-CCM+ will be '
-                    'run (default = 4)', default=4)
-    #
-    # pytest Group
-    gr_p = OptionGroup(parser, 'pytest Options', 'Options related to pytest.')
-    parser.add_option_group(gr_p)
+    gr_p = parser.add_argument_group('pytest Options', 'Options related to '
+                                     'pytest.')
+    gr_p.add_argument('-s', dest='capture_no', action='store_true',
+                      default=False, help='print captured output to console')
+    gr_p.add_argument('-v', dest='verbose', action='store_true', default=False,
+                      help='extra verbosity for each test')
+    gr_p.add_argument('-x', dest='stop', action='store_true', default=False,
+                      help='stop at first failure')
 
-    gr_p.add_option('-s', dest='capture_no', action='store_true',
-                    help='print captured output to console',
-                    default=False)
-    gr_p.add_option('-v', dest='verbose', action='store_true',
-                    help='extra verbosity for each test_case()',
-                    default=False)
-    gr_p.add_option('-x', dest='stop', action='store_true',
-                    help='stop at first failure',
-                    default=False)
-
-    opts, args = parser.parse_args()
+    args = parser.parse_args()
 
     def informed(key, value) -> bool:
         if re.match('^(demo|threads)$', key):
             return False
         return value is None
 
-    #
-    # Assert that all arguments are informed
-    items = opts.__dict__.items()
+    # Assert that all required arguments are informed
+    items = vars(args).items()
     errors = ['%s not informed' % k for k, v in items if informed(k, v)]
-    if len(errors) > 0:
+    if errors:
         errors.append('add --help for a detailed list of options')
         parser.error('\n\n- %s\n' % '\n- '.join(errors))
 
-    data_home = Path(opts.datahome).resolve()
-    demo_home = Path(opts.demohome).resolve()
-    jar_home = Path(opts.jarhome).resolve()
-
-    if jar_home.is_file():
-        jar_file = jar_home
-    else:
-        jar_files = jar_home.glob('macroutils*.jar')
-        if not jar_files:
-            parser.error(f'No MacroUtils jar files in {jar_home}')
-        jar_file = next(jar_files)
-
-    jar_file = jar_file.resolve()
-    star_home = Path(opts.starhome).resolve()
-    test_home = Path(opts.testhome).resolve()
+    data_home: Path = args.datahome.resolve()
+    demo_home: Path = args.demohome.resolve()
+    star_home: Path = args.starhome.resolve()
+    test_home: Path = args.testhome.resolve()
 
     for folder in [data_home, demo_home, star_home, test_home]:
         if not folder.is_dir():
-            parser.error(f'folder does not exist: {folder!r}')
+            parser.error(f'invalid folder: {folder.as_posix()}')
+
+    jar_home: Path = args.jarhome.resolve()
+    jar_file = jar_home
+    if not jar_file.is_file():
+        jar_files = jar_home.glob('macroutils*.jar')
+        if not jar_files:
+            parser.error(f'No MacroUtils jar files in {jar_home}')
+        jar_file = next(jar_files).resolve()
 
     # Now assign a TESTHOME
     today = datetime.datetime.now().strftime('%Y%m%d')
     test_home = test_home.joinpath(f'tests_{today}')
 
-
-    if opts.bugs and opts.demo is not None:
-            parser.error('--demo and --bugs are mutually exclusive')
-    if opts.sas and opts.demo is not None:
-            parser.error('--sas and --bugs are mutually exclusive')
-    if opts.simtools and opts.demo is not None:
-            parser.error('--simtools and --bugs are mutually exclusive')
+    if args.bugs and args.demo > 0:
+        parser.error('--demo and --bugs are mutually exclusive')
+    if args.sas and args.demo > 0:
+        parser.error('--sas and --demo are mutually exclusive')
+    if args.simtools and args.demo > 0:
+        parser.error('--simtools and --demo are mutually exclusive')
 
     # Parse the test cases to be run
     test_cases = []
-    if opts.demo is None and not any([opts.bugs, opts.sas, opts.simtools]):
-        opts.bugs = opts.sas = opts.simtools = True
+    if args.demo < 0 and not any([args.bugs, args.sas, args.simtools]):
+        args.bugs = args.sas = args.simtools = True
         test_cases.extend(filtered_cases(CASES, Demo))
-    elif opts.demo is None:
+    elif args.demo < 0:
         pass
     else:
         try:
-            test_cases.append(get_demo(opts.demo))
+            test_cases.append(get_demo(args.demo))
         except ValueError as ve:
             parser.error(ve)
-    if opts.bugs:
+    if args.bugs:
         test_cases.extend(filtered_cases(CASES, Bug))
-    if opts.sas:
+    if args.sas:
         test_cases.extend(filtered_cases(CASES, SimAssistant))
-    if opts.simtools:
+    if args.simtools:
         test_cases.extend(filtered_cases(CASES, SimTool))
 
     pytest_args = []
-    if opts.capture_no:
+    if args.capture_no:
         pytest_args.append('-s')
-    if opts.verbose:
+    if args.verbose:
         pytest_args.append('-v')
-    if opts.stop:
+    if args.stop:
         pytest_args.append('-x')
 
-    serial = opts.serial
-    nt = opts.threads
+    serial = args.serial
+    nt = args.threads
     threads = max(int(nt) if isinstance(nt, str) else nt, 0)
 
     return Options(serial, threads, data_home, demo_home, jar_file, star_home,
