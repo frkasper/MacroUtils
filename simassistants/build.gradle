@@ -9,7 +9,7 @@ subprojects {
 
     configurations {
         resolvableApi.extendsFrom(api)
-        resolvableApi.canBeResolved(true)
+        resolvableApi.canBeResolved = true
     }
 
     dependencies {
