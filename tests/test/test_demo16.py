@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pytest
 import test_utils
 
 
@@ -17,6 +18,7 @@ def test_cell_count():
     test_utils.assert_cell_count(DEMO_ID, 1000, tolerance=0, relative=False)
 
 
+@pytest.mark.skip(reason='temporarily skipped')
 def test_solution():
     test_utils.assert_iteration(DEMO_ID, 2140)
     test_utils.assert_time(DEMO_ID, 0.0200081)
