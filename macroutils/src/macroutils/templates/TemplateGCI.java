@@ -262,7 +262,7 @@ public class TemplateGCI {
         xyp2.getDataSetManager().addDataProvider(ft);
         TableDataSet eds = (TableDataSet) xyp2.getDataSeriesOrder().getLast();
         eds.setPresentationName(s);
-        eds.setSeriesName(s);
+        eds.setLegendName(s);
         eds.getSymbolStyle().setColor(StaticDeclarations.Colors.SLATE_GRAY_DARK.getColor());
         eds.getSymbolStyle().setSize(_mu.templates.prettify.getSymbolSize() + 2);
         eds.getSymbolStyle().getSymbolShapeOption().setSelected(SymbolShapeOption.Type.STAR);
@@ -279,7 +279,7 @@ public class TemplateGCI {
             xyp.getDataSetManager().addDataProvider(ft);
             TableDataSet eds = (TableDataSet) xyp.getDataSeriesOrder().getLast();
             eds.setPresentationName(s);
-            eds.setSeriesName(s);
+            eds.setLegendName(s);
             _get.plots.axisX(eds).getTableColumnRef()
                     .setReferencedObject(ft.getColumnDescriptor(xx[i]));
             _get.plots.axisY(eds).getTableColumnRef()
